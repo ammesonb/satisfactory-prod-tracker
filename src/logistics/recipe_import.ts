@@ -78,37 +78,37 @@ export const pickSource = (
   return usedSources
 }
 
-const getRecipeMaterials = (
+export const getAllRecipeMaterials = (
   recipes: Recipe[],
 ): { ingredients: Record<string, RecipeItem[]>; products: Record<string, RecipeItem[]> } => {
   const data = useDataStore()
   return {
+    // summarize a list of all ingredients and products needed for
+    // all of the recipes, into one comprehensive map
     ingredients: recipes.reduce(
       (acc, recipe) => {
-        data.recipeIngredients(recipe.name).forEach((ingredient) => ({
-          ...acc,
-          [ingredient.item]: [
+        data.recipeIngredients(recipe.name).forEach((ingredient) => {
+          acc[ingredient.item] = [
             ...(acc[ingredient.item] || []),
             { amount: ingredient.amount, recipe, isResource: isNaturalResource(ingredient.item) },
-          ],
-        }))
+          ]
+        })
         return acc
       },
       {} as Record<string, RecipeItem[]>,
     ),
     products: recipes.reduce(
       (acc, recipe) => {
-        data.recipeProducts(recipe.name).forEach((product) => ({
-          ...acc,
-          [product.item]: [
+        data.recipeProducts(recipe.name).forEach((product) => {
+          acc[product.item] = [
             ...(acc[product.item] || []),
             {
               amount: recipe.count * product.amount,
               recipe,
               isResource: isNaturalResource(product.item),
             },
-          ],
-        }))
+          ]
+        })
         return acc
       },
       {} as Record<string, RecipeItem[]>,
@@ -116,7 +116,7 @@ const getRecipeMaterials = (
   }
 }
 
-const batchRecipes = (recipes: Recipe[]): Recipe[][] => {
+export const batchRecipes = (recipes: Recipe[]): Recipe[][] => {
   // group recipes by items required to produce
   // e.g. ingots first, then simple items second, complex items afterwards
   const batches: Recipe[][] = []
@@ -128,7 +128,10 @@ const batchRecipes = (recipes: Recipe[]): Recipe[][] => {
 
   while (remainingRecipes.length > 0) {
     const batch: Recipe[] = []
+    const newlyProducedItems: string[] = []
+    // for each recipe not yet produced
     for (const recipe of remainingRecipes) {
+      // see if all ingredients are currently available
       const ingredients = data.recipeIngredients(recipe.name)
       if (
         ingredients.reduce(
@@ -136,10 +139,14 @@ const batchRecipes = (recipes: Recipe[]): Recipe[][] => {
           true,
         )
       ) {
+        // if they are, add the recipe to this production batch and track the current products available
         batch.push(recipe)
+        newlyProducedItems.push(...data.recipeProducts(recipe.name).map((product) => product.item))
       }
     }
+    // remove recipes we are now producing, and mark their products as available
     remainingRecipes = remainingRecipes.filter((recipe) => !batch.includes(recipe))
+    producedItems.push(...newlyProducedItems)
     batches.push(batch)
   }
 
@@ -149,7 +156,7 @@ const batchRecipes = (recipes: Recipe[]): Recipe[][] => {
 export const materialLinksFromRecipes = (recipes: Recipe[]): Material[] => {
   // TODO: always use your own output as input if possible, e.g. encased uranium fuel cell has sulfuric acid catalyst
   const data = useDataStore()
-  const { ingredients, products } = getRecipeMaterials(recipes)
+  const { ingredients, products } = getAllRecipeMaterials(recipes)
 
   const materialLinks: Material[] = []
 
