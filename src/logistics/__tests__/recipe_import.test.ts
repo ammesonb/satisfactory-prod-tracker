@@ -410,5 +410,53 @@ describe('recipe_import', () => {
       expect(result[2]).toHaveLength(1) // ReinforcedIronPlate
       expect(result[2][0].name).toBe('Recipe_ReinforcedIronPlate_C')
     })
+
+    it('should throw error when missing middle ingredient prevents batching', () => {
+      const recipes = [
+        // Base tier - produces iron ingot
+        { name: 'Recipe_IronIngot_C', building: 'Desc_SmelterMk1_C', count: 1 },
+
+        // This recipe needs copper wire, but no recipe produces copper wire
+        { name: 'Recipe_Cable_C', building: 'Desc_ConstructorMk1_C', count: 1 },
+      ]
+
+      mockDataStore.recipeIngredients = vi
+        .fn()
+        // First batch iteration
+        .mockReturnValueOnce([{ item: 'Desc_OreIron_C', amount: 1 }]) // IronIngot - should match
+        .mockReturnValueOnce([{ item: 'Desc_Wire_C', amount: 2 }]) // Cable - no match (Wire not produced)
+
+        // Second iteration - no progress made, should trigger error
+        .mockReturnValueOnce([{ item: 'Desc_Wire_C', amount: 2 }]) // Cable - still no match
+
+      mockDataStore.recipeProducts.mockReturnValueOnce([{ item: 'Desc_IronIngot_C', amount: 1 }]) // IronIngot batch 1
+
+      expect(() => batchRecipes(recipes)).toThrow(
+        'Batching recipes failed, missing ingredients for',
+      )
+    })
+
+    it('should throw error when circular dependency exists', () => {
+      const recipes = [
+        // Recipe A needs product from Recipe B
+        { name: 'Recipe_A', building: 'Desc_Constructor_C', count: 1 },
+        // Recipe B needs product from Recipe A (circular dependency)
+        { name: 'Recipe_B', building: 'Desc_Constructor_C', count: 1 },
+      ]
+
+      mockDataStore.recipeIngredients = vi
+        .fn()
+        // First batch iteration - neither recipe can be satisfied
+        .mockReturnValueOnce([{ item: 'Product_B', amount: 1 }]) // Recipe A needs Product B
+        .mockReturnValueOnce([{ item: 'Product_A', amount: 1 }]) // Recipe B needs Product A
+
+        // Second iteration - still no progress
+        .mockReturnValueOnce([{ item: 'Product_B', amount: 1 }]) // Recipe A still needs Product B
+        .mockReturnValueOnce([{ item: 'Product_A', amount: 1 }]) // Recipe B still needs Product A
+
+      expect(() => batchRecipes(recipes)).toThrow(
+        'Batching recipes failed, missing ingredients for',
+      )
+    })
   })
 })

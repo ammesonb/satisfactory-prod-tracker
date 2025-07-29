@@ -126,7 +126,15 @@ export const batchRecipes = (recipes: Recipe[]): Recipe[][] => {
   let remainingRecipes = recipes.filter((recipe) => recipe.building !== 'Mine')
   const producedItems = [...NATURAL_RESOURCES]
 
+  let lastLength = 0
   while (remainingRecipes.length > 0) {
+    if (lastLength === remainingRecipes.length) {
+      throw new Error(
+        'Batching recipes failed, missing ingredients for ' + remainingRecipes.join(', '),
+      )
+    }
+    lastLength = remainingRecipes.length
+
     const batch: Recipe[] = []
     const newlyProducedItems: string[] = []
     // for each recipe not yet produced
@@ -157,6 +165,11 @@ export const materialLinksFromRecipes = (recipes: Recipe[]): Material[] => {
   // TODO: always use your own output as input if possible, e.g. encased uranium fuel cell has sulfuric acid catalyst
   const data = useDataStore()
   const { ingredients, products } = getAllRecipeMaterials(recipes)
+  const batchedRecipes = batchRecipes(recipes)
+
+  // TODO: for each floor, add product recipes and consume ingredients
+  // TODO: if not enough ingredients yet, leave for the next floor since could be produced by higher-tier recipe.
+  // TODO: at end, floors should have all recipes. If not, throw an error.
 
   const materialLinks: Material[] = []
 
@@ -189,14 +202,6 @@ export const materialLinksFromRecipes = (recipes: Recipe[]): Material[] => {
   // TODO: We also will need a summary of each resource, such that it is easy to find the inputs/outputs for it
   return materialLinks
 }
-
-// TODO: need function to generate full material lines for recipes
-//       - byproducts should be consumed by first producer, need to think about this one
-//       - ideally consumed by one consumer, but maybe splitting is okay too
-
-// TODO: need to group recipes into "floors" based on inputs
-//       - raw first, iteratively until all recipes produced
-//       - MAKE SURE to check all ingredients produced, not ANY
 
 // TODO: display checkboxes for linked materials (inputs + outputs) and buildings like
 // input 1 -----            ----- output 1
