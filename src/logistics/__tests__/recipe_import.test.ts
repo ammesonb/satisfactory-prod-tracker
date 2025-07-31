@@ -5,6 +5,7 @@ import {
   pickSource,
   getAllRecipeMaterials,
   batchRecipes,
+  getLinksForRecipe,
 } from '../recipe_import'
 import { useDataStore } from '@/stores/data'
 
@@ -54,31 +55,25 @@ describe('recipe_import', () => {
       expect(result[0].amount).toBe(10)
     })
 
-    it('should throw error when no sources provided', () => {
+    it('should return empty when no sources provided', () => {
       const request = createRequest(10)
       const sources = []
 
-      expect(() => pickSource(request, 'TestIngredient', sources)).toThrow(
-        'No sources found for TestIngredient in TestRequest',
-      )
+      expect(pickSource(request, 'TestIngredient', sources)).toHaveLength(0)
     })
 
-    it('should throw error when the only source has insufficient quantity', () => {
+    it('should return empty when the only source has insufficient quantity', () => {
       const request = createRequest(10)
       const sources = [createRecipeItem(5, 'Source1')]
 
-      expect(() => pickSource(request, 'TestIngredient', sources)).toThrow(
-        'Not enough sources for TestIngredient in TestRequest',
-      )
+      expect(pickSource(request, 'TestIngredient', sources)).toHaveLength(0)
     })
 
-    it('should throw error when multiple sources have insufficient quantity', () => {
+    it('should return empty when multiple sources have insufficient quantity', () => {
       const request = createRequest(20)
       const sources = [createRecipeItem(5, 'Source1'), createRecipeItem(8, 'Source2')]
 
-      expect(() => pickSource(request, 'TestIngredient', sources)).toThrow(
-        'Not enough sources for TestIngredient in TestRequest',
-      )
+      expect(pickSource(request, 'TestIngredient', sources)).toHaveLength(0)
     })
 
     it('should return lowest amount when multiple sources have sufficient quantity', () => {
@@ -126,6 +121,27 @@ describe('recipe_import', () => {
       const result = pickSource(request, 'TestIngredient', sources)
       expect(result).toHaveLength(3)
       expect(result.map((r) => r.recipe.name)).toEqual(['Source1', 'Source3', 'Source2'])
+    })
+
+    it('should return empty array for natural resource with no sources', () => {
+      const request = createRequest(10)
+      const sources = []
+
+      const result = pickSource(request, 'Desc_OreIron_C', sources)
+
+      expect(result).toHaveLength(0)
+    })
+
+    it('should allow remainder for natural resource with insufficient sources', () => {
+      const request = createRequest(20)
+      const sources = [createRecipeItem(5, 'Source1'), createRecipeItem(8, 'Source2')]
+
+      const result = pickSource(request, 'Desc_OreIron_C', sources)
+
+      expect(result).toHaveLength(2)
+      expect(result[0].amount).toBe(5)
+      expect(result[1].amount).toBe(8)
+      // Total is 13, which is less than requested 20, but should not throw for natural resources
     })
   })
 
@@ -238,7 +254,7 @@ describe('recipe_import', () => {
     })
   })
 
-  describe('batchRecipes', () => {
+  describe('batches recipes', () => {
     let mockDataStore: ReturnType<typeof useDataStore>
 
     beforeEach(() => {
@@ -457,6 +473,279 @@ describe('recipe_import', () => {
       expect(() => batchRecipes(recipes)).toThrow(
         'Batching recipes failed, missing ingredients for',
       )
+    })
+  })
+
+  describe('generates links for recipe inputs', () => {
+    let mockDataStore: ReturnType<typeof useDataStore>
+
+    beforeEach(() => {
+      mockDataStore = {
+        recipeIngredients: vi.fn(),
+        recipeProducts: vi.fn(),
+        items: {
+          Desc_OreIron_C: { name: 'Iron Ore' },
+          Desc_OreCopper_C: { name: 'Copper Ore' },
+          Desc_Water_C: { name: 'Water' },
+        },
+      }
+      vi.mocked(useDataStore).mockReturnValue(mockDataStore)
+    })
+
+    const createRecipe = (name: string, building = 'TestBuilding', count = 1) => ({
+      name,
+      building,
+      count,
+    })
+
+    const createRecipeItem = (amount: number, recipeName: string) => ({
+      amount,
+      recipe: createRecipe(recipeName),
+      isResource: false,
+    })
+
+    it('should handle natural resource not produced (no sources)', () => {
+      const recipe = createRecipe('Recipe_IronIngot_C')
+      const alreadyProduced = {}
+
+      mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_OreIron_C', amount: 30 }])
+      mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_IronIngot_C', amount: 30 }])
+
+      const result = getLinksForRecipe(recipe, alreadyProduced)
+
+      expect(result.links).toEqual([
+        {
+          source: 'Iron Ore',
+          sink: 'Recipe_IronIngot_C',
+          name: 'Desc_OreIron_C',
+          amount: 30,
+        },
+      ])
+      expect(result.recipesMissingIngredients).toEqual([])
+    })
+
+    it('should handle natural resource partially produced', () => {
+      const recipe = createRecipe('Recipe_IronIngot_C')
+      const alreadyProduced = {
+        Desc_OreIron_C: [createRecipeItem(15, 'MiningRecipe')],
+      }
+
+      mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_OreIron_C', amount: 30 }])
+      mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_IronIngot_C', amount: 30 }])
+
+      const result = getLinksForRecipe(recipe, alreadyProduced)
+
+      expect(result.links).toEqual([
+        {
+          source: 'MiningRecipe',
+          sink: 'Recipe_IronIngot_C',
+          name: 'Desc_OreIron_C',
+          amount: 15,
+        },
+        {
+          source: 'Iron Ore',
+          sink: 'Recipe_IronIngot_C',
+          name: 'Desc_OreIron_C',
+          amount: 15,
+        },
+      ])
+      expect(result.recipesMissingIngredients).toEqual([])
+      expect(alreadyProduced.Desc_OreIron_C[0].amount).toBe(0)
+    })
+
+    it('should handle natural resource fully/over produced', () => {
+      const recipe = createRecipe('Recipe_IronIngot_C')
+      const alreadyProduced = {
+        Desc_OreIron_C: [createRecipeItem(50, 'MiningRecipe')],
+      }
+
+      mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_OreIron_C', amount: 30 }])
+      mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_IronIngot_C', amount: 30 }])
+
+      const result = getLinksForRecipe(recipe, alreadyProduced)
+
+      expect(result.links).toEqual([
+        {
+          source: 'MiningRecipe',
+          sink: 'Recipe_IronIngot_C',
+          name: 'Desc_OreIron_C',
+          amount: 30,
+        },
+      ])
+      expect(result.recipesMissingIngredients).toEqual([])
+      expect(alreadyProduced.Desc_OreIron_C[0].amount).toBe(20)
+    })
+
+    it('should handle catalyst with partial production', () => {
+      const recipe = createRecipe('Recipe_AluminaSolution_C')
+      const alreadyProduced = {
+        Desc_Water_C: [createRecipeItem(60, 'WaterExtractor')],
+      }
+
+      mockDataStore.recipeIngredients.mockReturnValue([
+        { item: 'Desc_AluminaSolution_C', amount: 120 },
+        { item: 'Desc_Water_C', amount: 120 },
+      ])
+      mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_AluminaSolution_C', amount: 60 }])
+
+      const result = getLinksForRecipe(recipe, alreadyProduced)
+
+      expect(result.links).toEqual([
+        {
+          source: 'Recipe_AluminaSolution_C',
+          sink: 'Recipe_AluminaSolution_C',
+          name: 'Desc_AluminaSolution_C',
+          amount: 60,
+        },
+        {
+          source: 'WaterExtractor',
+          sink: 'Recipe_AluminaSolution_C',
+          name: 'Desc_Water_C',
+          amount: 60,
+        },
+        {
+          source: 'Water',
+          sink: 'Recipe_AluminaSolution_C',
+          name: 'Desc_Water_C',
+          amount: 60,
+        },
+      ])
+      expect(result.recipesMissingIngredients).toStrictEqual([
+        {
+          amount: 60,
+          item: 'Desc_AluminaSolution_C',
+        },
+      ])
+    })
+
+    it('should handle catalyst with full production', () => {
+      const recipe = createRecipe('Recipe_AluminaSolution_C')
+      const alreadyProduced = {
+        Desc_Water_C: [createRecipeItem(200, 'WaterExtractor')],
+      }
+
+      mockDataStore.recipeIngredients.mockReturnValue([
+        { item: 'Desc_AluminaSolution_C', amount: 60 },
+        { item: 'Desc_Water_C', amount: 120 },
+      ])
+      mockDataStore.recipeProducts.mockReturnValue([
+        { item: 'Desc_AluminaSolution_C', amount: 120 },
+      ])
+
+      const result = getLinksForRecipe(recipe, alreadyProduced)
+
+      expect(result.links).toEqual([
+        {
+          source: 'Recipe_AluminaSolution_C',
+          sink: 'Recipe_AluminaSolution_C',
+          name: 'Desc_AluminaSolution_C',
+          amount: 60,
+        },
+        {
+          source: 'WaterExtractor',
+          sink: 'Recipe_AluminaSolution_C',
+          name: 'Desc_Water_C',
+          amount: 120,
+        },
+      ])
+      expect(result.recipesMissingIngredients).toHaveLength(0)
+      expect(alreadyProduced.Desc_Water_C[0].amount).toBe(80)
+    })
+
+    it('should handle items not fully available', () => {
+      const recipe = createRecipe('Recipe_IronPlateReinforced_C', 'TestBuilding', 5)
+      const alreadyProduced = {
+        Desc_IronPlate_C: [createRecipeItem(20, 'IronPlateRecipe')],
+        Desc_IronRod_C: [createRecipeItem(8, 'IronRodRecipe')],
+      }
+
+      mockDataStore.recipeIngredients.mockReturnValue([
+        { item: 'Desc_IronPlate_C', amount: 30 },
+        { item: 'Desc_IronRod_C', amount: 12 },
+      ])
+      mockDataStore.recipeProducts.mockReturnValue([
+        { item: 'Desc_IronPlateReinforced_C', amount: 5 },
+      ])
+
+      const result = getLinksForRecipe(recipe, alreadyProduced)
+
+      // no links returned when ingredients cannot be satisfied
+      // this ensures more optimal pathing/consumption of resources
+      expect(result.links).toHaveLength(0)
+      expect(result.recipesMissingIngredients).toStrictEqual([
+        {
+          amount: 150,
+          item: 'Desc_IronPlate_C',
+        },
+        {
+          amount: 60,
+          item: 'Desc_IronRod_C',
+        },
+      ])
+    })
+
+    it('should handle single source', () => {
+      const recipe = createRecipe('Recipe_IronPlate_C', 'TestBuilding', 2)
+      const alreadyProduced = {
+        Desc_IronIngot_C: [createRecipeItem(50, 'IronIngotRecipe')],
+      }
+
+      mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_IronIngot_C', amount: 20 }])
+      mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_IronPlate_C', amount: 10 }])
+
+      const result = getLinksForRecipe(recipe, alreadyProduced)
+
+      expect(result.links).toEqual([
+        {
+          source: 'IronIngotRecipe',
+          sink: 'Recipe_IronPlate_C',
+          name: 'Desc_IronIngot_C',
+          amount: 40,
+        },
+      ])
+      expect(result.recipesMissingIngredients).toEqual([])
+      expect(alreadyProduced.Desc_IronIngot_C[0].amount).toBe(10)
+    })
+
+    it('should handle multiple sources', () => {
+      const recipe = createRecipe('Recipe_Cable_C')
+      const alreadyProduced = {
+        Desc_Wire_C: [
+          createRecipeItem(15, 'WireRecipe1'),
+          createRecipeItem(25, 'WireRecipe2'),
+          createRecipeItem(10, 'WireRecipe3'),
+        ],
+      }
+
+      mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_Wire_C', amount: 40 }])
+      mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_Cable_C', amount: 30 }])
+
+      const result = getLinksForRecipe(recipe, alreadyProduced)
+
+      expect(result.links).toEqual([
+        {
+          source: 'WireRecipe3',
+          sink: 'Recipe_Cable_C',
+          name: 'Desc_Wire_C',
+          amount: 10,
+        },
+        {
+          source: 'WireRecipe1',
+          sink: 'Recipe_Cable_C',
+          name: 'Desc_Wire_C',
+          amount: 15,
+        },
+        {
+          source: 'WireRecipe2',
+          sink: 'Recipe_Cable_C',
+          name: 'Desc_Wire_C',
+          amount: 15,
+        },
+      ])
+      expect(result.recipesMissingIngredients).toHaveLength(0)
+      expect(alreadyProduced.Desc_Wire_C[0].amount).toBe(0)
+      expect(alreadyProduced.Desc_Wire_C[1].amount).toBe(10)
+      expect(alreadyProduced.Desc_Wire_C[2].amount).toBe(0)
     })
   })
 })

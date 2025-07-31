@@ -1,4 +1,5 @@
 import { useDataStore } from '@/stores/data'
+import type { RecipeIngredient } from '@/types/data'
 import type { Recipe, Material } from '@/types/factory'
 
 const ZERO_THRESHOLD = 0.1
@@ -40,13 +41,14 @@ interface RecipeItem {
   isResource?: boolean
 }
 
+// TODO: refactor inputs to use RecipeIngredient
 export const pickSource = (
   request: RecipeItem,
   ingredient: string,
   sources: RecipeItem[],
 ): RecipeItem[] => {
   if (sources.length === 0) {
-    throw new Error(`No sources found for ${ingredient} in ${request.recipe.name}`)
+    return []
   }
 
   const sufficientSources = sources
@@ -60,19 +62,20 @@ export const pickSource = (
   }
 
   let quantity = request.amount
+  // consume smallest amounts first, to leave as much as possible for later consumers
   sources = sources.sort((a, b) => a.amount - b.amount)
   const usedSources: RecipeItem[] = []
-  while (quantity > ZERO_THRESHOLD) {
-    const source = sources.shift()
-    if (!source) {
-      break
-    }
+  let sourceIndex = 0
+  while (quantity > ZERO_THRESHOLD && sourceIndex < sources.length) {
+    const source = sources[sourceIndex]
     quantity -= source.amount
     usedSources.push(source)
+    sourceIndex++
   }
 
-  if (quantity > ZERO_THRESHOLD) {
-    throw new Error(`Not enough sources for ${ingredient} in ${request.recipe.name}`)
+  // okay to have a remainder for natural resources
+  if (quantity > ZERO_THRESHOLD && !isNaturalResource(ingredient)) {
+    return []
   }
 
   return usedSources
@@ -161,47 +164,113 @@ export const batchRecipes = (recipes: Recipe[]): Recipe[][] => {
   return batches
 }
 
-export const materialLinksFromRecipes = (recipes: Recipe[]): Material[] => {
-  // TODO: always use your own output as input if possible, e.g. encased uranium fuel cell has sulfuric acid catalyst
+export const getLinksForRecipe = (
+  recipe: Recipe,
+  alreadyProduced: Record<string, RecipeItem[]>,
+): {
+  links: Material[]
+  recipesMissingIngredients: RecipeIngredient[]
+} => {
   const data = useDataStore()
-  const { ingredients, products } = getAllRecipeMaterials(recipes)
-  const batchedRecipes = batchRecipes(recipes)
-
-  // TODO: for each floor, add product recipes and consume ingredients
-  // TODO: if not enough ingredients yet, leave for the next floor since could be produced by higher-tier recipe.
-  // TODO: at end, floors should have all recipes. If not, throw an error.
+  const ingredients = data.recipeIngredients(recipe.name)
+  const products = data.recipeProducts(recipe.name)
 
   const materialLinks: Material[] = []
+  const recipesMissingIngredients: RecipeIngredient[] = []
 
-  // For each item we need to source
-  for (const [ingredient, sinkList] of Object.entries(ingredients)) {
-    const ingredientSources = products[ingredient]
-    // for each recipe requiring the ingredient, try to match to products
-    for (const sink of sinkList) {
-      // If the sink either is an intermediate product or a natural resource that could be sourced from a byproduct
-      if (!sink.isResource || ingredientSources.length > 0) {
-        const sources = pickSource(sink, ingredient, ingredientSources)
-        // TODO: iterate over sources until required amount satisfied
-        // TODO: and update ingredientSources with amount used
-        // TODO: if producer fully consumed, remove from list
-      } else if (sink.isResource) {
-        // For a non-produced raw resource, source from the environment
-        const name = data.items[ingredient].name
+  for (const ingredient of ingredients) {
+    // For catalyst/recursive recipes, always use your own output as an input if possible
+    // The production planner tool should cover the amount needed to bootstrap the catalyst
+    let amount_needed = ingredient.amount * recipe.count
+    const matchingProduct = products.find((product) => product.item === ingredient.item)
+    if (matchingProduct) {
+      const amount_consumed = Math.min(amount_needed, matchingProduct.amount)
+      materialLinks.push({
+        source: recipe.name,
+        sink: recipe.name,
+        name: ingredient.item,
+        amount: amount_consumed,
+      })
+      amount_needed -= amount_consumed
+      matchingProduct.amount -= amount_consumed
+    }
+
+    // rarely, that is enough to cover all the resource you need
+    // (though technically it would need some to jump-start it)
+    if (amount_needed <= ZERO_THRESHOLD) {
+      continue
+    }
+
+    // check if we do not produce this item
+    if (!alreadyProduced[ingredient.item] || alreadyProduced[ingredient.item].length === 0) {
+      // natural resource can be mined, otherwise it's just missing (hopefully for now)
+      if (isNaturalResource(ingredient.item)) {
         materialLinks.push({
-          source: name,
-          sink: sink.recipe.name,
-          name,
-          amount: sink.amount,
+          source: data.items[ingredient.item].name,
+          sink: recipe.name,
+          name: ingredient.item,
+          amount: amount_needed,
         })
       } else {
-        throw new Error(`No sources found for ${ingredient} in ${sink.recipe.name}`)
+        recipesMissingIngredients.push({
+          // okay to set amount needed here since catalyst recipes will always offset that much
+          // otherwise, should use the raw ingredient amount * recipe count
+          amount: amount_needed,
+          item: ingredient.item,
+        })
       }
+      continue
+    }
+
+    // Otherwise, try to find enough from current production
+    const sources = pickSource(
+      { amount: amount_needed, recipe },
+      ingredient.item,
+      alreadyProduced[ingredient.item],
+    )
+
+    for (const source of sources) {
+      const amount = Math.min(source.amount, amount_needed)
+      materialLinks.push({
+        source: source.recipe.name,
+        sink: recipe.name,
+        name: ingredient.item,
+        amount,
+      })
+      amount_needed -= amount
+      source.amount -= amount
+      // should only happen on last source
+      if (amount_needed <= ZERO_THRESHOLD) {
+        break
+      }
+    }
+
+    // if we still need more and it is a natural resource, mine it
+    if (amount_needed > ZERO_THRESHOLD && isNaturalResource(ingredient.item)) {
+      materialLinks.push({
+        source: data.items[ingredient.item].name,
+        sink: recipe.name,
+        name: ingredient.item,
+        amount: amount_needed,
+      })
     }
   }
 
-  // TODO: We also will need a summary of each resource, such that it is easy to find the inputs/outputs for it
-  return materialLinks
+  return {
+    links: materialLinks,
+    recipesMissingIngredients,
+  }
 }
+
+// TODO: remove zero quantity remaining from alreadyProduced
+
+// prompt for whole factory link:
+/*
+Please generate a reasonable number of tests for getLinksForRecipe. This should be a set of something like: simple production chain, more complex
+production chain, production chain with some natural resources, production chain with natural resources (some of which are byproducts from earlier
+recipes), a case where there is not sufficient quantity produced, another case where sufficient quantity might be produced by another recipe, another
+where the recipe has a catalyst (same ingredient output, but lower quantity), and a catalyst where the ingredient output matches its input requirement.
+*/
 
 // TODO: display checkboxes for linked materials (inputs + outputs) and buildings like
 // input 1 -----            ----- output 1
