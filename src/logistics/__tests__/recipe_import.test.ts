@@ -33,13 +33,13 @@ describe('recipe_import', () => {
     })
 
     // item names not checked since it's assumed anything provided will already match the required ingredient
-    const createRequest = (amount: number) => createRecipeItem(amount, 'TestRequest')
+    const createRequest = (amount: number) => ({ amount, item: 'TestIngredient' })
 
     it('should fill request exactly by one source', () => {
       const request = createRequest(10)
       const sources = [createRecipeItem(10, 'Source1')]
 
-      const result = pickSource(request, 'TestIngredient', sources)
+      const result = pickSource(request, sources)
 
       expect(result).toHaveLength(1)
       expect(result[0].amount).toBe(10)
@@ -49,7 +49,7 @@ describe('recipe_import', () => {
       const request = createRequest(5)
       const sources = [createRecipeItem(10, 'Source1')]
 
-      const result = pickSource(request, 'TestIngredient', sources)
+      const result = pickSource(request, sources)
 
       expect(result).toHaveLength(1)
       expect(result[0].amount).toBe(10)
@@ -59,21 +59,21 @@ describe('recipe_import', () => {
       const request = createRequest(10)
       const sources = []
 
-      expect(pickSource(request, 'TestIngredient', sources)).toHaveLength(0)
+      expect(pickSource(request, sources)).toHaveLength(0)
     })
 
     it('should return empty when the only source has insufficient quantity', () => {
       const request = createRequest(10)
       const sources = [createRecipeItem(5, 'Source1')]
 
-      expect(pickSource(request, 'TestIngredient', sources)).toHaveLength(0)
+      expect(pickSource(request, sources)).toHaveLength(0)
     })
 
     it('should return empty when multiple sources have insufficient quantity', () => {
       const request = createRequest(20)
       const sources = [createRecipeItem(5, 'Source1'), createRecipeItem(8, 'Source2')]
 
-      expect(pickSource(request, 'TestIngredient', sources)).toHaveLength(0)
+      expect(pickSource(request, sources)).toHaveLength(0)
     })
 
     it('should return lowest amount when multiple sources have sufficient quantity', () => {
@@ -84,7 +84,7 @@ describe('recipe_import', () => {
         createRecipeItem(20, 'Source3'),
       ]
 
-      const result = pickSource(request, 'TestIngredient', sources)
+      const result = pickSource(request, sources)
 
       expect(result).toHaveLength(1)
       expect(result[0].amount).toBe(12)
@@ -95,7 +95,7 @@ describe('recipe_import', () => {
       const request = createRequest(10)
       const sources = [createRecipeItem(9.95, 'Source1')] // Within 0.1 threshold
 
-      const result = pickSource(request, 'TestIngredient', sources)
+      const result = pickSource(request, sources)
 
       expect(result).toHaveLength(1)
       expect(result[0].amount).toBe(9.95)
@@ -105,7 +105,7 @@ describe('recipe_import', () => {
       const request = createRequest(15)
       const sources = [createRecipeItem(5, 'Source1'), createRecipeItem(10, 'Source2')]
 
-      const result = pickSource(request, 'TestIngredient', sources)
+      const result = pickSource(request, sources)
       expect(result).toHaveLength(2)
     })
 
@@ -118,7 +118,7 @@ describe('recipe_import', () => {
         createRecipeItem(10, 'Source4'),
       ]
 
-      const result = pickSource(request, 'TestIngredient', sources)
+      const result = pickSource(request, sources)
       expect(result).toHaveLength(3)
       expect(result.map((r) => r.recipe.name)).toEqual(['Source1', 'Source3', 'Source2'])
     })
@@ -127,7 +127,7 @@ describe('recipe_import', () => {
       const request = createRequest(10)
       const sources = []
 
-      const result = pickSource(request, 'Desc_OreIron_C', sources)
+      const result = pickSource(request, sources)
 
       expect(result).toHaveLength(0)
     })
@@ -136,7 +136,7 @@ describe('recipe_import', () => {
       const request = createRequest(20)
       const sources = [createRecipeItem(5, 'Source1'), createRecipeItem(8, 'Source2')]
 
-      const result = pickSource(request, 'Desc_OreIron_C', sources)
+      const result = pickSource(request, sources)
 
       expect(result).toHaveLength(2)
       expect(result[0].amount).toBe(5)
@@ -610,7 +610,7 @@ describe('recipe_import', () => {
           amount: 60,
         },
       ])
-      expect(result.recipesMissingIngredients).toStrictEqual([
+      expect(result.recipesMissingIngredients).toEqual([
         {
           amount: 60,
           item: 'Desc_AluminaSolution_C',
@@ -672,7 +672,7 @@ describe('recipe_import', () => {
       // no links returned when ingredients cannot be satisfied
       // this ensures more optimal pathing/consumption of resources
       expect(result.links).toHaveLength(0)
-      expect(result.recipesMissingIngredients).toStrictEqual([
+      expect(result.recipesMissingIngredients).toEqual([
         {
           amount: 150,
           item: 'Desc_IronPlate_C',

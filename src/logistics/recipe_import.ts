@@ -41,12 +41,22 @@ interface RecipeItem {
   isResource?: boolean
 }
 
-// TODO: refactor inputs to use RecipeIngredient
-export const pickSource = (
-  request: RecipeItem,
-  ingredient: string,
-  sources: RecipeItem[],
-): RecipeItem[] => {
+/**
+ * Selects a list of sources to fulfill a given ingredient request.
+ *
+ * This function attempts to find the most suitable sources to fulfill the required
+ * amount of an ingredient, preferring sources with smaller quantities to preserve
+ * larger quantities for future requests. It allows for a small threshold error in
+ * decimal calculations. If the request cannot be fully satisfied by any combination
+ * of sources, it returns an empty array unless the request is for a natural resource,
+ * in which case partial fulfillment is allowed.
+ *
+ * @param request - The requested ingredient with its required amount.
+ * @param sources - An array of available sources with their respective amounts.
+ * @returns An array of sources that collectively fulfill the request, or an empty
+ * array if the request cannot be fulfilled.
+ */
+export const pickSource = (request: RecipeIngredient, sources: RecipeItem[]): RecipeItem[] => {
   if (sources.length === 0) {
     return []
   }
@@ -74,7 +84,7 @@ export const pickSource = (
   }
 
   // okay to have a remainder for natural resources
-  if (quantity > ZERO_THRESHOLD && !isNaturalResource(ingredient)) {
+  if (quantity > ZERO_THRESHOLD && !isNaturalResource(request.item)) {
     return []
   }
 
@@ -119,6 +129,18 @@ export const getAllRecipeMaterials = (
   }
 }
 
+/**
+ * Groups recipes into batches based on their production requirements.
+ *
+ * This function groups recipes into batches based on the items required to produce them.
+ * It first removes any "mined" resources from the list of recipes, as they do not require
+ * a recipe. Then, it groups the remaining recipes into batches, where each batch contains
+ * recipes that can be produced using the same items. The recipes are grouped in the order
+ * of production, with simpler items produced first, followed by more complex items.
+ *
+ * @param recipes - An array of recipes to be grouped into batches.
+ * @returns An array of recipe batches, where each batch is an array of recipes.
+ */
 export const batchRecipes = (recipes: Recipe[]): Recipe[][] => {
   // group recipes by items required to produce
   // e.g. ingots first, then simple items second, complex items afterwards
@@ -164,6 +186,20 @@ export const batchRecipes = (recipes: Recipe[]): Recipe[][] => {
   return batches
 }
 
+/**
+ * Generates links for a given recipe based on its ingredients and products.
+ *
+ * This function generates links for a given recipe by first retrieving the ingredients
+ * and products for the recipe. It then iterates through the ingredients, attempting to
+ * find sources for each ingredient using the pickSource function. If a source is found,
+ * a material link is created and added to the list of material links. If no source is
+ * found, the ingredient is added to the list of recipes missing ingredients.
+ * Natural resources will be added from a raw natural source instead of being considered missing.
+ *
+ * @param recipe - The recipe for which to generate links.
+ * @param alreadyProduced - A record of already produced items and their sources.
+ * @returns An object containing the generated material links and recipes missing ingredients.
+ */
 export const getLinksForRecipe = (
   recipe: Recipe,
   alreadyProduced: Record<string, RecipeItem[]>,
@@ -224,8 +260,7 @@ export const getLinksForRecipe = (
 
     // Otherwise, try to find enough from current production
     const sources = pickSource(
-      { amount: amount_needed, recipe },
-      ingredient.item,
+      { amount: amount_needed, item: ingredient.item },
       alreadyProduced[ingredient.item],
     )
 
@@ -260,6 +295,10 @@ export const getLinksForRecipe = (
     links: materialLinks,
     recipesMissingIngredients,
   }
+}
+
+export const linkRecipes = (recipes: Recipe[]): Material[] => {
+  return []
 }
 
 // TODO: remove zero quantity remaining from alreadyProduced
