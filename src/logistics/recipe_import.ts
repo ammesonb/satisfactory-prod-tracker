@@ -242,7 +242,7 @@ export const getLinksForRecipe = (
       // natural resource can be mined, otherwise it's just missing (hopefully for now)
       if (isNaturalResource(ingredient.item)) {
         materialLinks.push({
-          source: data.items[ingredient.item].name,
+          source: ingredient.item,
           sink: recipe.name,
           name: ingredient.item,
           amount: amount_needed,
@@ -256,6 +256,29 @@ export const getLinksForRecipe = (
         })
       }
       continue
+    } else if (
+      amount_needed >
+        alreadyProduced[ingredient.item].reduce((acc, item) => acc + item.amount, 0) &&
+      !isNaturalResource(ingredient.item)
+    ) {
+      // If we do not have enough of this ingredient, mark the full quantity as missing to ensure:
+      // 1. We do not try to use products that cannot be fully produced
+      // 2. We do not use up resources other recipes might need
+      //
+      // NOTE: if two recipes are co-dependent, this may result in the whole loop failing
+      // however, this seems improbable as such a recipe likely would lead to infinite resource production
+      // e.g. catalyst with net-positive gain:
+      // put in 10 plastic, gain 20 rubber, take 10 rubber, gain 20 plastic - infinite plastic/rubber for no additional cost
+      //
+      // plus, satisfactory tools usually covers the bootstrap amount from an external source anyways which due to the tiering
+      // of the batching function, should be included first regardless.
+      //
+      // Natural resources will always be available in the wild, so do not mark them as missing
+
+      recipesMissingIngredients.push({
+        amount: amount_needed,
+        item: ingredient.item,
+      })
     }
 
     // Otherwise, try to find enough from current production
@@ -283,7 +306,7 @@ export const getLinksForRecipe = (
     // if we still need more and it is a natural resource, mine it
     if (amount_needed > ZERO_THRESHOLD && isNaturalResource(ingredient.item)) {
       materialLinks.push({
-        source: data.items[ingredient.item].name,
+        source: ingredient.item,
         sink: recipe.name,
         name: ingredient.item,
         amount: amount_needed,

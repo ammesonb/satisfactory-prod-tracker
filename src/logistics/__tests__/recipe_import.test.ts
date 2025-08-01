@@ -133,7 +133,7 @@ describe('recipe_import', () => {
     })
 
     it('should allow remainder for natural resource with insufficient sources', () => {
-      const request = createRequest(20)
+      const request = { amount: 20, item: 'Desc_OreIron_C' }
       const sources = [createRecipeItem(5, 'Source1'), createRecipeItem(8, 'Source2')]
 
       const result = pickSource(request, sources)
@@ -515,7 +515,7 @@ describe('recipe_import', () => {
 
       expect(result.links).toEqual([
         {
-          source: 'Iron Ore',
+          source: 'Desc_OreIron_C',
           sink: 'Recipe_IronIngot_C',
           name: 'Desc_OreIron_C',
           amount: 30,
@@ -543,7 +543,7 @@ describe('recipe_import', () => {
           amount: 15,
         },
         {
-          source: 'Iron Ore',
+          source: 'Desc_OreIron_C',
           sink: 'Recipe_IronIngot_C',
           name: 'Desc_OreIron_C',
           amount: 15,
@@ -604,7 +604,7 @@ describe('recipe_import', () => {
           amount: 60,
         },
         {
-          source: 'Water',
+          source: 'Desc_Water_C',
           sink: 'Recipe_AluminaSolution_C',
           name: 'Desc_Water_C',
           amount: 60,
@@ -669,9 +669,7 @@ describe('recipe_import', () => {
 
       const result = getLinksForRecipe(recipe, alreadyProduced)
 
-      // no links returned when ingredients cannot be satisfied
-      // this ensures more optimal pathing/consumption of resources
-      expect(result.links).toHaveLength(0)
+      expect(result.links).toEqual([])
       expect(result.recipesMissingIngredients).toEqual([
         {
           amount: 150,
@@ -682,6 +680,8 @@ describe('recipe_import', () => {
           item: 'Desc_IronRod_C',
         },
       ])
+      expect(alreadyProduced.Desc_IronPlate_C[0].amount).toBe(20)
+      expect(alreadyProduced.Desc_IronRod_C[0].amount).toBe(8)
     })
 
     it('should handle single source', () => {
@@ -744,7 +744,7 @@ describe('recipe_import', () => {
       ])
       expect(result.recipesMissingIngredients).toHaveLength(0)
       expect(alreadyProduced.Desc_Wire_C[0].amount).toBe(0)
-      expect(alreadyProduced.Desc_Wire_C[1].amount).toBe(10)
+      expect(alreadyProduced.Desc_Wire_C[1].amount).toBe(0)
       expect(alreadyProduced.Desc_Wire_C[2].amount).toBe(0)
     })
   })
