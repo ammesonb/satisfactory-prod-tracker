@@ -1,6 +1,6 @@
 import { useDataStore } from '@/stores/data'
 import type { RecipeIngredient } from '@/types/data'
-import type { Recipe, Material } from '@/types/factory'
+import type { Recipe, Material as RecipeLink } from '@/types/factory'
 
 const ZERO_THRESHOLD = 0.1
 
@@ -203,16 +203,12 @@ export const batchRecipes = (recipes: Recipe[]): Recipe[][] => {
 export const getLinksForRecipe = (
   recipe: Recipe,
   alreadyProduced: Record<string, RecipeItem[]>,
-): {
-  links: Material[]
-  recipesMissingIngredients: RecipeIngredient[]
-} => {
+): RecipeLink[] => {
   const data = useDataStore()
   const ingredients = data.recipeIngredients(recipe.name)
   const products = data.recipeProducts(recipe.name)
 
-  const materialLinks: Material[] = []
-  const recipesMissingIngredients: RecipeIngredient[] = []
+  const materialLinks: RecipeLink[] = []
 
   for (const ingredient of ingredients) {
     // For catalyst/recursive recipes, always use your own output as an input if possible
@@ -248,12 +244,7 @@ export const getLinksForRecipe = (
           amount: amount_needed,
         })
       } else {
-        recipesMissingIngredients.push({
-          // okay to set amount needed here since catalyst recipes will always offset that much
-          // otherwise, should use the raw ingredient amount * recipe count
-          amount: amount_needed,
-          item: ingredient.item,
-        })
+        return []
       }
       continue
     } else if (
@@ -275,10 +266,7 @@ export const getLinksForRecipe = (
       //
       // Natural resources will always be available in the wild, so do not mark them as missing
 
-      recipesMissingIngredients.push({
-        amount: amount_needed,
-        item: ingredient.item,
-      })
+      return []
     }
 
     // Otherwise, try to find enough from current production
@@ -314,17 +302,56 @@ export const getLinksForRecipe = (
     }
   }
 
-  return {
-    links: materialLinks,
-    recipesMissingIngredients,
+  return materialLinks
+}
+
+export const linkRecipes = (
+  rawRecipes: string[],
+): {
+  recipeBatches: Recipe[][]
+  recipeLinks: RecipeLink[]
+} => {
+  const recipes = rawRecipes.map(stringToRecipe)
+  const batches = batchRecipes(recipes)
+
+  const producedItems: Record<string, RecipeItem[]> = {}
+  const groupedRecipes: Recipe[][] = []
+  let batchIdx = 0
+  const recipeLinks: RecipeLink[] = []
+  // for each batch of recipes we can produce, create a "floor" mapping them to the materials they need
+  while (batchIdx < batches.length) {
+    // add a new floor of reipces
+    groupedRecipes.push([])
+    for (const recipe of batches[batchIdx]) {
+      // try to find links for each of the ingredients the recipe needs
+      const links = getLinksForRecipe(recipe, producedItems)
+      recipeLinks.push(...links)
+
+      // if ingredients not produced right now, check at END of next batch to see if the missing products are now available
+      if (links.length === 0) {
+        // if no more batches after this one, then we will never be able to produce this recipe
+        // NOTE: since batching should have handled dependencies, if we need a product from this batch as an ingredient,
+        // this recipe should then have been pushed to a new batch of its own
+        if (batchIdx + 1 >= batches.length) {
+          throw new Error('Not enough resources to produce ' + recipe.name)
+        }
+        batches[batchIdx + 1].push(recipe)
+      } else {
+        // Otherwise, we produced this recipe successfully so add it to this floor
+        groupedRecipes[batchIdx].push(recipe)
+      }
+    }
+
+    // filter out any sources that have been fully consumed
+    Object.entries(producedItems).forEach(([item, sources]) => {
+      producedItems[item] = sources.filter((source) => source.amount >= ZERO_THRESHOLD)
+    })
+    // next floor
+    batchIdx++
   }
-}
 
-export const linkRecipes = (recipes: Recipe[]): Material[] => {
-  return []
+  return { recipeBatches: groupedRecipes, recipeLinks }
 }
-
-// TODO: remove zero quantity remaining from alreadyProduced
 
 // prompt for whole factory link:
 /*

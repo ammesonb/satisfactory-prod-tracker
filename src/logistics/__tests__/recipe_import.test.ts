@@ -513,7 +513,7 @@ describe('recipe_import', () => {
 
       const result = getLinksForRecipe(recipe, alreadyProduced)
 
-      expect(result.links).toEqual([
+      expect(result).toEqual([
         {
           source: 'Desc_OreIron_C',
           sink: 'Recipe_IronIngot_C',
@@ -521,7 +521,6 @@ describe('recipe_import', () => {
           amount: 30,
         },
       ])
-      expect(result.recipesMissingIngredients).toEqual([])
     })
 
     it('should handle natural resource partially produced', () => {
@@ -535,7 +534,7 @@ describe('recipe_import', () => {
 
       const result = getLinksForRecipe(recipe, alreadyProduced)
 
-      expect(result.links).toEqual([
+      expect(result).toEqual([
         {
           source: 'MiningRecipe',
           sink: 'Recipe_IronIngot_C',
@@ -549,7 +548,6 @@ describe('recipe_import', () => {
           amount: 15,
         },
       ])
-      expect(result.recipesMissingIngredients).toEqual([])
       expect(alreadyProduced.Desc_OreIron_C[0].amount).toBe(0)
     })
 
@@ -564,7 +562,7 @@ describe('recipe_import', () => {
 
       const result = getLinksForRecipe(recipe, alreadyProduced)
 
-      expect(result.links).toEqual([
+      expect(result).toEqual([
         {
           source: 'MiningRecipe',
           sink: 'Recipe_IronIngot_C',
@@ -572,7 +570,6 @@ describe('recipe_import', () => {
           amount: 30,
         },
       ])
-      expect(result.recipesMissingIngredients).toEqual([])
       expect(alreadyProduced.Desc_OreIron_C[0].amount).toBe(20)
     })
 
@@ -590,7 +587,8 @@ describe('recipe_import', () => {
 
       const result = getLinksForRecipe(recipe, alreadyProduced)
 
-      expect(result.links).toEqual([
+      expect(result).toEqual([
+        /* used to be the list of available resources, changed to empty since if insufficient no point claiming resources
         {
           source: 'Recipe_AluminaSolution_C',
           sink: 'Recipe_AluminaSolution_C',
@@ -609,13 +607,10 @@ describe('recipe_import', () => {
           name: 'Desc_Water_C',
           amount: 60,
         },
+        */
       ])
-      expect(result.recipesMissingIngredients).toEqual([
-        {
-          amount: 60,
-          item: 'Desc_AluminaSolution_C',
-        },
-      ])
+      // should not consume any resources
+      expect(alreadyProduced.Desc_Water_C[0].amount).toBe(60)
     })
 
     it('should handle catalyst with full production', () => {
@@ -634,7 +629,7 @@ describe('recipe_import', () => {
 
       const result = getLinksForRecipe(recipe, alreadyProduced)
 
-      expect(result.links).toEqual([
+      expect(result).toEqual([
         {
           source: 'Recipe_AluminaSolution_C',
           sink: 'Recipe_AluminaSolution_C',
@@ -648,7 +643,6 @@ describe('recipe_import', () => {
           amount: 120,
         },
       ])
-      expect(result.recipesMissingIngredients).toHaveLength(0)
       expect(alreadyProduced.Desc_Water_C[0].amount).toBe(80)
     })
 
@@ -669,17 +663,7 @@ describe('recipe_import', () => {
 
       const result = getLinksForRecipe(recipe, alreadyProduced)
 
-      expect(result.links).toEqual([])
-      expect(result.recipesMissingIngredients).toEqual([
-        {
-          amount: 150,
-          item: 'Desc_IronPlate_C',
-        },
-        {
-          amount: 60,
-          item: 'Desc_IronRod_C',
-        },
-      ])
+      expect(result).toEqual([])
       expect(alreadyProduced.Desc_IronPlate_C[0].amount).toBe(20)
       expect(alreadyProduced.Desc_IronRod_C[0].amount).toBe(8)
     })
@@ -695,7 +679,7 @@ describe('recipe_import', () => {
 
       const result = getLinksForRecipe(recipe, alreadyProduced)
 
-      expect(result.links).toEqual([
+      expect(result).toEqual([
         {
           source: 'IronIngotRecipe',
           sink: 'Recipe_IronPlate_C',
@@ -703,7 +687,6 @@ describe('recipe_import', () => {
           amount: 40,
         },
       ])
-      expect(result.recipesMissingIngredients).toEqual([])
       expect(alreadyProduced.Desc_IronIngot_C[0].amount).toBe(10)
     })
 
@@ -722,7 +705,7 @@ describe('recipe_import', () => {
 
       const result = getLinksForRecipe(recipe, alreadyProduced)
 
-      expect(result.links).toEqual([
+      expect(result).toEqual([
         {
           source: 'WireRecipe3',
           sink: 'Recipe_Cable_C',
@@ -742,10 +725,12 @@ describe('recipe_import', () => {
           amount: 15,
         },
       ])
-      expect(result.recipesMissingIngredients).toHaveLength(0)
-      expect(alreadyProduced.Desc_Wire_C[0].amount).toBe(0)
-      expect(alreadyProduced.Desc_Wire_C[1].amount).toBe(0)
-      expect(alreadyProduced.Desc_Wire_C[2].amount).toBe(0)
+      // production gets sorted by quantity
+      expect(alreadyProduced.Desc_Wire_C).toEqual([
+        createRecipeItem(0, 'WireRecipe3'),
+        createRecipeItem(0, 'WireRecipe1'),
+        createRecipeItem(10, 'WireRecipe2'),
+      ])
     })
   })
 })
