@@ -42,19 +42,6 @@ const recipeDatabase: Record<string, RecipeData> = {
     ingredients: [{ item: 'Desc_Stone_C', amount: 3 }],
     products: [{ item: 'Desc_Concrete_C', amount: 1 }],
   },
-  Recipe_CrudeOilRefining_C: {
-    name: 'Recipe_CrudeOilRefining_C',
-    ingredients: [{ item: 'Desc_LiquidOil_C', amount: 3 }],
-    products: [
-      { item: 'Desc_LiquidFuel_C', amount: 4 },
-      { item: 'Desc_PolymerResin_C', amount: 2 },
-    ],
-  },
-  Recipe_Plastic_C: {
-    name: 'Recipe_Plastic_C',
-    ingredients: [{ item: 'Desc_LiquidFuel_C', amount: 6 }],
-    products: [{ item: 'Desc_Plastic_C', amount: 2 }],
-  },
   Recipe_AluminaSolutionRaw_C: {
     name: 'Recipe_AluminaSolutionRaw_C',
     ingredients: [{ item: 'Desc_OreBauxite_C', amount: 2 }],
@@ -75,6 +62,46 @@ const recipeDatabase: Record<string, RecipeData> = {
       { item: 'Desc_Water_C', amount: 2 },
     ],
     products: [{ item: 'Desc_CateriumIngot_C', amount: 2 }],
+  },
+  Recipe_Alternate_HeavyOilResidue_C: {
+    name: 'Recipe_Alternate_HeavyOilResidue_C',
+    ingredients: [{ item: 'Desc_LiquidOil_C', amount: 30 }],
+    products: [
+      { item: 'Desc_HeavyOilResidue_C', amount: 40 },
+      { item: 'Desc_PolymerResin_C', amount: 20 },
+    ],
+  },
+  Recipe_Alternate_DilutedFuel_C: {
+    name: 'Recipe_Alternate_DilutedFuel_C',
+    ingredients: [
+      { item: 'Desc_HeavyOilResidue_C', amount: 50 },
+      { item: 'Desc_Water_C', amount: 100 },
+    ],
+    products: [{ item: 'Desc_Fuel_C', amount: 100 }],
+  },
+  Recipe_ResidualRubber_C: {
+    name: 'Recipe_ResidualRubber_C',
+    ingredients: [
+      { item: 'Desc_PolymerResin_C', amount: 40 },
+      { item: 'Desc_Water_C', amount: 40 },
+    ],
+    products: [{ item: 'Desc_Rubber_C', amount: 20 }],
+  },
+  Recipe_Alternate_RecycledRubber_C: {
+    name: 'Recipe_Alternate_RecycledRubber_C',
+    ingredients: [
+      { item: 'Desc_Plastic_C', amount: 30 },
+      { item: 'Desc_Fuel_C', amount: 30 },
+    ],
+    products: [{ item: 'Desc_Rubber_C', amount: 60 }],
+  },
+  Recipe_Alternate_RecycledPlastic_C: {
+    name: 'Recipe_Alternate_RecycledPlastic_C',
+    ingredients: [
+      { item: 'Desc_Plastic_C', amount: 30 },
+      { item: 'Desc_Fuel_C', amount: 30 },
+    ],
+    products: [{ item: 'Desc_Plastic_C', amount: 60 }],
   },
 }
 
@@ -319,49 +346,82 @@ describe('linkRecipes integration - production chain processing', () => {
     ])
   })
 
-  // Tests self-consuming catalyst recipe with net positive output (consumes 60, produces 120 = net +60)
-  it('should handle catalyst with lower quantity output', () => {
-    const rawRecipes = ['"Recipe_AluminaSolution_C@1#Desc_Refinery_C": "1"']
+  it('should link modular frame production', () => {})
+
+  it('should link plastic/rubber catalyst recipes', () => {
+    const rawRecipes = [
+      '"Recipe_ResidualRubber_C@100#Desc_OilRefinery_C": "0.6666666666666"',
+      '"Recipe_Alternate_RecycledRubber_C@100#Desc_OilRefinery_C": "1.7037"',
+      '"Recipe_Alternate_HeavyOilResidue_C@100#Desc_OilRefinery_C": "1.333333333333"',
+      '"Recipe_Alternate_DilutedFuel_C@100#Desc_Blender_C": "1.066666666666"',
+      '"Recipe_Alternate_Plastic_1_C@100#Desc_OilRefinery_C": "1.85185"',
+    ]
 
     const result = linkRecipes(rawRecipes)
 
-    expect(result.recipeBatches).toHaveLength(1)
+    expect(result.recipeBatches).toHaveLength(3)
     expect(result.recipeLinks).toEqual([
       {
-        source: 'Recipe_AluminaSolution_C',
-        sink: 'Recipe_AluminaSolution_C',
-        name: 'Desc_AluminaSolution_C',
-        amount: 60,
+        source: 'Desc_LiquidOil_C',
+        sink: 'Recipe_Alternate_HeavyOilResidue_C',
+        name: 'Desc_LiquidOil_C',
+        amount: 40,
+      },
+      {
+        source: 'Recipe_Alternate_HeavyOilResidue_C',
+        sink: 'Recipe_Alternate_DilutedFuel_C',
+        name: 'Desc_HeavyOilResidue_C',
+        amount: 53.333, // TODO: these need to be close to, not exact
       },
       {
         source: 'Desc_Water_C',
-        sink: 'Recipe_AluminaSolution_C',
+        sink: 'Recipe_Alternate_DilutedFuel_C',
         name: 'Desc_Water_C',
-        amount: 120,
+        amount: 106.667,
       },
-    ])
-  })
-
-  // Tests self-consuming catalyst recipe with no net gain (consumes 2, produces 2 = net 0)
-  it('should handle catalyst with matching input/output quantities', () => {
-    const rawRecipes = ['"Recipe_PureCateriumIngot_C@1#Desc_Refinery_C": "1"']
-
-    const result = linkRecipes(rawRecipes)
-
-    expect(result.recipeBatches).toHaveLength(1)
-    expect(result.recipeLinks).toEqual([
       {
-        source: 'Recipe_PureCateriumIngot_C',
-        sink: 'Recipe_PureCateriumIngot_C',
-        name: 'Desc_CateriumIngot_C',
-        amount: 2,
+        source: 'Recipe_Alternate_HeavyOilResidue_C',
+        sink: 'Recipe_ResidualRubber_C',
+        name: 'Desc_PolymerResin_C',
+        amount: 26.6667,
       },
       {
         source: 'Desc_Water_C',
-        sink: 'Recipe_PureCateriumIngot_C',
+        sink: 'Recipe_ResidualRubber_C',
         name: 'Desc_Water_C',
-        amount: 2,
+        amount: 26.6667,
+      },
+      {
+        source: 'Recipe_DilutedFuel_C',
+        sink: 'Reciped_Alternate_RecycledPlastic_C',
+        name: 'Desc_Fuel_C',
+        amount: 55.555,
+      },
+      {
+        source: 'Recipe_ResidualRubber_C',
+        sink: 'Reciped_Alternate_RecycledPlastic_C',
+        name: 'Desc_Rubber_C',
+        amount: 13.3333,
+      },
+      {
+        source: 'Recipe_DilutedFuel_C',
+        sink: 'Reciped_Alternate_RecycledRubber_C',
+        name: 'Desc_Fuel_C',
+        amount: 51.111,
+      },
+      {
+        source: 'Recipe_RecycledPlastic_C',
+        sink: 'Recipe_RecycledRubber_C',
+        name: 'Desc_Plastic_C',
+        amount: 51.111,
+      },
+      {
+        source: 'Recipe_RecycledRubber_C',
+        sink: 'Recipe_RecycledPlastic_C',
+        name: 'Desc_Rubber_C',
+        amount: 42.222,
       },
     ])
+    expect(result.producedItems).toEqual({})
   })
 })

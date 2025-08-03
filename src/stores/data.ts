@@ -18,10 +18,24 @@ export const useDataStore = defineStore('data', {
       this.buildings[building.name] = building
     },
     recipeIngredients(recipeName: string): RecipeIngredient[] {
-      return this.recipes[recipeName].ingredients
+      const recipe = this.recipes[recipeName]
+      return recipe.ingredients.map((ingredient) => {
+        return {
+          item: ingredient.item,
+          // scale amount by craft count / min
+          amount: ingredient.amount * (60 / recipe.time),
+        }
+      })
     },
     recipeProducts(recipeName: string): RecipeProduct[] {
-      return this.recipes[recipeName].products
+      const recipe = this.recipes[recipeName]
+      return recipe.products.map((product) => {
+        return {
+          item: product.item,
+          // scale amount by craft count / min
+          amount: product.amount * (60 / recipe.time),
+        }
+      })
     },
     getIcon(objectName: string): string {
       if (this.recipes.hasOwnProperty(objectName)) {
@@ -38,6 +52,15 @@ export const useDataStore = defineStore('data', {
       }
 
       return ''
+    },
+    loadData() {
+      fetch('data.json')
+        .then((response) => response.json())
+        .then((data) => {
+          this.items = data.items
+          this.recipes = data.recipes
+          this.buildings = data.buildings
+        })
     },
   },
 })
