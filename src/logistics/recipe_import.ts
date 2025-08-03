@@ -117,7 +117,8 @@ export const batchRecipes = (recipes: Recipe[]): Recipe[][] => {
   while (remainingRecipes.length > 0) {
     if (lastLength === remainingRecipes.length) {
       throw new Error(
-        'Batching recipes failed, missing ingredients for ' + remainingRecipes.join(', '),
+        'Batching recipes failed, missing ingredients for ' +
+          remainingRecipes.map((r) => r.name).join(', '),
       )
     }
     lastLength = remainingRecipes.length
@@ -276,7 +277,10 @@ export const linkRecipes = (
 ): {
   recipeBatches: Recipe[][]
   recipeLinks: RecipeLink[]
+  producedItems: Record<string, RecipeItem[]>
 } => {
+  const data = useDataStore()
+
   const recipes = rawRecipes.map(stringToRecipe)
   const batches = batchRecipes(recipes)
 
@@ -312,11 +316,35 @@ export const linkRecipes = (
     Object.entries(producedItems).forEach(([item, sources]) => {
       producedItems[item] = sources.filter((source) => source.amount >= ZERO_THRESHOLD)
     })
+    Object.entries(producedItems).forEach(([item, sources]) => {
+      if (sources.length === 0) {
+        delete producedItems[item]
+      }
+    })
+
+    groupedRecipes[batchIdx].forEach((recipe) => {
+      data.recipeProducts(recipe.name).forEach((product) => {
+        producedItems[product.item] =
+          // only include produced item with qty > 0
+          // qty 0 should really only ever happen on catalysts
+          product.amount > 0
+            ? [
+                ...(producedItems[product.item] || []),
+                {
+                  amount: product.amount * recipe.count,
+                  recipe,
+                  isResource: false,
+                },
+              ]
+            : producedItems[product.item]
+      })
+    })
+
     // next floor
     batchIdx++
   }
 
-  return { recipeBatches: groupedRecipes, recipeLinks }
+  return { recipeBatches: groupedRecipes, recipeLinks, producedItems }
 }
 
 // prompt for whole factory link:

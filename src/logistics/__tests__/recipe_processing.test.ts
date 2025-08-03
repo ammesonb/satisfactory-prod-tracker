@@ -55,18 +55,23 @@ const recipeDatabase: Record<string, RecipeData> = {
     ingredients: [{ item: 'Desc_LiquidFuel_C', amount: 6 }],
     products: [{ item: 'Desc_Plastic_C', amount: 2 }],
   },
+  Recipe_AluminaSolutionRaw_C: {
+    name: 'Recipe_AluminaSolutionRaw_C',
+    ingredients: [{ item: 'Desc_OreBauxite_C', amount: 2 }],
+    products: [{ item: 'Desc_AluminaSolution_C', amount: 30 }],
+  },
   Recipe_AluminaSolution_C: {
     name: 'Recipe_AluminaSolution_C',
-    ingredients: [
+    ingredients: [{ item: 'Desc_AluminaSolution_C', amount: 120 }],
+    products: [
       { item: 'Desc_AluminaSolution_C', amount: 60 },
       { item: 'Desc_Water_C', amount: 120 },
     ],
-    products: [{ item: 'Desc_AluminaSolution_C', amount: 120 }],
   },
   Recipe_PureCateriumIngot_C: {
     name: 'Recipe_PureCateriumIngot_C',
     ingredients: [
-      { item: 'Desc_CateriumIngot_C', amount: 2 },
+      { item: 'Desc_OreGold_C', amount: 2 },
       { item: 'Desc_Water_C', amount: 2 },
     ],
     products: [{ item: 'Desc_CateriumIngot_C', amount: 2 }],
@@ -119,7 +124,7 @@ describe('linkRecipes integration - production chain processing', () => {
         source: 'Desc_OreIron_C',
         sink: 'Recipe_IronIngot_C',
         name: 'Desc_OreIron_C',
-        amount: 2,
+        amount: 3,
       },
       {
         source: 'Recipe_IronIngot_C',
@@ -134,8 +139,8 @@ describe('linkRecipes integration - production chain processing', () => {
   it('should handle complex production chain', () => {
     const rawRecipes = [
       '"Recipe_IronIngot_C@1#Desc_SmelterMk1_C": "1"',
-      '"Recipe_CopperIngot_C@1#Desc_SmelterMk1_C": "1"',
-      '"Recipe_Wire_C@1#Desc_ConstructorMk1_C": "1"',
+      '"Recipe_CopperIngot_C@1#Desc_SmelterMk1_C": "4"',
+      '"Recipe_Wire_C@1#Desc_ConstructorMk1_C": "2"',
       '"Recipe_Cable_C@1#Desc_ConstructorMk1_C": "1"',
     ]
 
@@ -153,13 +158,13 @@ describe('linkRecipes integration - production chain processing', () => {
         source: 'Desc_OreCopper_C',
         sink: 'Recipe_CopperIngot_C',
         name: 'Desc_OreCopper_C',
-        amount: 1,
+        amount: 4,
       },
       {
         source: 'Recipe_CopperIngot_C',
         sink: 'Recipe_Wire_C',
         name: 'Desc_CopperIngot_C',
-        amount: 2,
+        amount: 4,
       },
       {
         source: 'Recipe_Wire_C',
@@ -168,6 +173,22 @@ describe('linkRecipes integration - production chain processing', () => {
         amount: 2,
       },
     ])
+    expect(result.producedItems).toEqual({
+      Desc_IronIngot_C: [
+        {
+          amount: 1,
+          recipe: expect.objectContaining({ name: 'Recipe_IronIngot_C' }),
+          isResource: false,
+        },
+      ],
+      Desc_Cable_C: [
+        {
+          amount: 1,
+          recipe: expect.objectContaining({ name: 'Recipe_Cable_C' }),
+          isResource: false,
+        },
+      ],
+    })
   })
 
   // Tests parallel production from natural resources (both recipes can run in same batch)
@@ -199,27 +220,65 @@ describe('linkRecipes integration - production chain processing', () => {
   // Tests oil refining producing multiple byproducts, one used by subsequent recipe
   it('should handle natural resources as byproducts', () => {
     const rawRecipes = [
-      '"Recipe_CrudeOilRefining_C@1#Desc_OilRefinery_C": "1"',
-      '"Recipe_Plastic_C@1#Desc_Refinery_C": "1"',
+      '"Recipe_AluminaSolutionRaw_C@1#Desc_Refinery_C": "2"',
+      '"Recipe_AluminaSolution_C@1#Desc_Refinery_C": "1"',
+      '"Recipe_PureCateriumIngot_C@1#Desc_Refinery_C": "1"',
     ]
 
     const result = linkRecipes(rawRecipes)
 
     expect(result.recipeBatches).toHaveLength(2)
     expect(result.recipeLinks).toEqual([
+      // raw first
       {
-        source: 'Desc_LiquidOil_C',
-        sink: 'Recipe_CrudeOilRefining_C',
-        name: 'Desc_LiquidOil_C',
-        amount: 3,
+        source: 'Desc_OreBauxite_C',
+        sink: 'Recipe_AluminaSolutionRaw_C',
+        name: 'Desc_OreBauxite_C',
+        amount: 4,
       },
       {
-        source: 'Recipe_CrudeOilRefining_C',
-        sink: 'Recipe_Plastic_C',
-        name: 'Desc_LiquidFuel_C',
-        amount: 6,
+        source: 'Desc_OreGold_C',
+        sink: 'Recipe_PureCateriumIngot_C',
+        name: 'Desc_OreGold_C',
+        amount: 2,
+      },
+      // then refined products
+      {
+        source: 'Desc_Water_C',
+        sink: 'Recipe_PureCateriumIngot_C',
+        name: 'Desc_Water_C',
+        amount: 2,
+      },
+      // catalyst before external product
+      {
+        source: 'Recipe_AluminaSolution_C',
+        sink: 'Recipe_AluminaSolution_C',
+        name: 'Desc_AluminaSolution_C',
+        amount: 60,
+      },
+      {
+        source: 'Recipe_AluminaSolutionRaw_C',
+        sink: 'Recipe_AluminaSolution_C',
+        name: 'Desc_AluminaSolution_C',
+        amount: 60,
       },
     ])
+    expect(result.producedItems).toEqual({
+      Desc_CateriumIngot_C: [
+        {
+          amount: 2,
+          recipe: expect.objectContaining({ name: 'Recipe_PureCateriumIngot_C' }),
+          isResource: false,
+        },
+      ],
+      Desc_Water_C: [
+        {
+          amount: 120,
+          recipe: expect.objectContaining({ name: 'Recipe_AluminaSolution_C' }),
+          isResource: false,
+        },
+      ],
+    })
   })
 
   // Tests insufficient production: 1 iron ingot produced, but 6 needed for 2 iron plate recipes
