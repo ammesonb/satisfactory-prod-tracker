@@ -3,7 +3,6 @@ import {
   stringToRecipe,
   isNaturalResource,
   pickSource,
-  getAllRecipeMaterials,
   batchRecipes,
   getLinksForRecipe,
 } from '../recipe_import'
@@ -142,115 +141,6 @@ describe('recipe_import', () => {
       expect(result[0].amount).toBe(5)
       expect(result[1].amount).toBe(8)
       // Total is 13, which is less than requested 20, but should not throw for natural resources
-    })
-  })
-
-  describe('getAllRecipeMaterials', () => {
-    let mockDataStore: ReturnType<typeof useDataStore>
-
-    beforeEach(() => {
-      mockDataStore = {
-        recipeIngredients: vi.fn(),
-        recipeProducts: vi.fn(),
-      }
-      vi.mocked(useDataStore).mockReturnValue(mockDataStore)
-    })
-
-    it('should return ingredients and products for recipes', () => {
-      const recipes = [
-        { name: 'Recipe_IronIngot_C', building: 'Desc_SmelterMk1_C', count: 2 },
-        { name: 'Recipe_IronPlateReinforced_C', building: 'Desc_ConstructorMk1_C', count: 1 },
-      ]
-
-      mockDataStore.recipeIngredients
-        .mockReturnValueOnce([{ item: 'Desc_OreIron_C', amount: 1 }])
-        .mockReturnValueOnce([{ item: 'Desc_IronIngot_C', amount: 3 }])
-
-      mockDataStore.recipeProducts
-        .mockReturnValueOnce([{ item: 'Desc_IronIngot_C', amount: 1 }])
-        .mockReturnValueOnce([{ item: 'Desc_IronPlate_C', amount: 1 }])
-
-      const result = getAllRecipeMaterials(recipes)
-
-      expect(result.ingredients).toEqual({
-        Desc_OreIron_C: [
-          {
-            amount: 1,
-            recipe: { name: 'Recipe_IronIngot_C', building: 'Desc_SmelterMk1_C', count: 2 },
-            isResource: true,
-          },
-        ],
-        Desc_IronIngot_C: [
-          {
-            amount: 3,
-            recipe: {
-              name: 'Recipe_IronPlateReinforced_C',
-              building: 'Desc_ConstructorMk1_C',
-              count: 1,
-            },
-            isResource: false,
-          },
-        ],
-      })
-
-      expect(result.products).toEqual({
-        Desc_IronIngot_C: [
-          {
-            amount: 2,
-            recipe: { name: 'Recipe_IronIngot_C', building: 'Desc_SmelterMk1_C', count: 2 },
-            isResource: false,
-          },
-        ],
-        Desc_IronPlate_C: [
-          {
-            amount: 1,
-            recipe: {
-              name: 'Recipe_IronPlateReinforced_C',
-              building: 'Desc_ConstructorMk1_C',
-              count: 1,
-            },
-            isResource: false,
-          },
-        ],
-      })
-    })
-
-    it('should handle multiple recipes producing the same ingredient', () => {
-      const recipes = [
-        { name: 'Recipe_IronIngot_C', building: 'Desc_SmelterMk1_C', count: 1 },
-        { name: 'Recipe_IronIngot_Alt_C', building: 'Desc_FoundryMk1_C', count: 1 },
-      ]
-
-      mockDataStore.recipeIngredients
-        .mockReturnValueOnce([{ item: 'Desc_OreIron_C', amount: 1 }])
-        .mockReturnValueOnce([{ item: 'Desc_OreIron_C', amount: 2 }])
-
-      mockDataStore.recipeProducts
-        .mockReturnValueOnce([{ item: 'Desc_IronIngot_C', amount: 1 }])
-        .mockReturnValueOnce([{ item: 'Desc_IronIngot_C', amount: 2 }])
-
-      const result = getAllRecipeMaterials(recipes)
-
-      expect(result.ingredients.Desc_OreIron_C).toHaveLength(2)
-      expect(result.products.Desc_IronIngot_C).toHaveLength(2)
-    })
-
-    it('should calculate product amounts based on recipe count', () => {
-      const recipes = [{ name: 'Recipe_IronIngot_C', building: 'Desc_SmelterMk1_C', count: 3 }]
-
-      mockDataStore.recipeIngredients.mockReturnValueOnce([{ item: 'Desc_OreIron_C', amount: 1 }])
-      mockDataStore.recipeProducts.mockReturnValueOnce([{ item: 'Desc_IronIngot_C', amount: 1 }])
-
-      const result = getAllRecipeMaterials(recipes)
-
-      expect(result.products.Desc_IronIngot_C[0].amount).toBe(3)
-    })
-
-    it('should handle empty recipe list', () => {
-      const result = getAllRecipeMaterials([])
-
-      expect(result.ingredients).toEqual({})
-      expect(result.products).toEqual({})
     })
   })
 

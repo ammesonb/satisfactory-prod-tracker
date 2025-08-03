@@ -91,44 +91,6 @@ export const pickSource = (request: RecipeIngredient, sources: RecipeItem[]): Re
   return usedSources
 }
 
-export const getAllRecipeMaterials = (
-  recipes: Recipe[],
-): { ingredients: Record<string, RecipeItem[]>; products: Record<string, RecipeItem[]> } => {
-  const data = useDataStore()
-  return {
-    // summarize a list of all ingredients and products needed for
-    // all of the recipes, into one comprehensive map
-    ingredients: recipes.reduce(
-      (acc, recipe) => {
-        data.recipeIngredients(recipe.name).forEach((ingredient) => {
-          acc[ingredient.item] = [
-            ...(acc[ingredient.item] || []),
-            { amount: ingredient.amount, recipe, isResource: isNaturalResource(ingredient.item) },
-          ]
-        })
-        return acc
-      },
-      {} as Record<string, RecipeItem[]>,
-    ),
-    products: recipes.reduce(
-      (acc, recipe) => {
-        data.recipeProducts(recipe.name).forEach((product) => {
-          acc[product.item] = [
-            ...(acc[product.item] || []),
-            {
-              amount: recipe.count * product.amount,
-              recipe,
-              isResource: isNaturalResource(product.item),
-            },
-          ]
-        })
-        return acc
-      },
-      {} as Record<string, RecipeItem[]>,
-    ),
-  }
-}
-
 /**
  * Groups recipes into batches based on their production requirements.
  *
