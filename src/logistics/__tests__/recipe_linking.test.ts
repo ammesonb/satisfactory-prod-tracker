@@ -4,7 +4,7 @@ import { useDataStore } from '@/stores/data'
 
 vi.mock('@/stores/data')
 
-describe('recipe linking and processing', () => {
+describe('recipe linking', () => {
   let mockDataStore: ReturnType<typeof useDataStore>
 
   beforeEach(() => {
@@ -176,6 +176,37 @@ describe('recipe linking and processing', () => {
       ])
       expect(alreadyProduced.Desc_Water_C[0].amount).toBe(80)
     })
+
+    it('links catalysts with multiple instances', () => {
+      const recipe = createRecipe('Recipe_AluminaSolution_C', 'TestBuilding', 3)
+      const alreadyProduced = {
+        Desc_Water_C: [createRecipeItem(400, 'WaterExtractor')],
+      }
+
+      mockDataStore.recipeIngredients.mockReturnValue([
+        { item: 'Desc_AluminaSolution_C', amount: 60 },
+        { item: 'Desc_Water_C', amount: 120 },
+      ])
+      mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_AluminaSolution_C', amount: 80 }])
+
+      const result = getLinksForRecipe(recipe, alreadyProduced)
+
+      expect(result).toEqual([
+        {
+          source: 'Recipe_AluminaSolution_C',
+          sink: 'Recipe_AluminaSolution_C',
+          name: 'Desc_AluminaSolution_C',
+          amount: 180,
+        },
+        {
+          source: 'WaterExtractor',
+          sink: 'Recipe_AluminaSolution_C',
+          name: 'Desc_Water_C',
+          amount: 360,
+        },
+      ])
+      expect(alreadyProduced.Desc_Water_C[0].amount).toBe(40)
+    })
   })
 
   describe('resource availability scenarios', () => {
@@ -263,6 +294,32 @@ describe('recipe linking and processing', () => {
         createRecipeItem(0, 'WireRecipe3'),
         createRecipeItem(0, 'WireRecipe1'),
         createRecipeItem(10, 'WireRecipe2'),
+      ])
+    })
+
+    it('should link when recipe produces more than one qty output', () => {
+      // e.g. 3 ingots -> 2 plates, but we only need one plate
+      // so input of 2 ingots should be enough
+      const recipe = {
+        name: 'Recipe_IronPlate_C',
+        building: 'TestBuilding',
+        count: 0.5,
+      }
+
+      mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_IronIngot_C', amount: 3 }])
+      mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_IronPlate_C', amount: 2 }])
+
+      const result = getLinksForRecipe(recipe, {
+        Desc_IronIngot_C: [createRecipeItem(2, 'Recipe_IronIngot_C')],
+      })
+
+      expect(result).toEqual([
+        {
+          source: 'Recipe_IronIngot_C',
+          sink: 'Recipe_IronPlate_C',
+          name: 'Desc_IronIngot_C',
+          amount: 1.5,
+        },
       ])
     })
   })

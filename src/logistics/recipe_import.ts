@@ -178,14 +178,18 @@ export const getLinksForRecipe = (
     let amount_needed = ingredient.amount * recipe.count
     const matchingProduct = products.find((product) => product.item === ingredient.item)
     if (matchingProduct) {
-      const amount_consumed = Math.min(amount_needed, matchingProduct.amount)
+      // when dealing with catalyst recipes, check recipe amounts rather than totals
+      // this way we can see how much in total of the catalyst we can recover from the outputs
+      const amount_consumed = Math.min(ingredient.amount, matchingProduct.amount)
       materialLinks.push({
         source: recipe.name,
         sink: recipe.name,
         name: ingredient.item,
-        amount: amount_consumed,
+        amount: amount_consumed * recipe.count,
       })
-      amount_needed -= amount_consumed
+      // amount remaining will be multiplied by the recipe count required,
+      // but the product's amount will be per each craft cycle
+      amount_needed -= amount_consumed * recipe.count
       matchingProduct.amount -= amount_consumed
     }
 
@@ -317,7 +321,7 @@ export const linkRecipes = (
 
 // prompt for whole factory link:
 /*
-Please generate a reasonable number of tests for getLinksForRecipe. This should be a set of something like: simple production chain, more complex
+Please generate a reasonable number of tests for linkRecipes. This should be a set of something like: simple production chain, more complex
 production chain, production chain with some natural resources, production chain with natural resources (some of which are byproducts from earlier
 recipes), a case where there is not sufficient quantity produced, another case where sufficient quantity might be produced by another recipe, another
 where the recipe has a catalyst (same ingredient output, but lower quantity), and a catalyst where the ingredient output matches its input requirement.

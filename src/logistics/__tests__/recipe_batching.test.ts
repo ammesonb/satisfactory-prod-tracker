@@ -197,9 +197,7 @@ describe('recipe batching', () => {
 
     mockDataStore.recipeProducts.mockReturnValueOnce([{ item: 'Desc_IronIngot_C', amount: 1 }]) // IronIngot batch 1
 
-    expect(() => batchRecipes(recipes)).toThrow(
-      'Batching recipes failed, missing ingredients for',
-    )
+    expect(() => batchRecipes(recipes)).toThrow('Batching recipes failed, missing ingredients for')
   })
 
   it('should throw error when circular dependency exists', () => {
@@ -220,8 +218,6 @@ describe('recipe batching', () => {
       .mockReturnValueOnce([{ item: 'Product_B', amount: 1 }]) // Recipe A still needs Product B
       .mockReturnValueOnce([{ item: 'Product_A', amount: 1 }]) // Recipe B still needs Product A
 
-    expect(() => batchRecipes(recipes)).toThrow(
-      'Batching recipes failed, missing ingredients for',
-    )
+    expect(() => batchRecipes(recipes)).toThrow('Batching recipes failed, missing ingredients for')
   })
 })
