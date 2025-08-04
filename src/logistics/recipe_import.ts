@@ -92,6 +92,47 @@ export const pickSource = (request: RecipeIngredient, sources: RecipeItem[]): Re
 }
 
 /**
+ * Detects circular dependencies among a set of recipes.
+ * A circular dependency exists when:
+ * 1. A recipe consumes an item that it also produces (catalyst recipe), OR
+ * 2. Recipes are part of a mutual dependency cycle
+ */
+export const findCircularRecipes = (remainingRecipes: Recipe[]): Recipe[] => {
+  const data = useDataStore()
+  
+  return remainingRecipes.filter((recipe) => {
+    const ingredients = data.recipeIngredients(recipe.name)
+    const products = data.recipeProducts(recipe.name)
+
+    // Check if this recipe has a true circular dependency:
+    // 1. It consumes an item that it also produces (catalyst recipe), OR
+    // 2. It's part of a mutual dependency cycle with other remaining recipes
+    return (
+      // Self-referential (catalyst)
+      ingredients.some((ingredient) =>
+        products.some((product) => product.item === ingredient.item)
+      ) ||
+      // Mutual dependency: this recipe needs something from another recipe that needs something from this recipe
+      remainingRecipes.some((otherRecipe) => {
+        if (otherRecipe === recipe) return false
+        const otherIngredients = data.recipeIngredients(otherRecipe.name)
+        const otherProducts = data.recipeProducts(otherRecipe.name)
+        
+        // Check if there's a cycle: A needs B's product AND B needs A's product
+        const thisNeedsOther = ingredients.some((ingredient) =>
+          otherProducts.some((product) => product.item === ingredient.item)
+        )
+        const otherNeedsThis = otherIngredients.some((ingredient) =>
+          products.some((product) => product.item === ingredient.item)
+        )
+        
+        return thisNeedsOther && otherNeedsThis
+      })
+    )
+  })
+}
+
+/**
  * Groups recipes into batches based on their production requirements.
  *
  * This function groups recipes into batches based on the items required to produce them.
@@ -116,6 +157,24 @@ export const batchRecipes = (recipes: Recipe[]): Recipe[][] => {
   let lastLength = 0
   while (remainingRecipes.length > 0) {
     if (lastLength === remainingRecipes.length) {
+      // Check for circular dependencies - recipes that depend on each other
+      const circularRecipes = findCircularRecipes(remainingRecipes)
+
+      if (circularRecipes.length > 0) {
+        // Handle circular dependencies by allowing partial production
+        // Add all circular recipes to this batch - they'll handle their own interdependencies
+        batches.push([...circularRecipes])
+        remainingRecipes = remainingRecipes.filter((recipe) => !circularRecipes.includes(recipe))
+
+        // Mark all products from circular recipes as available for next batch
+        circularRecipes.forEach((recipe) => {
+          producedItems.push(...data.recipeProducts(recipe.name).map((product) => product.item))
+        })
+
+        lastLength = 0 // Reset to continue processing
+        continue
+      }
+
       throw new Error(
         'Batching recipes failed, missing ingredients for ' +
           remainingRecipes.map((r) => r.name).join(', '),
@@ -346,14 +405,6 @@ export const linkRecipes = (
 
   return { recipeBatches: groupedRecipes, recipeLinks, producedItems }
 }
-
-// prompt for whole factory link:
-/*
-Please generate a reasonable number of tests for linkRecipes. This should be a set of something like: simple production chain, more complex
-production chain, production chain with some natural resources, production chain with natural resources (some of which are byproducts from earlier
-recipes), a case where there is not sufficient quantity produced, another case where sufficient quantity might be produced by another recipe, another
-where the recipe has a catalyst (same ingredient output, but lower quantity), and a catalyst where the ingredient output matches its input requirement.
-*/
 
 // TODO: display checkboxes for linked materials (inputs + outputs) and buildings like
 // input 1 -----            ----- output 1

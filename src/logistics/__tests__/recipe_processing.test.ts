@@ -95,8 +95,8 @@ const recipeDatabase: Record<string, RecipeData> = {
     ],
     products: [{ item: 'Desc_Rubber_C', amount: 60 }],
   },
-  Recipe_Alternate_RecycledPlastic_C: {
-    name: 'Recipe_Alternate_RecycledPlastic_C',
+  Recipe_Alternate_Plastic_1_C: {
+    name: 'Recipe_Alternate_Plastic_1_C',
     ingredients: [
       { item: 'Desc_Plastic_C', amount: 30 },
       { item: 'Desc_Fuel_C', amount: 30 },
@@ -393,13 +393,13 @@ describe('linkRecipes integration - production chain processing', () => {
       },
       {
         source: 'Recipe_DilutedFuel_C',
-        sink: 'Reciped_Alternate_RecycledPlastic_C',
+        sink: 'Recipe_Alternate_Plastic_1_C',
         name: 'Desc_Fuel_C',
         amount: 55.555,
       },
       {
         source: 'Recipe_ResidualRubber_C',
-        sink: 'Reciped_Alternate_RecycledPlastic_C',
+        sink: 'Recipe_Alternate_Plastic_1_C',
         name: 'Desc_Rubber_C',
         amount: 13.3333,
       },
@@ -410,18 +410,33 @@ describe('linkRecipes integration - production chain processing', () => {
         amount: 51.111,
       },
       {
-        source: 'Recipe_RecycledPlastic_C',
+        source: 'Recipe_Alternate_Plastic_1_C',
         sink: 'Recipe_RecycledRubber_C',
         name: 'Desc_Plastic_C',
         amount: 51.111,
       },
       {
         source: 'Recipe_RecycledRubber_C',
-        sink: 'Recipe_RecycledPlastic_C',
+        sink: 'Recipe_Alternate_Plastic_1_C',
         name: 'Desc_Rubber_C',
         amount: 42.222,
       },
     ])
-    expect(result.producedItems).toEqual({})
+    expect(result.producedItems).toEqual({
+      Desc_Plastic_C: [
+        {
+          amount: 60,
+          recipe: expect.objectContaining({ name: 'Recipe_Alternate_Plastic_1_C' }),
+          isResource: false,
+        },
+      ],
+      Desc_Rubber_C: [
+        {
+          amount: 60,
+          recipe: expect.objectContaining({ name: 'Recipe_RecycledRubber_C' }),
+          isResource: false,
+        },
+      ],
+    })
   })
 })

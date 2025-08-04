@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { batchRecipes } from '../recipe_import'
+import { batchRecipes, findCircularRecipes } from '../recipe_import'
 import { useDataStore } from '@/stores/data'
+import type { Recipe } from '@/types/factory'
 
 vi.mock('@/stores/data')
 
@@ -200,24 +201,236 @@ describe('recipe batching', () => {
     expect(() => batchRecipes(recipes)).toThrow('Batching recipes failed, missing ingredients for')
   })
 
-  it('should throw error when circular dependency exists', () => {
+  it('should handle catalyst recipes (self-referential circular dependency)', () => {
     const recipes = [
-      // Recipe A needs product from Recipe B
-      { name: 'Recipe_A', building: 'Desc_Constructor_C', count: 1 },
-      // Recipe B needs product from Recipe A (circular dependency)
-      { name: 'Recipe_B', building: 'Desc_Constructor_C', count: 1 },
+      // Base recipe produces alumina solution
+      { name: 'Recipe_AluminaSolutionRaw_C', building: 'Desc_Refinery_C', count: 1 },
+      // Catalyst recipe consumes and produces alumina solution
+      { name: 'Recipe_AluminaSolution_C', building: 'Desc_Refinery_C', count: 1 },
     ]
 
     mockDataStore.recipeIngredients = vi
       .fn()
-      // First batch iteration - neither recipe can be satisfied
-      .mockReturnValueOnce([{ item: 'Product_B', amount: 1 }]) // Recipe A needs Product B
-      .mockReturnValueOnce([{ item: 'Product_A', amount: 1 }]) // Recipe B needs Product A
+      // First batch iteration
+      .mockReturnValueOnce([{ item: 'Desc_OreBauxite_C', amount: 2 }]) // AluminaSolutionRaw - should match
+      .mockReturnValueOnce([{ item: 'Desc_AluminaSolution_C', amount: 120 }]) // AluminaSolution - no external source yet
 
-      // Second iteration - still no progress
-      .mockReturnValueOnce([{ item: 'Product_B', amount: 1 }]) // Recipe A still needs Product B
-      .mockReturnValueOnce([{ item: 'Product_A', amount: 1 }]) // Recipe B still needs Product A
+      // Circular dependency detection - both recipes get analyzed for circularity
+      .mockReturnValueOnce([{ item: 'Desc_AluminaSolution_C', amount: 120 }]) // AluminaSolution ingredients
+      .mockReturnValueOnce([{ item: 'Desc_OreBauxite_C', amount: 2 }]) // AluminaSolutionRaw ingredients
+
+    mockDataStore.recipeProducts = vi
+      .fn()
+      .mockReturnValueOnce([{ item: 'Desc_AluminaSolution_C', amount: 30 }]) // AluminaSolutionRaw batch 1
+      // Circular dependency detection - products for circularity check
+      .mockReturnValueOnce([
+        { item: 'Desc_AluminaSolution_C', amount: 60 },
+        { item: 'Desc_Water_C', amount: 120 },
+      ]) // AluminaSolution products
+      .mockReturnValueOnce([{ item: 'Desc_AluminaSolution_C', amount: 30 }]) // AluminaSolutionRaw products
+      // After circular detection, products are marked as available
+      .mockReturnValueOnce([
+        { item: 'Desc_AluminaSolution_C', amount: 60 },
+        { item: 'Desc_Water_C', amount: 120 },
+      ]) // AluminaSolution batch 2
+
+    const result = batchRecipes(recipes)
+
+    expect(result).toHaveLength(2)
+    expect(result[0]).toEqual([expect.objectContaining({ name: 'Recipe_AluminaSolutionRaw_C' })])
+    expect(result[1]).toEqual([expect.objectContaining({ name: 'Recipe_AluminaSolution_C' })])
+  })
+
+  it('should handle mutual circular dependencies (plastic/rubber cycle)', () => {
+    const recipes = [
+      // Base recipes
+      { name: 'Recipe_ResidualRubber_C', building: 'Desc_OilRefinery_C', count: 1 },
+      { name: 'Recipe_Alternate_DilutedFuel_C', building: 'Desc_Blender_C', count: 1 },
+      // Circular recipes that depend on each other
+      { name: 'Recipe_Alternate_RecycledRubber_C', building: 'Desc_OilRefinery_C', count: 1 },
+      { name: 'Recipe_Alternate_Plastic_1_C', building: 'Desc_OilRefinery_C', count: 1 },
+    ]
+
+    mockDataStore.recipeIngredients = vi
+      .fn()
+      // First batch iteration
+      .mockReturnValueOnce([
+        { item: 'Desc_PolymerResin_C', amount: 40 },
+        { item: 'Desc_Water_C', amount: 40 },
+      ]) // ResidualRubber - should match (uses natural resources indirectly)
+      .mockReturnValueOnce([
+        { item: 'Desc_HeavyOilResidue_C', amount: 50 },
+        { item: 'Desc_Water_C', amount: 100 },
+      ]) // DilutedFuel - should match (uses natural resources indirectly)
+      .mockReturnValueOnce([
+        { item: 'Desc_Plastic_C', amount: 30 },
+        { item: 'Desc_Fuel_C', amount: 30 },
+      ]) // RecycledRubber - no match (needs Plastic from Plastic_1_C)
+      .mockReturnValueOnce([
+        { item: 'Desc_Rubber_C', amount: 30 },
+        { item: 'Desc_Fuel_C', amount: 30 },
+      ]) // Plastic_1_C - no match (needs Rubber from RecycledRubber)
+
+      // Circular dependency detection - analyze all remaining recipes for circularity
+      .mockReturnValueOnce([
+        { item: 'Desc_Plastic_C', amount: 30 },
+        { item: 'Desc_Fuel_C', amount: 30 },
+      ]) // RecycledRubber ingredients
+      .mockReturnValueOnce([
+        { item: 'Desc_Rubber_C', amount: 30 },
+        { item: 'Desc_Fuel_C', amount: 30 },
+      ]) // Plastic_1_C ingredients
+
+    mockDataStore.recipeProducts = vi
+      .fn()
+      .mockReturnValueOnce([{ item: 'Desc_Rubber_C', amount: 20 }]) // ResidualRubber batch 1
+      .mockReturnValueOnce([{ item: 'Desc_Fuel_C', amount: 100 }]) // DilutedFuel batch 1
+      // Circular dependency detection - products for circularity check
+      .mockReturnValueOnce([{ item: 'Desc_Rubber_C', amount: 60 }]) // RecycledRubber products
+      .mockReturnValueOnce([{ item: 'Desc_Plastic_C', amount: 60 }]) // Plastic_1_C products
+      // After circular detection, products are marked as available
+      .mockReturnValueOnce([{ item: 'Desc_Rubber_C', amount: 60 }]) // RecycledRubber batch 2
+      .mockReturnValueOnce([{ item: 'Desc_Plastic_C', amount: 60 }]) // Plastic_1_C batch 2
+
+    const result = batchRecipes(recipes)
+
+    expect(result).toHaveLength(2)
+    expect(result[0]).toHaveLength(2) // ResidualRubber and DilutedFuel
+    expect(result[1]).toHaveLength(2) // RecycledRubber and Plastic_1_C (circular pair)
+    expect(result[1].map((r) => r.name)).toEqual(
+      expect.arrayContaining(['Recipe_Alternate_RecycledRubber_C', 'Recipe_Alternate_Plastic_1_C']),
+    )
+  })
+
+  it('should throw error when non-circular missing ingredients prevent batching', () => {
+    const recipes = [
+      // Base tier - produces iron ingot
+      { name: 'Recipe_IronIngot_C', building: 'Desc_SmelterMk1_C', count: 1 },
+
+      // This recipe needs copper wire, but no recipe produces copper wire
+      { name: 'Recipe_Cable_C', building: 'Desc_ConstructorMk1_C', count: 1 },
+    ]
+
+    mockDataStore.recipeIngredients = vi
+      .fn()
+      // First batch iteration
+      .mockReturnValueOnce([{ item: 'Desc_OreIron_C', amount: 1 }]) // IronIngot - should match
+      .mockReturnValueOnce([{ item: 'Desc_Wire_C', amount: 2 }]) // Cable - no match (Wire not produced)
+
+      // Circular dependency detection - analyze remaining recipe
+      .mockReturnValueOnce([{ item: 'Desc_Wire_C', amount: 2 }]) // Cable ingredients
+
+    mockDataStore.recipeProducts = vi
+      .fn()
+      .mockReturnValueOnce([{ item: 'Desc_IronIngot_C', amount: 1 }]) // IronIngot batch 1
+      // Circular dependency detection - products for circularity check
+      .mockReturnValueOnce([{ item: 'Desc_Cable_C', amount: 1 }]) // Cable products
 
     expect(() => batchRecipes(recipes)).toThrow('Batching recipes failed, missing ingredients for')
+  })
+})
+
+describe('findCircularRecipes', () => {
+  let mockDataStore: ReturnType<typeof useDataStore>
+
+  // Recipe database for testing circular dependencies
+  const testRecipeDatabase: Record<string, { ingredients: Array<{ item: string; amount: number }>; products: Array<{ item: string; amount: number }> }> = {
+    // Normal recipes
+    Recipe_IronIngot_C: {
+      ingredients: [{ item: 'Desc_OreIron_C', amount: 1 }],
+      products: [{ item: 'Desc_IronIngot_C', amount: 1 }],
+    },
+    Recipe_IronPlate_C: {
+      ingredients: [{ item: 'Desc_IronIngot_C', amount: 3 }],
+      products: [{ item: 'Desc_IronPlate_C', amount: 2 }],
+    },
+    // Self-referential catalyst recipe
+    Recipe_AluminaSolution_C: {
+      ingredients: [{ item: 'Desc_AluminaSolution_C', amount: 120 }],
+      products: [
+        { item: 'Desc_AluminaSolution_C', amount: 60 },
+        { item: 'Desc_Water_C', amount: 120 },
+      ],
+    },
+    // Mutual circular dependency recipes
+    Recipe_RecycledRubber_C: {
+      ingredients: [
+        { item: 'Desc_Plastic_C', amount: 30 },
+        { item: 'Desc_Fuel_C', amount: 30 },
+      ],
+      products: [{ item: 'Desc_Rubber_C', amount: 60 }],
+    },
+    Recipe_RecycledPlastic_C: {
+      ingredients: [
+        { item: 'Desc_Rubber_C', amount: 30 },
+        { item: 'Desc_Fuel_C', amount: 30 },
+      ],
+      products: [{ item: 'Desc_Plastic_C', amount: 60 }],
+    },
+  }
+
+  beforeEach(() => {
+    mockDataStore = {
+      recipeIngredients: vi.fn((recipeName: string) => {
+        const recipe = testRecipeDatabase[recipeName]
+        return recipe ? recipe.ingredients : []
+      }),
+      recipeProducts: vi.fn((recipeName: string) => {
+        const recipe = testRecipeDatabase[recipeName]
+        return recipe ? recipe.products : []
+      }),
+    }
+    vi.mocked(useDataStore).mockReturnValue(mockDataStore)
+  })
+
+  it('should detect self-referential catalyst recipes', () => {
+    const recipes: Recipe[] = [
+      { name: 'Recipe_AluminaSolution_C', building: 'Desc_Refinery_C', count: 1 },
+      { name: 'Recipe_IronIngot_C', building: 'Desc_SmelterMk1_C', count: 1 },
+    ]
+
+    const result = findCircularRecipes(recipes)
+
+    expect(result).toHaveLength(1)
+    expect(result[0].name).toBe('Recipe_AluminaSolution_C')
+  })
+
+  it('should detect mutual circular dependencies', () => {
+    const recipes: Recipe[] = [
+      { name: 'Recipe_RecycledRubber_C', building: 'Desc_OilRefinery_C', count: 1 },
+      { name: 'Recipe_RecycledPlastic_C', building: 'Desc_OilRefinery_C', count: 1 },
+    ]
+
+    const result = findCircularRecipes(recipes)
+
+    expect(result).toHaveLength(2)
+    expect(result.map(r => r.name)).toEqual(
+      expect.arrayContaining(['Recipe_RecycledRubber_C', 'Recipe_RecycledPlastic_C'])
+    )
+  })
+
+  it('should not detect non-circular dependencies', () => {
+    const recipes: Recipe[] = [
+      { name: 'Recipe_IronIngot_C', building: 'Desc_SmelterMk1_C', count: 1 },
+      { name: 'Recipe_IronPlate_C', building: 'Desc_ConstructorMk1_C', count: 1 },
+    ]
+
+    const result = findCircularRecipes(recipes)
+
+    expect(result).toHaveLength(0)
+  })
+
+  it('should handle empty recipe list', () => {
+    const result = findCircularRecipes([])
+    expect(result).toEqual([])
+  })
+
+  it('should handle recipes with missing data gracefully', () => {
+    const recipes: Recipe[] = [
+      { name: 'Recipe_Unknown_C', building: 'Desc_Unknown_C', count: 1 },
+    ]
+
+    const result = findCircularRecipes(recipes)
+    expect(result).toEqual([])
   })
 })
