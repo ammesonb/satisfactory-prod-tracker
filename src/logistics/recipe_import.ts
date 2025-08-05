@@ -99,7 +99,7 @@ export const pickSource = (request: RecipeIngredient, sources: RecipeItem[]): Re
  */
 export const findCircularRecipes = (remainingRecipes: Recipe[]): Recipe[] => {
   const data = useDataStore()
-  
+
   return remainingRecipes.filter((recipe) => {
     const ingredients = data.recipeIngredients(recipe.name)
     const products = data.recipeProducts(recipe.name)
@@ -110,22 +110,22 @@ export const findCircularRecipes = (remainingRecipes: Recipe[]): Recipe[] => {
     return (
       // Self-referential (catalyst)
       ingredients.some((ingredient) =>
-        products.some((product) => product.item === ingredient.item)
+        products.some((product) => product.item === ingredient.item),
       ) ||
       // Mutual dependency: this recipe needs something from another recipe that needs something from this recipe
       remainingRecipes.some((otherRecipe) => {
         if (otherRecipe === recipe) return false
         const otherIngredients = data.recipeIngredients(otherRecipe.name)
         const otherProducts = data.recipeProducts(otherRecipe.name)
-        
+
         // Check if there's a cycle: A needs B's product AND B needs A's product
         const thisNeedsOther = ingredients.some((ingredient) =>
-          otherProducts.some((product) => product.item === ingredient.item)
+          otherProducts.some((product) => product.item === ingredient.item),
         )
         const otherNeedsThis = otherIngredients.some((ingredient) =>
-          products.some((product) => product.item === ingredient.item)
+          products.some((product) => product.item === ingredient.item),
         )
-        
+
         return thisNeedsOther && otherNeedsThis
       })
     )

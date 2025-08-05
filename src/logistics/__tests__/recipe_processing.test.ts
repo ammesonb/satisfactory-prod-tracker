@@ -1,15 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { linkRecipes } from '../recipe_import'
-import { useDataStore } from '@/stores/data'
 import { setupMockDataStore } from './recipe-fixtures'
 
 vi.mock('@/stores/data')
 
 describe('linkRecipes integration - production chain processing', () => {
-  let mockDataStore: ReturnType<typeof useDataStore>
-
   beforeEach(() => {
-    mockDataStore = setupMockDataStore()
+    setupMockDataStore()
   })
 
   // Tests a basic 2-step production chain: Iron Ore -> Iron Ingot -> Iron Plate

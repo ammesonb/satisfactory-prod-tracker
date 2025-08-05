@@ -1,16 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { batchRecipes, findCircularRecipes } from '../recipe_import'
-import { useDataStore } from '@/stores/data'
 import type { Recipe } from '@/types/factory'
 import { setupMockDataStore } from './recipe-fixtures'
 
 vi.mock('@/stores/data')
 
 describe('recipe batching', () => {
-  let mockDataStore: ReturnType<typeof useDataStore>
-
   beforeEach(() => {
-    mockDataStore = setupMockDataStore()
+    setupMockDataStore()
   })
 
   it('should batch recipes into three tiers based on dependencies', () => {
@@ -137,6 +134,7 @@ describe('recipe batching', () => {
   it('should handle mutual circular dependencies (plastic/rubber cycle)', () => {
     const recipes = [
       // Base recipes
+      { name: 'Recipe_Alternate_HeavyOilResidue_C', building: 'Desc_OilRefinery_C', count: 1 },
       { name: 'Recipe_ResidualRubber_C', building: 'Desc_OilRefinery_C', count: 1 },
       { name: 'Recipe_Alternate_DilutedFuel_C', building: 'Desc_Blender_C', count: 1 },
       // Circular recipes that depend on each other
@@ -146,12 +144,19 @@ describe('recipe batching', () => {
 
     const result = batchRecipes(recipes)
 
-    expect(result).toHaveLength(2)
-    expect(result[0]).toHaveLength(2) // ResidualRubber and DilutedFuel
-    expect(result[1]).toHaveLength(2) // RecycledRubber and Plastic_1_C (circular pair)
-    expect(result[1].map((r) => r.name)).toEqual(
-      expect.arrayContaining(['Recipe_Alternate_RecycledRubber_C', 'Recipe_Alternate_Plastic_1_C']),
-    )
+    const expected = [
+      [expect.objectContaining({ name: 'Recipe_Alternate_HeavyOilResidue_C' })],
+      [
+        expect.objectContaining({ name: 'Recipe_ResidualRubber_C' }),
+        expect.objectContaining({ name: 'Recipe_Alternate_DilutedFuel_C' }),
+      ],
+      [expect.objectContaining({ name: 'Recipe_Alternate_Plastic_1_C' })],
+      [expect.objectContaining({ name: 'Recipe_Alternate_RecycledRubber_C' })],
+    ]
+    expect(result).toHaveLength(expected.length)
+    for (let i = 0; i < expected.length; i++) {
+      expect(result[i]).toEqual(expected[i])
+    }
   })
 
   it('should throw error when non-circular missing ingredients prevent batching', () => {
@@ -168,10 +173,8 @@ describe('recipe batching', () => {
 })
 
 describe('findCircularRecipes', () => {
-  let mockDataStore: ReturnType<typeof useDataStore>
-
   beforeEach(() => {
-    mockDataStore = setupMockDataStore()
+    setupMockDataStore()
   })
 
   it('should detect self-referential catalyst recipes', () => {
@@ -195,8 +198,8 @@ describe('findCircularRecipes', () => {
     const result = findCircularRecipes(recipes)
 
     expect(result).toHaveLength(2)
-    expect(result.map(r => r.name)).toEqual(
-      expect.arrayContaining(['Recipe_RecycledRubber_C', 'Recipe_RecycledPlastic_C'])
+    expect(result.map((r) => r.name)).toEqual(
+      expect.arrayContaining(['Recipe_RecycledRubber_C', 'Recipe_RecycledPlastic_C']),
     )
   })
 
@@ -217,9 +220,7 @@ describe('findCircularRecipes', () => {
   })
 
   it('should handle recipes with missing data gracefully', () => {
-    const recipes: Recipe[] = [
-      { name: 'Recipe_Unknown_C', building: 'Desc_Unknown_C', count: 1 },
-    ]
+    const recipes: Recipe[] = [{ name: 'Recipe_Unknown_C', building: 'Desc_Unknown_C', count: 1 }]
 
     const result = findCircularRecipes(recipes)
     expect(result).toEqual([])
