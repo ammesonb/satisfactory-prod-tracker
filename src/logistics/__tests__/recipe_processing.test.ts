@@ -266,10 +266,16 @@ describe('linkRecipes integration - production chain processing', () => {
         amount: 21.111,
       },
       {
-        source: 'Desc_OreCoal_C',
+        source: 'Desc_Coal_C',
         sink: 'Recipe_Alternate_IngotSteel_1_C',
-        name: 'Desc_OreCoal_C',
+        name: 'Desc_Coal_C',
         amount: 21.111,
+      },
+      {
+        source: 'Recipe_Alternate_IngotSteel_1_C',
+        sink: 'Recipe_Alternate_SteelRod_C',
+        name: 'Desc_SteelIngot_C',
+        amount: 15,
       },
       {
         source: 'Recipe_Alternate_PureIronIngot_C',
@@ -284,16 +290,10 @@ describe('linkRecipes integration - production chain processing', () => {
         amount: 16.667,
       },
       {
-        source: 'Recipe_Alternate_IngotSteel_1_C',
-        sink: 'Recipe_Alternate_SteelRod_C',
-        name: 'Desc_SteelIngot_C',
-        amount: 15,
-      },
-      {
         source: 'Recipe_Alternate_SteelCastedPlate_C',
         sink: 'Recipe_Alternate_ReinforcedIronPlate_2_C',
-        name: 'Desc_SteelCastedPlate_C',
-        amount: 15,
+        name: 'Desc_IronPlate_C',
+        amount: 50,
       },
       {
         source: 'Recipe_Alternate_Wire_1_C',
@@ -302,15 +302,9 @@ describe('linkRecipes integration - production chain processing', () => {
         amount: 100,
       },
       {
-        source: 'Recipe_Alternate_SteelCastedPlate_C',
-        sink: 'Recipe_Alternate_ReinforcedIronPlate_2_C',
-        name: 'Desc_IronPlate_C',
-        amount: 50,
-      },
-      {
         source: 'Recipe_Alternate_ReinforcedIronPlate_2_C',
         sink: 'Recipe_ModularFrame_C',
-        name: 'Desc_ReinforcedIronPlate_C',
+        name: 'Desc_IronPlateReinforced_C',
         amount: 15,
       },
       {

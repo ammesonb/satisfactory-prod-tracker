@@ -2,11 +2,11 @@ import { useDataStore } from '@/stores/data'
 import type { RecipeIngredient } from '@/types/data'
 import type { Recipe, Material as RecipeLink } from '@/types/factory'
 
-const ZERO_THRESHOLD = 0.1
+const ZERO_THRESHOLD = 0.05
 
 const NATURAL_RESOURCES = [
   'Desc_OreBauxite_C',
-  'Desc_OreCoal_C',
+  'Desc_Coal_C',
   'Desc_OreCopper_C',
   'Desc_OreGold_C',
   'Desc_OreIron_C',
@@ -231,6 +231,7 @@ export const getLinksForRecipe = (
   const products = data.recipeProducts(recipe.name)
 
   const materialLinks: RecipeLink[] = []
+  const usedSources: [RecipeItem, number][] = []
 
   for (const ingredient of ingredients) {
     // For catalyst/recursive recipes, always use your own output as an input if possible
@@ -274,7 +275,9 @@ export const getLinksForRecipe = (
       }
       continue
     } else if (
-      amount_needed >
+      // allow for some tolerance of floating point rounding,
+      // by subtracting a minute amount from the required quantity
+      amount_needed - ZERO_THRESHOLD >
         alreadyProduced[ingredient.item].reduce((acc, item) => acc + item.amount, 0) &&
       !isNaturalResource(ingredient.item)
     ) {
@@ -310,7 +313,9 @@ export const getLinksForRecipe = (
         amount,
       })
       amount_needed -= amount
-      source.amount -= amount
+      // defer subtracting amount from source until end, since could hit early-exit/unprocessed condition
+      // which results in not consuming these resources just yet
+      usedSources.push([source, amount])
       // should only happen on last source
       if (amount_needed <= ZERO_THRESHOLD) {
         break
@@ -326,6 +331,11 @@ export const getLinksForRecipe = (
         amount: amount_needed,
       })
     }
+  }
+
+  // now that we've confirmed we can produce this ingredient, consume the sources
+  for (const [source, amount] of usedSources) {
+    source.amount -= amount
   }
 
   return materialLinks

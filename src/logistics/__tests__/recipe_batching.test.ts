@@ -90,7 +90,11 @@ describe('recipe batching', () => {
       { name: 'Recipe_IronRod_C', building: 'Desc_ConstructorMk1_C', count: 1 },
 
       // Third tier - depends on iron plates and rods
-      { name: 'Recipe_ReinforcedIronPlate_C', building: 'Desc_AssemblerMk1_C', count: 1 },
+      {
+        name: 'Recipe_Alternate_ReinforcedIronPlate_2_C',
+        building: 'Desc_AssemblerMk1_C',
+        count: 1,
+      },
     ]
 
     const result = batchRecipes(recipes)
@@ -101,7 +105,7 @@ describe('recipe batching', () => {
     expect(result[1][0].name).toBe('Recipe_IronPlate_C')
     expect(result[1][1].name).toBe('Recipe_IronRod_C')
     expect(result[2]).toHaveLength(1) // ReinforcedIronPlate
-    expect(result[2][0].name).toBe('Recipe_ReinforcedIronPlate_C')
+    expect(result[2][0].name).toBe('Recipe_Alternate_ReinforcedIronPlate_2_C')
   })
 
   it('should throw error when missing middle ingredient prevents batching', () => {

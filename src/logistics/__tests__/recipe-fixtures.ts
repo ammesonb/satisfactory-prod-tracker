@@ -49,16 +49,6 @@ export const recipeDatabase: Record<string, RecipeData> = {
     products: [{ item: 'Desc_Concrete_C', amount: 1 }],
   },
 
-  // Advanced construction recipes
-  Recipe_ReinforcedIronPlate_C: {
-    name: 'Recipe_ReinforcedIronPlate_C',
-    ingredients: [
-      { item: 'Desc_IronPlate_C', amount: 6 },
-      { item: 'Desc_IronRod_C', amount: 12 },
-    ],
-    products: [{ item: 'Desc_IronPlateReinforced_C', amount: 1 }],
-  },
-
   // Alumina solution recipes (catalyst examples)
   Recipe_AluminaSolutionRaw_C: {
     name: 'Recipe_AluminaSolutionRaw_C',
@@ -204,7 +194,7 @@ export const recipeDatabase: Record<string, RecipeData> = {
   Recipe_ModularFrame_C: {
     name: 'Recipe_ModularFrame_C',
     ingredients: [
-      { item: 'Desc_ReinforcedIronPlate_C', amount: 3 },
+      { item: 'Desc_IronPlateReinforced_C', amount: 3 },
       { item: 'Desc_IronRod_C', amount: 12 },
     ],
     products: [{ item: 'Desc_ModularFrame_C', amount: 2 }],
