@@ -87,7 +87,7 @@ describe('recipe batching', () => {
 
       // Second tier - depends on iron ingot
       { name: 'Recipe_IronPlate_C', building: 'Desc_ConstructorMk1_C', count: 1 },
-      { name: 'Recipe_IronRod_C', building: 'Desc_ConstructorMk1_C', count: 1 },
+      { name: 'Recipe_Alternate_Wire_1_C', building: 'Desc_ConstructorMk1_C', count: 1 },
 
       // Third tier - depends on iron plates and rods
       {
@@ -99,13 +99,19 @@ describe('recipe batching', () => {
 
     const result = batchRecipes(recipes)
 
-    expect(result).toHaveLength(3)
-    expect(result[0]).toHaveLength(1) // Only IronIngot
-    expect(result[1]).toHaveLength(2) // IronPlate and IronRod
-    expect(result[1][0].name).toBe('Recipe_IronPlate_C')
-    expect(result[1][1].name).toBe('Recipe_IronRod_C')
-    expect(result[2]).toHaveLength(1) // ReinforcedIronPlate
-    expect(result[2][0].name).toBe('Recipe_Alternate_ReinforcedIronPlate_2_C')
+    const expected = [
+      [expect.objectContaining({ name: 'Recipe_IronIngot_C' })],
+      [
+        expect.objectContaining({ name: 'Recipe_IronPlate_C' }),
+        expect.objectContaining({ name: 'Recipe_Alternate_Wire_1_C' }),
+      ],
+      [expect.objectContaining({ name: 'Recipe_Alternate_ReinforcedIronPlate_2_C' })],
+    ]
+
+    expect(result).toEqual(expected)
+    for (let i = 0; i < expected.length; i++) {
+      expect(result[i]).toEqual(expected[i])
+    }
   })
 
   it('should throw error when missing middle ingredient prevents batching', () => {
