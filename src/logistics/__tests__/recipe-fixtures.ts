@@ -148,11 +148,76 @@ export const recipeDatabase: Record<string, RecipeData> = {
     products: [{ item: 'Desc_Plastic_C', amount: 60 }],
   },
 
-  // Mining recipes (should be filtered out in batching)
-  Recipe_IronOre_C: {
-    name: 'Recipe_IronOre_C',
-    ingredients: [{ item: 'Desc_OreIron_C', amount: 0 }], // Mining doesn't consume anything
-    products: [{ item: 'Desc_OreIron_C', amount: 1 }],
+  // Steel production recipes
+  Recipe_Alternate_IngotSteel_1_C: {
+    name: 'Recipe_Alternate_IngotSteel_1_C',
+    ingredients: [
+      { item: 'Desc_IronIngot_C', amount: 40 },
+      { item: 'Desc_Coal_C', amount: 40 },
+    ],
+    products: [{ item: 'Desc_SteelIngot_C', amount: 60 }],
+  },
+
+  // Alternate steel products
+  Recipe_Alternate_SteelRod_C: {
+    name: 'Recipe_Alternate_SteelRod_C',
+    ingredients: [{ item: 'Desc_SteelIngot_C', amount: 12 }],
+    products: [{ item: 'Desc_IronRod_C', amount: 48 }],
+  },
+  Recipe_Alternate_SteelCastedPlate_C: {
+    name: 'Recipe_Alternate_SteelCastedPlate_C',
+    ingredients: [
+      { item: 'Desc_IronIngot_C', amount: 15 },
+      { item: 'Desc_SteelIngot_C', amount: 15 },
+    ],
+    products: [{ item: 'Desc_IronPlate_C', amount: 45 }],
+  },
+
+  // Alternate pure iron ingot recipe
+  Recipe_Alternate_PureIronIngot_C: {
+    name: 'Recipe_Alternate_PureIronIngot_C',
+    ingredients: [
+      { item: 'Desc_OreIron_C', amount: 35 },
+      { item: 'Desc_Water_C', amount: 20 },
+    ],
+    products: [{ item: 'Desc_IronIngot_C', amount: 65 }],
+  },
+
+  // Alternate wire recipe
+  Recipe_Alternate_Wire_1_C: {
+    name: 'Recipe_Alternate_Wire_1_C',
+    ingredients: [{ item: 'Desc_IronIngot_C', amount: 12.5 }],
+    products: [{ item: 'Desc_Wire_C', amount: 22.5 }],
+  },
+
+  // Alternate reinforced iron plate recipe
+  Recipe_Alternate_ReinforcedIronPlate_2_C: {
+    name: 'Recipe_Alternate_ReinforcedIronPlate_2_C',
+    ingredients: [
+      { item: 'Desc_IronPlate_C', amount: 18.75 },
+      { item: 'Desc_Wire_C', amount: 37.5 },
+    ],
+    products: [{ item: 'Desc_IronPlateReinforced_C', amount: 5.625 }],
+  },
+
+  // Modular Frame recipe
+  Recipe_ModularFrame_C: {
+    name: 'Recipe_ModularFrame_C',
+    ingredients: [
+      { item: 'Desc_ReinforcedIronPlate_C', amount: 3 },
+      { item: 'Desc_IronRod_C', amount: 12 },
+    ],
+    products: [{ item: 'Desc_ModularFrame_C', amount: 2 }],
+  },
+
+  // Fixed the plastic/rubber test - adding required recipe and fixing name
+  Recipe_DilutedFuel_C: {
+    name: 'Recipe_DilutedFuel_C',
+    ingredients: [
+      { item: 'Desc_HeavyOilResidue_C', amount: 50 },
+      { item: 'Desc_Water_C', amount: 100 },
+    ],
+    products: [{ item: 'Desc_Fuel_C', amount: 100 }],
   },
 }
 
@@ -160,6 +225,7 @@ export const recipeDatabase: Record<string, RecipeData> = {
 export const itemDatabase = {
   Desc_OreIron_C: { name: 'Iron Ore' },
   Desc_OreCopper_C: { name: 'Copper Ore' },
+  Desc_Coal_C: { name: 'Coal' },
   Desc_OreBauxite_C: { name: 'Bauxite' },
   Desc_OreGold_C: { name: 'Caterium Ore' },
   Desc_Water_C: { name: 'Water' },
@@ -167,6 +233,7 @@ export const itemDatabase = {
   Desc_LiquidOil_C: { name: 'Crude Oil' },
   Desc_IronIngot_C: { name: 'Iron Ingot' },
   Desc_CopperIngot_C: { name: 'Copper Ingot' },
+  Desc_SteelIngot_C: { name: 'Steel Ingot' },
   Desc_CateriumIngot_C: { name: 'Caterium Ingot' },
   Desc_IronPlate_C: { name: 'Iron Plate' },
   Desc_IronRod_C: { name: 'Iron Rod' },
@@ -174,6 +241,8 @@ export const itemDatabase = {
   Desc_Cable_C: { name: 'Cable' },
   Desc_Concrete_C: { name: 'Concrete' },
   Desc_IronPlateReinforced_C: { name: 'Reinforced Iron Plate' },
+  Desc_SteelCastedPlate_C: { name: 'Steel Casted Plate' },
+  Desc_ModularFrame_C: { name: 'Modular Frame' },
   Desc_AluminaSolution_C: { name: 'Alumina Solution' },
   Desc_HeavyOilResidue_C: { name: 'Heavy Oil Residue' },
   Desc_PolymerResin_C: { name: 'Polymer Resin' },

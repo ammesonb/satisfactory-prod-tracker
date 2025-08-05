@@ -226,9 +226,128 @@ describe('linkRecipes integration - production chain processing', () => {
     ])
   })
 
-  it('should link modular frame production', () => {})
+  it('should link modular frame production', () => {
+    const rawRecipes = [
+      '"Recipe_Alternate_SteelRod_C@100#Desc_ConstructorMk1_C": "1.25"',
+      '"Recipe_Alternate_PureIronIngot_C@100#Desc_OilRefinery_C": "1.4359"',
+      '"Recipe_ModularFrame_C@100#Desc_AssemblerMk1_C": "5"',
+      '"Recipe_Alternate_SteelCastedPlate_C@100#Desc_FoundryMk1_C": "1.111111111111"',
+      '"Recipe_Alternate_Wire_1_C@100#Desc_ConstructorMk1_C": "4.444444444444"',
+      '"Recipe_Alternate_ReinforcedIronPlate_2_C@100#Desc_AssemblerMk1_C": "2.666666666666"',
+      '"Recipe_Alternate_IngotSteel_1_C@100#Desc_FoundryMk1_C": "0.5277777777777"',
+    ]
 
-  it('should link plastic/rubber catalyst recipes', () => {
+    const result = linkRecipes(rawRecipes)
+
+    expect(result.recipeBatches).toHaveLength(5)
+    expect(result.recipeLinks).toEqual([
+      {
+        source: 'Desc_OreIron_C',
+        sink: 'Recipe_Alternate_PureIronIngot_C',
+        name: 'Desc_OreIron_C',
+        amount: 50.256,
+      },
+      {
+        source: 'Desc_Water_C',
+        sink: 'Recipe_Alternate_PureIronIngot_C',
+        name: 'Desc_Water_C',
+        amount: 28.718,
+      },
+      {
+        source: 'Recipe_Alternate_PureIronIngot_C',
+        sink: 'Recipe_Alternate_Wire_1_C',
+        name: 'Desc_IronIngot_C',
+        amount: 55.556,
+      },
+      {
+        source: 'Recipe_Alternate_PureIronIngot_C',
+        sink: 'Recipe_Alternate_IngotSteel_1_C',
+        name: 'Desc_IronIngot_C',
+        amount: 21.111,
+      },
+      {
+        source: 'Desc_OreCoal_C',
+        sink: 'Recipe_Alternate_IngotSteel_1_C',
+        name: 'Desc_OreCoal_C',
+        amount: 21.111,
+      },
+      {
+        source: 'Recipe_Alternate_PureIronIngot_C',
+        sink: 'Recipe_Alternate_SteelCastedPlate_C',
+        name: 'Desc_IronIngot_C',
+        amount: 16.667,
+      },
+      {
+        source: 'Recipe_Alternate_IngotSteel_1_C',
+        sink: 'Recipe_Alternate_SteelCastedPlate_C',
+        name: 'Desc_SteelIngot_C',
+        amount: 16.667,
+      },
+      {
+        source: 'Recipe_Alternate_IngotSteel_1_C',
+        sink: 'Recipe_Alternate_SteelRod_C',
+        name: 'Desc_SteelIngot_C',
+        amount: 15,
+      },
+      {
+        source: 'Recipe_Alternate_SteelCastedPlate_C',
+        sink: 'Recipe_Alternate_ReinforcedIronPlate_2_C',
+        name: 'Desc_SteelCastedPlate_C',
+        amount: 15,
+      },
+      {
+        source: 'Recipe_Alternate_Wire_1_C',
+        sink: 'Recipe_Alternate_ReinforcedIronPlate_2_C',
+        name: 'Desc_Wire_C',
+        amount: 100,
+      },
+      {
+        source: 'Recipe_Alternate_SteelCastedPlate_C',
+        sink: 'Recipe_Alternate_ReinforcedIronPlate_2_C',
+        name: 'Desc_IronPlate_C',
+        amount: 50,
+      },
+      {
+        source: 'Recipe_Alternate_ReinforcedIronPlate_2_C',
+        sink: 'Recipe_ModularFrame_C',
+        name: 'Desc_ReinforcedIronPlate_C',
+        amount: 15,
+      },
+      {
+        source: 'Recipe_Alternate_SteelRod_C',
+        sink: 'Recipe_ModularFrame_C',
+        name: 'Desc_IronRod_C',
+        amount: 60,
+      },
+    ])
+
+    const groupedRecipes = [
+      ['Recipe_Alternate_PureIronIngot_C'],
+      ['Recipe_Alternate_Wire_1_C', 'Recipe_Alternate_IngotSteel_1_C'],
+      ['Recipe_Alternate_SteelCastedPlate_C', 'Recipe_Alternate_SteelRod_C'],
+      ['Recipe_Alternate_ReinforcedIronPlate_2_C'],
+      ['Recipe_ModularFrame_C'],
+    ]
+    expect(result.recipeBatches).toHaveLength(groupedRecipes.length)
+    for (let i = 0; i < groupedRecipes.length; i++) {
+      expect(result.recipeBatches[i]).toHaveLength(groupedRecipes[i].length)
+      for (const recipe of groupedRecipes[i]) {
+        expect(result.recipeBatches[i]).toContainEqual(expect.objectContaining({ name: recipe }))
+      }
+    }
+
+    expect(result.producedItems).toEqual({
+      Desc_ModularFrame_C: [
+        {
+          amount: 10,
+          recipe: expect.objectContaining({ name: 'Recipe_ModularFrame_C' }),
+          isResource: false,
+        },
+      ],
+    })
+  })
+
+  it('should link plastic/rubber codependent recipes', () => {
     const rawRecipes = [
       '"Recipe_ResidualRubber_C@100#Desc_OilRefinery_C": "0.6666666666666"',
       '"Recipe_Alternate_RecycledRubber_C@100#Desc_OilRefinery_C": "1.7037"',
@@ -285,7 +404,7 @@ describe('linkRecipes integration - production chain processing', () => {
       },
       {
         source: 'Recipe_DilutedFuel_C',
-        sink: 'Reciped_Alternate_RecycledRubber_C',
+        sink: 'Recipe_Alternate_RecycledRubber_C',
         name: 'Desc_Fuel_C',
         amount: 51.111,
       },
