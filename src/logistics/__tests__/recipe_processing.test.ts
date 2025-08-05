@@ -1,132 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { linkRecipes } from '../recipe_import'
 import { useDataStore } from '@/stores/data'
+import { setupMockDataStore } from './recipe-fixtures'
 
 vi.mock('@/stores/data')
-
-// Recipe data structures for test scenarios
-interface RecipeData {
-  name: string
-  ingredients: Array<{ item: string; amount: number }>
-  products: Array<{ item: string; amount: number }>
-}
-
-const recipeDatabase: Record<string, RecipeData> = {
-  Recipe_IronIngot_C: {
-    name: 'Recipe_IronIngot_C',
-    ingredients: [{ item: 'Desc_OreIron_C', amount: 1 }],
-    products: [{ item: 'Desc_IronIngot_C', amount: 1 }],
-  },
-  Recipe_IronPlate_C: {
-    name: 'Recipe_IronPlate_C',
-    ingredients: [{ item: 'Desc_IronIngot_C', amount: 3 }],
-    products: [{ item: 'Desc_IronPlate_C', amount: 2 }],
-  },
-  Recipe_CopperIngot_C: {
-    name: 'Recipe_CopperIngot_C',
-    ingredients: [{ item: 'Desc_OreCopper_C', amount: 1 }],
-    products: [{ item: 'Desc_CopperIngot_C', amount: 1 }],
-  },
-  Recipe_Wire_C: {
-    name: 'Recipe_Wire_C',
-    ingredients: [{ item: 'Desc_CopperIngot_C', amount: 2 }],
-    products: [{ item: 'Desc_Wire_C', amount: 1 }],
-  },
-  Recipe_Cable_C: {
-    name: 'Recipe_Cable_C',
-    ingredients: [{ item: 'Desc_Wire_C', amount: 2 }],
-    products: [{ item: 'Desc_Cable_C', amount: 1 }],
-  },
-  Recipe_Concrete_C: {
-    name: 'Recipe_Concrete_C',
-    ingredients: [{ item: 'Desc_Stone_C', amount: 3 }],
-    products: [{ item: 'Desc_Concrete_C', amount: 1 }],
-  },
-  Recipe_AluminaSolutionRaw_C: {
-    name: 'Recipe_AluminaSolutionRaw_C',
-    ingredients: [{ item: 'Desc_OreBauxite_C', amount: 2 }],
-    products: [{ item: 'Desc_AluminaSolution_C', amount: 30 }],
-  },
-  Recipe_AluminaSolution_C: {
-    name: 'Recipe_AluminaSolution_C',
-    ingredients: [{ item: 'Desc_AluminaSolution_C', amount: 120 }],
-    products: [
-      { item: 'Desc_AluminaSolution_C', amount: 60 },
-      { item: 'Desc_Water_C', amount: 120 },
-    ],
-  },
-  Recipe_PureCateriumIngot_C: {
-    name: 'Recipe_PureCateriumIngot_C',
-    ingredients: [
-      { item: 'Desc_OreGold_C', amount: 2 },
-      { item: 'Desc_Water_C', amount: 2 },
-    ],
-    products: [{ item: 'Desc_CateriumIngot_C', amount: 2 }],
-  },
-  Recipe_Alternate_HeavyOilResidue_C: {
-    name: 'Recipe_Alternate_HeavyOilResidue_C',
-    ingredients: [{ item: 'Desc_LiquidOil_C', amount: 30 }],
-    products: [
-      { item: 'Desc_HeavyOilResidue_C', amount: 40 },
-      { item: 'Desc_PolymerResin_C', amount: 20 },
-    ],
-  },
-  Recipe_Alternate_DilutedFuel_C: {
-    name: 'Recipe_Alternate_DilutedFuel_C',
-    ingredients: [
-      { item: 'Desc_HeavyOilResidue_C', amount: 50 },
-      { item: 'Desc_Water_C', amount: 100 },
-    ],
-    products: [{ item: 'Desc_Fuel_C', amount: 100 }],
-  },
-  Recipe_ResidualRubber_C: {
-    name: 'Recipe_ResidualRubber_C',
-    ingredients: [
-      { item: 'Desc_PolymerResin_C', amount: 40 },
-      { item: 'Desc_Water_C', amount: 40 },
-    ],
-    products: [{ item: 'Desc_Rubber_C', amount: 20 }],
-  },
-  Recipe_Alternate_RecycledRubber_C: {
-    name: 'Recipe_Alternate_RecycledRubber_C',
-    ingredients: [
-      { item: 'Desc_Plastic_C', amount: 30 },
-      { item: 'Desc_Fuel_C', amount: 30 },
-    ],
-    products: [{ item: 'Desc_Rubber_C', amount: 60 }],
-  },
-  Recipe_Alternate_Plastic_1_C: {
-    name: 'Recipe_Alternate_Plastic_1_C',
-    ingredients: [
-      { item: 'Desc_Plastic_C', amount: 30 },
-      { item: 'Desc_Fuel_C', amount: 30 },
-    ],
-    products: [{ item: 'Desc_Plastic_C', amount: 60 }],
-  },
-}
 
 describe('linkRecipes integration - production chain processing', () => {
   let mockDataStore: ReturnType<typeof useDataStore>
 
   beforeEach(() => {
-    mockDataStore = {
-      recipeIngredients: vi.fn((recipeName: string) => {
-        const recipe = recipeDatabase[recipeName]
-        return recipe ? recipe.ingredients : []
-      }),
-      recipeProducts: vi.fn((recipeName: string) => {
-        const recipe = recipeDatabase[recipeName]
-        return recipe ? recipe.products : []
-      }),
-      items: {
-        Desc_OreIron_C: { name: 'Iron Ore' },
-        Desc_OreCopper_C: { name: 'Copper Ore' },
-        Desc_Water_C: { name: 'Water' },
-        Desc_Stone_C: { name: 'Stone' },
-        Desc_LiquidOil_C: { name: 'Crude Oil' },
-      },
-    }
-    vi.mocked(useDataStore).mockReturnValue(mockDataStore)
+    mockDataStore = setupMockDataStore()
   })
 
   // Tests a basic 2-step production chain: Iron Ore -> Iron Ingot -> Iron Plate
