@@ -4,6 +4,23 @@ import { setupMockDataStore } from './recipe-fixtures'
 
 vi.mock('@/stores/data')
 
+// Helper function to compare recipe links with floating point tolerance for amounts
+const expectRecipeLinksToMatch = (actual, expected) => {
+  expect(actual).toHaveLength(expected.length)
+
+  for (let i = 0; i < expected.length; i++) {
+    const actualLink = actual[i]
+    const expectedLink = expected[i]
+
+    // Compare all properties except amount
+    const { amount: actualAmount, ...actualRest } = actualLink
+    const { amount: expectedAmount, ...expectedRest } = expectedLink
+
+    expect(actualRest).toEqual(expectedRest)
+    expect(actualAmount).toBeCloseTo(expectedAmount, 3)
+  }
+}
+
 describe('linkRecipes integration - production chain processing', () => {
   beforeEach(() => {
     setupMockDataStore()
@@ -240,7 +257,7 @@ describe('linkRecipes integration - production chain processing', () => {
     const result = linkRecipes(rawRecipes)
 
     expect(result.recipeBatches).toHaveLength(5)
-    expect(result.recipeLinks).toEqual([
+    expectRecipeLinksToMatch(result.recipeLinks, [
       {
         source: 'Desc_OreIron_C',
         sink: 'Recipe_Alternate_PureIronIngot_C',
