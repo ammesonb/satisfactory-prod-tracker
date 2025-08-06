@@ -209,6 +209,11 @@ export const recipeDatabase: Record<string, RecipeData> = {
     ],
     products: [{ item: 'Desc_Fuel_C', amount: 100 }],
   },
+  Recipe_FluidCanister_C: {
+    name: 'Recipe_FluidCanister_C',
+    ingredients: [{ item: 'Desc_Plastic_C', amount: 2 }],
+    products: [{ item: 'Desc_FluidCanister_C', amount: 4 }],
+  },
 }
 
 // Item database for testing
@@ -239,6 +244,7 @@ export const itemDatabase = {
   Desc_Fuel_C: { name: 'Fuel' },
   Desc_Rubber_C: { name: 'Rubber' },
   Desc_Plastic_C: { name: 'Plastic' },
+  Desc_FluidCanister_C: { name: 'Fluid Canister' },
 }
 
 /**

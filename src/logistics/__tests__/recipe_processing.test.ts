@@ -365,6 +365,7 @@ describe('linkRecipes integration - production chain processing', () => {
       '"Recipe_Alternate_HeavyOilResidue_C@100#Desc_OilRefinery_C": "1.333333333333"',
       '"Recipe_Alternate_DilutedFuel_C@100#Desc_Blender_C": "1.066666666666"',
       '"Recipe_Alternate_Plastic_1_C@100#Desc_OilRefinery_C": "1.85185"',
+      '"Recipe_FluidCanister_C@100#Desc_ConstructorMk1_C": "0.08333333333333"',
     ]
 
     const result = linkRecipes(rawRecipes)
@@ -431,11 +432,17 @@ describe('linkRecipes integration - production chain processing', () => {
         name: 'Desc_Rubber_C',
         amount: 42.222,
       },
+      {
+        source: 'Recipe_Alternate_Plastic_1_C',
+        sink: 'Recipe_FluidCanister_C',
+        name: 'Desc_Plastic_C',
+        amount: 2.5,
+      },
     ])
     expect(result.producedItems).toEqual({
       Desc_Plastic_C: [
         {
-          amount: 60,
+          amount: 57.5,
           recipe: expect.objectContaining({ name: 'Recipe_Alternate_Plastic_1_C' }),
           isResource: false,
         },
@@ -444,6 +451,13 @@ describe('linkRecipes integration - production chain processing', () => {
         {
           amount: 60,
           recipe: expect.objectContaining({ name: 'Recipe_RecycledRubber_C' }),
+          isResource: false,
+        },
+      ],
+      Desc_FluidCanister_C: [
+        {
+          amount: 5,
+          recipe: expect.objectContaining({ name: 'Recipe_FluidCanister_C' }),
           isResource: false,
         },
       ],

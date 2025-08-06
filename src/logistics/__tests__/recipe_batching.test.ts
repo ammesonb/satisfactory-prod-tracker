@@ -80,7 +80,7 @@ describe('recipe batching', () => {
     expect(result).toEqual([])
   })
 
-  it('should handle complex dependency chains', () => {
+  it('should handle dependency chains', () => {
     const recipes = [
       // Base tier
       { name: 'Recipe_IronIngot_C', building: 'Desc_SmelterMk1_C', count: 1 },
