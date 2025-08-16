@@ -1,6 +1,6 @@
 import { useDataStore } from '@/stores/data'
 import type { RecipeIngredient } from '@/types/data'
-import type { Recipe, Material as RecipeLink } from '@/types/factory'
+import type { Recipe, Material } from '@/types/factory'
 
 const ZERO_THRESHOLD = 0.05
 
@@ -89,6 +89,73 @@ export const pickSource = (request: RecipeIngredient, sources: RecipeItem[]): Re
   }
 
   return usedSources
+}
+
+/**
+ * Resolves circular dependencies by creating links between codependent recipes.
+ * This allows circular recipes to reference each other's outputs as inputs.
+ *
+ * @param circularRecipes - Array of recipes with circular dependencies
+ * @returns Array of links that connect the circular recipes
+ */
+export const resolveCircularDependencies = (circularRecipes: Recipe[]): Material[] => {
+  const data = useDataStore()
+  const circularLinks: Material[] = []
+
+  // Create copies of recipe data that we can modify
+  const modifiedRecipeData = new Map<
+    string,
+    {
+      ingredients: RecipeIngredient[]
+      products: RecipeIngredient[]
+    }
+  >()
+
+  // Initialize with copies of original data
+  circularRecipes.forEach((recipe) => {
+    modifiedRecipeData.set(recipe.name, {
+      ingredients: data.recipeIngredients(recipe.name).map((ing) => ({ ...ing })),
+      products: data.recipeProducts(recipe.name).map((prod) => ({ ...prod })),
+    })
+  })
+
+  // Find circular links and modify recipe data
+  for (const recipe of circularRecipes) {
+    const recipeData = modifiedRecipeData.get(recipe.name)!
+
+    for (const ingredient of recipeData.ingredients) {
+      for (const otherRecipe of circularRecipes) {
+        if (otherRecipe === recipe) continue
+
+        const otherRecipeData = modifiedRecipeData.get(otherRecipe.name)!
+        const matchingProduct = otherRecipeData.products.find((p) => p.item === ingredient.item)
+
+        if (matchingProduct) {
+          const neededAmount = ingredient.amount * recipe.count
+          const availableAmount = matchingProduct.amount * otherRecipe.count
+          const linkAmount = Math.min(neededAmount, availableAmount)
+
+          if (linkAmount > 0) {
+            // Create the circular link
+            circularLinks.push({
+              source: otherRecipe.name,
+              sink: recipe.name,
+              name: ingredient.item,
+              amount: linkAmount,
+            })
+
+            // Reduce ingredient requirement for consuming recipe
+            ingredient.amount -= linkAmount / recipe.count
+
+            // Reduce product output for producing recipe
+            matchingProduct.amount -= linkAmount / otherRecipe.count
+          }
+        }
+      }
+    }
+  }
+
+  return circularLinks
 }
 
 /**
@@ -225,12 +292,12 @@ export const batchRecipes = (recipes: Recipe[]): Recipe[][] => {
 export const getLinksForRecipe = (
   recipe: Recipe,
   alreadyProduced: Record<string, RecipeItem[]>,
-): RecipeLink[] => {
+): Material[] => {
   const data = useDataStore()
   const ingredients = data.recipeIngredients(recipe.name)
   const products = data.recipeProducts(recipe.name)
 
-  const materialLinks: RecipeLink[] = []
+  const materialLinks: Material[] = []
   const usedSources: [RecipeItem, number][] = []
 
   for (const ingredient of ingredients) {
@@ -345,7 +412,7 @@ export const linkRecipes = (
   rawRecipes: string[],
 ): {
   recipeBatches: Recipe[][]
-  recipeLinks: RecipeLink[]
+  recipeLinks: Material[]
   producedItems: Record<string, RecipeItem[]>
 } => {
   const data = useDataStore()
@@ -356,7 +423,7 @@ export const linkRecipes = (
   const producedItems: Record<string, RecipeItem[]> = {}
   const groupedRecipes: Recipe[][] = []
   let batchIdx = 0
-  const recipeLinks: RecipeLink[] = []
+  const recipeLinks: Material[] = []
   // for each batch of recipes we can produce, create a "floor" mapping them to the materials they need
   while (batchIdx < batches.length) {
     // add a new floor of reipces
