@@ -416,6 +416,16 @@ export const linkRecipes = (
   return { recipeBatches: groupedRecipes, recipeLinks, producedItems }
 }
 
+// solve circular recipes by:
+// on detection, subtract inputs from outputs
+// add links between each other at this time, capturing the amounts needed
+// NOTE: circular detection may not work on multi-recipe links (check nuclear fuel cells)
+
+// have building on mouseover show raw recipe with native amounts
+// show belt tier for ingredients/products into building
+// also show building counts so we know e.g. 680 iron ore @ 65 ore / min for each building
+// how many tier 1 belts, tier 2 belts, etc before having to switch?
+
 // TODO: display checkboxes for linked materials (inputs + outputs) and buildings like
 // input 1 -----            ----- output 1
 // input 2 ----- building 1 ----- output 2
