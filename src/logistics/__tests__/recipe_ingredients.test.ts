@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setupMockDataStore } from './recipe-fixtures'
-import { processExternalIngredient } from '../recipe_import'
+import { processExternalIngredient } from '../material-linker'
 import type { Recipe } from '@/types/factory'
 import type { RecipeIngredient } from '@/types/data'
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { linkRecipes } from '../recipe_import'
+import { processRecipeChain } from '../recipe-processor'
 import { setupMockDataStore } from './recipe-fixtures'
 
 vi.mock('@/stores/data')
@@ -30,7 +30,7 @@ const expectRecipeLinksToMatch = (actual, expected) => {
   }
 }
 
-describe('linkRecipes integration - production chain processing', () => {
+describe('processRecipeChain integration - production chain processing', () => {
   beforeEach(() => {
     setupMockDataStore()
   })
@@ -42,7 +42,7 @@ describe('linkRecipes integration - production chain processing', () => {
       '"Recipe_IronPlate_C@100#Desc_ConstructorMk1_C": "1"',
     ]
 
-    const result = linkRecipes(rawRecipes)
+    const result = processRecipeChain(rawRecipes)
 
     expect(result.recipeBatches).toHaveLength(2)
     expect(result.recipeBatches[0]).toEqual([
@@ -77,7 +77,7 @@ describe('linkRecipes integration - production chain processing', () => {
       '"Recipe_Cable_C@1#Desc_ConstructorMk1_C": "1"',
     ]
 
-    const result = linkRecipes(rawRecipes)
+    const result = processRecipeChain(rawRecipes)
 
     expect(result.recipeBatches).toHaveLength(3)
     expect(result.recipeLinks).toEqual([
@@ -131,7 +131,7 @@ describe('linkRecipes integration - production chain processing', () => {
       '"Recipe_Concrete_C@1#Desc_ConstructorMk1_C": "1"',
     ]
 
-    const result = linkRecipes(rawRecipes)
+    const result = processRecipeChain(rawRecipes)
 
     expect(result.recipeBatches).toHaveLength(1)
     expect(result.recipeLinks).toEqual([
@@ -158,7 +158,7 @@ describe('linkRecipes integration - production chain processing', () => {
       '"Recipe_PureCateriumIngot_C@1#Desc_Refinery_C": "1"',
     ]
 
-    const result = linkRecipes(rawRecipes)
+    const result = processRecipeChain(rawRecipes)
 
     expect(result.recipeBatches).toHaveLength(2)
     expect(result.recipeLinks).toEqual([
@@ -220,7 +220,7 @@ describe('linkRecipes integration - production chain processing', () => {
       '"Recipe_IronPlate_C@1#Desc_ConstructorMk1_C": "2"', // Needs 6 iron ingots (3 each)
     ]
 
-    expect(() => linkRecipes(rawRecipes)).toThrow(
+    expect(() => processRecipeChain(rawRecipes)).toThrow(
       'No progress made and no circular dependencies found. Missing ingredients for: Recipe_IronPlate_C',
     )
   })
@@ -232,7 +232,7 @@ describe('linkRecipes integration - production chain processing', () => {
       '"Recipe_IronPlate_C@1#Desc_ConstructorMk1_C": "1"', // Needs 3 iron ingots
     ]
 
-    const result = linkRecipes(rawRecipes)
+    const result = processRecipeChain(rawRecipes)
 
     expect(result.recipeBatches).toHaveLength(2)
     expect(result.recipeLinks).toEqual([
@@ -262,7 +262,7 @@ describe('linkRecipes integration - production chain processing', () => {
       '"Recipe_Alternate_IngotSteel_1_C@100#Desc_FoundryMk1_C": "0.5277777777777"',
     ]
 
-    const result = linkRecipes(rawRecipes)
+    const result = processRecipeChain(rawRecipes)
 
     expect(result.recipeBatches).toHaveLength(5)
     expectRecipeLinksToMatch(result.recipeLinks, [
@@ -376,7 +376,7 @@ describe('linkRecipes integration - production chain processing', () => {
       '"Recipe_FluidCanister_C@100#Desc_ConstructorMk1_C": "0.08333333333333"',
     ]
 
-    const result = linkRecipes(rawRecipes)
+    const result = processRecipeChain(rawRecipes)
 
     expect(result.recipeBatches).toHaveLength(4)
     expectRecipeLinksToMatch(result.recipeLinks, [

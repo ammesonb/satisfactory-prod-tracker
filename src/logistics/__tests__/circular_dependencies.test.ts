@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { resolveCircularDependencies } from '../recipe_import'
+import { resolveCircularDependencies } from '../dependency-resolver'
 import { setupMockDataStore } from './recipe-fixtures'
 import type { Recipe } from '@/types/factory'
 

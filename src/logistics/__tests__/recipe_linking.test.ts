@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { getLinksForRecipe } from '../recipe_import'
+import { createMaterialLinks } from '../material-linker'
 import { useDataStore } from '@/stores/data'
 
 vi.mock('@/stores/data')
@@ -40,7 +40,7 @@ describe('recipe linking', () => {
       mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_OreIron_C', amount: 30 }])
       mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_IronIngot_C', amount: 30 }])
 
-      const result = getLinksForRecipe(recipe, alreadyProduced, [], new Map())
+      const result = createMaterialLinks(recipe, alreadyProduced, [], new Map())
 
       expect(result).toEqual([
         {
@@ -61,7 +61,7 @@ describe('recipe linking', () => {
       mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_OreIron_C', amount: 30 }])
       mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_IronIngot_C', amount: 30 }])
 
-      const result = getLinksForRecipe(recipe, alreadyProduced, [], new Map())
+      const result = createMaterialLinks(recipe, alreadyProduced, [], new Map())
 
       expect(result).toEqual([
         {
@@ -89,7 +89,7 @@ describe('recipe linking', () => {
       mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_OreIron_C', amount: 30 }])
       mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_IronIngot_C', amount: 30 }])
 
-      const result = getLinksForRecipe(recipe, alreadyProduced, [], new Map())
+      const result = createMaterialLinks(recipe, alreadyProduced, [], new Map())
 
       expect(result).toEqual([
         {
@@ -116,7 +116,7 @@ describe('recipe linking', () => {
       ])
       mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_AluminaSolution_C', amount: 60 }])
 
-      const result = getLinksForRecipe(recipe, alreadyProduced, [], new Map())
+      const result = createMaterialLinks(recipe, alreadyProduced, [], new Map())
 
       expect(result).toEqual([
         /* used to be the list of available resources, changed to empty since if insufficient no point claiming resources
@@ -180,7 +180,12 @@ describe('recipe linking', () => {
         },
       ]
 
-      const result = getLinksForRecipe(recipe, alreadyProduced, availableCircularLinks, recipeData)
+      const result = createMaterialLinks(
+        recipe,
+        alreadyProduced,
+        availableCircularLinks,
+        recipeData,
+      )
 
       expect(result).toEqual([
         {
@@ -227,7 +232,12 @@ describe('recipe linking', () => {
         },
       ]
 
-      const result = getLinksForRecipe(recipe, alreadyProduced, availableCircularLinks, recipeData)
+      const result = createMaterialLinks(
+        recipe,
+        alreadyProduced,
+        availableCircularLinks,
+        recipeData,
+      )
 
       expect(result).toEqual([
         {
@@ -257,7 +267,7 @@ describe('recipe linking', () => {
         { item: 'Desc_IronPlateReinforced_C', amount: 5 },
       ])
 
-      const result = getLinksForRecipe(recipe, alreadyProduced, [], new Map())
+      const result = createMaterialLinks(recipe, alreadyProduced, [], new Map())
 
       expect(result).toEqual([])
       expect(alreadyProduced.Desc_IronPlate_C[0].amount).toBe(20)
@@ -273,7 +283,7 @@ describe('recipe linking', () => {
       mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_IronIngot_C', amount: 20 }])
       mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_IronPlate_C', amount: 10 }])
 
-      const result = getLinksForRecipe(recipe, alreadyProduced, [], new Map())
+      const result = createMaterialLinks(recipe, alreadyProduced, [], new Map())
 
       expect(result).toEqual([
         {
@@ -299,7 +309,7 @@ describe('recipe linking', () => {
       mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_Wire_C', amount: 40 }])
       mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_Cable_C', amount: 30 }])
 
-      const result = getLinksForRecipe(recipe, alreadyProduced, [], new Map())
+      const result = createMaterialLinks(recipe, alreadyProduced, [], new Map())
 
       expect(result).toEqual([
         {
@@ -341,7 +351,7 @@ describe('recipe linking', () => {
       mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_IronIngot_C', amount: 3 }])
       mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_IronPlate_C', amount: 2 }])
 
-      const result = getLinksForRecipe(
+      const result = createMaterialLinks(
         recipe,
         {
           Desc_IronIngot_C: [createRecipeItem(2, 'Recipe_IronIngot_C')],

@@ -1,10 +1,14 @@
 import { describe, it, expect } from 'vitest'
-import { stringToRecipe, isNaturalResource, pickSource } from '../recipe_import'
+import { parseRecipeString } from '../recipe-parser'
+import { isNaturalResource } from '../constants'
+import { selectSources } from '../material-linker'
 
 describe('recipe parsing and source selection', () => {
   describe('recipe parsing', () => {
     it('should parse recipe strings', () => {
-      const result = stringToRecipe('"Recipe_Alternate_SteelPlate_C@100#Desc_Smelter_C": "1.2345"')
+      const result = parseRecipeString(
+        '"Recipe_Alternate_SteelPlate_C@100#Desc_Smelter_C": "1.2345"',
+      )
       expect(result).toEqual({
         name: 'Recipe_Alternate_SteelPlate_C',
         building: 'Desc_Smelter_C',
@@ -31,7 +35,7 @@ describe('recipe parsing and source selection', () => {
       const request = createRequest(10)
       const sources = [createRecipeItem(10, 'Source1')]
 
-      const result = pickSource(request, sources)
+      const result = selectSources(request, sources)
 
       expect(result).toHaveLength(1)
       expect(result[0].amount).toBe(10)
@@ -41,7 +45,7 @@ describe('recipe parsing and source selection', () => {
       const request = createRequest(5)
       const sources = [createRecipeItem(10, 'Source1')]
 
-      const result = pickSource(request, sources)
+      const result = selectSources(request, sources)
 
       expect(result).toHaveLength(1)
       expect(result[0].amount).toBe(10)
@@ -51,21 +55,21 @@ describe('recipe parsing and source selection', () => {
       const request = createRequest(10)
       const sources = []
 
-      expect(pickSource(request, sources)).toHaveLength(0)
+      expect(selectSources(request, sources)).toHaveLength(0)
     })
 
     it('should return empty when the only source has insufficient quantity', () => {
       const request = createRequest(10)
       const sources = [createRecipeItem(5, 'Source1')]
 
-      expect(pickSource(request, sources)).toHaveLength(0)
+      expect(selectSources(request, sources)).toHaveLength(0)
     })
 
     it('should return empty when multiple sources have insufficient quantity', () => {
       const request = createRequest(20)
       const sources = [createRecipeItem(5, 'Source1'), createRecipeItem(8, 'Source2')]
 
-      expect(pickSource(request, sources)).toHaveLength(0)
+      expect(selectSources(request, sources)).toHaveLength(0)
     })
 
     it('should return lowest amount when multiple sources have sufficient quantity', () => {
@@ -76,7 +80,7 @@ describe('recipe parsing and source selection', () => {
         createRecipeItem(20, 'Source3'),
       ]
 
-      const result = pickSource(request, sources)
+      const result = selectSources(request, sources)
 
       expect(result).toHaveLength(1)
       expect(result[0].amount).toBe(12)
@@ -87,7 +91,7 @@ describe('recipe parsing and source selection', () => {
       const request = createRequest(10)
       const sources = [createRecipeItem(9.95, 'Source1')] // Within 0.1 threshold
 
-      const result = pickSource(request, sources)
+      const result = selectSources(request, sources)
 
       expect(result).toHaveLength(1)
       expect(result[0].amount).toBe(9.95)
@@ -97,7 +101,7 @@ describe('recipe parsing and source selection', () => {
       const request = createRequest(15)
       const sources = [createRecipeItem(5, 'Source1'), createRecipeItem(10, 'Source2')]
 
-      const result = pickSource(request, sources)
+      const result = selectSources(request, sources)
       expect(result).toHaveLength(2)
     })
 
@@ -110,7 +114,7 @@ describe('recipe parsing and source selection', () => {
         createRecipeItem(10, 'Source4'),
       ]
 
-      const result = pickSource(request, sources)
+      const result = selectSources(request, sources)
       expect(result).toHaveLength(3)
       expect(result.map((r) => r.recipe.name)).toEqual(['Source1', 'Source3', 'Source2'])
     })
@@ -119,7 +123,7 @@ describe('recipe parsing and source selection', () => {
       const request = createRequest(10)
       const sources = []
 
-      const result = pickSource(request, sources)
+      const result = selectSources(request, sources)
 
       expect(result).toHaveLength(0)
     })
@@ -128,7 +132,7 @@ describe('recipe parsing and source selection', () => {
       const request = { amount: 20, item: 'Desc_OreIron_C' }
       const sources = [createRecipeItem(5, 'Source1'), createRecipeItem(8, 'Source2')]
 
-      const result = pickSource(request, sources)
+      const result = selectSources(request, sources)
 
       expect(result).toHaveLength(2)
       expect(result[0].amount).toBe(5)
