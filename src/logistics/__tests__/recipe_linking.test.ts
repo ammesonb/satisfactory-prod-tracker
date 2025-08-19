@@ -40,7 +40,7 @@ describe('recipe linking', () => {
       mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_OreIron_C', amount: 30 }])
       mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_IronIngot_C', amount: 30 }])
 
-      const result = getLinksForRecipe(recipe, alreadyProduced)
+      const result = getLinksForRecipe(recipe, alreadyProduced, [], new Map())
 
       expect(result).toEqual([
         {
@@ -61,7 +61,7 @@ describe('recipe linking', () => {
       mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_OreIron_C', amount: 30 }])
       mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_IronIngot_C', amount: 30 }])
 
-      const result = getLinksForRecipe(recipe, alreadyProduced)
+      const result = getLinksForRecipe(recipe, alreadyProduced, [], new Map())
 
       expect(result).toEqual([
         {
@@ -89,7 +89,7 @@ describe('recipe linking', () => {
       mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_OreIron_C', amount: 30 }])
       mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_IronIngot_C', amount: 30 }])
 
-      const result = getLinksForRecipe(recipe, alreadyProduced)
+      const result = getLinksForRecipe(recipe, alreadyProduced, [], new Map())
 
       expect(result).toEqual([
         {
@@ -116,7 +116,7 @@ describe('recipe linking', () => {
       ])
       mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_AluminaSolution_C', amount: 60 }])
 
-      const result = getLinksForRecipe(recipe, alreadyProduced)
+      const result = getLinksForRecipe(recipe, alreadyProduced, [], new Map())
 
       expect(result).toEqual([
         /* used to be the list of available resources, changed to empty since if insufficient no point claiming resources
@@ -158,15 +158,31 @@ describe('recipe linking', () => {
         { item: 'Desc_AluminaSolution_C', amount: 120 },
       ])
 
-      const result = getLinksForRecipe(recipe, alreadyProduced)
+      // Create preprocessed data for catalyst recipe
+      const recipeData = new Map()
+      recipeData.set('Recipe_AluminaSolution_C', {
+        recipe,
+        ingredients: [
+          { item: 'Desc_AluminaSolution_C', amount: 0 }, // Reduced by catalyst amount (60)
+          { item: 'Desc_Water_C', amount: 120 },
+        ],
+        products: [
+          { item: 'Desc_AluminaSolution_C', amount: 60 }, // Reduced by catalyst amount (60)
+        ],
+      })
 
-      expect(result).toEqual([
+      const availableCircularLinks = [
         {
           source: 'Recipe_AluminaSolution_C',
           sink: 'Recipe_AluminaSolution_C',
           name: 'Desc_AluminaSolution_C',
           amount: 60,
         },
+      ]
+
+      const result = getLinksForRecipe(recipe, alreadyProduced, availableCircularLinks, recipeData)
+
+      expect(result).toEqual([
         {
           source: 'WaterExtractor',
           sink: 'Recipe_AluminaSolution_C',
@@ -189,15 +205,31 @@ describe('recipe linking', () => {
       ])
       mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_AluminaSolution_C', amount: 80 }])
 
-      const result = getLinksForRecipe(recipe, alreadyProduced)
+      // Create preprocessed data for catalyst recipe with 3 instances
+      const recipeData = new Map()
+      recipeData.set('Recipe_AluminaSolution_C', {
+        recipe,
+        ingredients: [
+          { item: 'Desc_AluminaSolution_C', amount: 0 }, // Reduced by catalyst amount (60)
+          { item: 'Desc_Water_C', amount: 120 },
+        ],
+        products: [
+          { item: 'Desc_AluminaSolution_C', amount: 20 }, // 80 - 60 catalyst = 20 net production
+        ],
+      })
 
-      expect(result).toEqual([
+      const availableCircularLinks = [
         {
           source: 'Recipe_AluminaSolution_C',
           sink: 'Recipe_AluminaSolution_C',
           name: 'Desc_AluminaSolution_C',
-          amount: 180,
+          amount: 180, // 60 * 3 instances
         },
+      ]
+
+      const result = getLinksForRecipe(recipe, alreadyProduced, availableCircularLinks, recipeData)
+
+      expect(result).toEqual([
         {
           source: 'WaterExtractor',
           sink: 'Recipe_AluminaSolution_C',
@@ -225,7 +257,7 @@ describe('recipe linking', () => {
         { item: 'Desc_IronPlateReinforced_C', amount: 5 },
       ])
 
-      const result = getLinksForRecipe(recipe, alreadyProduced)
+      const result = getLinksForRecipe(recipe, alreadyProduced, [], new Map())
 
       expect(result).toEqual([])
       expect(alreadyProduced.Desc_IronPlate_C[0].amount).toBe(20)
@@ -241,7 +273,7 @@ describe('recipe linking', () => {
       mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_IronIngot_C', amount: 20 }])
       mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_IronPlate_C', amount: 10 }])
 
-      const result = getLinksForRecipe(recipe, alreadyProduced)
+      const result = getLinksForRecipe(recipe, alreadyProduced, [], new Map())
 
       expect(result).toEqual([
         {
@@ -267,7 +299,7 @@ describe('recipe linking', () => {
       mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_Wire_C', amount: 40 }])
       mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_Cable_C', amount: 30 }])
 
-      const result = getLinksForRecipe(recipe, alreadyProduced)
+      const result = getLinksForRecipe(recipe, alreadyProduced, [], new Map())
 
       expect(result).toEqual([
         {
@@ -309,9 +341,14 @@ describe('recipe linking', () => {
       mockDataStore.recipeIngredients.mockReturnValue([{ item: 'Desc_IronIngot_C', amount: 3 }])
       mockDataStore.recipeProducts.mockReturnValue([{ item: 'Desc_IronPlate_C', amount: 2 }])
 
-      const result = getLinksForRecipe(recipe, {
-        Desc_IronIngot_C: [createRecipeItem(2, 'Recipe_IronIngot_C')],
-      })
+      const result = getLinksForRecipe(
+        recipe,
+        {
+          Desc_IronIngot_C: [createRecipeItem(2, 'Recipe_IronIngot_C')],
+        },
+        [],
+        new Map(),
+      )
 
       expect(result).toEqual([
         {
