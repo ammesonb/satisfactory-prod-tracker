@@ -590,9 +590,6 @@ export const linkRecipes = (
           addCatalystLinks(recipe)
         }
 
-        // Add the circular links themselves
-        recipeLinks.push(...circularLinks)
-
         // Remove circular recipes from deferred
         remainingRecipes = deferredRecipes.filter((recipe) => !circularRecipes.includes(recipe))
       } else {
