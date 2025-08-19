@@ -92,6 +92,47 @@ export const pickSource = (request: RecipeIngredient, sources: RecipeItem[]): Re
 }
 
 /**
+ * Detects circular dependencies among a set of recipes.
+ * A circular dependency exists when:
+ * 1. A recipe consumes an item that it also produces (catalyst recipe), OR
+ * 2. Recipes are part of a mutual dependency cycle
+ */
+export const findCircularRecipes = (recipes: Recipe[]): Recipe[] => {
+  const data = useDataStore()
+
+  return recipes.filter((recipe) => {
+    const ingredients = data.recipeIngredients(recipe.name)
+    const products = data.recipeProducts(recipe.name)
+
+    // Check if this recipe has a true circular dependency:
+    // 1. It consumes an item that it also produces (catalyst recipe), OR
+    // 2. It's part of a mutual dependency cycle with other remaining recipes
+    return (
+      // Self-referential (catalyst)
+      ingredients.some((ingredient) =>
+        products.some((product) => product.item === ingredient.item),
+      ) ||
+      // Mutual dependency: this recipe needs something from another recipe that needs something from this recipe
+      recipes.some((otherRecipe) => {
+        if (otherRecipe === recipe) return false
+        const otherIngredients = data.recipeIngredients(otherRecipe.name)
+        const otherProducts = data.recipeProducts(otherRecipe.name)
+
+        // Check if there's a cycle: A needs B's product AND B needs A's product
+        const thisNeedsOther = ingredients.some((ingredient) =>
+          otherProducts.some((product) => product.item === ingredient.item),
+        )
+        const otherNeedsThis = otherIngredients.some((ingredient) =>
+          products.some((product) => product.item === ingredient.item),
+        )
+
+        return thisNeedsOther && otherNeedsThis
+      })
+    )
+  })
+}
+
+/**
  * Resolves circular dependencies by creating links between codependent recipes.
  * This allows circular recipes to reference each other's outputs as inputs.
  *
@@ -124,6 +165,29 @@ export const resolveCircularDependencies = (circularRecipes: Recipe[]): Material
     const recipeData = modifiedRecipeData.get(recipe.name)!
 
     for (const ingredient of recipeData.ingredients) {
+      // Check for self-referential catalyst first
+      const selfProduct = recipeData.products.find((p) => p.item === ingredient.item)
+      if (selfProduct) {
+        const neededAmount = ingredient.amount * recipe.count
+        const availableAmount = selfProduct.amount * recipe.count
+        const linkAmount = Math.min(neededAmount, availableAmount)
+
+        if (linkAmount > 0) {
+          // Create the self-referential link
+          circularLinks.push({
+            source: recipe.name,
+            sink: recipe.name,
+            name: ingredient.item,
+            amount: linkAmount,
+          })
+
+          // Reduce both ingredient requirement and product output
+          ingredient.amount -= linkAmount / recipe.count
+          selfProduct.amount -= linkAmount / recipe.count
+        }
+      }
+
+      // Then check for dependencies between different recipes
       for (const otherRecipe of circularRecipes) {
         if (otherRecipe === recipe) continue
 
@@ -159,120 +223,135 @@ export const resolveCircularDependencies = (circularRecipes: Recipe[]): Material
 }
 
 /**
- * Detects circular dependencies among a set of recipes.
- * A circular dependency exists when:
- * 1. A recipe consumes an item that it also produces (catalyst recipe), OR
- * 2. Recipes are part of a mutual dependency cycle
+ * Handles catalyst/self-referential ingredient processing for a recipe.
+ * Returns the amount still needed after self-production is accounted for.
  */
-export const findCircularRecipes = (remainingRecipes: Recipe[]): Recipe[] => {
-  const data = useDataStore()
+export const linkCatalystIngredient = (
+  ingredient: RecipeIngredient,
+  recipe: Recipe,
+  products: RecipeIngredient[],
+  materialLinks: Material[],
+): number => {
+  let amount_needed = ingredient.amount * recipe.count
+  const matchingProduct = products.find((product) => product.item === ingredient.item)
 
-  return remainingRecipes.filter((recipe) => {
-    const ingredients = data.recipeIngredients(recipe.name)
-    const products = data.recipeProducts(recipe.name)
+  if (matchingProduct) {
+    // when dealing with catalyst recipes, check recipe amounts rather than totals
+    // this way we can see how much in total of the catalyst we can recover from the outputs
+    const amount_consumed = Math.min(ingredient.amount, matchingProduct.amount)
+    const total_consumed = amount_consumed * recipe.count
+    materialLinks.push({
+      source: recipe.name,
+      sink: recipe.name,
+      name: ingredient.item,
+      amount: total_consumed,
+    })
+    // amount remaining will be multiplied by the recipe count required,
+    // but the product's amount will be per each craft cycle
+    amount_needed -= total_consumed
+    // product amount is per instance not totals
+    matchingProduct.amount -= amount_consumed
+  }
 
-    // Check if this recipe has a true circular dependency:
-    // 1. It consumes an item that it also produces (catalyst recipe), OR
-    // 2. It's part of a mutual dependency cycle with other remaining recipes
-    return (
-      // Self-referential (catalyst)
-      ingredients.some((ingredient) =>
-        products.some((product) => product.item === ingredient.item),
-      ) ||
-      // Mutual dependency: this recipe needs something from another recipe that needs something from this recipe
-      remainingRecipes.some((otherRecipe) => {
-        if (otherRecipe === recipe) return false
-        const otherIngredients = data.recipeIngredients(otherRecipe.name)
-        const otherProducts = data.recipeProducts(otherRecipe.name)
-
-        // Check if there's a cycle: A needs B's product AND B needs A's product
-        const thisNeedsOther = ingredients.some((ingredient) =>
-          otherProducts.some((product) => product.item === ingredient.item),
-        )
-        const otherNeedsThis = otherIngredients.some((ingredient) =>
-          products.some((product) => product.item === ingredient.item),
-        )
-
-        return thisNeedsOther && otherNeedsThis
-      })
-    )
-  })
+  return amount_needed
 }
 
 /**
- * Groups recipes into batches based on their production requirements.
- *
- * This function groups recipes into batches based on the items required to produce them.
- * It first removes any "mined" resources from the list of recipes, as they do not require
- * a recipe. Then, it groups the remaining recipes into batches, where each batch contains
- * recipes that can be produced using the same items. The recipes are grouped in the order
- * of production, with simpler items produced first, followed by more complex items.
- *
- * @param recipes - An array of recipes to be grouped into batches.
- * @returns An array of recipe batches, where each batch is an array of recipes.
+ * Handles external ingredient sourcing (from other recipes or natural resources).
+ * Returns null if the ingredient cannot be satisfied, or the material links if successful.
  */
-export const batchRecipes = (recipes: Recipe[]): Recipe[][] => {
-  // group recipes by items required to produce
-  // e.g. ingots first, then simple items second, complex items afterwards
-  const batches: Recipe[][] = []
-  const data = useDataStore()
+export const processExternalIngredient = (
+  ingredient: RecipeIngredient,
+  recipe: Recipe,
+  amount_needed: number,
+  alreadyProduced: Record<string, RecipeItem[]>,
+  usedSources: [RecipeItem, number][],
+  availableCircularLinks: Material[] = [],
+): Material[] | null => {
+  const materialLinks: Material[] = []
 
-  // Any "mined" resource does not need a recipe, so leave those out
-  let remainingRecipes = recipes.filter((recipe) => recipe.building !== 'Mine')
-  const producedItems = [...NATURAL_RESOURCES]
+  // First, check for available circular links for this specific recipe and ingredient
+  const usableCircularLinks = availableCircularLinks.filter(
+    (link) => link.sink === recipe.name && link.name === ingredient.item,
+  )
 
-  let lastLength = 0
-  while (remainingRecipes.length > 0) {
-    if (lastLength === remainingRecipes.length) {
-      // Check for circular dependencies - recipes that depend on each other
-      const circularRecipes = findCircularRecipes(remainingRecipes)
+  for (const circularLink of usableCircularLinks) {
+    const linkAmount = Math.min(circularLink.amount, amount_needed)
+    if (linkAmount > 0) {
+      materialLinks.push({
+        source: circularLink.source,
+        sink: recipe.name,
+        name: ingredient.item,
+        amount: linkAmount,
+      })
+      amount_needed -= linkAmount
 
-      if (circularRecipes.length > 0) {
-        // Handle circular dependencies by allowing partial production
-        // Add all circular recipes to this batch - they'll handle their own interdependencies
-        batches.push([...circularRecipes])
-        remainingRecipes = remainingRecipes.filter((recipe) => !circularRecipes.includes(recipe))
-
-        // Mark all products from circular recipes as available for next batch
-        circularRecipes.forEach((recipe) => {
-          producedItems.push(...data.recipeProducts(recipe.name).map((product) => product.item))
-        })
-
-        lastLength = 0 // Reset to continue processing
-        continue
-      }
-
-      throw new Error(
-        'Batching recipes failed, missing ingredients for ' +
-          remainingRecipes.map((r) => r.name).join(', '),
-      )
-    }
-    lastLength = remainingRecipes.length
-
-    const batch: Recipe[] = []
-    const newlyProducedItems: string[] = []
-    // for each recipe not yet produced
-    for (const recipe of remainingRecipes) {
-      // see if all ingredients are currently available
-      const ingredients = data.recipeIngredients(recipe.name)
-      if (
-        ingredients.reduce(
-          (acc, ingredient) => acc && producedItems.includes(ingredient.item),
-          true,
-        )
-      ) {
-        // if they are, add the recipe to this production batch and track the current products available
-        batch.push(recipe)
-        newlyProducedItems.push(...data.recipeProducts(recipe.name).map((product) => product.item))
+      if (amount_needed <= ZERO_THRESHOLD) {
+        return materialLinks // Fully satisfied by circular links
       }
     }
-    // remove recipes we are now producing, and mark their products as available
-    remainingRecipes = remainingRecipes.filter((recipe) => !batch.includes(recipe))
-    producedItems.push(...newlyProducedItems)
-    batches.push(batch)
   }
 
-  return batches
+  // check if we do not produce this item
+  if (!alreadyProduced[ingredient.item] || alreadyProduced[ingredient.item].length === 0) {
+    // natural resource can be mined, otherwise it's just missing (hopefully for now)
+    if (isNaturalResource(ingredient.item)) {
+      materialLinks.push({
+        source: ingredient.item,
+        sink: recipe.name,
+        name: ingredient.item,
+        amount: amount_needed,
+      })
+      return materialLinks
+    } else {
+      return null // Missing ingredient
+    }
+  }
+
+  // Check if we have enough available production
+  const availableAmount = alreadyProduced[ingredient.item].reduce(
+    (acc, item) => acc + item.amount,
+    0,
+  )
+  if (amount_needed - ZERO_THRESHOLD > availableAmount && !isNaturalResource(ingredient.item)) {
+    return null // Insufficient production
+  }
+
+  // Try to find enough from current production
+  const sources = pickSource(
+    { amount: amount_needed, item: ingredient.item },
+    alreadyProduced[ingredient.item],
+  )
+
+  for (const source of sources) {
+    const amount = Math.min(source.amount, amount_needed)
+    materialLinks.push({
+      source: source.recipe.name,
+      sink: recipe.name,
+      name: ingredient.item,
+      amount,
+    })
+    amount_needed -= amount
+    // defer subtracting amount from source until end, since could hit early-exit/unprocessed condition
+    // which results in not consuming these resources just yet
+    usedSources.push([source, amount])
+    // should only happen on last source
+    if (amount_needed <= ZERO_THRESHOLD) {
+      break
+    }
+  }
+
+  // if we still need more and it is a natural resource, mine it
+  if (amount_needed > ZERO_THRESHOLD && isNaturalResource(ingredient.item)) {
+    materialLinks.push({
+      source: ingredient.item,
+      sink: recipe.name,
+      name: ingredient.item,
+      amount: amount_needed,
+    })
+  }
+
+  return materialLinks
 }
 
 /**
@@ -292,112 +371,49 @@ export const batchRecipes = (recipes: Recipe[]): Recipe[][] => {
 export const getLinksForRecipe = (
   recipe: Recipe,
   alreadyProduced: Record<string, RecipeItem[]>,
+  availableCircularLinks: Material[] = [],
+  recipeData: Map<string, PreprocessedRecipeData>,
 ): Material[] => {
   const data = useDataStore()
-  const ingredients = data.recipeIngredients(recipe.name)
-  const products = data.recipeProducts(recipe.name)
+
+  // Use preprocessed data
+  let ingredients: RecipeIngredient[]
+
+  if (recipeData.has(recipe.name)) {
+    const preprocessed = recipeData.get(recipe.name)!
+    ingredients = preprocessed.ingredients.map((ing) => ({ ...ing }))
+  } else {
+    // Fallback for recipes not in preprocessed data (shouldn't happen in normal flow)
+    ingredients = data.recipeIngredients(recipe.name)
+  }
 
   const materialLinks: Material[] = []
   const usedSources: [RecipeItem, number][] = []
 
   for (const ingredient of ingredients) {
-    // For catalyst/recursive recipes, always use your own output as an input if possible
-    // The production planner tool should cover the amount needed to bootstrap the catalyst
-    let amount_needed = ingredient.amount * recipe.count
-    const matchingProduct = products.find((product) => product.item === ingredient.item)
-    if (matchingProduct) {
-      // when dealing with catalyst recipes, check recipe amounts rather than totals
-      // this way we can see how much in total of the catalyst we can recover from the outputs
-      const amount_consumed = Math.min(ingredient.amount, matchingProduct.amount)
-      materialLinks.push({
-        source: recipe.name,
-        sink: recipe.name,
-        name: ingredient.item,
-        amount: amount_consumed * recipe.count,
-      })
-      // amount remaining will be multiplied by the recipe count required,
-      // but the product's amount will be per each craft cycle
-      amount_needed -= amount_consumed * recipe.count
-      matchingProduct.amount -= amount_consumed
-    }
+    // With preprocessing, catalyst is already handled, just use the ingredient amount
+    const amount_needed = ingredient.amount * recipe.count
 
-    // rarely, that is enough to cover all the resource you need
-    // (though technically it would need some to jump-start it)
+    // Skip if no amount needed
     if (amount_needed <= ZERO_THRESHOLD) {
       continue
     }
 
-    // check if we do not produce this item
-    if (!alreadyProduced[ingredient.item] || alreadyProduced[ingredient.item].length === 0) {
-      // natural resource can be mined, otherwise it's just missing (hopefully for now)
-      if (isNaturalResource(ingredient.item)) {
-        materialLinks.push({
-          source: ingredient.item,
-          sink: recipe.name,
-          name: ingredient.item,
-          amount: amount_needed,
-        })
-      } else {
-        return []
-      }
-      continue
-    } else if (
-      // allow for some tolerance of floating point rounding,
-      // by subtracting a minute amount from the required quantity
-      amount_needed - ZERO_THRESHOLD >
-        alreadyProduced[ingredient.item].reduce((acc, item) => acc + item.amount, 0) &&
-      !isNaturalResource(ingredient.item)
-    ) {
-      // If we do not have enough of this ingredient, mark the full quantity as missing to ensure:
-      // 1. We do not try to use products that cannot be fully produced
-      // 2. We do not use up resources other recipes might need
-      //
-      // NOTE: if two recipes are co-dependent, this may result in the whole loop failing
-      // however, this seems improbable as such a recipe likely would lead to infinite resource production
-      // e.g. catalyst with net-positive gain:
-      // put in 10 plastic, gain 20 rubber, take 10 rubber, gain 20 plastic - infinite plastic/rubber for no additional cost
-      //
-      // plus, satisfactory tools usually covers the bootstrap amount from an external source anyways which due to the tiering
-      // of the batching function, should be included first regardless.
-      //
-      // Natural resources will always be available in the wild, so do not mark them as missing
-
-      return []
-    }
-
-    // Otherwise, try to find enough from current production
-    const sources = pickSource(
-      { amount: amount_needed, item: ingredient.item },
-      alreadyProduced[ingredient.item],
+    // Handle external ingredient sourcing
+    const externalLinks = processExternalIngredient(
+      ingredient,
+      recipe,
+      amount_needed,
+      alreadyProduced,
+      usedSources,
+      availableCircularLinks,
     )
 
-    for (const source of sources) {
-      const amount = Math.min(source.amount, amount_needed)
-      materialLinks.push({
-        source: source.recipe.name,
-        sink: recipe.name,
-        name: ingredient.item,
-        amount,
-      })
-      amount_needed -= amount
-      // defer subtracting amount from source until end, since could hit early-exit/unprocessed condition
-      // which results in not consuming these resources just yet
-      usedSources.push([source, amount])
-      // should only happen on last source
-      if (amount_needed <= ZERO_THRESHOLD) {
-        break
-      }
+    if (externalLinks === null) {
+      return [] // Could not satisfy this ingredient
     }
 
-    // if we still need more and it is a natural resource, mine it
-    if (amount_needed > ZERO_THRESHOLD && isNaturalResource(ingredient.item)) {
-      materialLinks.push({
-        source: ingredient.item,
-        sink: recipe.name,
-        name: ingredient.item,
-        amount: amount_needed,
-      })
-    }
+    materialLinks.push(...externalLinks)
   }
 
   // now that we've confirmed we can produce this ingredient, consume the sources
@@ -408,6 +424,78 @@ export const getLinksForRecipe = (
   return materialLinks
 }
 
+/**
+ *  1. For each iteration:
+    - Try to link each remaining recipe using current producedItems
+    - If successful, add recipe to current batch (but don't update producedItems yet)
+    - If failed, keep in remaining recipes
+  2. After iteration completes:
+    - If current batch is empty but remaining recipes exist → detect circular dependencies
+    - Add all current batch products to producedItems for next iteration
+    - Move to next batch
+  3. Repeat until all recipes processed
+ */
+interface PreprocessedRecipeData {
+  recipe: Recipe
+  ingredients: RecipeIngredient[]
+  products: RecipeIngredient[]
+}
+
+interface PendingCatalystLink {
+  recipeName: string
+  item: string
+  amount: number
+}
+
+/**
+ * Preprocesses catalyst recipes by identifying self-referential ingredients/products
+ * and creating modified recipe data with catalyst consumption pre-calculated.
+ *
+ * @param recipes - Array of recipes to preprocess
+ * @returns Object containing all recipe data (original + modified) and pending catalyst links
+ */
+export const preprocessCatalystRecipes = (
+  recipes: Recipe[],
+): {
+  recipeData: Map<string, PreprocessedRecipeData>
+  pendingCatalystLinks: PendingCatalystLink[]
+} => {
+  const data = useDataStore()
+  const recipeData = new Map<string, PreprocessedRecipeData>()
+  const pendingCatalystLinks: PendingCatalystLink[] = []
+
+  for (const recipe of recipes) {
+    const ingredients = data.recipeIngredients(recipe.name).map((ing) => ({ ...ing }))
+    const products = data.recipeProducts(recipe.name).map((prod) => ({ ...prod }))
+
+    // Check for self-referential catalyst items
+    for (const ingredient of ingredients) {
+      const matchingProduct = products.find((prod) => prod.item === ingredient.item)
+      if (matchingProduct) {
+        // Calculate the self-referential amount (lesser of consumption vs production per recipe)
+        const catalystAmount = Math.min(ingredient.amount, matchingProduct.amount)
+
+        if (catalystAmount > 0) {
+          // Create pending catalyst link for the total amount across all recipe instances
+          pendingCatalystLinks.push({
+            recipeName: recipe.name,
+            item: ingredient.item,
+            amount: catalystAmount * recipe.count,
+          })
+
+          // Reduce both ingredient requirement and product output by catalyst amount
+          ingredient.amount -= catalystAmount
+          matchingProduct.amount -= catalystAmount
+        }
+      }
+    }
+
+    recipeData.set(recipe.name, { recipe, ingredients, products })
+  }
+
+  return { recipeData, pendingCatalystLinks }
+}
+
 export const linkRecipes = (
   rawRecipes: string[],
 ): {
@@ -416,77 +504,144 @@ export const linkRecipes = (
   producedItems: Record<string, RecipeItem[]>
 } => {
   const data = useDataStore()
-
   const recipes = rawRecipes.map(stringToRecipe)
-  const batches = batchRecipes(recipes)
 
-  const producedItems: Record<string, RecipeItem[]> = {}
-  const groupedRecipes: Recipe[][] = []
-  let batchIdx = 0
+  // Filter out mining recipes - they don't need linking
+  let remainingRecipes = recipes.filter((recipe) => recipe.building !== 'Mine')
+
+  // Preprocess catalyst recipes
+  const { recipeData, pendingCatalystLinks } = preprocessCatalystRecipes(remainingRecipes)
+
+  const recipeBatches: Recipe[][] = []
   const recipeLinks: Material[] = []
-  // for each batch of recipes we can produce, create a "floor" mapping them to the materials they need
-  while (batchIdx < batches.length) {
-    // add a new floor of reipces
-    groupedRecipes.push([])
-    for (const recipe of batches[batchIdx]) {
-      // try to find links for each of the ingredients the recipe needs
-      const links = getLinksForRecipe(recipe, producedItems)
-      recipeLinks.push(...links)
+  const producedItems: Record<string, RecipeItem[]> = {}
 
-      // if ingredients not produced right now, check at END of next batch to see if the missing products are now available
+  let batchIndex = 0
+  while (remainingRecipes.length > 0) {
+    console.log('Batch', batchIndex)
+    const currentBatch: Recipe[] = []
+    const batchLinks: Material[] = []
+    const deferredRecipes: Recipe[] = []
+
+    // Helper function to add pending catalyst links for a recipe
+    const addCatalystLinks = (recipe: Recipe) => {
+      const catalystLinksForRecipe = pendingCatalystLinks
+        .filter((link) => link.recipeName === recipe.name)
+        .map((catalystLink) => ({
+          source: recipe.name,
+          sink: recipe.name,
+          name: catalystLink.item,
+          amount: catalystLink.amount,
+        }))
+      batchLinks.push(...catalystLinksForRecipe)
+    }
+
+    // Try to link each remaining recipe
+    for (const recipe of remainingRecipes) {
+      console.log('Recipe', recipe.name)
+
+      // Create a copy of producedItems to avoid mutations during linking attempts
+      const producedItemsCopy: Record<string, RecipeItem[]> = {}
+      Object.entries(producedItems).forEach(([item, sources]) => {
+        producedItemsCopy[item] = sources.map((source) => ({ ...source }))
+      })
+
+      const links = getLinksForRecipe(recipe, producedItemsCopy, [], recipeData)
+
       if (links.length === 0) {
-        // if no more batches after this one, then we will never be able to produce this recipe
-        // NOTE: since batching should have handled dependencies, if we need a product from this batch as an ingredient,
-        // this recipe should then have been pushed to a new batch of its own
-        if (batchIdx + 1 >= batches.length) {
-          throw new Error('Not enough resources to produce ' + recipe.name)
-        }
-        batches[batchIdx + 1].push(recipe)
+        console.log('Deferring recipe')
+        console.log(
+          'Missing ingredients:',
+          recipeData.get(recipe.name)?.ingredients || data.recipeIngredients(recipe.name),
+        )
+        console.log('Produced items keys:', Object.keys(producedItems))
+        deferredRecipes.push(recipe)
       } else {
-        // Otherwise, we produced this recipe successfully so add it to this floor
-        groupedRecipes[batchIdx].push(recipe)
+        console.log('Produced recipe')
+        currentBatch.push(recipe)
+        batchLinks.push(...links)
+        addCatalystLinks(recipe)
+
+        // Apply the successful linking to the actual producedItems
+        Object.entries(producedItemsCopy).forEach(([item, sources]) => {
+          producedItems[item] = sources
+        })
       }
     }
 
-    // filter out any sources that have been fully consumed
+    // Check for circular dependencies if no progress was made
+    if (currentBatch.length === 0 && deferredRecipes.length > 0) {
+      console.log('No progress made, checking for circular dependencies')
+      const circularRecipes = findCircularRecipes(deferredRecipes)
+
+      if (circularRecipes.length > 0) {
+        console.log(
+          'Found circular recipes:',
+          circularRecipes.map((r) => r.name),
+        )
+        // Resolve circular dependencies
+        const circularLinks = resolveCircularDependencies(circularRecipes)
+
+        // Process circular recipes with their resolved links
+        for (const recipe of circularRecipes) {
+          const links = getLinksForRecipe(recipe, producedItems, circularLinks, recipeData)
+          currentBatch.push(recipe)
+          batchLinks.push(...links)
+          addCatalystLinks(recipe)
+        }
+
+        // Add the circular links themselves
+        recipeLinks.push(...circularLinks)
+
+        // Remove circular recipes from deferred
+        remainingRecipes = deferredRecipes.filter((recipe) => !circularRecipes.includes(recipe))
+      } else {
+        throw new Error(
+          'No progress made and no circular dependencies found. Missing ingredients for: ' +
+            deferredRecipes.map((r) => r.name).join(', '),
+        )
+      }
+    } else {
+      remainingRecipes = deferredRecipes
+    }
+
+    // Add current batch to results
+    recipeBatches.push(currentBatch)
+    recipeLinks.push(...batchLinks)
+
+    // Filter out consumed sources
     Object.entries(producedItems).forEach(([item, sources]) => {
       producedItems[item] = sources.filter((source) => source.amount >= ZERO_THRESHOLD)
-    })
-    Object.entries(producedItems).forEach(([item, sources]) => {
-      if (sources.length === 0) {
+      if (producedItems[item].length === 0) {
         delete producedItems[item]
       }
     })
 
-    groupedRecipes[batchIdx].forEach((recipe) => {
-      data.recipeProducts(recipe.name).forEach((product) => {
-        producedItems[product.item] =
-          // only include produced item with qty > 0
-          // qty 0 should really only ever happen on catalysts
-          product.amount > 0
-            ? [
-                ...(producedItems[product.item] || []),
-                {
-                  amount: product.amount * recipe.count,
-                  recipe,
-                  isResource: false,
-                },
-              ]
-            : producedItems[product.item]
+    // Add products from current batch to available items for next iteration
+    currentBatch.forEach((recipe) => {
+      const products = recipeData.get(recipe.name)?.products || data.recipeProducts(recipe.name)
+      products.forEach((product) => {
+        console.log('Produced item', product.item, product.amount * recipe.count)
+        if (product.amount > 0) {
+          const availableAmount = product.amount * recipe.count
+
+          if (!producedItems[product.item]) {
+            producedItems[product.item] = []
+          }
+          producedItems[product.item].push({
+            amount: availableAmount,
+            recipe,
+            isResource: false,
+          })
+        }
       })
     })
 
-    // next floor
-    batchIdx++
+    batchIndex++
   }
 
-  return { recipeBatches: groupedRecipes, recipeLinks, producedItems }
+  return { recipeBatches, recipeLinks, producedItems }
 }
-
-// solve circular recipes by:
-// on detection, subtract inputs from outputs
-// add links between each other at this time, capturing the amounts needed
-// NOTE: circular detection may not work on multi-recipe links (check nuclear fuel cells)
 
 // have building on mouseover show raw recipe with native amounts
 // show belt tier for ingredients/products into building

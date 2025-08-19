@@ -141,8 +141,8 @@ describe('linkRecipes integration - production chain processing', () => {
     ])
   })
 
-  // Tests oil refining producing multiple byproducts, one used by subsequent recipe
-  it('should handle natural resources as byproducts', () => {
+  // Tests aluminum refining producing multiple byproducts, one used by subsequent recipe
+  it('should handle natural resources as byproducts and self-referential catalysts', () => {
     const rawRecipes = [
       '"Recipe_AluminaSolutionRaw_C@1#Desc_Refinery_C": "2"',
       '"Recipe_AluminaSolution_C@1#Desc_Refinery_C": "1"',
@@ -166,22 +166,21 @@ describe('linkRecipes integration - production chain processing', () => {
         name: 'Desc_OreGold_C',
         amount: 2,
       },
-      // then refined products
+      // then refined products including water
       {
         source: 'Desc_Water_C',
         sink: 'Recipe_PureCateriumIngot_C',
         name: 'Desc_Water_C',
         amount: 2,
       },
-      // catalyst before external product
       {
-        source: 'Recipe_AluminaSolution_C',
+        source: 'Recipe_AluminaSolutionRaw_C',
         sink: 'Recipe_AluminaSolution_C',
         name: 'Desc_AluminaSolution_C',
         amount: 60,
       },
       {
-        source: 'Recipe_AluminaSolutionRaw_C',
+        source: 'Recipe_AluminaSolution_C',
         sink: 'Recipe_AluminaSolution_C',
         name: 'Desc_AluminaSolution_C',
         amount: 60,
@@ -213,7 +212,7 @@ describe('linkRecipes integration - production chain processing', () => {
     ]
 
     expect(() => linkRecipes(rawRecipes)).toThrow(
-      'Not enough resources to produce Recipe_IronPlate_C',
+      'No progress made and no circular dependencies found. Missing ingredients for: Recipe_IronPlate_C',
     )
   })
 
@@ -370,7 +369,7 @@ describe('linkRecipes integration - production chain processing', () => {
 
     const result = linkRecipes(rawRecipes)
 
-    expect(result.recipeBatches).toHaveLength(3)
+    expect(result.recipeBatches).toHaveLength(4)
     expect(result.recipeLinks).toEqual([
       {
         source: 'Desc_LiquidOil_C',
