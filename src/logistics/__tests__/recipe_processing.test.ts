@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { processRecipeChain } from '../recipe-processor'
 import { setupMockDataStore } from './recipe-fixtures'
+import type { Recipe, Material } from '@/types/factory'
 
 vi.mock('@/stores/data')
 
 // Helper function to compare recipe links with floating point tolerance for amounts (order-agnostic)
-const expectRecipeLinksToMatch = (actual, expected) => {
+const expectRecipeLinksToMatch = (actual: Material[], expected: Material[]) => {
   expect(actual).toHaveLength(expected.length)
   console.log(`Expected ${expected.length} links, got ${actual.length} links`)
 
@@ -30,6 +31,22 @@ const expectRecipeLinksToMatch = (actual, expected) => {
   }
 }
 
+// Helper function to check recipe batch grouping
+const expectRecipeBatchesToMatch = (actual: Recipe[][], expected: string[][]) => {
+  expect(actual).toHaveLength(expected.length)
+  console.log(`Expected ${expected.length} batches, got ${actual.length} batches`)
+
+  for (let i = 0; i < expected.length; i++) {
+    const actualBatch = actual[i]
+    const expectedBatch = expected[i]
+
+    expect(actualBatch).toHaveLength(expectedBatch.length)
+    for (const recipeName of expectedBatch) {
+      expect(actualBatch).toContainEqual(expect.objectContaining({ name: recipeName }))
+    }
+  }
+}
+
 describe('processRecipeChain integration - production chain processing', () => {
   beforeEach(() => {
     setupMockDataStore()
@@ -45,11 +62,9 @@ describe('processRecipeChain integration - production chain processing', () => {
     const result = processRecipeChain(rawRecipes)
 
     expect(result.recipeBatches).toHaveLength(2)
-    expect(result.recipeBatches[0]).toEqual([
-      expect.objectContaining({ name: 'Recipe_IronIngot_C' }),
-    ])
-    expect(result.recipeBatches[1]).toEqual([
-      expect.objectContaining({ name: 'Recipe_IronPlate_C' }),
+    expectRecipeBatchesToMatch(result.recipeBatches, [
+      ['Recipe_IronIngot_C'],
+      ['Recipe_IronPlate_C'],
     ])
 
     expect(result.recipeLinks).toEqual([
@@ -80,6 +95,11 @@ describe('processRecipeChain integration - production chain processing', () => {
     const result = processRecipeChain(rawRecipes)
 
     expect(result.recipeBatches).toHaveLength(3)
+    expectRecipeBatchesToMatch(result.recipeBatches, [
+      ['Recipe_IronIngot_C', 'Recipe_CopperIngot_C'],
+      ['Recipe_Wire_C'],
+      ['Recipe_Cable_C'],
+    ])
     expect(result.recipeLinks).toEqual([
       {
         source: 'Desc_OreIron_C',
@@ -134,6 +154,9 @@ describe('processRecipeChain integration - production chain processing', () => {
     const result = processRecipeChain(rawRecipes)
 
     expect(result.recipeBatches).toHaveLength(1)
+    expectRecipeBatchesToMatch(result.recipeBatches, [
+      ['Recipe_IronIngot_C', 'Recipe_Concrete_C'],
+    ])
     expect(result.recipeLinks).toEqual([
       {
         source: 'Desc_OreIron_C',
@@ -161,6 +184,10 @@ describe('processRecipeChain integration - production chain processing', () => {
     const result = processRecipeChain(rawRecipes)
 
     expect(result.recipeBatches).toHaveLength(2)
+    expectRecipeBatchesToMatch(result.recipeBatches, [
+      ['Recipe_AluminaSolutionRaw_C', 'Recipe_PureCateriumIngot_C'],
+      ['Recipe_AluminaSolution_C'],
+    ])
     expect(result.recipeLinks).toEqual([
       // raw first
       {
@@ -235,6 +262,10 @@ describe('processRecipeChain integration - production chain processing', () => {
     const result = processRecipeChain(rawRecipes)
 
     expect(result.recipeBatches).toHaveLength(2)
+    expectRecipeBatchesToMatch(result.recipeBatches, [
+      ['Recipe_IronIngot_C'],
+      ['Recipe_IronPlate_C'],
+    ])
     expect(result.recipeLinks).toEqual([
       {
         source: 'Desc_OreIron_C',
@@ -340,20 +371,13 @@ describe('processRecipeChain integration - production chain processing', () => {
       },
     ])
 
-    const groupedRecipes = [
+    expectRecipeBatchesToMatch(result.recipeBatches, [
       ['Recipe_Alternate_PureIronIngot_C'],
       ['Recipe_Alternate_Wire_1_C', 'Recipe_Alternate_IngotSteel_1_C'],
       ['Recipe_Alternate_SteelCastedPlate_C', 'Recipe_Alternate_SteelRod_C'],
       ['Recipe_Alternate_ReinforcedIronPlate_2_C'],
       ['Recipe_ModularFrame_C'],
-    ]
-    expect(result.recipeBatches).toHaveLength(groupedRecipes.length)
-    for (let i = 0; i < groupedRecipes.length; i++) {
-      expect(result.recipeBatches[i]).toHaveLength(groupedRecipes[i].length)
-      for (const recipe of groupedRecipes[i]) {
-        expect(result.recipeBatches[i]).toContainEqual(expect.objectContaining({ name: recipe }))
-      }
-    }
+    ])
 
     expect(result.producedItems).toEqual({
       Desc_ModularFrame_C: [
@@ -379,6 +403,12 @@ describe('processRecipeChain integration - production chain processing', () => {
     const result = processRecipeChain(rawRecipes)
 
     expect(result.recipeBatches).toHaveLength(4)
+    expectRecipeBatchesToMatch(result.recipeBatches, [
+      ['Recipe_Alternate_HeavyOilResidue_C'],
+      ['Recipe_ResidualRubber_C', 'Recipe_Alternate_DilutedFuel_C'],
+      ['Recipe_Alternate_Plastic_1_C', 'Recipe_Alternate_RecycledRubber_C'],
+      ['Recipe_FluidCanister_C'],
+    ])
     expectRecipeLinksToMatch(result.recipeLinks, [
       {
         source: 'Desc_LiquidOil_C',
