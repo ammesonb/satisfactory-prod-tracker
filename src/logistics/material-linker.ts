@@ -45,41 +45,51 @@ export const selectSources = (request: RecipeIngredient, sources: RecipeItem[]):
   return usedSources
 }
 
-export const processExternalIngredient = (
+const handleCircularLinks = (
   ingredient: RecipeIngredient,
   recipe: Recipe,
   amount_needed: number,
-  alreadyProduced: Record<string, RecipeItem[]>,
-  usedSources: [RecipeItem, number][],
-  availableCircularLinks: Material[] = [],
-): Material[] | null => {
-  const materialLinks: Material[] = []
+  availableCircularLinks: Material[],
+): { links: Material[]; remainingAmount: number } => {
+  const links: Material[] = []
+  let remainingAmount = amount_needed
 
-  // First, check for available circular links for this specific recipe and ingredient
   const usableCircularLinks = availableCircularLinks.filter(
     (link) => link.sink === recipe.name && link.name === ingredient.item,
   )
 
   for (const circularLink of usableCircularLinks) {
-    const linkAmount = Math.min(circularLink.amount, amount_needed)
+    const linkAmount = Math.min(circularLink.amount, remainingAmount)
     if (linkAmount > 0) {
-      materialLinks.push({
+      links.push({
         source: circularLink.source,
         sink: recipe.name,
         name: ingredient.item,
         amount: linkAmount,
       })
-      amount_needed -= linkAmount
+      remainingAmount -= linkAmount
 
-      if (amount_needed <= ZERO_THRESHOLD) {
-        return materialLinks // Fully satisfied by circular links
+      if (remainingAmount <= ZERO_THRESHOLD) {
+        break
       }
     }
   }
 
-  // check if we do not produce this item
+  return { links, remainingAmount }
+}
+
+const handleExternalSources = (
+  ingredient: RecipeIngredient,
+  recipe: Recipe,
+  amount_needed: number,
+  alreadyProduced: Record<string, RecipeItem[]>,
+  usedSources: [RecipeItem, number][],
+): Material[] | null => {
+  const materialLinks: Material[] = []
+
+  // Check if we do not produce this item
   if (!alreadyProduced[ingredient.item] || alreadyProduced[ingredient.item].length === 0) {
-    // natural resource can be mined, otherwise it's just missing (hopefully for now)
+    // Natural resource can be mined, otherwise it's missing
     if (isNaturalResource(ingredient.item)) {
       materialLinks.push({
         source: ingredient.item,
@@ -108,34 +118,77 @@ export const processExternalIngredient = (
     alreadyProduced[ingredient.item],
   )
 
+  let remainingAmount = amount_needed
   for (const source of sources) {
-    const amount = Math.min(source.amount, amount_needed)
+    const amount = Math.min(source.amount, remainingAmount)
     materialLinks.push({
       source: source.recipe.name,
       sink: recipe.name,
       name: ingredient.item,
       amount,
     })
-    amount_needed -= amount
-    // defer subtracting amount from source until end, since could hit early-exit/unprocessed condition
+    remainingAmount -= amount
+    // Defer subtracting amount from source until end, since could hit early-exit/unprocessed condition
     // which results in not consuming these resources just yet
     usedSources.push([source, amount])
-    // should only happen on last source
-    if (amount_needed <= ZERO_THRESHOLD) {
+
+    if (remainingAmount <= ZERO_THRESHOLD) {
       break
     }
   }
 
-  // if we still need more and it is a natural resource, mine it
-  if (amount_needed > ZERO_THRESHOLD && isNaturalResource(ingredient.item)) {
+  // If we still need more and it is a natural resource, mine it
+  if (remainingAmount > ZERO_THRESHOLD && isNaturalResource(ingredient.item)) {
     materialLinks.push({
       source: ingredient.item,
       sink: recipe.name,
       name: ingredient.item,
-      amount: amount_needed,
+      amount: remainingAmount,
     })
   }
 
+  return materialLinks
+}
+
+export const processExternalIngredient = (
+  ingredient: RecipeIngredient,
+  recipe: Recipe,
+  amount_needed: number,
+  alreadyProduced: Record<string, RecipeItem[]>,
+  usedSources: [RecipeItem, number][],
+  availableCircularLinks: Material[] = [],
+): Material[] | null => {
+  const materialLinks: Material[] = []
+
+  // First, handle circular links
+  const { links: circularLinks, remainingAmount } = handleCircularLinks(
+    ingredient,
+    recipe,
+    amount_needed,
+    availableCircularLinks,
+  )
+
+  materialLinks.push(...circularLinks)
+
+  // If fully satisfied by circular links, return early
+  if (remainingAmount <= ZERO_THRESHOLD) {
+    return materialLinks
+  }
+
+  // Handle external sources for remaining amount
+  const externalLinks = handleExternalSources(
+    ingredient,
+    recipe,
+    remainingAmount,
+    alreadyProduced,
+    usedSources,
+  )
+
+  if (externalLinks === null) {
+    return null // Could not satisfy remaining amount
+  }
+
+  materialLinks.push(...externalLinks)
   return materialLinks
 }
 
