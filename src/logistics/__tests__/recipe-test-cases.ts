@@ -550,6 +550,12 @@ export const COMPLEX_TEST_CASES = {
         'Recipe_ElectromagneticControlRod_C',
         'Recipe_Alternate_Computer_1_C',
       ],
+      [
+        'Recipe_ModularFrame_C',
+        'Recipe_Alternate_Quartz_Purified_C',
+        'Recipe_Alternate_FertileUranium_C',
+        'Recipe_NonFissileUranium_C',
+      ],
     ],
     expectedLinks: [
       // batch one
@@ -919,6 +925,81 @@ export const COMPLEX_TEST_CASES = {
           sink: 'Recipe_Alternate_Computer_1_C',
           name: 'Desc_HighSpeedWire_C',
           amount: 28,
+        },
+      ],
+      // batch six
+      ...[
+        {
+          source: 'Recipe_Alternate_ReinforcedIronPlate_2_C',
+          sink: 'Recipe_ModularFrame_C',
+          name: 'Desc_IronPlateReinforced_C',
+          amount: 4,
+        },
+        {
+          source: 'Recipe_Alternate_SteelRod_C',
+          sink: 'Recipe_ModularFrame_C',
+          name: 'Desc_IronRod_C',
+          amount: 16,
+        },
+        {
+          source: 'Desc_RawQuartz_C',
+          sink: 'Recipe_Alternate_Quartz_Purified_C',
+          name: 'Desc_RawQuartz_C',
+          amount: 48.444,
+        },
+        {
+          source: 'Recipe_NitricAcid_C',
+          sink: 'Recipe_Alternate_Quartz_Purified_C',
+          name: 'Desc_NitricAcid_C',
+          amount: 4.037,
+        },
+        {
+          source: 'Desc_OreUranium_C',
+          sink: 'Recipe_Alternate_FertileUranium_C',
+          name: 'Desc_OreUranium_C',
+          amount: 10.417,
+        },
+        {
+          source: 'Desc_NuclearWaste_C',
+          sink: 'Recipe_Alternate_FertileUranium_C',
+          name: 'Desc_NuclearWaste_C',
+          amount: 10.417,
+        },
+        {
+          source: 'Desc_NitricAcid_C',
+          sink: 'Recipe_Alternate_FertileUranium_C',
+          name: 'Desc_NitricAcid_C',
+          amount: 6.25,
+        },
+        {
+          source: 'Recipe_SulfuricAcid_C',
+          sink: 'Recipe_Alternate_FertileUranium_C',
+          name: 'Desc_SulfuricAcid_C',
+          amount: 10.417,
+        },
+        {
+          source: 'Desc_NuclearWaste_C',
+          sink: 'Recipe_NonFissileUranium_C',
+          name: 'Desc_NuclearWaste_C',
+          amount: 68.75,
+        },
+        {
+          source: 'Recipe_AluminaSolution_C',
+          sink: 'Recipe_NonFissileUranium_C',
+          name: 'Desc_Silica_C',
+          amount: 45.833,
+        },
+        {
+          source: 'Recipe_NitricAcid_C',
+          sink: 'Recipe_NonFissileUranium_C',
+          name: 'Desc_NitricAcid_C',
+          amount: 27.5,
+        },
+        {
+          source: 'Recipe_SulfuricAcid_C',
+          sink: 'Recipe_NonFissileUranium_C',
+          name: 'Desc_SulfuricAcid_C',
+          amount: 27.5,
         },
       ],
     ],
