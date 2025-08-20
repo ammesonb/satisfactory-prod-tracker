@@ -22,31 +22,14 @@ export const recipeDatabase: Record<string, RecipeData> = {
     products: [{ item: 'Desc_CopperIngot_C', amount: 1 }],
   },
 
-  // Basic construction recipes
-  Recipe_Wire_C: {
-    name: 'Recipe_Wire_C',
-    ingredients: [{ item: 'Desc_CopperIngot_C', amount: 2 }],
-    products: [{ item: 'Desc_Wire_C', amount: 1 }],
-  },
-  Recipe_Cable_C: {
-    name: 'Recipe_Cable_C',
-    ingredients: [{ item: 'Desc_Wire_C', amount: 2 }],
-    products: [{ item: 'Desc_Cable_C', amount: 1 }],
-  },
-  Recipe_Concrete_C: {
-    name: 'Recipe_Concrete_C',
-    ingredients: [{ item: 'Desc_Stone_C', amount: 3 }],
-    products: [{ item: 'Desc_Concrete_C', amount: 1 }],
-  },
-
-  // Alumina solution recipes (catalyst examples)
-  Recipe_FakeAluminaSolutionRaw_C: {
+  // Fake Alumina solution recipes (catalyst examples)
+  Recipe_Fake_AluminaSolutionRaw_C: {
     name: 'Recipe_AluminaSolutionRaw_C',
     ingredients: [{ item: 'Desc_OreBauxite_C', amount: 2 }],
     products: [{ item: 'Desc_AluminaSolution_C', amount: 30 }],
   },
-  Recipe_FakeAluminaSolutionCatalyst_C: {
-    name: 'Recipe_AluminaSolutionCatalyst_C',
+  Recipe_Fake_AluminaSolution_C: {
+    name: 'Recipe_AluminaSolution_C',
     ingredients: [{ item: 'Desc_AluminaSolution_C', amount: 120 }],
     products: [
       { item: 'Desc_AluminaSolution_C', amount: 60 },
@@ -54,7 +37,6 @@ export const recipeDatabase: Record<string, RecipeData> = {
     ],
   },
 
-  // Caterium processing
   Recipe_PureCateriumIngot_C: {
     name: 'Recipe_PureCateriumIngot_C',
     ingredients: [
@@ -63,23 +45,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
     ],
     products: [{ item: 'Desc_CateriumIngot_C', amount: 2 }],
   },
-
-  // Oil processing recipes
-
-  // Rubber production recipes
-
-  // Circular dependency recipes (plastic/rubber cycle)
-  Recipe_Alternate_Plastic_1_C: {
-    name: 'Recipe_Alternate_Plastic_1_C',
-    ingredients: [
-      { item: 'Desc_Rubber_C', amount: 30 },
-      { item: 'Desc_Fuel_C', amount: 30 },
-    ],
-    products: [{ item: 'Desc_Plastic_C', amount: 60 }],
-  },
-
-  // Additional circular dependency recipes for batching tests
-  Recipe_RecycledRubber_C: {
+  // Fake recycled rubber and plastic recipes
+  Recipe_Fake_RecycledRubber_C: {
     name: 'Recipe_RecycledRubber_C',
     ingredients: [
       { item: 'Desc_Plastic_C', amount: 30 },
@@ -87,56 +54,13 @@ export const recipeDatabase: Record<string, RecipeData> = {
     ],
     products: [{ item: 'Desc_Rubber_C', amount: 60 }],
   },
-  Recipe_RecycledPlastic_C: {
+  Recipe_Fake_RecycledPlastic_C: {
     name: 'Recipe_RecycledPlastic_C',
     ingredients: [
       { item: 'Desc_Rubber_C', amount: 30 },
       { item: 'Desc_Fuel_C', amount: 30 },
     ],
     products: [{ item: 'Desc_Plastic_C', amount: 60 }],
-  },
-
-  // Steel production recipes
-  Recipe_Alternate_IngotSteel_1_C: {
-    name: 'Recipe_Alternate_IngotSteel_1_C',
-    ingredients: [
-      { item: 'Desc_IronIngot_C', amount: 40 },
-      { item: 'Desc_Coal_C', amount: 40 },
-    ],
-    products: [{ item: 'Desc_SteelIngot_C', amount: 60 }],
-  },
-
-  // Alternate steel products
-
-  // Alternate pure iron ingot recipe
-
-  // Alternate wire recipe
-  Recipe_Alternate_Wire_1_C: {
-    name: 'Recipe_Alternate_Wire_1_C',
-    ingredients: [{ item: 'Desc_IronIngot_C', amount: 12.5 }],
-    products: [{ item: 'Desc_Wire_C', amount: 22.5 }],
-  },
-
-  // Alternate reinforced iron plate recipe
-  Recipe_Alternate_ReinforcedIronPlate_2_C: {
-    name: 'Recipe_Alternate_ReinforcedIronPlate_2_C',
-    ingredients: [
-      { item: 'Desc_IronPlate_C', amount: 18.75 },
-      { item: 'Desc_Wire_C', amount: 37.5 },
-    ],
-    products: [{ item: 'Desc_IronPlateReinforced_C', amount: 5.625 }],
-  },
-
-  // Modular Frame recipe
-
-  // Fixed the plastic/rubber test - adding required recipe and fixing name
-  Recipe_DilutedFuel_C: {
-    name: 'Recipe_DilutedFuel_C',
-    ingredients: [
-      { item: 'Desc_HeavyOilResidue_C', amount: 50 },
-      { item: 'Desc_Water_C', amount: 100 },
-    ],
-    products: [{ item: 'Desc_Fuel_C', amount: 100 }],
   },
 
   Recipe_IronPlate_C: {

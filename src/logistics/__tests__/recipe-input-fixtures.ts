@@ -32,8 +32,10 @@ export const RECIPES = {
   SCREW: (amount: string) => makeRecipe('Recipe_Screw_C', amount, BUILDINGS.CONSTRUCTOR),
 
   // Advanced materials
-  ALUMINA_SOLUTION_RAW: (amount: string) =>
-    makeRecipe('Recipe_AluminaSolutionRaw_C', amount, BUILDINGS.REFINERY),
+  FAKE_ALUMINA_SOLUTION_RAW: (amount: string) =>
+    makeRecipe('Recipe_Fake_AluminaSolutionRaw_C', amount, BUILDINGS.REFINERY),
+  FAKE_ALUMINA_SOLUTION: (amount: string) =>
+    makeRecipe('Recipe_Fake_AluminaSolution_C', amount, BUILDINGS.REFINERY),
   ALUMINA_SOLUTION: (amount: string) =>
     makeRecipe('Recipe_AluminaSolution_C', amount, BUILDINGS.REFINERY),
   PURE_CATERIUM_INGOT: (amount: string) =>

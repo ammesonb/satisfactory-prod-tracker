@@ -96,7 +96,7 @@ export const BASIC_TEST_CASES = {
         source: 'Desc_Stone_C',
         sink: 'Recipe_Concrete_C',
         name: 'Desc_Stone_C',
-        amount: 3,
+        amount: 45,
       },
     ],
     expectedProducedItems: {
@@ -107,9 +107,9 @@ export const BASIC_TEST_CASES = {
           isResource: false,
         },
       ],
-      Desc_Concrete_C: [
+      Desc_Cement_C: [
         {
-          amount: 1,
+          amount: 15,
           recipe: expect.objectContaining({ name: 'Recipe_Concrete_C' }),
           isResource: false,
         },
@@ -155,18 +155,18 @@ export const COMPLEX_TEST_CASES = {
   // Aluminum refining with byproducts and self-referential catalysts
   ALUMINUM_SOLUTION: {
     rawRecipes: [
-      RECIPES.ALUMINA_SOLUTION_RAW('2'),
-      RECIPES.ALUMINA_SOLUTION('1'),
+      RECIPES.FAKE_ALUMINA_SOLUTION_RAW('2'),
+      RECIPES.FAKE_ALUMINA_SOLUTION('1'),
       RECIPES.PURE_CATERIUM_INGOT('1'),
     ],
     expectedBatches: [
-      ['Recipe_AluminaSolutionRaw_C', 'Recipe_PureCateriumIngot_C'],
-      ['Recipe_AluminaSolution_C'],
+      ['Recipe_Fake_AluminaSolutionRaw_C', 'Recipe_PureCateriumIngot_C'],
+      ['Recipe_Fake_AluminaSolution_C'],
     ],
     expectedLinks: [
       {
         source: 'Desc_OreBauxite_C',
-        sink: 'Recipe_AluminaSolutionRaw_C',
+        sink: 'Recipe_Fake_AluminaSolutionRaw_C',
         name: 'Desc_OreBauxite_C',
         amount: 4,
       },
@@ -183,14 +183,14 @@ export const COMPLEX_TEST_CASES = {
         amount: 2,
       },
       {
-        source: 'Recipe_AluminaSolutionRaw_C',
-        sink: 'Recipe_AluminaSolution_C',
+        source: 'Recipe_Fake_AluminaSolutionRaw_C',
+        sink: 'Recipe_Fake_AluminaSolution_C',
         name: 'Desc_AluminaSolution_C',
         amount: 60,
       },
       {
-        source: 'Recipe_AluminaSolution_C',
-        sink: 'Recipe_AluminaSolution_C',
+        source: 'Recipe_Fake_AluminaSolution_C',
+        sink: 'Recipe_Fake_AluminaSolution_C',
         name: 'Desc_AluminaSolution_C',
         amount: 60,
       },
@@ -206,7 +206,7 @@ export const COMPLEX_TEST_CASES = {
       Desc_Water_C: [
         {
           amount: 120,
-          recipe: expect.objectContaining({ name: 'Recipe_AluminaSolution_C' }),
+          recipe: expect.objectContaining({ name: 'Recipe_Fake_AluminaSolution_C' }),
           isResource: false,
         },
       ],

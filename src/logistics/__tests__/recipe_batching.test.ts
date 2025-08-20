@@ -12,27 +12,27 @@ describe('findCircularRecipes', () => {
 
   it('should detect self-referential catalyst recipes', () => {
     const recipes: Recipe[] = [
-      { name: 'Recipe_AluminaSolution_C', building: 'Desc_Refinery_C', count: 1 },
+      { name: 'Recipe_Fake_AluminaSolution_C', building: 'Desc_Refinery_C', count: 1 },
       { name: 'Recipe_IronIngot_C', building: 'Desc_SmelterMk1_C', count: 1 },
     ]
 
     const result = findCircularRecipes(recipes)
 
     expect(result).toHaveLength(1)
-    expect(result[0].name).toBe('Recipe_AluminaSolution_C')
+    expect(result[0].name).toBe('Recipe_Fake_AluminaSolution_C')
   })
 
   it('should detect mutual circular dependencies', () => {
     const recipes: Recipe[] = [
-      { name: 'Recipe_RecycledRubber_C', building: 'Desc_OilRefinery_C', count: 1 },
-      { name: 'Recipe_RecycledPlastic_C', building: 'Desc_OilRefinery_C', count: 1 },
+      { name: 'Recipe_Fake_RecycledRubber_C', building: 'Desc_OilRefinery_C', count: 1 },
+      { name: 'Recipe_Fake_RecycledPlastic_C', building: 'Desc_OilRefinery_C', count: 1 },
     ]
 
     const result = findCircularRecipes(recipes)
 
     expect(result).toHaveLength(2)
     expect(result.map((r) => r.name)).toEqual(
-      expect.arrayContaining(['Recipe_RecycledRubber_C', 'Recipe_RecycledPlastic_C']),
+      expect.arrayContaining(['Recipe_Fake_RecycledRubber_C', 'Recipe_Fake_RecycledPlastic_C']),
     )
   })
 

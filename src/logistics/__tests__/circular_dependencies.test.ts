@@ -44,7 +44,7 @@ describe('resolveCircularDependencies', () => {
 
   it('should handle catalyst recipes (self-referential)', () => {
     const circularRecipes: Recipe[] = [
-      { name: 'Recipe_AluminaSolution_C', building: 'Desc_Refinery_C', count: 1 },
+      { name: 'Recipe_Fake_AluminaSolution_C', building: 'Desc_Refinery_C', count: 1 },
     ]
 
     const result = resolveCircularDependencies(circularRecipes)
@@ -53,8 +53,8 @@ describe('resolveCircularDependencies', () => {
     expect(result).toHaveLength(1)
 
     const selfLink = result[0]
-    expect(selfLink.source).toBe('Recipe_AluminaSolution_C')
-    expect(selfLink.sink).toBe('Recipe_AluminaSolution_C')
+    expect(selfLink.source).toBe('Recipe_Fake_AluminaSolution_C')
+    expect(selfLink.sink).toBe('Recipe_Fake_AluminaSolution_C')
     expect(selfLink.name).toBe('Desc_AluminaSolution_C')
     expect(selfLink.amount).toBe(60) // min(120 needed, 60 produced)
   })
