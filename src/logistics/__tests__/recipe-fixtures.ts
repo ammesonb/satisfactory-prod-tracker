@@ -11,13 +11,13 @@ interface RecipeData {
 // Comprehensive recipe database for testing
 export const recipeDatabase: Record<string, RecipeData> = {
   // Basic smelting recipes
-  Recipe_IronIngot_C: {
-    name: 'Recipe_IronIngot_C',
+  Recipe_Fake_IronIngot_C: {
+    name: 'Recipe_Fake_IronIngot_C',
     ingredients: [{ item: 'Desc_OreIron_C', amount: 1 }],
     products: [{ item: 'Desc_IronIngot_C', amount: 1 }],
   },
-  Recipe_CopperIngot_C: {
-    name: 'Recipe_CopperIngot_C',
+  Recipe_Fake_CopperIngot_C: {
+    name: 'Recipe_Fake_CopperIngot_C',
     ingredients: [{ item: 'Desc_OreCopper_C', amount: 1 }],
     products: [{ item: 'Desc_CopperIngot_C', amount: 1 }],
   },

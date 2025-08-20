@@ -23,9 +23,9 @@ export const makeRecipe = (
 // Recipe constants organized by production chains
 export const RECIPES = {
   // Basic resources
-  IRON_INGOT: (amount: string) => makeRecipe('Recipe_IronIngot_C', amount, BUILDINGS.SMELTER),
+  IRON_INGOT: (amount: string) => makeRecipe('Recipe_IngotIron_C', amount, BUILDINGS.SMELTER),
   IRON_PLATE: (amount: string) => makeRecipe('Recipe_IronPlate_C', amount, BUILDINGS.CONSTRUCTOR),
-  COPPER_INGOT: (amount: string) => makeRecipe('Recipe_CopperIngot_C', amount, BUILDINGS.SMELTER),
+  COPPER_INGOT: (amount: string) => makeRecipe('Recipe_IngotCopper_C', amount, BUILDINGS.SMELTER),
   WIRE: (amount: string) => makeRecipe('Recipe_Wire_C', amount, BUILDINGS.CONSTRUCTOR),
   CABLE: (amount: string) => makeRecipe('Recipe_Cable_C', amount, BUILDINGS.CONSTRUCTOR),
   CONCRETE: (amount: string) => makeRecipe('Recipe_Concrete_C', amount, BUILDINGS.CONSTRUCTOR),

@@ -7,19 +7,19 @@ export const BASIC_TEST_CASES = {
   // Simple 2-step chain: Iron Ore -> Iron Ingot -> Iron Plate
   SIMPLE_PRODUCTION: {
     rawRecipes: [RECIPES.IRON_INGOT('3'), RECIPES.IRON_PLATE('1')],
-    expectedBatches: [['Recipe_IronIngot_C'], ['Recipe_IronPlate_C']],
+    expectedBatches: [['Recipe_IngotIron_C'], ['Recipe_IronPlate_C']],
     expectedLinks: [
       {
         source: 'Desc_OreIron_C',
-        sink: 'Recipe_IronIngot_C',
+        sink: 'Recipe_IngotIron_C',
         name: 'Desc_OreIron_C',
-        amount: 3,
+        amount: 90,
       },
       {
-        source: 'Recipe_IronIngot_C',
+        source: 'Recipe_IngotIron_C',
         sink: 'Recipe_IronPlate_C',
         name: 'Desc_IronIngot_C',
-        amount: 3,
+        amount: 30,
       },
     ],
   },
@@ -28,52 +28,52 @@ export const BASIC_TEST_CASES = {
   TIERED_PRODUCTION: {
     rawRecipes: [
       RECIPES.IRON_INGOT('1'),
-      RECIPES.COPPER_INGOT('4'),
+      RECIPES.COPPER_INGOT('1'),
       RECIPES.WIRE('2'),
-      RECIPES.CABLE('1'),
+      RECIPES.CABLE('0.5'),
     ],
     expectedBatches: [
-      ['Recipe_IronIngot_C', 'Recipe_CopperIngot_C'],
+      ['Recipe_IngotIron_C', 'Recipe_IngotCopper_C'],
       ['Recipe_Wire_C'],
       ['Recipe_Cable_C'],
     ],
     expectedLinks: [
       {
         source: 'Desc_OreIron_C',
-        sink: 'Recipe_IronIngot_C',
+        sink: 'Recipe_IngotIron_C',
         name: 'Desc_OreIron_C',
-        amount: 1,
+        amount: 30,
       },
       {
         source: 'Desc_OreCopper_C',
-        sink: 'Recipe_CopperIngot_C',
+        sink: 'Recipe_IngotCopper_C',
         name: 'Desc_OreCopper_C',
-        amount: 4,
+        amount: 30,
       },
       {
-        source: 'Recipe_CopperIngot_C',
+        source: 'Recipe_IngotCopper_C',
         sink: 'Recipe_Wire_C',
         name: 'Desc_CopperIngot_C',
-        amount: 4,
+        amount: 30,
       },
       {
         source: 'Recipe_Wire_C',
         sink: 'Recipe_Cable_C',
         name: 'Desc_Wire_C',
-        amount: 2,
+        amount: 30,
       },
     ],
     expectedProducedItems: {
       Desc_IronIngot_C: [
         {
-          amount: 1,
-          recipe: expect.objectContaining({ name: 'Recipe_IronIngot_C' }),
+          amount: 30,
+          recipe: expect.objectContaining({ name: 'Recipe_IngotIron_C' }),
           isResource: false,
         },
       ],
       Desc_Cable_C: [
         {
-          amount: 1,
+          amount: 15,
           recipe: expect.objectContaining({ name: 'Recipe_Cable_C' }),
           isResource: false,
         },
@@ -84,13 +84,13 @@ export const BASIC_TEST_CASES = {
   // Parallel production from natural resources
   NATURAL_RESOURCES: {
     rawRecipes: [RECIPES.IRON_INGOT('2'), RECIPES.CONCRETE('1')],
-    expectedBatches: [['Recipe_IronIngot_C', 'Recipe_Concrete_C']],
+    expectedBatches: [['Recipe_IngotIron_C', 'Recipe_Concrete_C']],
     expectedLinks: [
       {
         source: 'Desc_OreIron_C',
-        sink: 'Recipe_IronIngot_C',
+        sink: 'Recipe_IngotIron_C',
         name: 'Desc_OreIron_C',
-        amount: 2,
+        amount: 60,
       },
       {
         source: 'Desc_Stone_C',
@@ -102,8 +102,8 @@ export const BASIC_TEST_CASES = {
     expectedProducedItems: {
       Desc_IronIngot_C: [
         {
-          amount: 2,
-          recipe: expect.objectContaining({ name: 'Recipe_IronIngot_C' }),
+          amount: 60,
+          recipe: expect.objectContaining({ name: 'Recipe_IngotIron_C' }),
           isResource: false,
         },
       ],
@@ -123,26 +123,33 @@ export const BASIC_TEST_CASES = {
       RECIPES.IRON_INGOT('3'), // Produces 3 iron ingots
       RECIPES.IRON_PLATE('1'), // Needs 3 iron ingots
     ],
-    expectedBatches: [['Recipe_IronIngot_C'], ['Recipe_IronPlate_C']],
+    expectedBatches: [['Recipe_IngotIron_C'], ['Recipe_IronPlate_C']],
     expectedLinks: [
       {
         source: 'Desc_OreIron_C',
-        sink: 'Recipe_IronIngot_C',
+        sink: 'Recipe_IngotIron_C',
         name: 'Desc_OreIron_C',
-        amount: 3,
+        amount: 90,
       },
       {
-        source: 'Recipe_IronIngot_C',
+        source: 'Recipe_IngotIron_C',
         sink: 'Recipe_IronPlate_C',
         name: 'Desc_IronIngot_C',
-        amount: 3,
+        amount: 30,
       },
     ],
     expectedProducedItems: {
       Desc_IronPlate_C: [
         {
-          amount: 2,
+          amount: 20,
           recipe: expect.objectContaining({ name: 'Recipe_IronPlate_C' }),
+          isResource: false,
+        },
+      ],
+      Desc_IronIngot_C: [
+        {
+          amount: 60,
+          recipe: expect.objectContaining({ name: 'Recipe_IngotIron_C' }),
           isResource: false,
         },
       ],
