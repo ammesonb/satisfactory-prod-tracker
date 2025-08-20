@@ -23,16 +23,6 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
 
   // Basic construction recipes
-  Recipe_Single_IronPlate_C: {
-    name: 'Recipe_IronPlate_C',
-    ingredients: [{ item: 'Desc_IronIngot_C', amount: 3 }],
-    products: [{ item: 'Desc_IronPlate_C', amount: 2 }],
-  },
-  Recipe_IronRod_C: {
-    name: 'Recipe_IronRod_C',
-    ingredients: [{ item: 'Desc_IronIngot_C', amount: 1 }],
-    products: [{ item: 'Desc_IronRod_C', amount: 1 }],
-  },
   Recipe_Wire_C: {
     name: 'Recipe_Wire_C',
     ingredients: [{ item: 'Desc_CopperIngot_C', amount: 2 }],
@@ -50,13 +40,13 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
 
   // Alumina solution recipes (catalyst examples)
-  Recipe_AluminaSolutionRaw_C: {
+  Recipe_FakeAluminaSolutionRaw_C: {
     name: 'Recipe_AluminaSolutionRaw_C',
     ingredients: [{ item: 'Desc_OreBauxite_C', amount: 2 }],
     products: [{ item: 'Desc_AluminaSolution_C', amount: 30 }],
   },
-  Recipe_AluminaSolution_C: {
-    name: 'Recipe_AluminaSolution_C',
+  Recipe_FakeAluminaSolutionCatalyst_C: {
+    name: 'Recipe_AluminaSolutionCatalyst_C',
     ingredients: [{ item: 'Desc_AluminaSolution_C', amount: 120 }],
     products: [
       { item: 'Desc_AluminaSolution_C', amount: 60 },
@@ -75,42 +65,10 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
 
   // Oil processing recipes
-  Recipe_Alternate_HeavyOilResidue_C: {
-    name: 'Recipe_Alternate_HeavyOilResidue_C',
-    ingredients: [{ item: 'Desc_LiquidOil_C', amount: 30 }],
-    products: [
-      { item: 'Desc_HeavyOilResidue_C', amount: 40 },
-      { item: 'Desc_PolymerResin_C', amount: 20 },
-    ],
-  },
-  Recipe_Alternate_DilutedFuel_C: {
-    name: 'Recipe_Alternate_DilutedFuel_C',
-    ingredients: [
-      { item: 'Desc_HeavyOilResidue_C', amount: 50 },
-      { item: 'Desc_Water_C', amount: 100 },
-    ],
-    products: [{ item: 'Desc_Fuel_C', amount: 100 }],
-  },
 
   // Rubber production recipes
-  Recipe_ResidualRubber_C: {
-    name: 'Recipe_ResidualRubber_C',
-    ingredients: [
-      { item: 'Desc_PolymerResin_C', amount: 40 },
-      { item: 'Desc_Water_C', amount: 40 },
-    ],
-    products: [{ item: 'Desc_Rubber_C', amount: 20 }],
-  },
 
   // Circular dependency recipes (plastic/rubber cycle)
-  Recipe_Alternate_RecycledRubber_C: {
-    name: 'Recipe_Alternate_RecycledRubber_C',
-    ingredients: [
-      { item: 'Desc_Plastic_C', amount: 30 },
-      { item: 'Desc_Fuel_C', amount: 30 },
-    ],
-    products: [{ item: 'Desc_Rubber_C', amount: 60 }],
-  },
   Recipe_Alternate_Plastic_1_C: {
     name: 'Recipe_Alternate_Plastic_1_C',
     ingredients: [
@@ -149,29 +107,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
 
   // Alternate steel products
-  Recipe_Alternate_SteelRod_C: {
-    name: 'Recipe_Alternate_SteelRod_C',
-    ingredients: [{ item: 'Desc_SteelIngot_C', amount: 12 }],
-    products: [{ item: 'Desc_IronRod_C', amount: 48 }],
-  },
-  Recipe_Alternate_SteelCastedPlate_C: {
-    name: 'Recipe_Alternate_SteelCastedPlate_C',
-    ingredients: [
-      { item: 'Desc_IronIngot_C', amount: 15 },
-      { item: 'Desc_SteelIngot_C', amount: 15 },
-    ],
-    products: [{ item: 'Desc_IronPlate_C', amount: 45 }],
-  },
 
   // Alternate pure iron ingot recipe
-  Recipe_Alternate_PureIronIngot_C: {
-    name: 'Recipe_Alternate_PureIronIngot_C',
-    ingredients: [
-      { item: 'Desc_OreIron_C', amount: 35 },
-      { item: 'Desc_Water_C', amount: 20 },
-    ],
-    products: [{ item: 'Desc_IronIngot_C', amount: 65 }],
-  },
 
   // Alternate wire recipe
   Recipe_Alternate_Wire_1_C: {
@@ -191,14 +128,6 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
 
   // Modular Frame recipe
-  Recipe_ModularFrame_C: {
-    name: 'Recipe_ModularFrame_C',
-    ingredients: [
-      { item: 'Desc_IronPlateReinforced_C', amount: 3 },
-      { item: 'Desc_IronRod_C', amount: 12 },
-    ],
-    products: [{ item: 'Desc_ModularFrame_C', amount: 2 }],
-  },
 
   // Fixed the plastic/rubber test - adding required recipe and fixing name
   Recipe_DilutedFuel_C: {
@@ -208,11 +137,6 @@ export const recipeDatabase: Record<string, RecipeData> = {
       { item: 'Desc_Water_C', amount: 100 },
     ],
     products: [{ item: 'Desc_Fuel_C', amount: 100 }],
-  },
-  Recipe_FluidCanister_C: {
-    name: 'Recipe_FluidCanister_C',
-    ingredients: [{ item: 'Desc_Plastic_C', amount: 2 }],
-    products: [{ item: 'Desc_FluidCanister_C', amount: 4 }],
   },
 
   Recipe_IronPlate_C: {
