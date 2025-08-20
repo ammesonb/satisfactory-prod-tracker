@@ -484,10 +484,8 @@ export const COMPLEX_TEST_CASES = {
       RECIPES.SCREW('3.177777777777'),
     ],
     /* Remaining recipes to add to tests:
-     * - Recipe_PureAluminumIngot_C
      * - Recipe_Alternate_CopperRotor_C
      * - Recipe_ModularFrame_C
-     * - Recipe_Alternate_CoatedIronPlate_C
      * - Recipe_PlutoniumCell_C
      * - Recipe_PressureConversionCube_C
      * - Recipe_NitricAcid_C
@@ -499,7 +497,6 @@ export const COMPLEX_TEST_CASES = {
      * - Recipe_Alternate_HeatFusedFrame_C
      * - Recipe_Alternate_FertileUranium_C
      * - Recipe_Alternate_AlcladCasing_C
-     * - Recipe_Alternate_AILimiter_Plastic_C
      * - Recipe_Alternate_Silica_Distilled_C
      * - Recipe_Alternate_Quartz_Purified_C
      * - Recipe_Alternate_UraniumCell_1_C
@@ -508,8 +505,6 @@ export const COMPLEX_TEST_CASES = {
      * - Recipe_Alternate_ModularFrameHeavy_C
      * - Recipe_Alternate_CrystalOscillator_C
      * - Recipe_Alternate_Computer_1_C
-     * - Recipe_Alternate_CircuitBoard_2_C
-     * - Recipe_Screw_C
      */
     expectedBatches: [
       [
@@ -540,7 +535,13 @@ export const COMPLEX_TEST_CASES = {
         'Recipe_Stator_C',
         'Recipe_Alternate_EncasedIndustrialBeam_C',
       ],
-      [],
+      [
+        'Recipe_Screw_C',
+        'Recipe_Alternate_CoatedIronPlate_C',
+        'Recipe_Alternate_AILimiter_Plastic_C',
+        'Recipe_Alternate_CircuitBoard_2_C',
+        'Recipe_PureAluminumIngot_C',
+      ],
     ],
     expectedLinks: [
       // batch one
@@ -784,6 +785,57 @@ export const COMPLEX_TEST_CASES = {
           sink: 'Recipe_Alternate_EncasedIndustrialBeam_C',
           name: 'Desc_Cement_C',
           amount: 16.667,
+        },
+      ],
+      // batch four
+      ...[
+        {
+          source: 'Recipe_Alternate_SteelRod_C',
+          sink: 'Recipe_Screw_C',
+          name: 'Desc_SteelRod_C',
+          amount: 31.778,
+        },
+        {
+          source: 'Recipe_Alternate_PureIronIngot_C',
+          sink: 'Recipe_Alternate_CoatedIronPlate_C',
+          name: 'Desc_IronIngot_C',
+          amount: 14.298,
+        },
+        {
+          source: 'Recipe_Alternate_Plastic_1_C',
+          sink: 'Recipe_Alternate_CoatedIronPlate_C',
+          name: 'Desc_Plastic_C',
+          amount: 2.86,
+        },
+        {
+          source: 'Recipe_Alternate_Quickwire_C',
+          sink: 'Recipe_Alternate_AILimiter_Plastic_C',
+          name: 'Desc_HighSpeedWire_C',
+          amount: 158,
+        },
+        {
+          source: 'Recipe_Alternate_Plastic_1_C',
+          sink: 'Recipe_Alternate_AILimiter_Plastic_C',
+          name: 'Desc_Plastic_C',
+          amount: 36.867,
+        },
+        {
+          source: 'Recipe_Alternate_Plastic_1_C',
+          sink: 'Recipe_Alternate_CircuitBoard_2_C',
+          name: 'Desc_Plastic_C',
+          amount: 11.429,
+        },
+        {
+          source: 'Recipe_Alternate_Quickwire_C',
+          sink: 'Recipe_Alternate_CircuitBoard_2_C',
+          name: 'Desc_HighSpeedWire_C',
+          amount: 34.285,
+        },
+        {
+          source: 'Recipe_Alternate_ElectroAluminumScrap_C',
+          sink: 'Recipe_PureAluminumIngot_C',
+          name: 'Desc_AluminumScrap_C',
+          amount: 185.333,
         },
       ],
     ],
