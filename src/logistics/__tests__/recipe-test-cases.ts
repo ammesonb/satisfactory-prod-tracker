@@ -30,7 +30,7 @@ export const BASIC_TEST_CASES = {
       RECIPES.IRON_INGOT('1'),
       RECIPES.COPPER_INGOT('1'),
       RECIPES.WIRE('2'),
-      RECIPES.CABLE('0.5'),
+      RECIPES.CABLE('1'),
     ],
     expectedBatches: [
       ['Recipe_IngotIron_C', 'Recipe_IngotCopper_C'],
@@ -60,7 +60,7 @@ export const BASIC_TEST_CASES = {
         source: 'Recipe_Wire_C',
         sink: 'Recipe_Cable_C',
         name: 'Desc_Wire_C',
-        amount: 30,
+        amount: 60,
       },
     ],
     expectedProducedItems: {
@@ -73,7 +73,7 @@ export const BASIC_TEST_CASES = {
       ],
       Desc_Cable_C: [
         {
-          amount: 15,
+          amount: 30,
           recipe: expect.objectContaining({ name: 'Recipe_Cable_C' }),
           isResource: false,
         },
@@ -373,13 +373,13 @@ export const COMPLEX_TEST_CASES = {
       {
         source: 'Recipe_Alternate_DilutedFuel_C',
         sink: 'Recipe_Alternate_Plastic_1_C',
-        name: 'Desc_Fuel_C',
+        name: 'Desc_LiquidFuel_C',
         amount: 55.555,
       },
       {
         source: 'Recipe_Alternate_DilutedFuel_C',
         sink: 'Recipe_Alternate_RecycledRubber_C',
-        name: 'Desc_Fuel_C',
+        name: 'Desc_LiquidFuel_C',
         amount: 51.111,
       },
       {
@@ -398,13 +398,13 @@ export const COMPLEX_TEST_CASES = {
         source: 'Recipe_Alternate_Plastic_1_C',
         sink: 'Recipe_FluidCanister_C',
         name: 'Desc_Plastic_C',
-        amount: 0.16667,
+        amount: 2.5,
       },
     ] as Material[],
     expectedProducedItems: {
       Desc_Plastic_C: [
         {
-          amount: expect.closeTo(110.94, 2),
+          amount: expect.closeTo(108.611, 2),
           recipe: expect.objectContaining({ name: 'Recipe_Alternate_Plastic_1_C' }),
           isResource: false,
         },
@@ -423,7 +423,7 @@ export const COMPLEX_TEST_CASES = {
       ],
       Desc_FluidCanister_C: [
         {
-          amount: expect.closeTo(0.33333, 4),
+          amount: expect.closeTo(5, 4),
           recipe: expect.objectContaining({ name: 'Recipe_FluidCanister_C' }),
           isResource: false,
         },
