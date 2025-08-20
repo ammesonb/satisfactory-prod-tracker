@@ -149,7 +149,8 @@ describe('processRecipeChain integration - production chain processing', () => {
     })
 
     it('should process insanely complex plutonium cells', () => {
-      const testCase = COMPLEX_TEST_CASES.PLUTONIUM_CELL
+      const testCase = COMPLEX_TEST_CASES.PLUTONIUM_CEL
+      console.log(testCase.rawRecipes.map((recipe) => recipe.name))
       testRecipeChain(
         testCase.rawRecipes,
         testCase.expectedBatches,
