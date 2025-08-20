@@ -484,11 +484,7 @@ export const COMPLEX_TEST_CASES = {
       RECIPES.SCREW('3.177777777777'),
     ],
     /* Remaining recipes to add to tests:
-     * - Recipe_Alternate_SteelRod_C
-     * - Recipe_Alternate_RecycledRubber_C
      * - Recipe_PureAluminumIngot_C
-     * - Recipe_Stator_C
-     * - Recipe_Alternate_ElectroAluminumScrap_C
      * - Recipe_Alternate_CopperRotor_C
      * - Recipe_ModularFrame_C
      * - Recipe_Alternate_CoatedIronPlate_C
@@ -507,9 +503,7 @@ export const COMPLEX_TEST_CASES = {
      * - Recipe_Alternate_Silica_Distilled_C
      * - Recipe_Alternate_Quartz_Purified_C
      * - Recipe_Alternate_UraniumCell_1_C
-     * - Recipe_Alternate_EncasedIndustrialBeam_C
      * - Recipe_Alternate_ReinforcedIronPlate_2_C
-     * - Recipe_Alternate_Plastic_1_C
      * - Recipe_Alternate_NuclearFuelRod_1_C
      * - Recipe_Alternate_ModularFrameHeavy_C
      * - Recipe_Alternate_CrystalOscillator_C
@@ -538,7 +532,14 @@ export const COMPLEX_TEST_CASES = {
         'Recipe_Alternate_IngotSteel_1_C',
         'Recipe_Alternate_SteamedCopperSheet_C',
       ],
-      [],
+      [
+        'Recipe_Alternate_Plastic_1_C',
+        'Recipe_Alternate_RecycledRubber_C',
+        'Recipe_Alternate_SteelRod_C',
+        'Recipe_Alternate_ElectroAluminumScrap_C',
+        'Recipe_Stator_C',
+        'Recipe_Alternate_EncasedIndustrialBeam_C',
+      ],
       [],
     ],
     expectedLinks: [
@@ -714,6 +715,75 @@ export const COMPLEX_TEST_CASES = {
           sink: 'Recipe_Alternate_SteamedCopperSheet_C',
           name: 'Desc_Water_C',
           amount: 14.667,
+        },
+      ],
+      // batch three
+      ...[
+        {
+          source: 'Recipe_Alternate_DilutedFuel_C',
+          sink: 'Recipe_Alternate_Plastic_1_C',
+          name: 'Desc_LiquidFuel_C',
+          amount: 41.116,
+        },
+        {
+          source: 'Recipe_Alternate_RecycledRubber_C',
+          sink: 'Recipe_Alternate_Plastic_1_C',
+          name: 'Desc_Rubber_C',
+          amount: 41.116,
+        },
+        {
+          source: 'Recipe_Alternate_DilutedFuel_C',
+          sink: 'Recipe_Alternate_RecycledRubber_C',
+          name: 'Desc_LiquidFuel_C',
+          amount: 31.076,
+        },
+        {
+          source: 'Recipe_Alternate_Plastic_1_C',
+          sink: 'Recipe_Alternate_RecycledRubber_C',
+          name: 'Desc_Plastic_C',
+          amount: 31.076,
+        },
+        {
+          source: 'Recipe_Alternate_IngotSteel_1_C',
+          sink: 'Recipe_Alternate_SteelRod_C',
+          name: 'Desc_SteelIngot_C',
+          amount: 11.944,
+        },
+        {
+          source: 'Recipe_AluminaSolution_C',
+          sink: 'Recipe_Alternate_ElectroAluminumScrap_C',
+          name: 'Desc_AluminaSolution_C',
+          amount: 111.2,
+        },
+        {
+          source: 'Recipe_PetroleumCoke_C',
+          sink: 'Recipe_Alternate_ElectroAluminumScrap_C',
+          name: 'Desc_PetroleumCoke_C',
+          amount: 37.067,
+        },
+        {
+          source: 'Recipe_Alternate_SteelPipe_Iron_C',
+          sink: 'Recipe_Stator_C',
+          name: 'Desc_SteelPipe_C',
+          amount: 33,
+        },
+        {
+          source: 'Recipe_Alternate_Wire_1_C',
+          sink: 'Recipe_Stator_C',
+          name: 'Desc_Wire_C',
+          amount: 88,
+        },
+        {
+          source: 'Recipe_Alternate_SteelPipe_Iron_C',
+          sink: 'Recipe_Alternate_EncasedIndustrialBeam_C',
+          name: 'Desc_SteelPipe_C',
+          amount: 20,
+        },
+        {
+          source: 'Recipe_Alternate_WetConcrete_C',
+          sink: 'Recipe_Alternate_EncasedIndustrialBeam_C',
+          name: 'Desc_Cement_C',
+          amount: 16.667,
         },
       ],
     ],
