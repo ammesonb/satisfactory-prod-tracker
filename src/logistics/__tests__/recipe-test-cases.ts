@@ -484,27 +484,17 @@ export const COMPLEX_TEST_CASES = {
       RECIPES.SCREW('3.177777777777'),
     ],
     /* Remaining recipes to add to tests:
-     * - Recipe_Alternate_CopperRotor_C
-     * - Recipe_ModularFrame_C
      * - Recipe_PlutoniumCell_C
      * - Recipe_PressureConversionCube_C
-     * - Recipe_NitricAcid_C
-     * - Recipe_NonFissileUranium_C
      * - Recipe_Plutonium_C
      * - Recipe_RadioControlUnit_C
-     * - Recipe_ElectromagneticControlRod_C
      * - Recipe_Alternate_PlutoniumFuelUnit_C
      * - Recipe_Alternate_HeatFusedFrame_C
-     * - Recipe_Alternate_FertileUranium_C
-     * - Recipe_Alternate_AlcladCasing_C
      * - Recipe_Alternate_Silica_Distilled_C
-     * - Recipe_Alternate_Quartz_Purified_C
      * - Recipe_Alternate_UraniumCell_1_C
-     * - Recipe_Alternate_ReinforcedIronPlate_2_C
      * - Recipe_Alternate_NuclearFuelRod_1_C
      * - Recipe_Alternate_ModularFrameHeavy_C
      * - Recipe_Alternate_CrystalOscillator_C
-     * - Recipe_Alternate_Computer_1_C
      */
     expectedBatches: [
       [
