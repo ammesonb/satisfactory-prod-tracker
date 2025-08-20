@@ -542,6 +542,14 @@ export const COMPLEX_TEST_CASES = {
         'Recipe_Alternate_CircuitBoard_2_C',
         'Recipe_PureAluminumIngot_C',
       ],
+      [
+        'Recipe_Alternate_CopperRotor_C',
+        'Recipe_Alternate_AlcladCasing_C',
+        'Recipe_Alternate_ReinforcedIronPlate_2_C',
+        'Recipe_NitricAcid_C',
+        'Recipe_ElectromagneticControlRod_C',
+        'Recipe_Alternate_Computer_1_C',
+      ],
     ],
     expectedLinks: [
       // batch one
@@ -836,6 +844,81 @@ export const COMPLEX_TEST_CASES = {
           sink: 'Recipe_PureAluminumIngot_C',
           name: 'Desc_AluminumScrap_C',
           amount: 185.333,
+        },
+      ],
+      // batch five
+      ...[
+        {
+          source: 'Recipe_Alternate_SteamedCopperSheet_C',
+          sink: 'Recipe_Alternate_CopperRotor_C',
+          name: 'Desc_CopperSheet_C',
+          amount: 14.667,
+        },
+        {
+          source: 'Recipe_Screw_C',
+          sink: 'Recipe_Alternate_CopperRotor_C',
+          name: 'Desc_IronScrew_C',
+          amount: 127.111,
+        },
+        {
+          source: 'Recipe_PureAluminumIngot_C',
+          sink: 'Recipe_Alternate_AlcladCasing_C',
+          name: 'Desc_AluminumIngot_C',
+          amount: 42.667,
+        },
+        {
+          source: 'Recipe_Alternate_PureCopperIngot_C',
+          sink: 'Recipe_Alternate_AlcladCasing_C',
+          name: 'Desc_CopperIngot_C',
+          amount: 21.333,
+        },
+        {
+          source: 'Recipe_Alternate_CoatedIronPlate_C',
+          sink: 'Recipe_Alternate_ReinforcedIronPlate_2_C',
+          name: 'Desc_IronPlate_C',
+          amount: 13.333,
+        },
+        {
+          source: 'Recipe_Alternate_Wire_1_C',
+          sink: 'Recipe_Alternate_ReinforcedIronPlate_2_C',
+          name: 'Desc_Wire_C',
+          amount: 26.667,
+        },
+        {
+          source: 'Desc_NitrogenGas_C',
+          sink: 'Recipe_NitricAcid_C',
+          name: 'Desc_NitrogenGas_C',
+          amount: 183.148,
+        },
+        {
+          source: 'Recipe_Alternate_ElectroAluminumScrap_C',
+          sink: 'Recipe_NitricAcid_C',
+          name: 'Desc_Water_C',
+          amount: 45.777,
+        },
+        {
+          source: 'Recipe_Stator_C',
+          sink: 'Recipe_ElectromagneticControlRod_C',
+          name: 'Desc_Stator_C',
+          amount: 11,
+        },
+        {
+          source: 'Recipe_Alternate_AILimiter_Plastic_C',
+          sink: 'Recipe_ElectromagneticControlRod_C',
+          name: 'Desc_CircuitBoardHighSpeed_C',
+          amount: 7.333,
+        },
+        {
+          source: 'Recipe_Alternate_CircuitBoard_2_C',
+          sink: 'Recipe_Alternate_Computer_1_C',
+          name: 'Desc_CircuitBoard_C',
+          amount: 8,
+        },
+        {
+          source: 'Recipe_Alternate_Quickwire_C',
+          sink: 'Recipe_Alternate_Computer_1_C',
+          name: 'Desc_HighSpeedWire_C',
+          amount: 28,
         },
       ],
     ],
