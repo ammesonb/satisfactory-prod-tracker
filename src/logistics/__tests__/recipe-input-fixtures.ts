@@ -82,6 +82,8 @@ export const RECIPES = {
     makeRecipe('Recipe_Alternate_PureQuartzCrystal_C', amount, BUILDINGS.REFINERY),
   ALTERNATE_PURE_COPPER_INGOT: (amount: string) =>
     makeRecipe('Recipe_Alternate_PureCopperIngot_C', amount, BUILDINGS.REFINERY),
+  ALTERNATE_PURE_CATERIUM_INGOT: (amount: string) =>
+    makeRecipe('Recipe_Alternate_PureCateriumIngot_C', amount, BUILDINGS.REFINERY),
   PURE_ALUMINUM_INGOT: (amount: string) =>
     makeRecipe('Recipe_PureAluminumIngot_C', amount, BUILDINGS.SMELTER),
   STATOR: (amount: string) => makeRecipe('Recipe_Stator_C', amount, BUILDINGS.ASSEMBLER),

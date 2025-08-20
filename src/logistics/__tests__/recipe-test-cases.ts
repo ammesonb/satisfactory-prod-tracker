@@ -443,7 +443,7 @@ export const COMPLEX_TEST_CASES = {
       RECIPES.ALTERNATE_PURE_QUARTZ_CRYSTAL('0.0328042'),
       RECIPES.ALTERNATE_PURE_IRON_INGOT('5.32253'),
       RECIPES.ALTERNATE_PURE_COPPER_INGOT('6.46317'),
-      RECIPES.PURE_CATERIUM_INGOT('3.43948'),
+      RECIPES.ALTERNATE_PURE_CATERIUM_INGOT('3.43948'),
       RECIPES.PURE_ALUMINUM_INGOT('3.088888888888'),
       RECIPES.ALUMINA_SOLUTION('0.9266666666666'),
       RECIPES.STATOR('2.2'),
@@ -483,8 +483,157 @@ export const COMPLEX_TEST_CASES = {
       RECIPES.ALTERNATE_CIRCUIT_BOARD_2('0.914286'),
       RECIPES.SCREW('3.177777777777'),
     ],
-    expectedBatches: [],
-    expectedLinks: [],
+    /* Remaining recipes to add to tests:
+     * - Recipe_PetroleumCoke_C
+     * - Recipe_ResidualRubber_C
+     * - Recipe_Alternate_SteelRod_C
+     * - Recipe_Alternate_SteamedCopperSheet_C
+     * - Recipe_Alternate_RecycledRubber_C
+     * - Recipe_PureAluminumIngot_C
+     * - Recipe_Stator_C
+     * - Recipe_Alternate_ElectroAluminumScrap_C
+     * - Recipe_Alternate_CopperRotor_C
+     * - Recipe_ModularFrame_C
+     * - Recipe_Alternate_CoatedIronPlate_C
+     * - Recipe_PlutoniumCell_C
+     * - Recipe_PressureConversionCube_C
+     * - Recipe_NitricAcid_C
+     * - Recipe_NonFissileUranium_C
+     * - Recipe_Plutonium_C
+     * - Recipe_RadioControlUnit_C
+     * - Recipe_ElectromagneticControlRod_C
+     * - Recipe_Alternate_PlutoniumFuelUnit_C
+     * - Recipe_Alternate_HeatFusedFrame_C
+     * - Recipe_Alternate_FertileUranium_C
+     * - Recipe_Alternate_DilutedFuel_C
+     * - Recipe_Alternate_AlcladCasing_C
+     * - Recipe_Alternate_SteelPipe_Iron_C
+     * - Recipe_Alternate_AILimiter_Plastic_C
+     * - Recipe_Alternate_Silica_Distilled_C
+     * - Recipe_Alternate_Quartz_Purified_C
+     * - Recipe_Alternate_Wire_1_C
+     * - Recipe_Alternate_UraniumCell_1_C
+     * - Recipe_Alternate_EncasedIndustrialBeam_C
+     * - Recipe_Alternate_ReinforcedIronPlate_2_C
+     * - Recipe_Alternate_Quickwire_C
+     * - Recipe_Alternate_Plastic_1_C
+     * - Recipe_Alternate_NuclearFuelRod_1_C
+     * - Recipe_Alternate_IngotSteel_1_C
+     * - Recipe_Alternate_ModularFrameHeavy_C
+     * - Recipe_Alternate_CrystalOscillator_C
+     * - Recipe_Alternate_Computer_1_C
+     * - Recipe_Alternate_CircuitBoard_2_C
+     * - Recipe_Screw_C
+     */
+    expectedBatches: [
+      [
+        'Recipe_Alternate_PureIronIngot_C ',
+        'Recipe_Alternate_PureCopperIngot_C',
+        'Recipe_Alternate_PureQuartzCrystal_C',
+        'Recipe_Alternate_PureCateriumIngot_C',
+        'Recipe_Alternate_WetConcrete_C',
+        'Recipe_Alternate_HeavyOilResidue_C',
+        'Recipe_AluminaSolution_C',
+        'Recipe_SulfuricAcid_C',
+      ],
+      [],
+      [],
+      [],
+      [],
+      [],
+    ],
+    expectedLinks: [
+      {
+        source: 'Desc_OreIron_C',
+        sink: 'Recipe_Alternate_PureIronIngot_C',
+        name: 'Desc_OreIron_C',
+        amount: 186.289,
+      },
+      {
+        source: 'Desc_Water_C',
+        sink: 'Recipe_Alternate_PureIronIngot_C',
+        name: 'Desc_Water_C',
+        amount: 106.451,
+      },
+      {
+        source: 'Desc_OreCopper_C',
+        sink: 'Recipe_Alternate_PureCopperIngot_C',
+        name: 'Desc_OreCopper_C',
+        amount: 96.948,
+      },
+      {
+        source: 'Desc_Water_C',
+        sink: 'Recipe_Alternate_PureCopperIngot_C',
+        name: 'Desc_Water_C',
+        amount: 64.632,
+      },
+      {
+        source: 'Desc_OreQuartz_C',
+        sink: 'Recipe_Alternate_PureQuartzCrystal_C',
+        name: 'Desc_OreQuartz_C',
+        amount: 2.214,
+      },
+      {
+        source: 'Desc_Water_C',
+        sink: 'Recipe_Alternate_PureQuartzCrystal_C',
+        name: 'Desc_Water_C',
+        amount: 1.23,
+      },
+      {
+        source: 'Desc_OreGold_C',
+        sink: 'Recipe_Alternate_PureCateriumIngot_C',
+        name: 'Desc_OreGold_C',
+        amount: 82.548,
+      },
+      {
+        source: 'Desc_Water_C',
+        sink: 'Recipe_Alternate_PureCateriumIngot_C',
+        name: 'Desc_Water_C',
+        amount: 82.548,
+      },
+      {
+        source: 'Desc_Stone_C',
+        sink: 'Recipe_Alternate_WetConcrete_C',
+        name: 'Desc_Stone_C',
+        amount: 156,
+      },
+      {
+        source: 'Desc_Water_C',
+        sink: 'Recipe_Alternate_WetConcrete_C',
+        name: 'Desc_Water_C',
+        amount: 130,
+      },
+      {
+        source: 'Desc_LiquidOil_C',
+        sink: 'Recipe_Alternate_HeavyOilResidue_C',
+        name: 'Desc_LiquidOil_C',
+        amount: 40.089,
+      },
+      {
+        source: 'Desc_OreBauxite_C',
+        sink: 'Recipe_AluminaSolution_C',
+        name: 'Desc_OreBauxite_C',
+        amount: 111.2,
+      },
+      {
+        source: 'Desc_Water_C',
+        sink: 'Recipe_AluminaSolution_C',
+        name: 'Desc_Water_C',
+        amount: 166.8,
+      },
+      {
+        source: 'Desc_Sulfur_C',
+        sink: 'Recipe_SulfuricAcid_C',
+        name: 'Desc_Sulfur_C',
+        amount: 37.917,
+      },
+      {
+        source: 'Desc_Water_C',
+        sink: 'Recipe_SulfuricAcid_C',
+        name: 'Desc_Water_C',
+        amount: 37.917,
+      },
+    ],
     expectedProducedItems: {
       Desc_PlutoniumFuelRod_C: [
         {
