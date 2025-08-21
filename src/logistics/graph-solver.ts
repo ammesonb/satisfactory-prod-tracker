@@ -28,7 +28,7 @@ interface RecipeNode {
 /**
  * Generate a blank recipe node for the given recipe.
  */
-const newRecipeNode = (
+export const newRecipeNode = (
   recipe: Recipe,
   ingredients: RecipeIngredient[],
   products: RecipeProduct[],
@@ -36,8 +36,7 @@ const newRecipeNode = (
   recipe,
   ingredients,
   products,
-  // fully duplicate products since available products needs to be modified
-  availableProducts: products.map((product) => ({ ...product })),
+  availableProducts: [],
   fullyConsumed: false,
   inputs: [],
   outputs: [],
@@ -47,7 +46,7 @@ const newRecipeNode = (
  * Determine the PRODUCED quantity of a recipe's ingredient.
  * This is used to calculate the external amount needed as an input for the recipe to be sustainable.
  */
-const getCatalystQuantity = (ingredient: RecipeIngredient, recipe: RecipeNode) => {
+export const getCatalystQuantity = (ingredient: RecipeIngredient, recipe: RecipeNode) => {
   return recipe.products.find((prod) => prod.item === ingredient.item)?.amount || 0
 }
 
@@ -55,7 +54,7 @@ const getCatalystQuantity = (ingredient: RecipeIngredient, recipe: RecipeNode) =
  * Identify which and what quantity is needed from available input sources to craft the recipe.
  * If any ingredient cannot be satisfied, returns an empty list immediately.
  */
-const getRecipeLinks = (
+export const getRecipeLinks = (
   recipe: RecipeNode,
   producedRecipes: Record<string, RecipeNode>,
 ): RecipeLink[] => {
@@ -122,7 +121,7 @@ const getRecipeLinks = (
  * If insufficient quantity is available, returns an empty list.
  * Natural resources are allowed to have a remainder, which will be filled from an infinite "mined" source.
  */
-const selectIngredientSources = (
+export const selectIngredientSources = (
   ingredient: RecipeIngredient,
   amountNeeded: number,
   availableSources: Record<string, number>,
@@ -167,7 +166,7 @@ const selectIngredientSources = (
   return usedSources
 }
 
-const produceRecipe = (recipe: RecipeNode, batchNumber: number, inputs: RecipeLink[]) => {
+export const produceRecipe = (recipe: RecipeNode, batchNumber: number, inputs: RecipeLink[]) => {
   recipe.availableProducts = recipe.products.map((product) => ({ ...product }))
   recipe.batchNumber = batchNumber
   // assign by reference here, so same object is used in both places
@@ -178,7 +177,7 @@ const produceRecipe = (recipe: RecipeNode, batchNumber: number, inputs: RecipeLi
 /*
  * Decrement the available products of recipes used in the given links, then update their fullyConsumed status accordingly.
  */
-const decrementConsumedProducts = (
+export const decrementConsumedProducts = (
   recipesByName: Record<string, RecipeNode>,
   links: RecipeLink[],
 ) => {
