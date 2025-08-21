@@ -484,9 +484,7 @@ export const COMPLEX_TEST_CASES = {
       RECIPES.SCREW('3.177777777777'),
     ],
     /* Remaining recipes to add to tests:
-     * - Recipe_PressureConversionCube_C
      * - Recipe_Alternate_PlutoniumFuelUnit_C
-     * - Recipe_Alternate_NuclearFuelRod_1_C
      */
     expectedBatches: [
       // one
@@ -558,6 +556,8 @@ export const COMPLEX_TEST_CASES = {
         'Recipe_Alternate_HeatFusedFrame_C',
         'Recipe_Alternate_UraniumCell_1_C',
       ],
+      // nine
+      ['Recipe_PressureConversionCube_C', 'Recipe_Alternate_NuclearFuelRod_1_C'],
     ],
     expectedLinks: [
       // batch one
@@ -1182,6 +1182,45 @@ export const COMPLEX_TEST_CASES = {
           sink: 'Recipe_Alternate_UraniumCell_1_C',
           name: 'Desc_HighSpeedWire_C',
           amount: 275,
+        },
+      ],
+      // batch nine
+      ...[
+        {
+          source: 'Recipe_Alternate_HeatFusedFrame_C',
+          sink: 'Recipe_PressureConversionCube_C',
+          name: 'Desc_ModularFrameFused_C',
+          amount: 1,
+        },
+        {
+          source: 'Recipe_RadioControlUnit_C',
+          sink: 'Recipe_PressureConversionCube_C',
+          name: 'Desc_ModularFrameLightweight_C',
+          amount: 2,
+        },
+        {
+          source: 'Recipe_Alternate_UraniumCell_1_C',
+          sink: 'Recipe_Alternate_NuclearFuelRod_1_C',
+          name: 'Desc_UraniumCell_C',
+          amount: 73.333,
+        },
+        {
+          source: 'Recipe_ElectromagneticControlRod_C',
+          sink: 'Recipe_Alternate_NuclearFuelRod_1_C',
+          name: 'Desc_ElectromagneticControlRod_C',
+          amount: 7.333,
+        },
+        {
+          source: 'Recipe_Alternate_CrystalOscillator_C',
+          sink: 'Recipe_Alternate_NuclearFuelRod_1_C',
+          name: 'Desc_CrystalOscillator_C',
+          amount: 2.2,
+        },
+        {
+          source: 'Recipe_Alternate_CopperRotor_C',
+          sink: 'Recipe_Alternate_NuclearFuelRod_1_C',
+          name: 'Desc_CopperRotor_C',
+          amount: 7.333,
         },
       ],
     ],
