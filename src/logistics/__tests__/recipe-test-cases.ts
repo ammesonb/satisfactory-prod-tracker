@@ -484,15 +484,12 @@ export const COMPLEX_TEST_CASES = {
       RECIPES.SCREW('3.177777777777'),
     ],
     /* Remaining recipes to add to tests:
-     * - Recipe_PlutoniumCell_C
      * - Recipe_PressureConversionCube_C
-     * - Recipe_RadioControlUnit_C
      * - Recipe_Alternate_PlutoniumFuelUnit_C
-     * - Recipe_Alternate_HeatFusedFrame_C
-     * - Recipe_Alternate_UraniumCell_1_C
      * - Recipe_Alternate_NuclearFuelRod_1_C
      */
     expectedBatches: [
+      // one
       [
         'Recipe_Alternate_PureIronIngot_C ',
         'Recipe_Alternate_PureCopperIngot_C',
@@ -503,6 +500,7 @@ export const COMPLEX_TEST_CASES = {
         'Recipe_AluminaSolution_C',
         'Recipe_SulfuricAcid_C',
       ],
+      // two
       [
         'Recipe_PetroleumCoke_C',
         'Recipe_ResidualRubber_C',
@@ -513,6 +511,7 @@ export const COMPLEX_TEST_CASES = {
         'Recipe_Alternate_IngotSteel_1_C',
         'Recipe_Alternate_SteamedCopperSheet_C',
       ],
+      // three
       [
         'Recipe_Alternate_Plastic_1_C',
         'Recipe_Alternate_RecycledRubber_C',
@@ -521,6 +520,7 @@ export const COMPLEX_TEST_CASES = {
         'Recipe_Stator_C',
         'Recipe_Alternate_EncasedIndustrialBeam_C',
       ],
+      // four
       [
         'Recipe_Screw_C',
         'Recipe_Alternate_CoatedIronPlate_C',
@@ -528,6 +528,7 @@ export const COMPLEX_TEST_CASES = {
         'Recipe_Alternate_CircuitBoard_2_C',
         'Recipe_PureAluminumIngot_C',
       ],
+      // five
       [
         'Recipe_Alternate_CopperRotor_C',
         'Recipe_Alternate_AlcladCasing_C',
@@ -536,17 +537,26 @@ export const COMPLEX_TEST_CASES = {
         'Recipe_ElectromagneticControlRod_C',
         'Recipe_Alternate_Computer_1_C',
       ],
+      // six
       [
         'Recipe_ModularFrame_C',
         'Recipe_Alternate_Quartz_Purified_C',
         'Recipe_Alternate_FertileUranium_C',
         'Recipe_NonFissileUranium_C',
       ],
+      // seven
       [
         'Recipe_Plutonium_C',
         'Recipe_Alternate_Silica_Distilled_C',
         'Recipe_Alternate_CrystalOscillator_C',
         'Recipe_Alternate_ModularFrameHeavy_C',
+      ],
+      // eight
+      [
+        'Recipe_RadioControlUnit_C',
+        'Recipe_PlutoniumCell_C',
+        'Recipe_Alternate_HeatFusedFrame_C',
+        'Recipe_Alternate_UraniumCell_1_C',
       ],
     ],
     expectedLinks: [
@@ -1085,6 +1095,93 @@ export const COMPLEX_TEST_CASES = {
           sink: 'Recipe_Alternate_ModularFrameHeavy_C',
           name: 'Desc_Cement_C',
           amount: 7.333,
+        },
+      ],
+      // batch eight
+      ...[
+        {
+          source: 'Recipe_Alternate_AlcladCasing_C',
+          sink: 'Recipe_RadioControlUnit_C',
+          name: 'Desc_AluminumCasing_C',
+          amount: 32,
+        },
+        {
+          source: 'Recipe_Alternate_CrystalOscillator_C',
+          sink: 'Recipe_RadioControlUnit_C',
+          name: 'Desc_CrystalOscillator_C',
+          amount: 1,
+        },
+        {
+          source: 'Recipe_Alternate_Computer_1_C',
+          sink: 'Recipe_RadioControlUnit_C',
+          name: 'Desc_Computer_C',
+          amount: 2,
+        },
+        {
+          source: 'Recipe_Plutonium_C',
+          sink: 'Recipe_PlutoniumCell_C',
+          name: 'Desc_PlutoniumPellet_C',
+          amount: 40,
+        },
+        {
+          source: 'Recipe_Alternate_WetConcrete_C',
+          sink: 'Recipe_PlutoniumCell_C',
+          name: 'Desc_Cement_C',
+          amount: 80,
+        },
+        {
+          source: 'Recipe_Alternate_ModularFrameHeavy_C',
+          sink: 'Recipe_Alternate_HeatFusedFrame_C',
+          name: 'Desc_ModularFrameHeavy_C',
+          amount: 1,
+        },
+        {
+          source: 'Recipe_PureAluminumIngot_C',
+          sink: 'Recipe_Alternate_HeatFusedFrame_C',
+          name: 'Desc_AluminumIngot_C',
+          amount: 50,
+        },
+        {
+          source: 'Recipe_NitricAcid_C',
+          sink: 'Recipe_Alternate_HeatFusedFrame_C',
+          name: 'Desc_NitricAcid_C',
+          amount: 8,
+        },
+        {
+          source: 'Recipe_Alternate_DilutedFuel_C',
+          sink: 'Recipe_Alternate_HeatFusedFrame_C',
+          name: 'Desc_LiquidFuel_C',
+          amount: 10,
+        },
+        {
+          source: 'Desc_OreUranium_C',
+          sink: 'Recipe_Alternate_UraniumCell_1_C',
+          name: 'Desc_OreUranium_C',
+          amount: 91.667,
+        },
+        {
+          source: 'Recipe_AluminaSolution_C',
+          sink: 'Recipe_Alternate_UraniumCell_1_C',
+          name: 'Desc_Silica_C',
+          amount: 0.5,
+        },
+        {
+          source: 'Recipe_Alternate_Silica_Distilled_C',
+          sink: 'Recipe_Alternate_UraniumCell_1_C',
+          name: 'Desc_Silica_C',
+          amount: 54.5,
+        },
+        {
+          source: 'Desc_Sulfur_C',
+          sink: 'Recipe_Alternate_UraniumCell_1_C',
+          name: 'Desc_Sulfur_C',
+          amount: 55,
+        },
+        {
+          source: 'Recipe_Alternate_Quickwire_C',
+          sink: 'Recipe_Alternate_UraniumCell_1_C',
+          name: 'Desc_HighSpeedWire_C',
+          amount: 275,
         },
       ],
     ],
