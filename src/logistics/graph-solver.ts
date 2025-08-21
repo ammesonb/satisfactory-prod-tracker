@@ -139,20 +139,17 @@ const selectIngredientSources = (
     return []
   }
 
-  // see if one source has enough to satisfy this ingredient requirement
-  const sufficientSources = Object.entries(availableSources).filter(
-    (source) => source[1] >= amountNeeded - ZERO_THRESHOLD,
-  )
-  // if it does, return the one with closest amount
-  if (sufficientSources.length > 0) {
-    return [
-      sufficientSources.sort(
-        (a, b) => Math.abs(a[1] - amountNeeded) - Math.abs(b[1] - amountNeeded),
-      )[0][0],
-    ]
+  const sortedSources = Object.entries(availableSources).sort((a, b) => a[1] - b[1])
+
+  // return the smallest source that can satisfy the amount needed
+  // this leaves larger sources available for other recipes that require more
+  for (const source of sortedSources) {
+    if (source[1] >= amountNeeded - ZERO_THRESHOLD) {
+      return [source[0]]
+    }
   }
 
-  // otherwise, consume from _smallest_ first, so this one uses as many outputs as possible.
+  // otherwise, consume from _smallest_ first, to leave single large sources available for other recipes
   const usedSources = []
   for (const source of Object.entries(availableSources).sort((a, b) => a[1] - b[1])) {
     usedSources.push(source[0])
