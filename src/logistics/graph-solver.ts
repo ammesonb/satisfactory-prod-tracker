@@ -51,6 +51,64 @@ export const getCatalystQuantity = (ingredient: RecipeIngredient, recipe: Recipe
 }
 
 /**
+ * Select an optimal set of input sources for a required amount of an ingredient.
+ *
+ * Prefers to consume:
+ * - crafted sources over natural
+ * - closest single-source that can fully satisfy the required amount
+ * - smallest quantity outputs when multiple sources are needed, to leave largest products for later consumers
+ *     - The idea is this way other recipes may only need a single source, if this one already requires multiple.
+ *       So this source eats up all the bits and pieces, and other recipes are more likely to get a single, clean source.
+ *
+ * If insufficient quantity is available, returns an empty list.
+ * Natural resources are allowed to have a remainder, which will be filled from an infinite "mined" source.
+ */
+export const selectIngredientSources = (
+  ingredient: RecipeIngredient,
+  amountNeeded: number,
+  availableSources: Record<string, number>,
+): string[] => {
+  if (amountNeeded <= ZERO_THRESHOLD) {
+    return []
+  }
+  // if resource is produced and total sources is not enough,
+  // then it's not possible to produce this recipe so return empty list
+  if (
+    !isNaturalResource(ingredient.item) &&
+    Object.values(availableSources).reduce((a, b) => a + b, 0) < amountNeeded - ZERO_THRESHOLD
+  ) {
+    return []
+  }
+
+  const sortedSources = Object.entries(availableSources).sort((a, b) => a[1] - b[1])
+
+  // return the smallest source that can satisfy the amount needed
+  // this leaves larger sources available for other recipes that require more
+  for (const source of sortedSources) {
+    if (source[1] >= amountNeeded - ZERO_THRESHOLD) {
+      return [source[0]]
+    }
+  }
+
+  // otherwise, consume from _smallest_ first, to leave single large sources available for other recipes
+  const usedSources = []
+  for (const source of Object.entries(availableSources).sort((a, b) => a[1] - b[1])) {
+    usedSources.push(source[0])
+    amountNeeded -= source[1]
+    if (amountNeeded <= ZERO_THRESHOLD) {
+      break
+    }
+  }
+
+  // if crafted sources for natural ingredient is insufficient, add a natural resource source to the list
+  if (amountNeeded > ZERO_THRESHOLD && isNaturalResource(ingredient.item)) {
+    usedSources.push(ingredient.item)
+  }
+
+  return usedSources
+}
+
+/**
  * Identify which and what quantity is needed from available input sources to craft the recipe.
  * If any ingredient cannot be satisfied, returns an empty list immediately.
  */
@@ -109,63 +167,11 @@ export const getRecipeLinks = (
 }
 
 /**
- * Select an optimal set of input sources for a required amount of an ingredient.
- *
- * Prefers to consume:
- * - crafted sources over natural
- * - closest single-source that can fully satisfy the required amount
- * - smallest quantity outputs when multiple sources are needed, to leave largest products for later consumers
- *     - The idea is this way other recipes may only need a single source, if this one already requires multiple.
- *       So this source eats up all the bits and pieces, and other recipes are more likely to get a single, clean source.
- *
- * If insufficient quantity is available, returns an empty list.
- * Natural resources are allowed to have a remainder, which will be filled from an infinite "mined" source.
+ * Marking a recipe as produced will:
+ * - make its products available
+ * - assign the batch number to the recipe
+ * - assign the ingredient sources to the recipe
  */
-export const selectIngredientSources = (
-  ingredient: RecipeIngredient,
-  amountNeeded: number,
-  availableSources: Record<string, number>,
-): string[] => {
-  if (amountNeeded <= ZERO_THRESHOLD) {
-    return []
-  }
-  // if resource is produced and total sources is not enough,
-  // then it's not possible to produce this recipe so return empty list
-  if (
-    !isNaturalResource(ingredient.item) &&
-    Object.values(availableSources).reduce((a, b) => a + b, 0) < amountNeeded - ZERO_THRESHOLD
-  ) {
-    return []
-  }
-
-  const sortedSources = Object.entries(availableSources).sort((a, b) => a[1] - b[1])
-
-  // return the smallest source that can satisfy the amount needed
-  // this leaves larger sources available for other recipes that require more
-  for (const source of sortedSources) {
-    if (source[1] >= amountNeeded - ZERO_THRESHOLD) {
-      return [source[0]]
-    }
-  }
-
-  // otherwise, consume from _smallest_ first, to leave single large sources available for other recipes
-  const usedSources = []
-  for (const source of Object.entries(availableSources).sort((a, b) => a[1] - b[1])) {
-    usedSources.push(source[0])
-    amountNeeded -= source[1]
-    if (amountNeeded <= ZERO_THRESHOLD) {
-      break
-    }
-  }
-
-  // if crafted sources for natural ingredient is insufficient, add a natural resource source to the list
-  if (amountNeeded > ZERO_THRESHOLD && isNaturalResource(ingredient.item)) {
-    usedSources.push(ingredient.item)
-  }
-
-  return usedSources
-}
-
 export const produceRecipe = (recipe: RecipeNode, batchNumber: number, inputs: RecipeLink[]) => {
   recipe.availableProducts = recipe.products.map((product) => ({ ...product }))
   recipe.batchNumber = batchNumber
