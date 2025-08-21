@@ -483,9 +483,6 @@ export const COMPLEX_TEST_CASES = {
       RECIPES.ALTERNATE_CIRCUIT_BOARD_2('0.914286'),
       RECIPES.SCREW('3.177777777777'),
     ],
-    /* Remaining recipes to add to tests:
-     * - Recipe_Alternate_PlutoniumFuelUnit_C
-     */
     expectedBatches: [
       // one
       [
@@ -558,6 +555,7 @@ export const COMPLEX_TEST_CASES = {
       ],
       // nine
       ['Recipe_PressureConversionCube_C', 'Recipe_Alternate_NuclearFuelRod_1_C'],
+      ['Recipe_Alternate_PlutoniumFuelUnit_C'],
     ],
     expectedLinks: [
       // batch one
@@ -1221,6 +1219,21 @@ export const COMPLEX_TEST_CASES = {
           sink: 'Recipe_Alternate_NuclearFuelRod_1_C',
           name: 'Desc_CopperRotor_C',
           amount: 7.333,
+        },
+      ],
+      // batch ten
+      [
+        {
+          source: 'Recipe_PlutoniumCell_C',
+          sink: 'Recipe_Alternate_PlutoniumFuelUnit_C',
+          name: 'Desc_PlutoniumCell_C',
+          amount: 73.333,
+        },
+        {
+          source: 'Recipe_PressureConversionCube_C',
+          sink: 'Recipe_Alternate_PlutoniumFuelUnit_C',
+          name: 'Desc_PressureConversionCube_C',
+          amount: 1,
         },
       ],
     ],
