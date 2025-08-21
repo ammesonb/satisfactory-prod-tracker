@@ -126,6 +126,8 @@ export const RECIPES = {
     makeRecipe('Recipe_Alternate_Quartz_Purified_C', amount, BUILDINGS.REFINERY),
   ALTERNATE_URANIUM_CELL_1: (amount: string) =>
     makeRecipe('Recipe_Alternate_UraniumCell_1_C', amount, BUILDINGS.MANUFACTURER),
+  ENCASED_INDUSTRIAL_BEAM: (amount: string) =>
+    makeRecipe('Recipe_EncasedIndustrialBeam_C', amount, BUILDINGS.ASSEMBLER),
   ALTERNATE_ENCASED_INDUSTRIAL_BEAM: (amount: string) =>
     makeRecipe('Recipe_Alternate_EncasedIndustrialBeam_C', amount, BUILDINGS.ASSEMBLER),
   ALTERNATE_QUICKWIRE: (amount: string) =>

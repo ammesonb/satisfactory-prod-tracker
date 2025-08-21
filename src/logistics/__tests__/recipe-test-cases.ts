@@ -486,15 +486,11 @@ export const COMPLEX_TEST_CASES = {
     /* Remaining recipes to add to tests:
      * - Recipe_PlutoniumCell_C
      * - Recipe_PressureConversionCube_C
-     * - Recipe_Plutonium_C
      * - Recipe_RadioControlUnit_C
      * - Recipe_Alternate_PlutoniumFuelUnit_C
      * - Recipe_Alternate_HeatFusedFrame_C
-     * - Recipe_Alternate_Silica_Distilled_C
      * - Recipe_Alternate_UraniumCell_1_C
      * - Recipe_Alternate_NuclearFuelRod_1_C
-     * - Recipe_Alternate_ModularFrameHeavy_C
-     * - Recipe_Alternate_CrystalOscillator_C
      */
     expectedBatches: [
       [
@@ -545,6 +541,12 @@ export const COMPLEX_TEST_CASES = {
         'Recipe_Alternate_Quartz_Purified_C',
         'Recipe_Alternate_FertileUranium_C',
         'Recipe_NonFissileUranium_C',
+      ],
+      [
+        'Recipe_Plutonium_C',
+        'Recipe_Alternate_Silica_Distilled_C',
+        'Recipe_Alternate_CrystalOscillator_C',
+        'Recipe_Alternate_ModularFrameHeavy_C',
       ],
     ],
     expectedLinks: [
@@ -990,6 +992,99 @@ export const COMPLEX_TEST_CASES = {
           sink: 'Recipe_NonFissileUranium_C',
           name: 'Desc_SulfuricAcid_C',
           amount: 27.5,
+        },
+      ],
+      // batch seven
+      ...[
+        {
+          source: 'Desc_NonFissibleUranium_C',
+          sink: 'Recipe_Plutonium_C',
+          name: 'Desc_NonFissibleUranium_C',
+          amount: 91.667,
+        },
+        {
+          source: 'Desc_NuclearWaste_C',
+          sink: 'Recipe_Plutonium_C',
+          name: 'Desc_NuclearWaste_C',
+          amount: 33.333,
+        },
+        {
+          source: 'Recipe_Alternate_FertileUranium_C',
+          sink: 'Recipe_Plutonium_C',
+          name: 'Desc_NonFissibleUranium_C',
+          amount: 41.667,
+        },
+        {
+          source: 'Recipe_Alternate_Quartz_Purified_C',
+          sink: 'Recipe_Alternate_Silica_Distilled_C',
+          name: 'Desc_DissolvedSilica_C',
+          amount: 24.222,
+        },
+        {
+          source: 'Desc_Stone_C',
+          sink: 'Recipe_Alternate_Silica_Distilled_C',
+          name: 'Desc_Stone_C',
+          amount: 10.093,
+        },
+        {
+          source: 'Recipe_Alternate_Silica_Distilled_C',
+          sink: 'Recipe_Alternate_Silica_Distilled_C',
+          name: 'Desc_Water_C',
+          amount: 16.148,
+        },
+        {
+          source: 'Recipe_Alternate_FertileUranium_C',
+          sink: 'Recipe_Alternate_Silica_Distilled_C',
+          name: 'Desc_Water_C',
+          amount: 4.037,
+        },
+        {
+          source: 'Recipe_Alternate_Quartz_Purified_C',
+          sink: 'Recipe_Alternate_CrystalOscillator_C',
+          name: 'Desc_QuartzCrystal_C',
+          amount: 30.278,
+        },
+        {
+          source: 'Recipe_Alternate_PureQuartzCrystal_C',
+          sink: 'Recipe_Alternate_CrystalOscillator_C',
+          name: 'Desc_QuartzCrystal_C',
+          amount: 1.722,
+        },
+        {
+          source: 'Recipe_Alternate_RecycledRubber_C',
+          sink: 'Recipe_Alternate_CrystalOscillator_C',
+          name: 'Desc_Rubber_C',
+          amount: 22.4,
+        },
+        {
+          source: 'Recipe_Alternate_AILimiter_Plastic_C',
+          sink: 'Recipe_Alternate_CrystalOscillator_C',
+          name: 'Desc_CircuitBoardHighSpeed_C',
+          amount: 3.2,
+        },
+        {
+          source: 'Recipe_ModularFrame_C',
+          sink: 'Recipe_Alternate_ModularFrameHeavy_C',
+          name: 'Desc_ModularFrame_C',
+          amount: 2.667,
+        },
+        {
+          source: 'Recipe_Alternate_EncasedIndustrialBeam_C',
+          sink: 'Recipe_Alternate_ModularFrameHeavy_C',
+          name: 'Desc_SteelPlateReinforced_C',
+          amount: 3.333,
+        },
+        {
+          source: 'Recipe_Alternate_SteelPipe_Iron_C',
+          sink: 'Recipe_Alternate_ModularFrameHeavy_C',
+          name: 'Desc_SteelPipe_C',
+          amount: 12,
+        },
+        {
+          source: 'Recipe_Alternate_WetConcrete_C',
+          sink: 'Recipe_Alternate_ModularFrameHeavy_C',
+          name: 'Desc_Cement_C',
+          amount: 7.333,
         },
       ],
     ],
