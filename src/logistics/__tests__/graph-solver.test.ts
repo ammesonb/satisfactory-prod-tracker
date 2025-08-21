@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { newRecipeNode, getCatalystQuantity, selectIngredientSources } from '../graph-solver'
+import { newRecipeNode, getCatalystQuantity, selectIngredientSources, produceRecipe, decrementConsumedProducts } from '../graph-solver'
 import { setupMockDataStore } from './recipe-fixtures'
 import type { Recipe } from '@/types/factory'
 import type { RecipeIngredient, RecipeProduct } from '@/types/data'
@@ -254,6 +254,220 @@ describe('graph-solver unit tests', () => {
       const result = selectIngredientSources(ingredient, 10, sources)
 
       expect(result).toEqual(['Source1'])
+    })
+  })
+
+  describe('produceRecipe', () => {
+    it('should set availableProducts as copy of products', () => {
+      const mockRecipe = newRecipeNode(
+        { name: 'Recipe_Test_C', count: 1 },
+        [{ item: 'Desc_Input_C', amount: 1 }],
+        [
+          { item: 'Desc_Output1_C', amount: 2 },
+          { item: 'Desc_Output2_C', amount: 3 }
+        ]
+      )
+
+      const mockInputs = [
+        { source: 'Recipe_Source_C', sink: 'Recipe_Test_C', material: 'Desc_Input_C', amount: 1 }
+      ]
+
+      produceRecipe(mockRecipe, 5, mockInputs)
+
+      expect(mockRecipe.availableProducts).toHaveLength(2)
+      expect(mockRecipe.availableProducts[0]).toEqual({ item: 'Desc_Output1_C', amount: 2 })
+      expect(mockRecipe.availableProducts[1]).toEqual({ item: 'Desc_Output2_C', amount: 3 })
+      
+      // Should be a copy, not the same reference
+      expect(mockRecipe.availableProducts).not.toBe(mockRecipe.products)
+      expect(mockRecipe.availableProducts[0]).not.toBe(mockRecipe.products[0])
+    })
+
+    it('should set batch number', () => {
+      const mockRecipe = newRecipeNode(
+        { name: 'Recipe_Test_C', count: 1 },
+        [],
+        []
+      )
+
+      produceRecipe(mockRecipe, 7, [])
+
+      expect(mockRecipe.batchNumber).toBe(7)
+    })
+
+    it('should assign inputs by reference', () => {
+      const mockRecipe = newRecipeNode(
+        { name: 'Recipe_Test_C', count: 1 },
+        [],
+        []
+      )
+
+      const mockInputs = [
+        { source: 'Recipe_Source_C', sink: 'Recipe_Test_C', material: 'Desc_Input_C', amount: 1 }
+      ]
+
+      produceRecipe(mockRecipe, 1, mockInputs)
+
+      expect(mockRecipe.inputs).toBe(mockInputs) // Same reference
+      expect(mockRecipe.inputs).toEqual(mockInputs)
+    })
+
+    it('should handle empty products and inputs', () => {
+      const mockRecipe = newRecipeNode(
+        { name: 'Recipe_Empty_C', count: 1 },
+        [],
+        []
+      )
+
+      produceRecipe(mockRecipe, 3, [])
+
+      expect(mockRecipe.availableProducts).toEqual([])
+      expect(mockRecipe.batchNumber).toBe(3)
+      expect(mockRecipe.inputs).toEqual([])
+    })
+  })
+
+  describe('decrementConsumedProducts', () => {
+    it('should decrement available products and add output links', () => {
+      const sourceRecipe = newRecipeNode(
+        { name: 'Recipe_Source_C', count: 1 },
+        [],
+        [{ item: 'Desc_Material_C', amount: 10 }]
+      )
+      sourceRecipe.availableProducts = [{ item: 'Desc_Material_C', amount: 10 }]
+
+      const sinkRecipe = newRecipeNode(
+        { name: 'Recipe_Sink_C', count: 1 },
+        [{ item: 'Desc_Material_C', amount: 5 }],
+        []
+      )
+
+      const recipesByName = {
+        Recipe_Source_C: sourceRecipe,
+        Recipe_Sink_C: sinkRecipe
+      }
+
+      const links = [
+        { source: 'Recipe_Source_C', sink: 'Recipe_Sink_C', material: 'Desc_Material_C', amount: 5 }
+      ]
+
+      decrementConsumedProducts(recipesByName, links)
+
+      expect(sourceRecipe.availableProducts[0].amount).toBe(5)
+      expect(sourceRecipe.outputs).toHaveLength(1)
+      expect(sourceRecipe.outputs[0]).toBe(links[0])
+      expect(sourceRecipe.fullyConsumed).toBe(false)
+    })
+
+    it('should mark recipe as fully consumed when all products are consumed', () => {
+      const sourceRecipe = newRecipeNode(
+        { name: 'Recipe_Source_C', count: 1 },
+        [],
+        [
+          { item: 'Desc_Material1_C', amount: 5 },
+          { item: 'Desc_Material2_C', amount: 3 }
+        ]
+      )
+      sourceRecipe.availableProducts = [
+        { item: 'Desc_Material1_C', amount: 5 },
+        { item: 'Desc_Material2_C', amount: 3 }
+      ]
+
+      const recipesByName = { Recipe_Source_C: sourceRecipe }
+
+      const links = [
+        { source: 'Recipe_Source_C', sink: 'Recipe_Sink1_C', material: 'Desc_Material1_C', amount: 5 },
+        { source: 'Recipe_Source_C', sink: 'Recipe_Sink2_C', material: 'Desc_Material2_C', amount: 3 }
+      ]
+
+      decrementConsumedProducts(recipesByName, links)
+
+      expect(sourceRecipe.availableProducts[0].amount).toBe(0)
+      expect(sourceRecipe.availableProducts[1].amount).toBe(0)
+      expect(sourceRecipe.fullyConsumed).toBe(true)
+      expect(sourceRecipe.outputs).toHaveLength(2)
+    })
+
+    it('should not mark as fully consumed when products remain above threshold', () => {
+      const sourceRecipe = newRecipeNode(
+        { name: 'Recipe_Source_C', count: 1 },
+        [],
+        [{ item: 'Desc_Material_C', amount: 10 }]
+      )
+      sourceRecipe.availableProducts = [{ item: 'Desc_Material_C', amount: 10 }]
+
+      const recipesByName = { Recipe_Source_C: sourceRecipe }
+
+      const links = [
+        { source: 'Recipe_Source_C', sink: 'Recipe_Sink_C', material: 'Desc_Material_C', amount: 3 }
+      ]
+
+      decrementConsumedProducts(recipesByName, links)
+
+      expect(sourceRecipe.availableProducts[0].amount).toBe(7)
+      expect(sourceRecipe.fullyConsumed).toBe(false)
+    })
+
+    it('should handle multiple links from the same source', () => {
+      const sourceRecipe = newRecipeNode(
+        { name: 'Recipe_Source_C', count: 1 },
+        [],
+        [{ item: 'Desc_Material_C', amount: 20 }]
+      )
+      sourceRecipe.availableProducts = [{ item: 'Desc_Material_C', amount: 20 }]
+
+      const recipesByName = { Recipe_Source_C: sourceRecipe }
+
+      const links = [
+        { source: 'Recipe_Source_C', sink: 'Recipe_Sink1_C', material: 'Desc_Material_C', amount: 7 },
+        { source: 'Recipe_Source_C', sink: 'Recipe_Sink2_C', material: 'Desc_Material_C', amount: 5 },
+        { source: 'Recipe_Source_C', sink: 'Recipe_Sink3_C', material: 'Desc_Material_C', amount: 3 }
+      ]
+
+      decrementConsumedProducts(recipesByName, links)
+
+      expect(sourceRecipe.availableProducts[0].amount).toBe(5) // 20 - 7 - 5 - 3
+      expect(sourceRecipe.outputs).toHaveLength(3)
+      expect(sourceRecipe.fullyConsumed).toBe(false)
+    })
+
+    it('should throw error when trying to consume non-existent product', () => {
+      const sourceRecipe = newRecipeNode(
+        { name: 'Recipe_Source_C', count: 1 },
+        [],
+        [{ item: 'Desc_Material1_C', amount: 10 }]
+      )
+      sourceRecipe.availableProducts = [{ item: 'Desc_Material1_C', amount: 10 }]
+
+      const recipesByName = { Recipe_Source_C: sourceRecipe }
+
+      const links = [
+        { source: 'Recipe_Source_C', sink: 'Recipe_Sink_C', material: 'Desc_NonExistent_C', amount: 5 }
+      ]
+
+      expect(() => {
+        decrementConsumedProducts(recipesByName, links)
+      }).toThrow('Unable to find product Desc_NonExistent_C in source Recipe_Source_C - should never happen!')
+    })
+
+    it('should mark as fully consumed when products are within zero threshold', () => {
+      const sourceRecipe = newRecipeNode(
+        { name: 'Recipe_Source_C', count: 1 },
+        [],
+        [{ item: 'Desc_Material_C', amount: 5 }]
+      )
+      sourceRecipe.availableProducts = [{ item: 'Desc_Material_C', amount: 0.05 }] // Within threshold
+
+      const recipesByName = { Recipe_Source_C: sourceRecipe }
+
+      const links = [
+        { source: 'Recipe_Source_C', sink: 'Recipe_Sink_C', material: 'Desc_Material_C', amount: 0.01 }
+      ]
+
+      decrementConsumedProducts(recipesByName, links)
+
+      expect(sourceRecipe.availableProducts[0].amount).toBe(0.04)
+      expect(sourceRecipe.fullyConsumed).toBe(true) // Should be true since 0.04 <= ZERO_THRESHOLD (0.1)
     })
   })
 })
