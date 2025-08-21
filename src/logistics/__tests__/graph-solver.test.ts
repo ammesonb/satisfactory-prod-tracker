@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { newRecipeNode, getCatalystQuantity } from '../graph-solver'
+import { newRecipeNode, getCatalystQuantity, selectIngredientSources } from '../graph-solver'
 import { setupMockDataStore } from './recipe-fixtures'
 import type { Recipe } from '@/types/factory'
 import type { RecipeIngredient, RecipeProduct } from '@/types/data'
@@ -139,6 +139,121 @@ describe('graph-solver unit tests', () => {
       const catalystQuantity = getCatalystQuantity(mockIngredient, mockRecipe)
 
       expect(catalystQuantity).toBe(25)
+    })
+  })
+
+  describe('selectIngredientSources', () => {
+    const createIngredient = (item: string, amount: number): RecipeIngredient => ({
+      item,
+      amount,
+    })
+
+    it('should return empty array for zero amount needed', () => {
+      const ingredient = createIngredient('Desc_IronIngot_C', 1)
+      const sources = { Source1: 10, Source2: 5 }
+
+      const result = selectIngredientSources(ingredient, 0, sources)
+
+      expect(result).toEqual([])
+    })
+
+    it('should return empty array for insufficient crafted sources', () => {
+      const ingredient = createIngredient('Desc_IronIngot_C', 1)
+      const sources = { Source1: 5, Source2: 3 }
+
+      const result = selectIngredientSources(ingredient, 10, sources)
+
+      expect(result).toEqual([])
+    })
+
+    it('should return single source that exactly satisfies amount needed', () => {
+      const ingredient = createIngredient('Desc_IronIngot_C', 1)
+      const sources = { Source1: 10, Source2: 5 }
+
+      const result = selectIngredientSources(ingredient, 10, sources)
+
+      expect(result).toEqual(['Source1'])
+    })
+
+    it('should return smallest source that can satisfy amount needed', () => {
+      const ingredient = createIngredient('Desc_IronIngot_C', 1)
+      const sources = { Source1: 20, Source2: 12, Source3: 8 }
+
+      const result = selectIngredientSources(ingredient, 10, sources)
+
+      expect(result).toEqual(['Source2'])
+    })
+
+    it('should combine multiple sources when no single source is sufficient', () => {
+      const ingredient = createIngredient('Desc_IronIngot_C', 1)
+      const sources = { Source1: 5, Source2: 8, Source3: 3 }
+
+      const result = selectIngredientSources(ingredient, 12, sources)
+
+      expect(result).toEqual(['Source3', 'Source1', 'Source2'])
+    })
+
+    it('should consume smallest sources first when combining multiple', () => {
+      const ingredient = createIngredient('Desc_IronIngot_C', 1)
+      const sources = { Source1: 10, Source2: 3, Source3: 7, Source4: 5 }
+
+      const result = selectIngredientSources(ingredient, 15, sources)
+
+      expect(result).toEqual(['Source2', 'Source4', 'Source3'])
+    })
+
+    it('should stop consuming when amount needed is satisfied within threshold', () => {
+      const ingredient = createIngredient('Desc_IronIngot_C', 1)
+      const sources = { Source1: 5, Source2: 6 }
+
+      const result = selectIngredientSources(ingredient, 5.05, sources) // Within ZERO_THRESHOLD
+
+      expect(result).toEqual(['Source1'])
+    })
+
+    it('should allow natural resources with insufficient crafted sources', () => {
+      const ingredient = createIngredient('Desc_OreIron_C', 1) // Natural resource
+      const sources = { Source1: 5, Source2: 3 }
+
+      const result = selectIngredientSources(ingredient, 10, sources)
+
+      expect(result).toEqual(['Source2', 'Source1', 'Desc_OreIron_C'])
+    })
+
+    it('should not add natural source when crafted sources are sufficient for natural resource', () => {
+      const ingredient = createIngredient('Desc_OreIron_C', 1) // Natural resource
+      const sources = { Source1: 8, Source2: 5 }
+
+      const result = selectIngredientSources(ingredient, 10, sources)
+
+      expect(result).toEqual(['Source2', 'Source1'])
+    })
+
+    it('should handle empty sources for natural resource', () => {
+      const ingredient = createIngredient('Desc_OreIron_C', 1) // Natural resource
+      const sources = {}
+
+      const result = selectIngredientSources(ingredient, 10, sources)
+
+      expect(result).toEqual(['Desc_OreIron_C'])
+    })
+
+    it('should handle empty sources for crafted ingredient', () => {
+      const ingredient = createIngredient('Desc_IronIngot_C', 1) // Crafted ingredient
+      const sources = {}
+
+      const result = selectIngredientSources(ingredient, 10, sources)
+
+      expect(result).toEqual([])
+    })
+
+    it('should prefer sources that satisfy exact amount within threshold', () => {
+      const ingredient = createIngredient('Desc_IronIngot_C', 1)
+      const sources = { Source1: 9.99, Source2: 15 } // Source1 is within threshold of 10
+
+      const result = selectIngredientSources(ingredient, 10, sources)
+
+      expect(result).toEqual(['Source1'])
     })
   })
 })
