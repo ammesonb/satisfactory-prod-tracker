@@ -134,12 +134,14 @@ export const getRecipeLinks = (
  * Similar to getRecipeLinks, but checks each group of circular recipes.
  * If a recipe can be produced as long as the other codependent recipe is ALSO produced,
  * then we can add both to the current batch.
+ *
+ * Returns a map of recipe name to its required links for circular recipes that can be produced.
  */
 export const getLinksForCircularRecipes = (
   circularRecipeGroups: RecipeNode[][],
   producedRecipes: Record<string, RecipeNode>,
-): Material[] => {
-  const links: Material[] = []
+): Map<string, Material[]> => {
+  const recipeLinksMap = new Map<string, Material[]>()
   // track newly-added recipes, so we only do each once
   const processedRecipes = new Set<string>()
 
@@ -156,8 +158,8 @@ export const getLinksForCircularRecipes = (
       extendedProducedRecipes[recipe.recipe.name] = recipe
     }
 
-    // Check if all recipes in the group can be produced
-    const groupLinks: Material[] = []
+    // track needed input links by the name of the recipe
+    const groupRecipeLinks = new Map<string, Material[]>()
     let canProduce = true
 
     for (const recipe of recipeGroup) {
@@ -171,16 +173,18 @@ export const getLinksForCircularRecipes = (
         canProduce = false
         break
       }
-      groupLinks.push(...recipeLinks)
+      groupRecipeLinks.set(recipe.recipe.name, recipeLinks)
     }
 
-    // If all members of recipe group could be produced,
-    // add them to the links list and mark them as processed
     if (canProduce) {
-      links.push(...groupLinks)
+      // merge the links maps based on the recipe name
+      for (const [recipeName, links] of groupRecipeLinks) {
+        recipeLinksMap.set(recipeName, links)
+      }
+      // update the processed set with all the newly-available recipes
       recipeGroup.forEach((recipe) => processedRecipes.add(recipe.recipe.name))
     }
   }
 
-  return links
+  return recipeLinksMap
 }

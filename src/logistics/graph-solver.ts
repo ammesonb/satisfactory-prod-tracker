@@ -51,19 +51,10 @@ export const solveRecipeChain = (rawRecipes: string[]): RecipeNode[] => {
     }
 
     // Then try circular recipe groups for remaining recipes
-    const circularLinks = getLinksForCircularRecipes(circularRecipeGroups, producedRecipes)
-
-    // Group the circular links by recipe to process them
-    const recipeLinksMap = new Map<string, Material[]>()
-    for (const link of circularLinks) {
-      if (!recipeLinksMap.has(link.sink)) {
-        recipeLinksMap.set(link.sink, [])
-      }
-      recipeLinksMap.get(link.sink)!.push(link)
-    }
+    const circularRecipeLinks = getLinksForCircularRecipes(circularRecipeGroups, producedRecipes)
 
     // Process each circular recipe that has links and hasn't been processed yet
-    for (const [recipeName, links] of recipeLinksMap) {
+    for (const [recipeName, links] of circularRecipeLinks) {
       const recipe = pendingRecipes.find((r) => r.recipe.name === recipeName)
       if (recipe && !batchRecipes.includes(recipe)) {
         produceRecipe(recipe, batch, links)
