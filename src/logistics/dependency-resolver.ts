@@ -1,6 +1,7 @@
 import { useDataStore } from '@/stores/data'
 import type { Recipe, Material } from '@/types/factory'
 import type { RecipeIngredient } from '@/types/data'
+import type { RecipeNode } from '@/logistics/graph-node'
 
 export interface PreprocessedRecipeData {
   recipe: Recipe
@@ -172,4 +173,79 @@ export const resolveCircularDependencies = (circularRecipes: Recipe[]): Material
   }
 
   return circularLinks
+}
+
+// Identify circular recipes and return groupings of codependent recipes
+export const groupCircularRecipes = (recipes: RecipeNode[]): RecipeNode[][] => {
+  const circularRecipes = findCircularRecipes(recipes.map((r) => r.recipe))
+  const data = useDataStore()
+
+  // Pre-filter to only circular recipe nodes
+  const circularNodes = recipes.filter((recipe) =>
+    circularRecipes.some((cr) => cr.name === recipe.recipe.name),
+  )
+
+  if (circularNodes.length === 0) return []
+
+  // Build adjacency map once
+  const adjacencyMap = new Map<string, Set<string>>()
+  const nodeMap = new Map<string, RecipeNode>()
+
+  for (const node of circularNodes) {
+    adjacencyMap.set(node.recipe.name, new Set())
+    nodeMap.set(node.recipe.name, node)
+  }
+
+  // Pre-compute all ingredient/product sets
+  const recipeData = new Map<string, { ingredients: Set<string>; products: Set<string> }>()
+  for (const node of circularNodes) {
+    const ingredients = new Set(data.recipeIngredients(node.recipe.name).map((ing) => ing.item))
+    const products = new Set(data.recipeProducts(node.recipe.name).map((prod) => prod.item))
+    recipeData.set(node.recipe.name, { ingredients, products })
+  }
+
+  // Build connections efficiently
+  for (const node1 of circularNodes) {
+    const data1 = recipeData.get(node1.recipe.name)!
+
+    for (const node2 of circularNodes) {
+      if (node1 === node2) continue
+
+      const data2 = recipeData.get(node2.recipe.name)!
+
+      // Check if node1 needs something from node2 OR node2 needs something from node1
+      const hasConnection =
+        [...data1.ingredients].some((item) => data2.products.has(item)) ||
+        [...data2.ingredients].some((item) => data1.products.has(item))
+
+      if (hasConnection) {
+        adjacencyMap.get(node1.recipe.name)!.add(node2.recipe.name)
+      }
+    }
+  }
+
+  // Find connected components using DFS
+  const visited = new Set<string>()
+  const groups: RecipeNode[][] = []
+
+  const dfs = (recipeName: string, group: RecipeNode[]) => {
+    if (visited.has(recipeName)) return
+
+    visited.add(recipeName)
+    group.push(nodeMap.get(recipeName)!)
+
+    for (const neighbor of adjacencyMap.get(recipeName)!) {
+      dfs(neighbor, group)
+    }
+  }
+
+  for (const node of circularNodes) {
+    if (!visited.has(node.recipe.name)) {
+      const group: RecipeNode[] = []
+      dfs(node.recipe.name, group)
+      groups.push(group)
+    }
+  }
+
+  return groups
 }

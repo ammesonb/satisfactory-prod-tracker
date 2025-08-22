@@ -1,13 +1,6 @@
-import type { Recipe } from '@/types/factory'
+import type { Material, Recipe } from '@/types/factory'
 import type { RecipeIngredient, RecipeProduct } from '@/types/data'
 import { ZERO_THRESHOLD, isNaturalResource } from './constants'
-
-export interface RecipeLink {
-  source: string
-  sink: string
-  material: string
-  amount: number
-}
 
 export interface RecipeNode {
   recipe: Recipe
@@ -19,8 +12,8 @@ export interface RecipeNode {
 
   // TODO: do we need these? maybe just a straight list of links is actually fine?
   // TODO: this is probably easier to test for though, and represent on the UI actually
-  inputs: RecipeLink[]
-  outputs: RecipeLink[]
+  inputs: Material[]
+  outputs: Material[]
 }
 
 /**
@@ -54,7 +47,7 @@ export const getCatalystQuantity = (ingredient: RecipeIngredient, recipe: Recipe
  * - assign the batch number to the recipe
  * - assign the ingredient sources to the recipe
  */
-export const produceRecipe = (recipe: RecipeNode, batchNumber: number, inputs: RecipeLink[]) => {
+export const produceRecipe = (recipe: RecipeNode, batchNumber: number, inputs: Material[]) => {
   recipe.availableProducts = recipe.products.map((product) => ({
     ...product,
     amount: product.amount * recipe.recipe.count,
@@ -70,7 +63,7 @@ export const produceRecipe = (recipe: RecipeNode, batchNumber: number, inputs: R
  */
 export const decrementConsumedProducts = (
   recipesByName: Record<string, RecipeNode>,
-  links: RecipeLink[],
+  links: Material[],
 ) => {
   for (const link of links) {
     // Skip natural resource sources (they don't exist in recipesByName)
@@ -80,7 +73,9 @@ export const decrementConsumedProducts = (
 
     const sourceNode = recipesByName[link.source]
     if (!sourceNode) {
-      throw new Error(`Source node not found: ${link.source} for material ${link.material}. Available recipes: ${Object.keys(recipesByName).join(', ')}`)
+      throw new Error(
+        `Source node not found: ${link.source} for material ${link.material}. Available recipes: ${Object.keys(recipesByName).join(', ')}`,
+      )
     }
     // add the output link, for a double-headed list structure approach
     sourceNode.outputs.push(link)

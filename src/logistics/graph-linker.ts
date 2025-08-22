@@ -1,7 +1,8 @@
 import type { RecipeIngredient } from '@/types/data'
 import { isNaturalResource, ZERO_THRESHOLD } from './constants'
-import type { RecipeLink, RecipeNode } from './graph-node'
+import type { RecipeNode } from './graph-node'
 import { getCatalystQuantity } from './graph-node'
+import type { Material } from '@/types/factory'
 
 /**
  * Select an optimal set of input sources for a required amount of an ingredient.
@@ -68,8 +69,8 @@ export const selectIngredientSources = (
 export const getRecipeLinks = (
   recipe: RecipeNode,
   producedRecipes: Record<string, RecipeNode>,
-): RecipeLink[] => {
-  const links: RecipeLink[] = []
+): Material[] => {
+  const links: Material[] = []
   for (const ingredient of recipe.ingredients) {
     // create a map from recipe name -> available product matching ingredient
     const recipeAmounts = Object.fromEntries(

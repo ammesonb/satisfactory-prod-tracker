@@ -40,9 +40,13 @@ const expectRecipeLinksToMatch = (actual: Material[], expected: Material[]) => {
     })
 
     if (!matchingLink) {
-      console.error('Expected link not found:', expectedLink)
-      console.error('Available actual links:')
-      actual.forEach((link, i) => console.error(`  ${i}:`, link))
+      console.error(
+        `Expected link not found: ${expectedLink.source} -> ${expectedLink.sink} (${expectedLink.material}: ${expectedLink.amount})`,
+      )
+      console.error(`Available actual links (${actual.length} total):`)
+      actual.forEach((link, i) =>
+        console.error(`  ${i}: ${link.source} -> ${link.sink} (${link.material}: ${link.amount})`),
+      )
     }
 
     expect(matchingLink).toBeDefined()

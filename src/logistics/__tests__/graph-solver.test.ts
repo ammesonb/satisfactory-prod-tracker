@@ -110,6 +110,19 @@ const expectRecipeBatchesToMatch = (actual: RecipeNode[], expectedBatches: strin
 
     for (const recipeName of expectedBatch) {
       const recipeNode = nodesByBatch[batchIndex].find((node) => node.recipe.name === recipeName)
+      if (!recipeNode) {
+        console.error(`Recipe '${recipeName}' not found in batch ${batchIndex}`)
+        console.error(
+          `Available recipes in batch ${batchIndex}:`,
+          nodesByBatch[batchIndex]?.map((n) => n.recipe.name) || [],
+        )
+        console.error(
+          `All batches:`,
+          Object.keys(nodesByBatch).map(
+            (b) => `Batch ${b}: [${nodesByBatch[b].map((n) => n.recipe.name).join(', ')}]`,
+          ),
+        )
+      }
       expect(recipeNode).toBeDefined()
     }
   }

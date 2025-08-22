@@ -6190,6 +6190,7 @@ export const itemDatabase = {
  */
 export function createMockDataStore() {
   return {
+    recipes: recipeDatabase,
     recipeIngredients: vi.fn((recipeName: string) => {
       const recipe = recipeDatabase[recipeName]
       return recipe ? recipe.ingredients : []
