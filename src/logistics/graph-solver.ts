@@ -125,7 +125,7 @@ export const getRecipeLinks = (
           const product = recipe.availableProducts.find((prod) => prod.item === ingredient.item)
           return [recipeName, product?.amount ?? 0]
         })
-        .filter(([, amount]) => amount > 0),
+        .filter(([, amount]) => Number(amount) > 0),
     )
     const catalystQuantity = getCatalystQuantity(ingredient, recipe)
     // if catalyst found, add link to self
@@ -138,8 +138,14 @@ export const getRecipeLinks = (
       })
     }
 
+    // if the catalyst fully satisfies the amount required, that's all we need
+    if (ingredient.amount <= catalystQuantity + ZERO_THRESHOLD) {
+      return links
+    }
+
     // Sometimes a catalyst might produce more than it consumes, so in that case mark amount needed as none
     let amountNeeded = Math.max(0, (ingredient.amount - catalystQuantity) * recipe.recipe.count)
+
     const ingredientSources = selectIngredientSources(ingredient, amountNeeded, recipeAmounts)
 
     // If no sources, can't product this yet so no links

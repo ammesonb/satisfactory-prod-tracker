@@ -10,7 +10,6 @@ interface RecipeData {
 
 // Comprehensive recipe database for testing
 export const recipeDatabase: Record<string, RecipeData> = {
-  // Basic smelting recipes
   Recipe_Fake_IronIngot_C: {
     name: 'Recipe_Fake_IronIngot_C',
     ingredients: [{ item: 'Desc_OreIron_C', amount: 1 }],
@@ -22,7 +21,6 @@ export const recipeDatabase: Record<string, RecipeData> = {
     products: [{ item: 'Desc_CopperIngot_C', amount: 1 }],
   },
 
-  // Fake Alumina solution recipes (catalyst examples)
   Recipe_Fake_AluminaSolutionRaw_C: {
     name: 'Recipe_AluminaSolutionRaw_C',
     ingredients: [{ item: 'Desc_OreBauxite_C', amount: 2 }],
