@@ -1,7 +1,12 @@
 import { useDataStore } from '@/stores/data'
 import { parseRecipeString } from './recipe-parser'
-import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
-import { getRecipeLinks } from '@/logistics/graph-linker'
+import {
+  newRecipeNode,
+  produceRecipe,
+  decrementConsumedProducts,
+  type RecipeNode,
+} from './graph-node'
+import { getRecipeLinks } from './graph-linker'
 
 /**
  * Figures out recipe production chain in graph-style (breadth-first) manner.

@@ -107,8 +107,12 @@ export const getRecipeLinks = (
       return []
     }
 
+    // identify how much to use from each source
     for (const source of ingredientSources) {
-      const amountUsed = Math.min(amountNeeded, recipeAmounts[source])
+      // if consuming from a natural resource, use rest of needed
+      const amountUsed = isNaturalResource(source)
+        ? amountNeeded
+        : Math.min(amountNeeded, recipeAmounts[source])
       links.push({
         source,
         sink: recipe.recipe.name,

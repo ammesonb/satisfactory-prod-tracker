@@ -129,7 +129,7 @@ export const resolveCircularDependencies = (circularRecipes: Recipe[]): Material
           circularLinks.push({
             source: recipe.name,
             sink: recipe.name,
-            name: ingredient.item,
+            material: ingredient.item,
             amount: linkAmount,
           })
 
@@ -156,7 +156,7 @@ export const resolveCircularDependencies = (circularRecipes: Recipe[]): Material
             circularLinks.push({
               source: otherRecipe.name,
               sink: recipe.name,
-              name: ingredient.item,
+              material: ingredient.item,
               amount: linkAmount,
             })
 

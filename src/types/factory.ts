@@ -7,7 +7,7 @@ export interface Recipe {
 export interface Material {
   source: string
   sink: string
-  name: string
+  material: string
   amount: number
 }
 

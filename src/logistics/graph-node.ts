@@ -1,6 +1,6 @@
 import type { Recipe } from '@/types/factory'
 import type { RecipeIngredient, RecipeProduct } from '@/types/data'
-import { ZERO_THRESHOLD } from './constants'
+import { ZERO_THRESHOLD, isNaturalResource } from './constants'
 
 export interface RecipeLink {
   source: string
@@ -55,7 +55,10 @@ export const getCatalystQuantity = (ingredient: RecipeIngredient, recipe: Recipe
  * - assign the ingredient sources to the recipe
  */
 export const produceRecipe = (recipe: RecipeNode, batchNumber: number, inputs: RecipeLink[]) => {
-  recipe.availableProducts = recipe.products.map((product) => ({ ...product }))
+  recipe.availableProducts = recipe.products.map((product) => ({
+    ...product,
+    amount: product.amount * recipe.recipe.count,
+  }))
   recipe.batchNumber = batchNumber
   // assign by reference here, so same object is used in both places
   // TODO: if this is restored from session storage, then the input/output will reference different objects
@@ -70,7 +73,15 @@ export const decrementConsumedProducts = (
   links: RecipeLink[],
 ) => {
   for (const link of links) {
+    // Skip natural resource sources (they don't exist in recipesByName)
+    if (isNaturalResource(link.source)) {
+      continue
+    }
+
     const sourceNode = recipesByName[link.source]
+    if (!sourceNode) {
+      throw new Error(`Source node not found: ${link.source} for material ${link.material}. Available recipes: ${Object.keys(recipesByName).join(', ')}`)
+    }
     // add the output link, for a double-headed list structure approach
     sourceNode.outputs.push(link)
     const productIndex = sourceNode.availableProducts.findIndex((p) => p.item === link.material)

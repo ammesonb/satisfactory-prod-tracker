@@ -43,7 +43,7 @@ export const processRecipeChain = (
         .map((catalystLink) => ({
           source: recipe.name,
           sink: recipe.name,
-          name: catalystLink.item,
+          material: catalystLink.item,
           amount: catalystLink.amount,
         }))
       batchLinks.push(...catalystLinksForRecipe)

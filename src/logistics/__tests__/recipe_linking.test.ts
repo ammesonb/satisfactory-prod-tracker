@@ -46,7 +46,7 @@ describe('recipe linking', () => {
         {
           source: 'Desc_OreIron_C',
           sink: 'Recipe_IronIngot_C',
-          name: 'Desc_OreIron_C',
+          material: 'Desc_OreIron_C',
           amount: 30,
         },
       ])
@@ -67,13 +67,13 @@ describe('recipe linking', () => {
         {
           source: 'MiningRecipe',
           sink: 'Recipe_IronIngot_C',
-          name: 'Desc_OreIron_C',
+          material: 'Desc_OreIron_C',
           amount: 15,
         },
         {
           source: 'Desc_OreIron_C',
           sink: 'Recipe_IronIngot_C',
-          name: 'Desc_OreIron_C',
+          material: 'Desc_OreIron_C',
           amount: 15,
         },
       ])
@@ -95,7 +95,7 @@ describe('recipe linking', () => {
         {
           source: 'MiningRecipe',
           sink: 'Recipe_IronIngot_C',
-          name: 'Desc_OreIron_C',
+          material: 'Desc_OreIron_C',
           amount: 30,
         },
       ])
@@ -123,19 +123,19 @@ describe('recipe linking', () => {
         {
           source: 'Recipe_AluminaSolution_C',
           sink: 'Recipe_AluminaSolution_C',
-          name: 'Desc_AluminaSolution_C',
+          material: 'Desc_AluminaSolution_C',
           amount: 60,
         },
         {
           source: 'WaterExtractor',
           sink: 'Recipe_AluminaSolution_C',
-          name: 'Desc_Water_C',
+          material: 'Desc_Water_C',
           amount: 60,
         },
         {
           source: 'Desc_Water_C',
           sink: 'Recipe_AluminaSolution_C',
-          name: 'Desc_Water_C',
+          material: 'Desc_Water_C',
           amount: 60,
         },
         */
@@ -175,7 +175,7 @@ describe('recipe linking', () => {
         {
           source: 'Recipe_AluminaSolution_C',
           sink: 'Recipe_AluminaSolution_C',
-          name: 'Desc_AluminaSolution_C',
+          material: 'Desc_AluminaSolution_C',
           amount: 60,
         },
       ]
@@ -191,7 +191,7 @@ describe('recipe linking', () => {
         {
           source: 'WaterExtractor',
           sink: 'Recipe_AluminaSolution_C',
-          name: 'Desc_Water_C',
+          material: 'Desc_Water_C',
           amount: 120,
         },
       ])
@@ -227,7 +227,7 @@ describe('recipe linking', () => {
         {
           source: 'Recipe_AluminaSolution_C',
           sink: 'Recipe_AluminaSolution_C',
-          name: 'Desc_AluminaSolution_C',
+          material: 'Desc_AluminaSolution_C',
           amount: 180, // 60 * 3 instances
         },
       ]
@@ -243,7 +243,7 @@ describe('recipe linking', () => {
         {
           source: 'WaterExtractor',
           sink: 'Recipe_AluminaSolution_C',
-          name: 'Desc_Water_C',
+          material: 'Desc_Water_C',
           amount: 360,
         },
       ])
@@ -289,7 +289,7 @@ describe('recipe linking', () => {
         {
           source: 'IronIngotRecipe',
           sink: 'Recipe_IronPlate_C',
-          name: 'Desc_IronIngot_C',
+          material: 'Desc_IronIngot_C',
           amount: 40,
         },
       ])
@@ -315,19 +315,19 @@ describe('recipe linking', () => {
         {
           source: 'WireRecipe3',
           sink: 'Recipe_Cable_C',
-          name: 'Desc_Wire_C',
+          material: 'Desc_Wire_C',
           amount: 10,
         },
         {
           source: 'WireRecipe1',
           sink: 'Recipe_Cable_C',
-          name: 'Desc_Wire_C',
+          material: 'Desc_Wire_C',
           amount: 15,
         },
         {
           source: 'WireRecipe2',
           sink: 'Recipe_Cable_C',
-          name: 'Desc_Wire_C',
+          material: 'Desc_Wire_C',
           amount: 15,
         },
       ])
@@ -364,7 +364,7 @@ describe('recipe linking', () => {
         {
           source: 'Recipe_IronIngot_C',
           sink: 'Recipe_IronPlate_C',
-          name: 'Desc_IronIngot_C',
+          material: 'Desc_IronIngot_C',
           amount: 1.5,
         },
       ])

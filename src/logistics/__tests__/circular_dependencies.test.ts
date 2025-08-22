@@ -26,7 +26,7 @@ describe('resolveCircularDependencies', () => {
       (link) =>
         link.source === 'Recipe_Alternate_Plastic_1_C' &&
         link.sink === 'Recipe_Alternate_RecycledRubber_C' &&
-        link.name === 'Desc_Plastic_C',
+        link.material === 'Desc_Plastic_C',
     )
     expect(plasticLink).toBeDefined()
     expect(plasticLink!.amount).toBeCloseTo(30 * 1.7037, 3) // 51.111
@@ -36,7 +36,7 @@ describe('resolveCircularDependencies', () => {
       (link) =>
         link.source === 'Recipe_Alternate_RecycledRubber_C' &&
         link.sink === 'Recipe_Alternate_Plastic_1_C' &&
-        link.name === 'Desc_Rubber_C',
+        link.material === 'Desc_Rubber_C',
     )
     expect(rubberLink).toBeDefined()
     expect(rubberLink!.amount).toBeCloseTo(30 * 1.85185, 3) // 55.555
@@ -55,7 +55,7 @@ describe('resolveCircularDependencies', () => {
     const selfLink = result[0]
     expect(selfLink.source).toBe('Recipe_Fake_AluminaSolution_C')
     expect(selfLink.sink).toBe('Recipe_Fake_AluminaSolution_C')
-    expect(selfLink.name).toBe('Desc_AluminaSolution_C')
+    expect(selfLink.material).toBe('Desc_AluminaSolution_C')
     expect(selfLink.amount).toBe(60) // min(120 needed, 60 produced)
   })
 
@@ -82,7 +82,7 @@ describe('resolveCircularDependencies', () => {
 
     const result = resolveCircularDependencies(circularRecipes)
 
-    const plasticLink = result.find((link) => link.name === 'Desc_Plastic_C')
+    const plasticLink = result.find((link) => link.material === 'Desc_Plastic_C')
     expect(plasticLink!.amount).toBe(60) // Limited by available, not needed
   })
 })

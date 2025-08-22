@@ -31,7 +31,7 @@ describe('recipe ingredient processing', () => {
       expect(result![0]).toEqual({
         source: 'Desc_OreIron_C',
         sink: 'Recipe_IronIngot_C',
-        name: 'Desc_OreIron_C',
+        material: 'Desc_OreIron_C',
         amount: 3,
       })
     })
@@ -92,7 +92,7 @@ describe('recipe ingredient processing', () => {
       expect(result![0]).toEqual({
         source: 'Recipe_IronIngot_C',
         sink: 'Recipe_IronPlate_C',
-        name: 'Desc_IronIngot_C',
+        material: 'Desc_IronIngot_C',
         amount: 3,
       })
       expect(usedSources).toHaveLength(1)

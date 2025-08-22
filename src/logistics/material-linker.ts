@@ -55,7 +55,7 @@ const handleCircularLinks = (
   let remainingAmount = amount_needed
 
   const usableCircularLinks = availableCircularLinks.filter(
-    (link) => link.sink === recipe.name && link.name === ingredient.item,
+    (link) => link.sink === recipe.name && link.material === ingredient.item,
   )
 
   for (const circularLink of usableCircularLinks) {
@@ -64,7 +64,7 @@ const handleCircularLinks = (
       links.push({
         source: circularLink.source,
         sink: recipe.name,
-        name: ingredient.item,
+        material: ingredient.item,
         amount: linkAmount,
       })
       remainingAmount -= linkAmount
@@ -94,7 +94,7 @@ const handleExternalSources = (
       materialLinks.push({
         source: ingredient.item,
         sink: recipe.name,
-        name: ingredient.item,
+        material: ingredient.item,
         amount: amount_needed,
       })
       return materialLinks
@@ -124,7 +124,7 @@ const handleExternalSources = (
     materialLinks.push({
       source: source.recipe.name,
       sink: recipe.name,
-      name: ingredient.item,
+      material: ingredient.item,
       amount,
     })
     remainingAmount -= amount
@@ -142,7 +142,7 @@ const handleExternalSources = (
     materialLinks.push({
       source: ingredient.item,
       sink: recipe.name,
-      name: ingredient.item,
+      material: ingredient.item,
       amount: remainingAmount,
     })
   }
