@@ -249,3 +249,16 @@ export const groupCircularRecipes = (recipes: RecipeNode[]): RecipeNode[][] => {
 
   return groups
 }
+
+// When recipes are produced, we will need to remove them from the circular dependencies batches
+// since their products should now be avialable normally.
+export const removeRecipesFromGroups = (groupedRecipes: RecipeNode[][], recipes: RecipeNode[]) => {
+  for (const recipe of recipes) {
+    for (let i = 0; i < groupedRecipes.length; i++) {
+      groupedRecipes[i] = groupedRecipes[i].filter((r) => r.recipe.name !== recipe.recipe.name)
+    }
+  }
+
+  // can't be a circular dependency with only one recipe, that should just be accessible now
+  groupedRecipes = groupedRecipes.filter((group) => group.length > 1)
+}

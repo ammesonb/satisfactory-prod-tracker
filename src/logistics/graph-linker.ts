@@ -92,9 +92,9 @@ export const getRecipeLinks = (
       })
     }
 
-    // if the catalyst fully satisfies the amount required, that's all we need
+    // if the catalyst fully satisfies the amount required, continue to next ingredient
     if (ingredient.amount <= catalystQuantity + ZERO_THRESHOLD) {
-      return links
+      continue
     }
 
     // Sometimes a catalyst might produce more than it consumes, so in that case mark amount needed as none
@@ -124,6 +124,61 @@ export const getRecipeLinks = (
       if (amountNeeded <= ZERO_THRESHOLD) {
         break
       }
+    }
+  }
+
+  return links
+}
+
+/**
+ * Similar to getRecipeLinks, but checks each group of circular recipes.
+ * If a recipe can be produced as long as the other codependent recipe is ALSO produced,
+ * then we can add both to the current batch.
+ */
+export const getLinksForCircularRecipes = (
+  circularRecipeGroups: RecipeNode[][],
+  producedRecipes: Record<string, RecipeNode>,
+): Material[] => {
+  const links: Material[] = []
+  // track newly-added recipes, so we only do each once
+  const processedRecipes = new Set<string>()
+
+  // For each group of dependent recipes, see if we can produce all of them.
+  for (const recipeGroup of circularRecipeGroups) {
+    // Skip if any recipe in this group is already processed
+    if (recipeGroup.some((recipe) => processedRecipes.has(recipe.recipe.name))) {
+      continue
+    }
+
+    // Create temporary extended produced recipes that includes other recipes in the group
+    const extendedProducedRecipes = { ...producedRecipes }
+    for (const recipe of recipeGroup) {
+      extendedProducedRecipes[recipe.recipe.name] = recipe
+    }
+
+    // Check if all recipes in the group can be produced
+    const groupLinks: Material[] = []
+    let canProduce = true
+
+    for (const recipe of recipeGroup) {
+      // if we've already produced this recipe, continue to next in group
+      if (processedRecipes.has(recipe.recipe.name)) {
+        continue
+      }
+
+      const recipeLinks = getRecipeLinks(recipe, extendedProducedRecipes)
+      if (recipeLinks.length === 0) {
+        canProduce = false
+        break
+      }
+      groupLinks.push(...recipeLinks)
+    }
+
+    // If all members of recipe group could be produced,
+    // add them to the links list and mark them as processed
+    if (canProduce) {
+      links.push(...groupLinks)
+      recipeGroup.forEach((recipe) => processedRecipes.add(recipe.recipe.name))
     }
   }
 
