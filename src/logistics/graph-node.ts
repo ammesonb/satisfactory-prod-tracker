@@ -81,7 +81,8 @@ export const decrementConsumedProducts = (
     sourceNode.outputs.push(link)
     const productIndex = sourceNode.availableProducts.findIndex((p) => p.item === link.material)
     if (productIndex >= 0) {
-      sourceNode.availableProducts[productIndex].amount -= link.amount
+      const remainder = sourceNode.availableProducts[productIndex].amount - link.amount
+      sourceNode.availableProducts[productIndex].amount = remainder < ZERO_THRESHOLD ? 0 : remainder
     } else {
       // should never be able to make a link for something without the product, but here as a safeguard
       throw new Error(

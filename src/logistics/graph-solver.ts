@@ -1,5 +1,4 @@
 import { useDataStore } from '@/stores/data'
-import type { Material } from '@/types/factory'
 import { parseRecipeString } from '@/logistics/recipe-parser'
 import { groupCircularRecipes, removeRecipesFromGroups } from '@/logistics/dependency-resolver'
 import {
@@ -9,6 +8,7 @@ import {
   type RecipeNode,
 } from '@/logistics/graph-node'
 import { getRecipeLinks, getLinksForCircularRecipes } from '@/logistics/graph-linker'
+import { ZERO_THRESHOLD } from './constants'
 
 /**
  * Figures out recipe production chain in graph-style (breadth-first) manner.
@@ -98,7 +98,8 @@ const debugNoRecipes = (
       (ing) =>
         !availableItems.some((item) => item === ing.item) ||
         (producedRecipes[ing.item]?.availableProducts.find((p) => p.item === ing.item)?.amount ||
-          0) < ing.amount,
+          0) <
+          ing.amount - ZERO_THRESHOLD,
     )
     console.warn(
       `  ${recipe.recipe.name}: missing ${missingIngredients.map((ing) => `${ing.item} (need ${ing.amount})`).join(', ')}`,

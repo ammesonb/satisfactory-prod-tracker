@@ -10,25 +10,40 @@ vi.mock('@/stores/data')
 
 // Helper function to test complete recipe chain solving
 const testRecipeChain = (
-  rawRecipes: string[],
-  expectedBatches: string[][],
-  expectedLinks: Material[],
-  expectedProducedItems: Record<string, object[]>,
+  description: string,
+  testCase: {
+    rawRecipes: string[]
+    expectedBatches: string[][]
+    expectedLinks: Material[]
+    expectedProducedItems: Record<string, object[]>
+  },
 ) => {
-  const result = solveRecipeChain(rawRecipes)
+  describe(description, () => {
+    let result: RecipeNode[]
 
-  console.log(result)
+    beforeEach(() => {
+      result = solveRecipeChain(testCase.rawRecipes)
+      console.log(result)
+    })
 
-  expect(result).toHaveLength(rawRecipes.length)
-  expectRecipeBatchesToMatch(result, expectedBatches)
+    it('has the correct number of recipe nodes', () => {
+      expect(result).toHaveLength(testCase.rawRecipes.length)
+    })
 
-  const actualLinks = extractLinks(result)
-  expectRecipeLinksToMatch(actualLinks, expectedLinks)
+    it('groups recipes into correct batches', () => {
+      expectRecipeBatchesToMatch(result, testCase.expectedBatches)
+    })
 
-  const actualProducedItems = extractProducedItems(result)
-  expect(actualProducedItems).toEqual(expectedProducedItems)
+    it('creates correct recipe links', () => {
+      const actualLinks = extractLinks(result)
+      expectRecipeLinksToMatch(actualLinks, testCase.expectedLinks)
+    })
 
-  return result
+    it('produces correct items', () => {
+      const actualProducedItems = extractProducedItems(result)
+      expect(actualProducedItems).toEqual(testCase.expectedProducedItems)
+    })
+  })
 }
 
 // Helper function to extract links from RecipeNodes
@@ -146,80 +161,30 @@ describe('graph-solver integration - production chain solving', () => {
     })
 
     // Tests a multi-tier production chain with parallel base materials and dependencies: Ores -> Ingots -> Wire -> Cable
-    it('should handle tiered production chain', () => {
-      const testCase = BASIC_TEST_CASES.TIERED_PRODUCTION
-      testRecipeChain(
-        testCase.rawRecipes,
-        testCase.expectedBatches,
-        testCase.expectedLinks,
-        testCase.expectedProducedItems,
-      )
-    })
+    testRecipeChain('tiered production chain', BASIC_TEST_CASES.TIERED_PRODUCTION)
 
     // Tests parallel production from natural resources (both recipes can run in same batch)
-    it('should handle production chain with natural resources', () => {
-      const testCase = BASIC_TEST_CASES.NATURAL_RESOURCES
-      testRecipeChain(
-        testCase.rawRecipes,
-        testCase.expectedBatches,
-        testCase.expectedLinks,
-        testCase.expectedProducedItems,
-      )
-    })
+    testRecipeChain('production chain with natural resources', BASIC_TEST_CASES.NATURAL_RESOURCES)
 
     // Tests exact quantity matching: 3 iron ingot smelters producing exactly what 1 iron plate constructor needs
-    it('should handle sufficient quantity produced by another recipe', () => {
-      const testCase = BASIC_TEST_CASES.SUFFICIENT_QUANTITY
-      testRecipeChain(
-        testCase.rawRecipes,
-        testCase.expectedBatches,
-        testCase.expectedLinks,
-        testCase.expectedProducedItems,
-      )
-    })
+    testRecipeChain(
+      'sufficient quantity produced by another recipe',
+      BASIC_TEST_CASES.SUFFICIENT_QUANTITY,
+    )
   })
 
   describe('complex/codependent production chains', () => {
     // Tests aluminum refining producing multiple byproducts, one used by subsequent recipe
-    it('should handle natural resources as byproducts and self-referential catalysts', () => {
-      const testCase = COMPLEX_TEST_CASES.ALUMINUM_SOLUTION
-      testRecipeChain(
-        testCase.rawRecipes,
-        testCase.expectedBatches,
-        testCase.expectedLinks,
-        testCase.expectedProducedItems,
-      )
-    })
+    testRecipeChain(
+      'natural resources as byproducts and self-referential catalysts',
+      COMPLEX_TEST_CASES.ALUMINUM_SOLUTION,
+    )
 
-    it('should link modular frame production', () => {
-      const testCase = COMPLEX_TEST_CASES.MODULAR_FRAME
-      testRecipeChain(
-        testCase.rawRecipes,
-        testCase.expectedBatches,
-        testCase.expectedLinks,
-        testCase.expectedProducedItems,
-      )
-    })
+    testRecipeChain('modular frame production', COMPLEX_TEST_CASES.MODULAR_FRAME)
 
-    it('should link plastic/rubber codependent recipes', () => {
-      const testCase = COMPLEX_TEST_CASES.PLASTIC_RUBBER
-      testRecipeChain(
-        testCase.rawRecipes,
-        testCase.expectedBatches,
-        testCase.expectedLinks,
-        testCase.expectedProducedItems,
-      )
-    })
+    testRecipeChain('plastic/rubber codependent recipes', COMPLEX_TEST_CASES.PLASTIC_RUBBER)
 
-    it('should process insanely complex plutonium cells', () => {
-      const testCase = COMPLEX_TEST_CASES.PLUTONIUM_CELL
-      testRecipeChain(
-        testCase.rawRecipes,
-        testCase.expectedBatches,
-        testCase.expectedLinks,
-        testCase.expectedProducedItems,
-      )
-    })
+    testRecipeChain('insanely complex plutonium cells', COMPLEX_TEST_CASES.PLUTONIUM_CELL)
   })
 
   describe('error cases', () => {

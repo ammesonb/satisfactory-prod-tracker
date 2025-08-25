@@ -183,7 +183,7 @@ describe('group circular recipes', () => {
     // Should have one group with the catalyst recipe
     const singleRecipeGroups = groups.filter((g) => g.length === 1)
     expect(singleRecipeGroups).toHaveLength(1)
-    expect(singleRecipeGroups[0]).toEqual(['Recipe_Fake_AluminaSolution_C'])
+    expect(singleRecipeGroups[0][0].recipe.name).toEqual('Recipe_Fake_AluminaSolution_C')
 
     // Should have one group with the mutual dependency
     const multiRecipeGroups = groups.filter((g) => g.length === 2)

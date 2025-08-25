@@ -145,8 +145,11 @@ export const getLinksForCircularRecipes = (
   // track newly-added recipes, so we only do each once
   const processedRecipes = new Set<string>()
 
+  // Filter out single-recipe groups (catalyst recipes) - these should be handled by normal processing
+  const multiRecipeGroups = circularRecipeGroups.filter((group) => group.length > 1)
+
   // For each group of dependent recipes, see if we can produce all of them.
-  for (const recipeGroup of circularRecipeGroups) {
+  for (const recipeGroup of multiRecipeGroups) {
     // Skip if any recipe in this group is already processed
     if (recipeGroup.some((recipe) => processedRecipes.has(recipe.recipe.name))) {
       continue
