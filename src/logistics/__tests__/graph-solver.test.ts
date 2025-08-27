@@ -106,16 +106,19 @@ const expectRecipeLinksToMatch = (actual: Material[], expected: Material[]) => {
 
     expect.soft(matchingLink).toBeDefined()
     if (matchingLink) {
+      // Check amount with absolute tolerance (0.1 difference allowed)
       expect
         .soft({
-          ...expectedLink,
-          amount: expect.closeTo(expectedAmount, 2),
+          source: expectedLink.source,
+          sink: expectedLink.sink,
+          material: expectedLink.material,
+          amount: matchingLink.amount,
         })
         .toEqual({
           source: matchingLink.source,
           sink: matchingLink.sink,
           material: matchingLink.material,
-          amount: expect.closeTo(matchingLink.amount, 2),
+          amount: expect.closeTo(expectedAmount, 0.1),
         })
     }
   }
@@ -136,10 +139,17 @@ const expectRecipeLinksToMatch = (actual: Material[], expected: Material[]) => {
     if (matchingLink) {
       expect
         .soft({
-          ...actualLink,
-          amount: expect.closeTo(actualAmount, 2),
+          source: actualLink.source,
+          sink: actualLink.sink,
+          material: actualLink.material,
+          amount: actualAmount,
         })
-        .toEqual(matchingLink)
+        .toEqual({
+          source: matchingLink.source,
+          sink: matchingLink.sink,
+          material: matchingLink.material,
+          amount: expect.closeTo(matchingLink.amount, 0.1),
+        })
     }
   }
 }

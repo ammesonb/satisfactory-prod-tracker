@@ -819,7 +819,7 @@ export const COMPLEX_TEST_CASES = {
           source: 'Recipe_Alternate_Plastic_1_C',
           sink: 'Recipe_Alternate_CoatedIronPlate_C',
           material: 'Desc_Plastic_C',
-          amount: 2.86,
+          amount: 2.8594,
         },
         {
           source: 'Recipe_Alternate_Quickwire_C',
@@ -903,6 +903,12 @@ export const COMPLEX_TEST_CASES = {
           amount: 45.787,
         },
         {
+          source: 'Recipe_Alternate_CoatedIronPlate_C',
+          sink: 'Recipe_NitricAcid_C',
+          material: 'Desc_IronPlate_C',
+          amount: 15.262,
+        },
+        {
           source: 'Recipe_Stator_C',
           sink: 'Recipe_ElectromagneticControlRod_C',
           material: 'Desc_Stator_C',
@@ -925,6 +931,12 @@ export const COMPLEX_TEST_CASES = {
           sink: 'Recipe_Alternate_Computer_1_C',
           material: 'Desc_HighSpeedWire_C',
           amount: 28,
+        },
+        {
+          source: 'Recipe_ResidualRubber_C',
+          sink: 'Recipe_Alternate_Computer_1_C',
+          material: 'Desc_Rubber_C',
+          amount: 12,
         },
       ],
       // batch six
@@ -1005,7 +1017,13 @@ export const COMPLEX_TEST_CASES = {
       // batch seven
       ...[
         {
-          source: 'Desc_NonFissibleUranium_C',
+          source: 'Recipe_Alternate_FertileUranium_C',
+          sink: 'Recipe_Plutonium_C',
+          material: 'Desc_NonFissibleUranium_C',
+          amount: 41.667,
+        },
+        {
+          source: 'Recipe_NonFissileUranium_C',
           sink: 'Recipe_Plutonium_C',
           material: 'Desc_NonFissibleUranium_C',
           amount: 91.667,
@@ -1217,12 +1235,12 @@ export const COMPLEX_TEST_CASES = {
         {
           source: 'Recipe_Alternate_CopperRotor_C',
           sink: 'Recipe_Alternate_NuclearFuelRod_1_C',
-          material: 'Desc_CopperRotor_C',
+          material: 'Desc_Rotor_C',
           amount: 7.333,
         },
       ],
       // batch ten
-      [
+      ...[
         {
           source: 'Recipe_PlutoniumCell_C',
           sink: 'Recipe_Alternate_PlutoniumFuelUnit_C',
@@ -1269,8 +1287,8 @@ export const COMPLEX_TEST_CASES = {
           amount: expect.closeTo(12.63, 2),
           recipe: expect.objectContaining({ name: 'Recipe_Alternate_FertileUranium_C' }),
           isResource: false,
-        }
-      ]
+        },
+      ],
     },
   },
 }
