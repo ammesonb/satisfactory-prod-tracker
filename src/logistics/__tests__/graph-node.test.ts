@@ -227,7 +227,7 @@ describe('graph-node unit tests', () => {
         },
       ]
 
-      decrementConsumedProducts(recipesByName, links)
+      decrementConsumedProducts(recipesByName, links, sourceRecipe)
 
       expect(sourceRecipe.availableProducts[0].amount).toBe(5)
       expect(sourceRecipe.outputs).toHaveLength(1)
@@ -266,7 +266,7 @@ describe('graph-node unit tests', () => {
         },
       ]
 
-      decrementConsumedProducts(recipesByName, links)
+      decrementConsumedProducts(recipesByName, links, sourceRecipe)
 
       expect(sourceRecipe.availableProducts[0].amount).toBe(0)
       expect(sourceRecipe.availableProducts[1].amount).toBe(0)
@@ -293,7 +293,7 @@ describe('graph-node unit tests', () => {
         },
       ]
 
-      decrementConsumedProducts(recipesByName, links)
+      decrementConsumedProducts(recipesByName, links, sourceRecipe)
 
       expect(sourceRecipe.availableProducts[0].amount).toBe(7)
       expect(sourceRecipe.fullyConsumed).toBe(false)
@@ -330,7 +330,7 @@ describe('graph-node unit tests', () => {
         },
       ]
 
-      decrementConsumedProducts(recipesByName, links)
+      decrementConsumedProducts(recipesByName, links, sourceRecipe)
 
       expect(sourceRecipe.availableProducts[0].amount).toBe(5) // 20 - 7 - 5 - 3
       expect(sourceRecipe.outputs).toHaveLength(3)
@@ -357,7 +357,7 @@ describe('graph-node unit tests', () => {
       ]
 
       expect(() => {
-        decrementConsumedProducts(recipesByName, links)
+        decrementConsumedProducts(recipesByName, links, sourceRecipe)
       }).toThrow(
         'Unable to find product Desc_NonExistent_C in source Recipe_Source_C - should never happen!',
       )
@@ -382,10 +382,54 @@ describe('graph-node unit tests', () => {
         },
       ]
 
-      decrementConsumedProducts(recipesByName, links)
+      decrementConsumedProducts(recipesByName, links, sourceRecipe)
 
       expect(sourceRecipe.availableProducts[0].amount).toBe(0)
       expect(sourceRecipe.fullyConsumed).toBe(true) // Should be true since 0.04 <= ZERO_THRESHOLD (0.1)
+    })
+
+    it('should handle catalyst recipe with self-referential links', () => {
+      // Use the catalyst recipe from fixtures
+      const recipe = { name: 'Recipe_Fake_AluminaSolution_C', count: 1 }
+      const ingredients = [{ item: 'Desc_AluminaSolution_C', amount: 120 }]
+      const products = [
+        { item: 'Desc_AluminaSolution_C', amount: 60 },
+        { item: 'Desc_Water_C', amount: 120 },
+      ]
+
+      const catalystRecipe = newRecipeNode(recipe, ingredients, products)
+      catalystRecipe.availableProducts = [...products]
+
+      const recipesByName = {
+        [recipe.name]: catalystRecipe,
+      }
+
+      // Self-referential catalyst link - recipe consumes its own product
+      const links = [
+        {
+          source: recipe.name,
+          sink: recipe.name,
+          material: ingredients[0].item,
+          amount: ingredients[0].amount - products[0].amount, // Uses all of its own alumina solution production
+        },
+      ]
+
+      // Should not throw "Source node not found" error
+      expect(() => {
+        decrementConsumedProducts(recipesByName, links, catalystRecipe)
+      }).not.toThrow()
+
+      // Verify the alumina solution product is fully consumed by itself
+      const aluminaSolutionProduct = catalystRecipe.availableProducts.find(
+        (p) => p.item === 'Desc_AluminaSolution_C',
+      )
+      const waterProduct = catalystRecipe.availableProducts.find((p) => p.item === 'Desc_Water_C')
+
+      expect(aluminaSolutionProduct?.amount).toBe(0)
+      expect(waterProduct?.amount).toBe(products[1].amount) // Water should remain
+      expect(catalystRecipe.outputs).toHaveLength(1)
+      expect(catalystRecipe.outputs[0]).toBe(links[0])
+      expect(catalystRecipe.fullyConsumed).toBe(false) // Still has water available
     })
   })
 })
