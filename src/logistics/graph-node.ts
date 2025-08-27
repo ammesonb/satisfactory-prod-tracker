@@ -62,9 +62,9 @@ export const produceRecipe = (recipe: RecipeNode, batchNumber: number, inputs: M
  * Decrement the available products of recipes used in the given links, then update their fullyConsumed status accordingly.
  */
 export const decrementConsumedProducts = (
-  recipesByName: Record<string, RecipeNode>,
+  producedRecipesByName: Record<string, RecipeNode>,
   links: Material[],
-  recipe: RecipeNode,
+  batchRecipes?: RecipeNode[],
 ) => {
   for (const link of links) {
     // Skip natural resource sources (they don't exist in recipesByName)
@@ -72,10 +72,32 @@ export const decrementConsumedProducts = (
       continue
     }
 
-    const sourceNode = link.source === link.sink ? recipe : recipesByName[link.source]
+    let sourceNode: RecipeNode | undefined
+    if (link.source in producedRecipesByName) {
+      // try to find in standard production first
+      sourceNode = producedRecipesByName[link.source]
+    } else if (batchRecipes) {
+      // if missing, e.g. for catalyst/codependent recipes, check the batch for a source
+      sourceNode = batchRecipes.find((r) => r.recipe.name === link.source)
+    }
+
     if (!sourceNode) {
+      const availableRecipes = [
+        ...Object.keys(producedRecipesByName),
+        ...(batchRecipes?.map((r) => r.recipe.name) || []),
+      ].join(', ')
       throw new Error(
-        `Source node not found: ${link.source} for material ${link.material}. Available recipes: ${Object.keys(recipesByName).join(', ')}`,
+        `Source node not found: ${link.source} for material ${link.material}. Available recipes: ${availableRecipes}`,
+      )
+    }
+
+    if (!sourceNode) {
+      const availableRecipes = [
+        ...Object.keys(producedRecipesByName),
+        ...(batchRecipes?.map((r) => r.recipe.name) || []),
+      ].join(', ')
+      throw new Error(
+        `Source node not found: ${link.source} for material ${link.material}. Available recipes: ${availableRecipes}`,
       )
     }
     // add the output link, for a double-headed list structure approach

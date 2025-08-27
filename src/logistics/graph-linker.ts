@@ -158,7 +158,10 @@ export const getLinksForCircularRecipes = (
     // Create temporary extended produced recipes that includes other recipes in the group
     const extendedProducedRecipes = { ...producedRecipes }
     for (const recipe of recipeGroup) {
-      extendedProducedRecipes[recipe.recipe.name] = recipe
+      extendedProducedRecipes[recipe.recipe.name] = {
+        ...recipe,
+        availableProducts: recipe.products,
+      }
     }
 
     // track needed input links by the name of the recipe

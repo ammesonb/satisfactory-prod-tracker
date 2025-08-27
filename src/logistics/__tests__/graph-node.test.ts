@@ -227,7 +227,7 @@ describe('graph-node unit tests', () => {
         },
       ]
 
-      decrementConsumedProducts(recipesByName, links, sourceRecipe)
+      decrementConsumedProducts(recipesByName, links, [sourceRecipe])
 
       expect(sourceRecipe.availableProducts[0].amount).toBe(5)
       expect(sourceRecipe.outputs).toHaveLength(1)
@@ -266,7 +266,7 @@ describe('graph-node unit tests', () => {
         },
       ]
 
-      decrementConsumedProducts(recipesByName, links, sourceRecipe)
+      decrementConsumedProducts(recipesByName, links, [sourceRecipe])
 
       expect(sourceRecipe.availableProducts[0].amount).toBe(0)
       expect(sourceRecipe.availableProducts[1].amount).toBe(0)
@@ -293,7 +293,7 @@ describe('graph-node unit tests', () => {
         },
       ]
 
-      decrementConsumedProducts(recipesByName, links, sourceRecipe)
+      decrementConsumedProducts(recipesByName, links, [sourceRecipe])
 
       expect(sourceRecipe.availableProducts[0].amount).toBe(7)
       expect(sourceRecipe.fullyConsumed).toBe(false)
@@ -330,7 +330,7 @@ describe('graph-node unit tests', () => {
         },
       ]
 
-      decrementConsumedProducts(recipesByName, links, sourceRecipe)
+      decrementConsumedProducts(recipesByName, links, [sourceRecipe])
 
       expect(sourceRecipe.availableProducts[0].amount).toBe(5) // 20 - 7 - 5 - 3
       expect(sourceRecipe.outputs).toHaveLength(3)
@@ -357,7 +357,7 @@ describe('graph-node unit tests', () => {
       ]
 
       expect(() => {
-        decrementConsumedProducts(recipesByName, links, sourceRecipe)
+        decrementConsumedProducts(recipesByName, links, [sourceRecipe])
       }).toThrow(
         'Unable to find product Desc_NonExistent_C in source Recipe_Source_C - should never happen!',
       )
@@ -382,7 +382,7 @@ describe('graph-node unit tests', () => {
         },
       ]
 
-      decrementConsumedProducts(recipesByName, links, sourceRecipe)
+      decrementConsumedProducts(recipesByName, links, [sourceRecipe])
 
       expect(sourceRecipe.availableProducts[0].amount).toBe(0)
       expect(sourceRecipe.fullyConsumed).toBe(true) // Should be true since 0.04 <= ZERO_THRESHOLD (0.1)
@@ -416,7 +416,7 @@ describe('graph-node unit tests', () => {
 
       // Should not throw "Source node not found" error
       expect(() => {
-        decrementConsumedProducts(recipesByName, links, catalystRecipe)
+        decrementConsumedProducts(recipesByName, links, [catalystRecipe])
       }).not.toThrow()
 
       // Verify the alumina solution product is fully consumed by itself

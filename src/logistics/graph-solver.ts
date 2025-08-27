@@ -46,20 +46,22 @@ export const solveRecipeChain = (rawRecipes: string[]): RecipeNode[] => {
       }
 
       produceRecipe(recipe, batch, links)
-      decrementConsumedProducts(producedRecipes, links, recipe)
+      // add recipes to batch first, so if they reference themselves we can decrement the product
       batchRecipes.push(recipe)
+      decrementConsumedProducts(producedRecipes, links, batchRecipes)
     }
 
     // Then try circular recipe groups for remaining recipes
     const circularRecipeLinks = getLinksForCircularRecipes(circularRecipeGroups, producedRecipes)
+    console.log(circularRecipeLinks)
 
     // Process each circular recipe that has links and hasn't been processed yet
     for (const [recipeName, links] of Object.entries(circularRecipeLinks)) {
       const recipe = pendingRecipes.find((r) => r.recipe.name === recipeName)
       if (recipe && !batchRecipes.includes(recipe)) {
         produceRecipe(recipe, batch, links)
-        decrementConsumedProducts(producedRecipes, links, recipe)
         batchRecipes.push(recipe)
+        decrementConsumedProducts(producedRecipes, links, batchRecipes)
       }
     }
 
@@ -82,7 +84,6 @@ export const solveRecipeChain = (rawRecipes: string[]): RecipeNode[] => {
     )
   }
 
-  // TODO: is this the correct thing to return here?
   return Object.values(producedRecipes)
 }
 
