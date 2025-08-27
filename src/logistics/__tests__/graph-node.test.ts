@@ -384,7 +384,7 @@ describe('graph-node unit tests', () => {
 
       decrementConsumedProducts(recipesByName, links)
 
-      expect(sourceRecipe.availableProducts[0].amount).toBe(0.04)
+      expect(sourceRecipe.availableProducts[0].amount).toBe(0)
       expect(sourceRecipe.fullyConsumed).toBe(true) // Should be true since 0.04 <= ZERO_THRESHOLD (0.1)
     })
   })

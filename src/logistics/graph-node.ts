@@ -64,6 +64,7 @@ export const produceRecipe = (recipe: RecipeNode, batchNumber: number, inputs: M
 export const decrementConsumedProducts = (
   recipesByName: Record<string, RecipeNode>,
   links: Material[],
+  recipe: RecipeNode,
 ) => {
   for (const link of links) {
     // Skip natural resource sources (they don't exist in recipesByName)
@@ -71,7 +72,7 @@ export const decrementConsumedProducts = (
       continue
     }
 
-    const sourceNode = recipesByName[link.source]
+    const sourceNode = link.source === link.sink ? recipe : recipesByName[link.source]
     if (!sourceNode) {
       throw new Error(
         `Source node not found: ${link.source} for material ${link.material}. Available recipes: ${Object.keys(recipesByName).join(', ')}`,

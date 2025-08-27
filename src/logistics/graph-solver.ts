@@ -46,7 +46,7 @@ export const solveRecipeChain = (rawRecipes: string[]): RecipeNode[] => {
       }
 
       produceRecipe(recipe, batch, links)
-      decrementConsumedProducts(producedRecipes, links)
+      decrementConsumedProducts(producedRecipes, links, recipe)
       batchRecipes.push(recipe)
     }
 
@@ -58,7 +58,7 @@ export const solveRecipeChain = (rawRecipes: string[]): RecipeNode[] => {
       const recipe = pendingRecipes.find((r) => r.recipe.name === recipeName)
       if (recipe && !batchRecipes.includes(recipe)) {
         produceRecipe(recipe, batch, links)
-        decrementConsumedProducts(producedRecipes, links)
+        decrementConsumedProducts(producedRecipes, links, recipe)
         batchRecipes.push(recipe)
       }
     }
