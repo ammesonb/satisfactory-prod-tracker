@@ -3,60 +3,6 @@ import type { Recipe, Material } from '@/types/factory'
 import type { RecipeIngredient } from '@/types/data'
 import type { RecipeNode } from '@/logistics/graph-node'
 
-export interface PreprocessedRecipeData {
-  recipe: Recipe
-  ingredients: RecipeIngredient[]
-  products: RecipeIngredient[]
-}
-
-export interface PendingCatalystLink {
-  recipeName: string
-  item: string
-  amount: number
-}
-
-export const preprocessCatalystRecipes = (
-  recipes: Recipe[],
-): {
-  recipeData: Map<string, PreprocessedRecipeData>
-  pendingCatalystLinks: PendingCatalystLink[]
-} => {
-  const data = useDataStore()
-  const recipeData = new Map<string, PreprocessedRecipeData>()
-  const pendingCatalystLinks: PendingCatalystLink[] = []
-
-  for (const recipe of recipes) {
-    const ingredients = data.recipeIngredients(recipe.name).map((ing) => ({ ...ing }))
-    const products = data.recipeProducts(recipe.name).map((prod) => ({ ...prod }))
-
-    // Check for self-referential catalyst items
-    for (const ingredient of ingredients) {
-      const matchingProduct = products.find((prod) => prod.item === ingredient.item)
-      if (matchingProduct) {
-        // Calculate the self-referential amount (lesser of consumption vs production per recipe)
-        const catalystAmount = Math.min(ingredient.amount, matchingProduct.amount)
-
-        if (catalystAmount > 0) {
-          // Create pending catalyst link for the total amount across all recipe instances
-          pendingCatalystLinks.push({
-            recipeName: recipe.name,
-            item: ingredient.item,
-            amount: catalystAmount * recipe.count,
-          })
-
-          // Reduce both ingredient requirement and product output by catalyst amount
-          ingredient.amount -= catalystAmount
-          matchingProduct.amount -= catalystAmount
-        }
-      }
-    }
-
-    recipeData.set(recipe.name, { recipe, ingredients, products })
-  }
-
-  return { recipeData, pendingCatalystLinks }
-}
-
 export const findCircularRecipes = (recipes: Recipe[]): Recipe[] => {
   const data = useDataStore()
 
