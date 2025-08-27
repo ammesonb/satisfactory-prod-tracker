@@ -404,7 +404,7 @@ export const COMPLEX_TEST_CASES = {
     expectedProducedItems: {
       Desc_Plastic_C: [
         {
-          amount: expect.closeTo(108.611, 2),
+          amount: expect.closeTo(57.5, 2),
           recipe: expect.objectContaining({ name: 'Recipe_Alternate_Plastic_1_C' }),
           isResource: false,
         },
@@ -416,7 +416,7 @@ export const COMPLEX_TEST_CASES = {
           isResource: false,
         },
         {
-          amount: expect.closeTo(102.222, 2),
+          amount: expect.closeTo(46.666, 2),
           recipe: expect.objectContaining({ name: 'Recipe_Alternate_RecycledRubber_C' }),
           isResource: false,
         },

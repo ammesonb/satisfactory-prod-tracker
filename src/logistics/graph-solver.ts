@@ -53,7 +53,6 @@ export const solveRecipeChain = (rawRecipes: string[]): RecipeNode[] => {
 
     // Then try circular recipe groups for remaining recipes
     const circularRecipeLinks = getLinksForCircularRecipes(circularRecipeGroups, producedRecipes)
-    console.log(circularRecipeLinks)
 
     // Process each circular recipe that has links and hasn't been processed yet
     for (const [recipeName, links] of Object.entries(circularRecipeLinks)) {
@@ -61,8 +60,11 @@ export const solveRecipeChain = (rawRecipes: string[]): RecipeNode[] => {
       if (recipe && !batchRecipes.includes(recipe)) {
         produceRecipe(recipe, batch, links)
         batchRecipes.push(recipe)
-        decrementConsumedProducts(producedRecipes, links, batchRecipes)
       }
+    }
+
+    for (const links of Object.values(circularRecipeLinks)) {
+      decrementConsumedProducts(producedRecipes, links, batchRecipes)
     }
 
     removeRecipesFromGroups(circularRecipeGroups, batchRecipes)
