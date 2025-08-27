@@ -87,6 +87,21 @@ const extractProducedItems = (nodes: RecipeNode[]): Record<string, object[]> => 
 const expectRecipeLinksToMatch = (actual: Material[], expected: Material[]) => {
   expect.soft(actual).toHaveLength(expected.length)
 
+  const counts = expected.reduce(
+    (acc, link) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { amount: expectedAmount, ...expectedRest } = link
+      acc[JSON.stringify(expectedRest)] = (acc[JSON.stringify(expectedRest)] || 0) + 1
+      return acc
+    },
+    {} as Record<string, number>,
+  )
+
+  for (const [key, value] of Object.entries(counts)) {
+    // ensure each link is only included once
+    expect.soft({ key, value }).toEqual({ key, value: 1 })
+  }
+
   console.log(`Expected ${expected.length} links, got ${actual.length} links`)
   for (const expectedLink of expected) {
     const { amount: expectedAmount, ...expectedRest } = expectedLink
@@ -120,6 +135,8 @@ const expectRecipeLinksToMatch = (actual: Material[], expected: Material[]) => {
           material: matchingLink.material,
           amount: expect.closeTo(expectedAmount, 0.1),
         })
+    } else {
+      console.error('No match for', expectedLink)
     }
   }
 
@@ -150,6 +167,8 @@ const expectRecipeLinksToMatch = (actual: Material[], expected: Material[]) => {
           material: matchingLink.material,
           amount: expect.closeTo(matchingLink.amount, 0.1),
         })
+    } else {
+      console.log('No match for', actualLink)
     }
   }
 }

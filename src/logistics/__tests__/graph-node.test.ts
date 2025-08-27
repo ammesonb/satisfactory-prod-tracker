@@ -137,48 +137,6 @@ describe('graph-node unit tests', () => {
 
       expect(catalystQuantity).toBe(25)
     })
-
-    it('should account for partial recipe count when calculating catalyst quantity', () => {
-      const mockIngredient: RecipeIngredient = {
-        item: 'Desc_AluminaSolution_C',
-        amount: 120,
-      }
-
-      const mockRecipe = newRecipeNode(
-        { name: 'Recipe_AluminaSolution_C', count: 0.5 }, // 50% of full recipe
-        [mockIngredient],
-        [
-          { item: 'Desc_AluminaSolution_C', amount: 60 },
-          { item: 'Desc_Water_C', amount: 120 },
-        ],
-      )
-
-      const catalystQuantity = getCatalystQuantity(mockIngredient, mockRecipe)
-
-      // Should return 60 * 0.5 = 30, not the full 60
-      expect(catalystQuantity).toBe(30)
-    })
-
-    it('should multiply catalyst quantity when recipe count is 2', () => {
-      const mockIngredient: RecipeIngredient = {
-        item: 'Desc_AluminaSolution_C',
-        amount: 120,
-      }
-
-      const mockRecipe = newRecipeNode(
-        { name: 'Recipe_AluminaSolution_C', count: 2 }, // 200% of full recipe
-        [mockIngredient],
-        [
-          { item: 'Desc_AluminaSolution_C', amount: 60 },
-          { item: 'Desc_Water_C', amount: 120 },
-        ],
-      )
-
-      const catalystQuantity = getCatalystQuantity(mockIngredient, mockRecipe)
-
-      // Should return 60 * 2 = 120
-      expect(catalystQuantity).toBe(120)
-    })
   })
 
   describe('produceRecipe', () => {

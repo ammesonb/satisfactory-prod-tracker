@@ -88,7 +88,7 @@ export const getRecipeLinks = (
         source: recipe.recipe.name,
         sink: recipe.recipe.name,
         material: ingredient.item,
-        amount: catalystQuantity,
+        amount: catalystQuantity * recipe.recipe.count,
       })
     }
 

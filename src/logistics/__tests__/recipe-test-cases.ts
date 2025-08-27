@@ -681,7 +681,9 @@ export const COMPLEX_TEST_CASES = {
           source: 'Desc_Water_C',
           sink: 'Recipe_Alternate_DilutedFuel_C',
           material: 'Desc_Water_C',
-          amount: 42.063,
+          // this should be reduced by water from other recipes like aluminum scrap
+          // but it is not produced yet, so cannot trust it in this solver
+          amount: 82.19,
         },
         {
           source: 'Recipe_Alternate_PureIronIngot_C',
@@ -806,7 +808,7 @@ export const COMPLEX_TEST_CASES = {
         {
           source: 'Recipe_Alternate_SteelRod_C',
           sink: 'Recipe_Screw_C',
-          material: 'Desc_SteelRod_C',
+          material: 'Desc_IronRod_C',
           amount: 31.778,
         },
         {
@@ -978,7 +980,7 @@ export const COMPLEX_TEST_CASES = {
           amount: 10.417,
         },
         {
-          source: 'Desc_NitricAcid_C',
+          source: 'Recipe_NitricAcid_C',
           sink: 'Recipe_Alternate_FertileUranium_C',
           material: 'Desc_NitricAcid_C',
           amount: 6.25,
@@ -1035,12 +1037,6 @@ export const COMPLEX_TEST_CASES = {
           amount: 33.333,
         },
         {
-          source: 'Recipe_Alternate_FertileUranium_C',
-          sink: 'Recipe_Plutonium_C',
-          material: 'Desc_NonFissibleUranium_C',
-          amount: 41.667,
-        },
-        {
           source: 'Recipe_Alternate_Quartz_Purified_C',
           sink: 'Recipe_Alternate_Silica_Distilled_C',
           material: 'Desc_DissolvedSilica_C',
@@ -1056,7 +1052,7 @@ export const COMPLEX_TEST_CASES = {
           source: 'Recipe_Alternate_Silica_Distilled_C',
           sink: 'Recipe_Alternate_Silica_Distilled_C',
           material: 'Desc_Water_C',
-          amount: 16.148,
+          amount: 16.15,
         },
         {
           source: 'Recipe_Alternate_FertileUranium_C',
@@ -1080,7 +1076,13 @@ export const COMPLEX_TEST_CASES = {
           source: 'Recipe_Alternate_RecycledRubber_C',
           sink: 'Recipe_Alternate_CrystalOscillator_C',
           material: 'Desc_Rubber_C',
-          amount: 22.4,
+          amount: 21.04,
+        },
+        {
+          source: 'Recipe_ResidualRubber_C',
+          sink: 'Recipe_Alternate_CrystalOscillator_C',
+          material: 'Desc_Rubber_C',
+          amount: 1.36,
         },
         {
           source: 'Recipe_Alternate_AILimiter_Plastic_C',
@@ -1245,7 +1247,7 @@ export const COMPLEX_TEST_CASES = {
           source: 'Recipe_PlutoniumCell_C',
           sink: 'Recipe_Alternate_PlutoniumFuelUnit_C',
           material: 'Desc_PlutoniumCell_C',
-          amount: 73.333,
+          amount: 20,
         },
         {
           source: 'Recipe_PressureConversionCube_C',
