@@ -203,7 +203,7 @@ export const COMPLEX_TEST_CASES = {
       },
     ] as Material[],
     expectedProducedItems: {
-      Desc_CateriumIngot_C: [
+      Desc_GoldIngot_C: [
         {
           amount: 2,
           recipe: expect.objectContaining({ name: 'Recipe_PureCateriumIngot_C' }),
@@ -486,7 +486,7 @@ export const COMPLEX_TEST_CASES = {
     expectedBatches: [
       // one
       [
-        'Recipe_Alternate_PureIronIngot_C ',
+        'Recipe_Alternate_PureIronIngot_C',
         'Recipe_Alternate_PureCopperIngot_C',
         'Recipe_Alternate_PureQuartzCrystal_C',
         'Recipe_Alternate_PureCateriumIngot_C',
@@ -576,7 +576,7 @@ export const COMPLEX_TEST_CASES = {
           source: 'Desc_OreCopper_C',
           sink: 'Recipe_Alternate_PureCopperIngot_C',
           material: 'Desc_OreCopper_C',
-          amount: 96.948,
+          amount: 96.9475,
         },
         {
           source: 'Desc_Water_C',
@@ -585,9 +585,9 @@ export const COMPLEX_TEST_CASES = {
           amount: 64.632,
         },
         {
-          source: 'Desc_OreQuartz_C',
+          source: 'Desc_RawQuartz_C',
           sink: 'Recipe_Alternate_PureQuartzCrystal_C',
-          material: 'Desc_OreQuartz_C',
+          material: 'Desc_RawQuartz_C',
           amount: 2.214,
         },
         {
@@ -698,7 +698,7 @@ export const COMPLEX_TEST_CASES = {
         {
           source: 'Recipe_Alternate_PureCateriumIngot_C',
           sink: 'Recipe_Alternate_Quickwire_C',
-          material: 'Desc_CateriumIngot_C',
+          material: 'Desc_GoldIngot_C',
           amount: 41.274,
         },
         {
@@ -900,7 +900,7 @@ export const COMPLEX_TEST_CASES = {
           source: 'Recipe_Alternate_ElectroAluminumScrap_C',
           sink: 'Recipe_NitricAcid_C',
           material: 'Desc_Water_C',
-          amount: 45.777,
+          amount: 45.787,
         },
         {
           source: 'Recipe_Stator_C',
@@ -1173,7 +1173,7 @@ export const COMPLEX_TEST_CASES = {
           source: 'Desc_Sulfur_C',
           sink: 'Recipe_Alternate_UraniumCell_1_C',
           material: 'Desc_Sulfur_C',
-          amount: 55,
+          amount: 91.667,
         },
         {
           source: 'Recipe_Alternate_Quickwire_C',
@@ -1252,6 +1252,25 @@ export const COMPLEX_TEST_CASES = {
           isResource: false,
         },
       ],
+      // technically, this should not be produced as it would be fully consumed by earlier recipes
+      // however, to avoid having to backtrack, simply allow excess water to be produced
+      Desc_Water_C: [
+        {
+          amount: expect.closeTo(19.08, 2),
+          recipe: expect.objectContaining({ name: 'Recipe_Alternate_ElectroAluminumScrap_C' }),
+          isResource: false,
+        },
+        {
+          amount: expect.closeTo(27.5, 2),
+          recipe: expect.objectContaining({ name: 'Recipe_NonFissileUranium_C' }),
+          isResource: false,
+        },
+        {
+          amount: expect.closeTo(12.63, 2),
+          recipe: expect.objectContaining({ name: 'Recipe_Alternate_FertileUranium_C' }),
+          isResource: false,
+        }
+      ]
     },
   },
 }

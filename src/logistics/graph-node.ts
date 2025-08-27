@@ -38,7 +38,8 @@ export const newRecipeNode = (
  * This is used to calculate the external amount needed as an input for the recipe to be sustainable.
  */
 export const getCatalystQuantity = (ingredient: RecipeIngredient, recipe: RecipeNode) => {
-  return recipe.products.find((prod) => prod.item === ingredient.item)?.amount || 0
+  const productAmount = recipe.products.find((prod) => prod.item === ingredient.item)?.amount || 0
+  return productAmount * recipe.recipe.count
 }
 
 /**

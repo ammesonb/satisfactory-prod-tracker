@@ -23,7 +23,6 @@ const testRecipeChain = (
 
     beforeEach(() => {
       result = solveRecipeChain(testCase.rawRecipes)
-      console.log(result)
     })
 
     it('has the correct number of recipe nodes', () => {
@@ -86,9 +85,9 @@ const extractProducedItems = (nodes: RecipeNode[]): Record<string, object[]> => 
 
 // Helper function to compare recipe links with floating point tolerance for amounts (order-agnostic)
 const expectRecipeLinksToMatch = (actual: Material[], expected: Material[]) => {
-  expect(actual).toHaveLength(expected.length)
-  console.log(`Expected ${expected.length} links, got ${actual.length} links`)
+  expect.soft(actual).toHaveLength(expected.length)
 
+  console.log(`Expected ${expected.length} links, got ${actual.length} links`)
   for (const expectedLink of expected) {
     const { amount: expectedAmount, ...expectedRest } = expectedLink
 
@@ -105,8 +104,43 @@ const expectRecipeLinksToMatch = (actual: Material[], expected: Material[]) => {
       actual.forEach((link, i) => console.error(`  ${i}:`, link))
     }
 
-    expect(matchingLink).toBeDefined()
-    expect(matchingLink.amount).toBeCloseTo(expectedAmount, 2)
+    expect.soft(matchingLink).toBeDefined()
+    if (matchingLink) {
+      expect
+        .soft({
+          ...expectedLink,
+          amount: expect.closeTo(expectedAmount, 2),
+        })
+        .toEqual({
+          source: matchingLink.source,
+          sink: matchingLink.sink,
+          material: matchingLink.material,
+          amount: expect.closeTo(matchingLink.amount, 2),
+        })
+    }
+  }
+
+  // check actual against expected too, in case extras are present
+  for (const actualLink of actual) {
+    const { amount: actualAmount, ...actualRest } = actualLink
+    const matchingLink = expected.find((expectedLink) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { amount, ...expectedRest } = expectedLink
+      return JSON.stringify(actualRest) === JSON.stringify(expectedRest)
+    })
+    if (!matchingLink) {
+      console.error('Actual link not found in expected:', actualLink)
+    }
+
+    expect.soft(matchingLink).toBeDefined()
+    if (matchingLink) {
+      expect
+        .soft({
+          ...actualLink,
+          amount: expect.closeTo(actualAmount, 2),
+        })
+        .toEqual(matchingLink)
+    }
   }
 }
 

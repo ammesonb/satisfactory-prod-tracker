@@ -41,7 +41,7 @@ export const recipeDatabase: Record<string, RecipeData> = {
       { item: 'Desc_OreGold_C', amount: 2 },
       { item: 'Desc_Water_C', amount: 2 },
     ],
-    products: [{ item: 'Desc_CateriumIngot_C', amount: 2 }],
+    products: [{ item: 'Desc_GoldIngot_C', amount: 2 }],
   },
   // Fake recycled rubber and plastic recipes
   Recipe_Fake_RecycledRubber_C: {
