@@ -72,7 +72,7 @@ export const getRecipeLinks = (
 ): Material[] => {
   const links: Material[] = []
   for (const ingredient of recipe.ingredients) {
-    // create a map from recipe name -> available product matching ingredient
+    // track available amounts of products from other recipes
     const recipeAmounts = Object.fromEntries(
       Object.entries(producedRecipes)
         .map(([recipeName, recipe]) => {
@@ -135,13 +135,13 @@ export const getRecipeLinks = (
  * If a recipe can be produced as long as the other codependent recipe is ALSO produced,
  * then we can add both to the current batch.
  *
- * Returns a map of recipe name to its required links for circular recipes that can be produced.
+ * Returns an object mapping recipe names to their required links for circular recipes that can be produced.
  */
 export const getLinksForCircularRecipes = (
   circularRecipeGroups: RecipeNode[][],
   producedRecipes: Record<string, RecipeNode>,
-): Map<string, Material[]> => {
-  const recipeLinksMap = new Map<string, Material[]>()
+): Record<string, Material[]> => {
+  const recipeLinks: Record<string, Material[]> = {}
   // track newly-added recipes, so we only do each once
   const processedRecipes = new Set<string>()
 
@@ -162,7 +162,7 @@ export const getLinksForCircularRecipes = (
     }
 
     // track needed input links by the name of the recipe
-    const groupRecipeLinks = new Map<string, Material[]>()
+    const groupRecipeLinks: Record<string, Material[]> = {}
     let canProduce = true
 
     for (const recipe of recipeGroup) {
@@ -176,18 +176,16 @@ export const getLinksForCircularRecipes = (
         canProduce = false
         break
       }
-      groupRecipeLinks.set(recipe.recipe.name, recipeLinks)
+      groupRecipeLinks[recipe.recipe.name] = recipeLinks
     }
 
     if (canProduce) {
-      // merge the links maps based on the recipe name
-      for (const [recipeName, links] of groupRecipeLinks) {
-        recipeLinksMap.set(recipeName, links)
-      }
+      // merge the links objects based on the recipe name
+      Object.assign(recipeLinks, groupRecipeLinks)
       // update the processed set with all the newly-available recipes
       recipeGroup.forEach((recipe) => processedRecipes.add(recipe.recipe.name))
     }
   }
 
-  return recipeLinksMap
+  return recipeLinks
 }
