@@ -5,7 +5,7 @@ import { RecipeFormatError, InvalidBuildingError, InvalidRecipeError } from '@/e
 export const parseRecipeString = (recipeString: string): Recipe => {
   const dataStore = useDataStore()
 
-  if (!recipeString.match(/^"\w+@[\d.]+#\w+": "[\d.]+"\s*,?\s*$/)) {
+  if (!recipeString.match(/^"?\w+@[\d.]+#\w+"?: "[\d.]+"\s*,?\s*$/)) {
     throw new RecipeFormatError(recipeString)
   }
 

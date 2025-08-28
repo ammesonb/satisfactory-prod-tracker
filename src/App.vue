@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useFactoryStore } from '@/stores/factory'
 import { ref } from 'vue'
+import GettingStarted from '@/components/GettingStarted.vue'
 
 const factoryStore = useFactoryStore()
 const showAddFactoryModal = ref(false)
@@ -21,7 +22,7 @@ const handleAddFactory = (factoryData: { name: string; icon: string; recipes: st
         <p v-if="factoryStore.hasFactories && !factoryStore.selected">
           Select a factory from the sidebar to view its production chain.
         </p>
-        <p v-if="!factoryStore.hasFactories">Please add a factory using the + button below.</p>
+        <GettingStarted v-if="!factoryStore.hasFactories" />
       </v-container>
       <v-fab
         icon="mdi-plus"
@@ -37,4 +38,8 @@ const handleAddFactory = (factoryData: { name: string; icon: string; recipes: st
   </v-app>
 </template>
 
-<style scoped></style>
+<style scoped>
+code {
+  color: green;
+}
+</style>

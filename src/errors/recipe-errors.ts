@@ -22,7 +22,7 @@ export class RecipeFormatError extends Error implements UserFriendlyError {
               color: 'grey-lighten-4',
               variant: 'tonal',
             },
-            [h('code', { class: 'text-body-2' }, '"recipe_name@efficiency#building": "count"')],
+            [h('code', { class: 'text-body-2' }, `"recipe_name@efficiency#building": "count"`)],
           ),
         ]),
       )
