@@ -9,9 +9,9 @@ const factoryStore = useFactoryStore()
 
 <template>
   <v-navigation-drawer expand-on-hover permanent v-model:rail="collapsed" :rail-width="64">
-    <v-list v-if="factoryStore.factories.length > 0">
+    <v-list v-if="factoryStore.hasFactories">
       <FactoryRow
-        v-for="factory in factoryStore.factories"
+        v-for="factory in factoryStore.factoryList"
         :key="factory.name"
         :factory="factory"
         @select="factoryStore.setSelectedFactory(factory.name)"

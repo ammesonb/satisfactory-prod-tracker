@@ -8,8 +8,9 @@ export const useFactoryStore = defineStore('factory', {
     factories: {} as Record<string, Factory>,
   }),
   getters: {
+    hasFactories: (state) => Object.keys(state.factories).length > 0,
     currentFactory: (state) => state.factories[state.selected],
-    factories: (state) => Object.values(state.factories || {}),
+    factoryList: (state) => Object.values(state.factories || {}),
   },
   actions: {
     setSelectedFactory(factoryName: string) {
