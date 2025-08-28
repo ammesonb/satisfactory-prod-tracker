@@ -1,6 +1,4 @@
-export interface UserFriendlyError {
-  toErrorMessage(): { summary: string; details: string }
-}
+import type { UserFriendlyError } from './friendly-error'
 
 export class RecipeFormatError extends Error implements UserFriendlyError {
   constructor(public recipeString: string) {
@@ -40,26 +38,6 @@ export class InvalidRecipeError extends Error implements UserFriendlyError {
     return {
       summary: 'Invalid recipe',
       details: `Recipe "${this.recipeName}" does not exist in the game data.`,
-    }
-  }
-}
-
-export class RecipeChainError extends Error implements UserFriendlyError {
-  constructor(
-    public unprocessedRecipes: string[],
-    public missingDependencies: Record<string, string[]>,
-  ) {
-    super(`Unable to process ${unprocessedRecipes.length} recipes due to missing dependencies`)
-    this.name = 'RecipeChainError'
-  }
-
-  toErrorMessage() {
-    const details = Object.entries(this.missingDependencies)
-      .map(([recipe, deps]) => `${recipe}: missing ${deps.join(', ')}`)
-      .join('\n')
-    return {
-      summary: 'Recipe chain error',
-      details: `Could not resolve dependencies for ${this.unprocessedRecipes.length} recipes:\n${details}`,
     }
   }
 }

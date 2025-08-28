@@ -8,6 +8,7 @@ import {
   type RecipeNode,
 } from '@/logistics/graph-node'
 import { getRecipeLinks, getLinksForCircularRecipes } from '@/logistics/graph-linker'
+import { RecipeChainError } from '@/errors/processing-errors'
 import { ZERO_THRESHOLD } from './constants'
 
 /**
@@ -71,11 +72,11 @@ export const solveRecipeChain = (rawRecipes: string[]): RecipeNode[] => {
 
     // Handle infinite loop if no recipes can be processed
     if (batchRecipes.length === 0) {
-      console.warn(
-        `Unable to process ${pendingRecipes.length} remaining recipes due to missing dependencies:`,
+      const missingDependencies = getMissingDependencies(pendingRecipes, producedRecipes)
+      throw new RecipeChainError(
+        pendingRecipes.map((recipe) => recipe.recipe.name),
+        missingDependencies,
       )
-      debugNoRecipes(pendingRecipes, producedRecipes)
-      break
     }
 
     pendingRecipes = pendingRecipes.filter((recipe) => !batchRecipes.includes(recipe))
@@ -89,11 +90,13 @@ export const solveRecipeChain = (rawRecipes: string[]): RecipeNode[] => {
   return Object.values(producedRecipes)
 }
 
-const debugNoRecipes = (
+const getMissingDependencies = (
   pendingRecipes: RecipeNode[],
   producedRecipes: Record<string, RecipeNode>,
-) => {
+): Record<string, string[]> => {
   const data = useDataStore()
+  const missingDependencies: Record<string, string[]> = {}
+
   pendingRecipes.forEach((recipe) => {
     const requiredIngredients = data.recipeIngredients(recipe.recipe.name)
     const availableItems = Object.keys(producedRecipes)
@@ -104,8 +107,11 @@ const debugNoRecipes = (
           0) <
           ing.amount - ZERO_THRESHOLD,
     )
-    console.warn(
-      `  ${recipe.recipe.name}: missing ${missingIngredients.map((ing) => `${ing.item} (need ${ing.amount})`).join(', ')}`,
-    )
+
+    if (missingIngredients.length > 0) {
+      missingDependencies[recipe.recipe.name] = missingIngredients.map((ing) => ing.item)
+    }
   })
+
+  return missingDependencies
 }

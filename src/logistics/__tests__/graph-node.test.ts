@@ -6,6 +6,7 @@ import {
   decrementConsumedProducts,
 } from '../graph-node'
 import type { Recipe, RecipeIngredient, RecipeProduct } from '@/types/data'
+import { SourceNodeNotFoundError, ProductNotFoundError } from '@/errors/processing-errors'
 
 describe('graph-node unit tests', () => {
   describe('newRecipeNode', () => {
@@ -337,7 +338,7 @@ describe('graph-node unit tests', () => {
       expect(sourceRecipe.fullyConsumed).toBe(false)
     })
 
-    it('should throw error when trying to consume non-existent product', () => {
+    it('should throw ProductNotFoundError when trying to consume non-existent product', () => {
       const sourceRecipe = newRecipeNode(
         { name: 'Recipe_Source_C', count: 1 },
         [],
@@ -358,9 +359,81 @@ describe('graph-node unit tests', () => {
 
       expect(() => {
         decrementConsumedProducts(recipesByName, links, [sourceRecipe])
-      }).toThrow(
-        'Unable to find product Desc_NonExistent_C in source Recipe_Source_C - should never happen!',
+      }).toThrow(ProductNotFoundError)
+
+      try {
+        decrementConsumedProducts(recipesByName, links, [sourceRecipe])
+        expect.fail('Should have thrown ProductNotFoundError')
+      } catch (error) {
+        expect(error).toBeInstanceOf(ProductNotFoundError)
+        const productError = error as ProductNotFoundError
+        expect(productError.material).toBe('Desc_NonExistent_C')
+        expect(productError.sourceRecipe).toBe('Recipe_Source_C')
+
+        const errorMessage = productError.toErrorMessage()
+        expect(errorMessage.summary).toBe('Recipe processing error')
+        expect(errorMessage.details).toContain(
+          'Recipe "Recipe_Source_C" was expected to produce "Desc_NonExistent_C"',
+        )
+      }
+    })
+
+    it('should throw SourceNodeNotFoundError when source recipe is missing', () => {
+      const recipesByName = {} // Empty - no recipes available
+
+      const links = [
+        {
+          source: 'Recipe_MissingSource_C',
+          sink: 'Recipe_Sink_C',
+          material: 'Desc_Material_C',
+          amount: 5,
+        },
+      ]
+
+      expect(() => {
+        decrementConsumedProducts(recipesByName, links)
+      }).toThrow(SourceNodeNotFoundError)
+
+      try {
+        decrementConsumedProducts(recipesByName, links)
+        expect.fail('Should have thrown SourceNodeNotFoundError')
+      } catch (error) {
+        expect(error).toBeInstanceOf(SourceNodeNotFoundError)
+        const sourceError = error as SourceNodeNotFoundError
+        expect(sourceError.sourceRecipe).toBe('Recipe_MissingSource_C')
+        expect(sourceError.material).toBe('Desc_Material_C')
+        expect(sourceError.availableRecipes).toEqual([])
+
+        const errorMessage = sourceError.toErrorMessage()
+        expect(errorMessage.summary).toBe('Recipe processing error')
+        expect(errorMessage.details).toContain(
+          'Recipe "Recipe_MissingSource_C" was expected to produce "Desc_Material_C"',
+        )
+      }
+    })
+
+    it('should skip natural resource sources without error', () => {
+      const sinkRecipe = newRecipeNode(
+        { name: 'Recipe_Sink_C', count: 1 },
+        [{ item: 'Desc_OreIron_C', amount: 1 }],
+        [],
       )
+
+      const recipesByName = { Recipe_Sink_C: sinkRecipe }
+
+      // Natural resource link - should not throw an error
+      const links = [
+        {
+          source: 'Desc_OreIron_C', // Natural resource
+          sink: 'Recipe_Sink_C',
+          material: 'Desc_OreIron_C',
+          amount: 1,
+        },
+      ]
+
+      expect(() => {
+        decrementConsumedProducts(recipesByName, links)
+      }).not.toThrow()
     })
 
     it('should mark as fully consumed when products are within zero threshold', () => {

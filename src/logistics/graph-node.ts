@@ -1,6 +1,7 @@
 import type { Material, Recipe } from '@/types/factory'
 import type { RecipeIngredient, RecipeProduct } from '@/types/data'
 import { ZERO_THRESHOLD, isNaturalResource } from './constants'
+import { SourceNodeNotFoundError, ProductNotFoundError } from '@/errors/processing-errors'
 
 export interface RecipeNode {
   recipe: Recipe
@@ -85,21 +86,10 @@ export const decrementConsumedProducts = (
       const availableRecipes = [
         ...Object.keys(producedRecipesByName),
         ...(batchRecipes?.map((r) => r.recipe.name) || []),
-      ].join(', ')
-      throw new Error(
-        `Source node not found: ${link.source} for material ${link.material}. Available recipes: ${availableRecipes}`,
-      )
+      ]
+      throw new SourceNodeNotFoundError(link.source, link.material, availableRecipes)
     }
 
-    if (!sourceNode) {
-      const availableRecipes = [
-        ...Object.keys(producedRecipesByName),
-        ...(batchRecipes?.map((r) => r.recipe.name) || []),
-      ].join(', ')
-      throw new Error(
-        `Source node not found: ${link.source} for material ${link.material}. Available recipes: ${availableRecipes}`,
-      )
-    }
     // add the output link, for a double-headed list structure approach
     sourceNode.outputs.push(link)
     const productIndex = sourceNode.availableProducts.findIndex((p) => p.item === link.material)
@@ -108,9 +98,7 @@ export const decrementConsumedProducts = (
       sourceNode.availableProducts[productIndex].amount = remainder < ZERO_THRESHOLD ? 0 : remainder
     } else {
       // should never be able to make a link for something without the product, but here as a safeguard
-      throw new Error(
-        `Unable to find product ${link.material} in source ${link.source} - should never happen!`,
-      )
+      throw new ProductNotFoundError(link.material, link.source)
     }
 
     sourceNode.fullyConsumed = sourceNode.availableProducts.every(
