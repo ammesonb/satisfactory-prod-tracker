@@ -2,21 +2,6 @@
 
 ## IDEAS:
 
-### Better solver solution using breadth-first graph style:
-
-- recipes represent nodes, grouped into "satisfied" or "unsatisfied"
-- iterate over nodes, slowly moving "unsatisfied" to "satisfied", and can assign batch number properties or w/e
-  - can also generate links at that time
-- catalyst handled by checking satisfaction of self + others, no preprocessing needed
-  - when satisfied, add link to self
-- codependency handled by satisfaction checking, can see if this would be satisfied by another node, and that same node would be satisfied by this one (each also checking current recipe state)
-- process repeats until all nodes are satisfied, should be guaranteed since input comes from smarter solver than this one
-
-- linking checks satisfied nodes first, then raw resources second (use up byproducts as a priority)
-- linking still prioritizes quantities in same way as current to attempt to optimize resource consumption
-  - means temporarily reorder satisfied nodes each time, slight performance cost there
-- natural resources have infinite supply
-
 ### UI:
 
 - have building on mouseover show raw recipe with native amounts
