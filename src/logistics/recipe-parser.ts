@@ -5,7 +5,7 @@ import { RecipeFormatError, InvalidBuildingError, InvalidRecipeError } from '@/e
 export const parseRecipeString = (recipeString: string): Recipe => {
   const dataStore = useDataStore()
 
-  if (!recipeString.match(/^"\w+@[\d.]+#\w+": "[\d.]+"$/)) {
+  if (!recipeString.match(/^"\w+@[\d.]+#\w+": "[\d.]+"\s*,?\s*$/)) {
     throw new RecipeFormatError(recipeString)
   }
 
@@ -18,7 +18,8 @@ export const parseRecipeString = (recipeString: string): Recipe => {
   index = rest.indexOf(':')
   const buildingName = rest.slice(0, index).trim()
   rest = rest.slice(index + 1)
-  const amount = Number(rest.trim())
+  index = rest.indexOf(',')
+  const amount = Number(rest.slice(0, index === -1 ? rest.length : index).trim())
 
   if (!dataStore.buildings[buildingName]) {
     throw new InvalidBuildingError(buildingName)

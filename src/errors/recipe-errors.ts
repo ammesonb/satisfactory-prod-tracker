@@ -9,7 +9,7 @@ export class RecipeFormatError extends Error implements UserFriendlyError {
   toErrorMessage() {
     return {
       summary: 'Invalid recipe format',
-      details: `Recipe "${this.recipeString}" is not in the correct format. Expected: recipe_name@efficiency#building: "count"`,
+      details: `Recipe "${this.recipeString}" is not in the correct format. Expected: "recipe_name@efficiency#building": "count"`,
     }
   }
 }

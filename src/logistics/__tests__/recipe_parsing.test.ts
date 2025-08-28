@@ -150,6 +150,13 @@ describe('recipe parsing and source selection', () => {
         const result = parseRecipeString('"Recipe_Fake_IronIngot_C@250#Desc_SmelterMk1_C": "1"')
         expect(result.name).toBe('Recipe_Fake_IronIngot_C')
       })
+
+      it('should allow a trailing comma with some whitespace', () => {
+        const result = parseRecipeString(
+          '"Recipe_Fake_IronIngot_C@250#Desc_SmelterMk1_C": "1.23" ,',
+        )
+        expect(result.count).toBe(1.23)
+      })
     })
 
     it('detects natural resources', () => {
