@@ -1,4 +1,4 @@
-import type { UserFriendlyError } from './friendly-error'
+import type { UserFriendlyError } from '@/types/errors'
 
 /**
  * Type guard to check if an error implements the UserFriendlyError interface
@@ -9,7 +9,7 @@ export const isUserFriendlyError = (error: unknown): error is UserFriendlyError 
     error instanceof Error &&
     error !== null &&
     typeof error === 'object' &&
-    'toErrorMessage' in error &&
-    typeof (error as unknown as UserFriendlyError).toErrorMessage === 'function'
+    'showError' in error &&
+    typeof (error as unknown as UserFriendlyError).showError === 'function'
   )
 }

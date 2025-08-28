@@ -1,4 +1,5 @@
-import type { UserFriendlyError } from './friendly-error'
+import type { ErrorBuilder, UserFriendlyError } from '@/types/errors'
+import { h } from 'vue'
 
 export class RecipeFormatError extends Error implements UserFriendlyError {
   constructor(public recipeString: string) {
@@ -6,11 +7,26 @@ export class RecipeFormatError extends Error implements UserFriendlyError {
     this.name = 'RecipeFormatError'
   }
 
-  toErrorMessage() {
-    return {
-      summary: 'Invalid recipe format',
-      details: `Recipe "${this.recipeString}" is not in the correct format. Expected: "recipe_name@efficiency#building": "count"`,
-    }
+  showError(errorStore: { error(): ErrorBuilder }) {
+    errorStore
+      .error()
+      .title('Invalid recipe format')
+      .body(() =>
+        h('div', [
+          h('p', { class: 'mb-3' }, `Recipe "${this.recipeString}" is not in the correct format.`),
+          h('p', { class: 'mb-2' }, 'Expected format:'),
+          h(
+            'v-card',
+            {
+              class: 'pa-3',
+              color: 'grey-lighten-4',
+              variant: 'tonal',
+            },
+            [h('code', { class: 'text-body-2' }, '"recipe_name@efficiency#building": "count"')],
+          ),
+        ]),
+      )
+      .show()
   }
 }
 
@@ -20,11 +36,35 @@ export class InvalidBuildingError extends Error implements UserFriendlyError {
     this.name = 'InvalidBuildingError'
   }
 
-  toErrorMessage() {
-    return {
-      summary: 'Invalid building',
-      details: `Building "${this.buildingName}" does not exist in the game data.`,
-    }
+  showError(errorStore: { error(): ErrorBuilder }) {
+    errorStore
+      .error()
+      .title('Invalid building')
+      .body(() =>
+        h('div', [
+          h(
+            'p',
+            { class: 'mb-3' },
+            `Building "${this.buildingName}" does not exist in the game data.`,
+          ),
+          h(
+            'v-alert',
+            {
+              type: 'info',
+              variant: 'tonal',
+              class: 'mb-0',
+            },
+            [
+              h(
+                'p',
+                { class: 'mb-0' },
+                'Check your spelling or verify the building name exists in Satisfactory.',
+              ),
+            ],
+          ),
+        ]),
+      )
+      .show()
   }
 }
 
@@ -34,10 +74,30 @@ export class InvalidRecipeError extends Error implements UserFriendlyError {
     this.name = 'InvalidRecipeError'
   }
 
-  toErrorMessage() {
-    return {
-      summary: 'Invalid recipe',
-      details: `Recipe "${this.recipeName}" does not exist in the game data.`,
-    }
+  showError(errorStore: { error(): ErrorBuilder }) {
+    errorStore
+      .error()
+      .title('Invalid recipe')
+      .body(() =>
+        h('div', [
+          h('p', { class: 'mb-3' }, `Recipe "${this.recipeName}" does not exist in the game data.`),
+          h(
+            'v-alert',
+            {
+              type: 'info',
+              variant: 'tonal',
+              class: 'mb-0',
+            },
+            [
+              h(
+                'p',
+                { class: 'mb-0' },
+                'Check your spelling or verify the recipe name exists in Satisfactory.',
+              ),
+            ],
+          ),
+        ]),
+      )
+      .show()
   }
 }

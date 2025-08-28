@@ -1,4 +1,5 @@
-import type { UserFriendlyError } from './friendly-error'
+import type { ErrorBuilder, UserFriendlyError } from '@/types/errors'
+import { h } from 'vue'
 
 export class RecipeChainError extends Error implements UserFriendlyError {
   constructor(
@@ -9,14 +10,39 @@ export class RecipeChainError extends Error implements UserFriendlyError {
     this.name = 'RecipeChainError'
   }
 
-  toErrorMessage() {
-    const details = Object.entries(this.missingDependencies)
-      .map(([recipe, deps]) => `${recipe}: missing ${deps.join(', ')}`)
-      .join('\n')
-    return {
-      summary: 'Recipe chain error',
-      details: `Could not resolve dependencies for ${this.unprocessedRecipes.length} recipes:\n${details}`,
-    }
+  showError(errorStore: { error(): ErrorBuilder }) {
+    const dependencyItems = Object.entries(this.missingDependencies).map(([recipe, deps]) =>
+      h(
+        'v-list-item',
+        {
+          key: recipe,
+          class: 'px-0',
+        },
+        [h('v-list-item-title', recipe), h('v-list-item-subtitle', `Missing: ${deps.join(', ')}`)],
+      ),
+    )
+
+    errorStore
+      .error()
+      .title('Recipe chain error')
+      .body(() =>
+        h('div', [
+          h(
+            'p',
+            { class: 'mb-3' },
+            `Could not resolve dependencies for ${this.unprocessedRecipes.length} recipes:`,
+          ),
+          h(
+            'v-list',
+            {
+              class: 'bg-grey-lighten-5 rounded',
+              density: 'compact',
+            },
+            dependencyItems,
+          ),
+        ]),
+      )
+      .show()
   }
 }
 
@@ -30,11 +56,35 @@ export class SourceNodeNotFoundError extends Error implements UserFriendlyError 
     this.name = 'SourceNodeNotFoundError'
   }
 
-  toErrorMessage() {
-    return {
-      summary: 'Recipe processing error',
-      details: `Recipe "${this.sourceRecipe}" was expected to produce "${this.material}" but could not be found. This indicates a problem with the recipe chain calculation.`,
-    }
+  showError(errorStore: { error(): ErrorBuilder }) {
+    errorStore
+      .error()
+      .title('Recipe processing error')
+      .body(() =>
+        h('div', [
+          h(
+            'p',
+            { class: 'mb-3' },
+            `Recipe "${this.sourceRecipe}" was expected to produce "${this.material}" but could not be found.`,
+          ),
+          h(
+            'v-alert',
+            {
+              type: 'warning',
+              variant: 'tonal',
+              class: 'mb-0',
+            },
+            [
+              h(
+                'p',
+                { class: 'mb-0' },
+                'This indicates a problem with the recipe chain calculation.',
+              ),
+            ],
+          ),
+        ]),
+      )
+      .show()
   }
 }
 
@@ -47,10 +97,28 @@ export class ProductNotFoundError extends Error implements UserFriendlyError {
     this.name = 'ProductNotFoundError'
   }
 
-  toErrorMessage() {
-    return {
-      summary: 'Recipe processing error',
-      details: `Recipe "${this.sourceRecipe}" was expected to produce "${this.material}" but that product was not found in its outputs. This indicates a data inconsistency.`,
-    }
+  showError(errorStore: { error(): ErrorBuilder }) {
+    errorStore
+      .error()
+      .title('Recipe processing error')
+      .body(() =>
+        h('div', [
+          h(
+            'p',
+            { class: 'mb-3' },
+            `Recipe "${this.sourceRecipe}" was expected to produce "${this.material}" but that product was not found in its outputs.`,
+          ),
+          h(
+            'v-alert',
+            {
+              type: 'error',
+              variant: 'tonal',
+              class: 'mb-0',
+            },
+            [h('p', { class: 'mb-0' }, 'This indicates a data inconsistency.')],
+          ),
+        ]),
+      )
+      .show()
   }
 }

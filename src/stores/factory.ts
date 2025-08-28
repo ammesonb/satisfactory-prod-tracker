@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { h } from 'vue'
 import type { Factory, Floor } from '@/types/factory'
 import { solveRecipeChain } from '@/logistics/graph-solver'
 import { useErrorStore } from '@/stores/errors'
@@ -28,13 +29,18 @@ export const useFactoryStore = defineStore('factory', {
         recipeNodes.push(...solveRecipeChain(recipes.split('\n').map((s) => s.trim())))
       } catch (error) {
         if (isUserFriendlyError(error)) {
-          const { summary, details } = error.toErrorMessage()
-          errorStore.setError(summary, details)
+          error.showError(errorStore)
         } else {
-          errorStore.setError(
-            'Unknown error',
-            `An unexpected error occurred while adding the factory: ${error instanceof Error ? error.message : String(error)}`,
-          )
+          errorStore
+            .error()
+            .title('Unknown error')
+            .body(() =>
+              h(
+                'p',
+                `An unexpected error occurred while adding the factory: ${error instanceof Error ? error.message : String(error)}`,
+              ),
+            )
+            .show()
         }
         throw error
       }

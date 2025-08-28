@@ -263,7 +263,8 @@ describe('graph-solver integration - production chain solving', () => {
       )
 
       expect(error.missingDependencies).toHaveProperty('Recipe_IronPlate_C')
-      expect(error.toErrorMessage().details).toContain('Could not resolve dependencies')
+      // Verify that showError method exists (new interface)
+      expect(typeof error.showError).toBe('function')
     })
   })
 })

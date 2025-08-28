@@ -47,8 +47,8 @@ const getColor = () => {
         <v-icon :icon="getIcon()" :color="getColor()" class="mr-2" />
         {{ errorStore.summary }}
       </v-card-title>
-      <v-card-text v-if="errorStore.details">
-        <p>{{ errorStore.details }}</p>
+      <v-card-text v-if="errorStore.bodyContent">
+        <component :is="errorStore.bodyContent" />
       </v-card-text>
       <v-card-actions>
         <v-spacer />

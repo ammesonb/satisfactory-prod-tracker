@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { isUserFriendlyError } from '@/errors/type-guards'
 import { RecipeFormatError, InvalidBuildingError } from '@/errors/recipe-errors'
 import { RecipeChainError, SourceNodeNotFoundError } from '@/errors/processing-errors'
-import type { UserFriendlyError } from '@/errors/friendly-error'
+import type { UserFriendlyError } from '@/types/errors'
 
 describe('type-guards', () => {
   describe('isUserFriendlyError', () => {
@@ -28,33 +28,32 @@ describe('type-guards', () => {
       expect(isUserFriendlyError(rangeError)).toBe(false)
     })
 
-    it('should return false for non-Error objects with toErrorMessage', () => {
+    it('should return false for non-Error objects with showError', () => {
       const fakeError = {
-        toErrorMessage: () => ({ summary: 'fake', details: 'fake error' }),
+        showError: () => {},
       }
 
       const fakeErrorWithMessage = {
         message: 'fake message',
-        toErrorMessage: () => ({ summary: 'fake', details: 'fake error' }),
+        showError: () => {},
       }
 
       expect(isUserFriendlyError(fakeError)).toBe(false)
       expect(isUserFriendlyError(fakeErrorWithMessage)).toBe(false)
     })
 
-    it('should return false for Error instances with wrong toErrorMessage signature', () => {
+    it('should return false for Error instances with wrong showError signature', () => {
       const errorWithWrongMethod = new Error('test')
-      // Add a toErrorMessage property that's not a function
-      ;(errorWithWrongMethod as unknown as UserFriendlyError).toErrorMessage = 'not a function'
+      // Add a showError property that's not a function
+      ;(errorWithWrongMethod as unknown as UserFriendlyError).showError = 'not a function'
 
       const errorWithWrongFunction = new Error('test')
-      // Add a toErrorMessage function that returns wrong format
-      ;(errorWithWrongFunction as unknown as UserFriendlyError).toErrorMessage = () =>
-        'wrong format'
+      // Add a showError function with correct signature
+      ;(errorWithWrongFunction as unknown as UserFriendlyError).showError = () => {}
 
       expect(isUserFriendlyError(errorWithWrongMethod)).toBe(false)
-      // This should return true because it has a callable toErrorMessage method
-      // The type guard only checks structure, not return value format
+      // This should return true because it has a callable showError method
+      // The type guard only checks structure, not implementation details
       expect(isUserFriendlyError(errorWithWrongFunction)).toBe(true)
     })
 
@@ -70,14 +69,17 @@ describe('type-guards', () => {
 
     it('should provide proper type narrowing', () => {
       const error: unknown = new RecipeFormatError('test')
+      const mockErrorStore = {
+        error: () => ({
+          title: () => ({ body: () => ({ show: () => {} }) }),
+        }),
+      }
 
       if (isUserFriendlyError(error)) {
         // TypeScript should know this is UserFriendlyError now
-        const message = error.toErrorMessage()
-        expect(message).toHaveProperty('summary')
-        expect(message).toHaveProperty('details')
-        expect(typeof message.summary).toBe('string')
-        expect(typeof message.details).toBe('string')
+        expect(typeof error.showError).toBe('function')
+        // Should not throw when called with proper error store
+        expect(() => error.showError(mockErrorStore)).not.toThrow()
       } else {
         expect.fail('Should have identified as UserFriendlyError')
       }

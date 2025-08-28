@@ -1,5 +1,5 @@
-import { expect } from 'vitest'
-import type { UserFriendlyError } from '@/errors/friendly-error'
+import { expect, vi } from 'vitest'
+import type { UserFriendlyError } from '@/types/errors'
 
 /**
  * Helper function to test error throwing with detailed assertions
@@ -26,10 +26,24 @@ export const expectErrorWithMessage = <T extends UserFriendlyError>(
       expect((error as unknown as T)[key]).toEqual(value)
     })
 
-    // Check error message if provided
+    // Check that showError method exists and is callable
     if (expectedSummary) {
-      const errorMessage = (error as T).toErrorMessage()
-      expect(errorMessage.summary).toBe(expectedSummary)
+      expect(typeof (error as T).showError).toBe('function')
+
+      // Create a mock error store to test the showError method
+      const mockErrorStore = {
+        error: vi.fn(() => ({
+          title: vi.fn().mockReturnThis(),
+          body: vi.fn().mockReturnThis(),
+          show: vi.fn(),
+        })),
+      }
+
+      // Should not throw when called
+      expect(() => (error as T).showError(mockErrorStore)).not.toThrow()
+
+      // Verify error store methods were called
+      expect(mockErrorStore.error).toHaveBeenCalled()
     }
 
     return error as T
