@@ -1,7 +1,14 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
-import type { GameData, Item, Recipe, RecipeIngredient, RecipeProduct } from '@/types/data'
+import type {
+  GameData,
+  Item,
+  Recipe,
+  RecipeIngredient,
+  RecipeProduct,
+  Building,
+} from '@/types/data'
 
 function loadGameData(): GameData {
   const dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -14,6 +21,14 @@ function analyzeItems(items: Record<string, Item>) {
   for (const [key, value] of Object.entries(items)) {
     if (key.startsWith('Desc_')) {
       console.log(`${key}: {name: '${value.name}'},`)
+    }
+  }
+}
+
+function analyzeBuildings(buildings: Record<string, Building>) {
+  for (const [key, building] of Object.entries(buildings)) {
+    if (key.startsWith('Desc_') && building?.metadata?.manufacturingSpeed > 0) {
+      console.log(`${key}: {name: '${building.name}'},`)
     }
   }
 }
@@ -55,11 +70,6 @@ function main() {
   const args = process.argv.slice(2)
   const dataType = args[0]?.toLowerCase()
 
-  if (!['items', 'recipes'].includes(dataType)) {
-    console.error('Please specify "items" or "recipes" as the first argument')
-    process.exit(1)
-  }
-
   try {
     const gameData = loadGameData()
 
@@ -67,6 +77,11 @@ function main() {
       analyzeItems(gameData.items)
     } else if (dataType === 'recipes') {
       analyzeRecipes(gameData.recipes)
+    } else if (dataType === 'buildings') {
+      analyzeBuildings(gameData.buildings)
+    } else {
+      console.error('Please specify "items", "recipes", or "buildings" as the first argument')
+      process.exit(1)
     }
   } catch (error) {
     console.error('Error analyzing data:', error)

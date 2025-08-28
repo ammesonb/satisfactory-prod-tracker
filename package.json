@@ -18,7 +18,8 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "fixtures:items": "tsx src/logistics/__tests__/generate-fixtures.ts items",
-    "fixtures:recipes": "tsx src/logistics/__tests__/generate-fixtures.ts recipes"
+    "fixtures:recipes": "tsx src/logistics/__tests__/generate-fixtures.ts recipes",
+    "fixtures:buildings": "tsx src/logistics/__tests__/generate-fixtures.ts buildings"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
