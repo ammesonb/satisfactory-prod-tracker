@@ -1,3 +1,17 @@
+/**
+ * Satisfactory Production Tracker
+ *
+ * This application allows users to track and visualize Satisfactory factory production chains.
+ * Users can:
+ * - Add factories with a name and icon
+ * - Input resolved recipes for each factory
+ * - View production chain/links visualization on the main page
+ * - Navigate between different factories using the rail navigation drawer
+ *
+ * The app uses Vue 3 + Vuetify for UI, Pinia for state management, and a graph solver
+ * for processing recipe chains into displayable production networks.
+ */
+
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 

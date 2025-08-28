@@ -1,3 +1,5 @@
+import type { RecipeNode } from '@/logistics/graph-node'
+
 export interface Recipe {
   name: string
   building: string
@@ -12,12 +14,12 @@ export interface Material {
 }
 
 export interface Floor {
-  name: string
-  recipes: Recipe[]
-  materials: Material[]
+  name?: string
+  recipes: RecipeNode[]
 }
 
 export interface Factory {
   name: string
+  icon: string
   floors: Floor[]
 }
