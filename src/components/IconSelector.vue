@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { refDebounced } from '@vueuse/core'
 import { useDataStore } from '@/stores/data'
 import { getIconURL } from '@/logistics/images'
 
@@ -25,6 +26,12 @@ const emit = defineEmits<{
 }>()
 
 const dataStore = useDataStore()
+const searchInput = ref('')
+const debouncedSearch = refDebounced(searchInput, 200)
+
+const updateSearch = (value: string) => {
+  searchInput.value = value
+}
 
 // Load data when component mounts
 onMounted(() => {
@@ -62,6 +69,19 @@ const allIcons = computed<IconOption[]>(() => {
   return icons.sort((a, b) => a.name.localeCompare(b.name))
 })
 
+// Performance optimized: only show filtered results, limited count
+const filteredIcons = computed<IconOption[]>(() => {
+  const query = debouncedSearch.value.toLowerCase().trim()
+
+  if (!query) {
+    // Show only first 20 items when no search to avoid loading all images
+    return allIcons.value.slice(0, 20)
+  }
+
+  // When searching, show up to 50 matching results
+  return allIcons.value.filter((icon) => icon.name.toLowerCase().includes(query)).slice(0, 50)
+})
+
 // Selected icon for display
 const selectedIcon = computed<IconOption | undefined>(() => {
   if (!props.modelValue) return undefined
@@ -77,7 +97,9 @@ const updateValue = (value: string | null) => {
   <v-autocomplete
     :model-value="props.modelValue"
     @update:model-value="updateValue"
-    :items="allIcons"
+    :search="searchInput"
+    @update:search="updateSearch"
+    :items="filteredIcons"
     :placeholder="props.placeholder"
     :disabled="props.disabled"
     item-title="name"
@@ -85,17 +107,33 @@ const updateValue = (value: string | null) => {
     clearable
     hide-details
     variant="outlined"
+    autocomplete="off"
+    :menu-props="{ closeOnContentClick: true }"
+    no-filter
   >
     <!-- Selected icon display -->
     <template #prepend-inner v-if="selectedIcon">
-      <v-img :src="getIconURL(selectedIcon.icon, 64)" width="24" height="24" class="me-2" />
+      <v-img
+        :src="getIconURL(selectedIcon.icon, 64)"
+        width="24"
+        height="24"
+        class="me-2"
+        loading="lazy"
+      />
     </template>
 
     <!-- Dropdown item template -->
     <template #item="{ props: itemProps, item }">
       <v-list-item v-bind="itemProps">
         <template #prepend>
-          <v-img :src="getIconURL(item.raw.icon, 64)" width="32" height="32" class="me-3" />
+          <img
+            :src="getIconURL(item.raw.icon, 64)"
+            width="32"
+            height="32"
+            class="me-3 icon-image"
+            loading="lazy"
+            :alt="item.raw.name"
+          />
         </template>
 
         <v-list-item-title>{{ item.raw.name }}</v-list-item-title>
@@ -107,8 +145,18 @@ const updateValue = (value: string | null) => {
     <template #no-data>
       <div class="px-4 py-2 text-center text-medium-emphasis">
         <div v-if="allIcons.length === 0">Loading icons...</div>
-        <div v-else>No icons found</div>
+        <div v-else-if="!searchInput">Start typing to search icons...</div>
+        <div v-else>No icons found for "{{ searchInput }}"</div>
       </div>
     </template>
   </v-autocomplete>
 </template>
+
+<style scoped>
+.icon-image {
+  border-radius: 4px;
+  object-fit: contain;
+  /* Force browser to cache images more aggressively */
+  image-rendering: auto;
+}
+</style>
