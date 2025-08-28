@@ -58,6 +58,8 @@ const addFactory = () => {
             rows="8"
             variant="outlined"
             required
+            density="compact"
+            class="recipe-textarea"
           />
         </v-form>
       </v-card-text>
@@ -76,3 +78,14 @@ const addFactory = () => {
     </v-card>
   </v-dialog>
 </template>
+
+<style scoped>
+.recipe-textarea :deep(.v-field) {
+  margin-top: 20px !important;
+}
+
+.recipe-textarea :deep(textarea) {
+  font-family: monospace !important;
+  font-size: 0.75rem !important;
+}
+</style>
