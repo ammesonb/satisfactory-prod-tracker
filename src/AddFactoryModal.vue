@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import IconSelector from '@/components/IconSelector.vue'
 
 interface Props {
   modelValue: boolean
@@ -10,7 +11,7 @@ const emit = defineEmits(['update:modelValue', 'add-factory'])
 
 const form = ref({
   name: '',
-  icon: '',
+  icon: undefined as string | undefined,
   recipes: '',
 })
 
@@ -20,12 +21,12 @@ const showDialog = computed({
 })
 
 const clear = () => {
-  form.value = { name: '', icon: '', recipes: '' }
+  form.value = { name: '', icon: undefined, recipes: '' }
   showDialog.value = false
 }
 
 const addFactory = () => {
-  if (form.value.name && form.value.recipes) {
+  if (form.value.name && form.value.recipes && form.value.icon) {
     emit('add-factory', { ...form.value })
     clear()
   }
@@ -45,11 +46,9 @@ const addFactory = () => {
             variant="outlined"
             class="mb-4"
           />
-          <v-text-field
+          <IconSelector
             v-model="form.icon"
-            label="Icon (placeholder)"
-            placeholder="Enter icon name or path"
-            variant="outlined"
+            placeholder="Search for a factory icon..."
             class="mb-4"
           />
           <v-textarea
@@ -69,7 +68,7 @@ const addFactory = () => {
           color="green"
           variant="elevated"
           @click="addFactory"
-          :disabled="!form.name || !form.recipes"
+          :disabled="!form.name || !form.recipes || !form.icon"
         >
           Add Factory
         </v-btn>
