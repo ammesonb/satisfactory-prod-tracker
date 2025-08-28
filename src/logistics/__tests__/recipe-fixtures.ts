@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import { useDataStore } from '@/stores/data'
+import { BUILDINGS } from './recipe-input-fixtures'
 
 // Recipe data structures for test scenarios
 interface RecipeData {
@@ -6190,6 +6190,9 @@ export const itemDatabase = {
  */
 export function createMockDataStore() {
   return {
+    buildings: Object.fromEntries(
+      Object.values(BUILDINGS).map((building) => [building, { name: building }]),
+    ),
     recipes: recipeDatabase,
     recipeIngredients: vi.fn((recipeName: string) => {
       const recipe = recipeDatabase[recipeName]
@@ -6201,13 +6204,4 @@ export function createMockDataStore() {
     }),
     items: itemDatabase,
   }
-}
-
-/**
- * Sets up the mock data store for use in tests
- */
-export function setupMockDataStore() {
-  const mockDataStore = createMockDataStore()
-  vi.mocked(useDataStore).mockReturnValue(mockDataStore)
-  return mockDataStore
 }

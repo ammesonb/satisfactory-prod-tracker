@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia'
 import type { Factory, Floor } from '@/types/factory'
 import { solveRecipeChain } from '@/logistics/graph-solver'
+import { useErrorStore } from '@/stores/errors'
+import type { UserFriendlyError } from '@/errors/recipe-errors'
+import type { RecipeNode } from '@/logistics/graph-node'
 
 export const useFactoryStore = defineStore('factory', {
   state: () => ({
@@ -17,7 +20,25 @@ export const useFactoryStore = defineStore('factory', {
       this.selected = factoryName
     },
     addFactory(name: string, icon: string, recipes: string) {
-      const recipeNodes = solveRecipeChain(recipes.split('\n').map((s) => s.trim()))
+      const errorStore = useErrorStore()
+
+      const recipeNodes: RecipeNode[] = []
+
+      try {
+        recipeNodes.push(...solveRecipeChain(recipes.split('\n').map((s) => s.trim())))
+      } catch (error) {
+        if (error && typeof error === 'object' && 'toErrorMessage' in error) {
+          const { summary, details } = (error as UserFriendlyError).toErrorMessage()
+          errorStore.setError(summary, details)
+        } else {
+          errorStore.setError(
+            'Unknown error',
+            `An unexpected error occurred while adding the factory: ${error instanceof Error ? error.message : String(error)}`,
+          )
+        }
+        throw error
+      }
+
       const floors: Floor[] = []
       for (const recipeNode of recipeNodes) {
         while (recipeNode.batchNumber! > floors.length) {

@@ -1,6 +1,5 @@
 import { useDataStore } from '@/stores/data'
-import type { Recipe, Material } from '@/types/factory'
-import type { RecipeIngredient } from '@/types/data'
+import type { Recipe } from '@/types/factory'
 import type { RecipeNode } from '@/logistics/graph-node'
 
 export const findCircularRecipes = (recipes: Recipe[]): Recipe[] => {
@@ -36,89 +35,6 @@ export const findCircularRecipes = (recipes: Recipe[]): Recipe[] => {
       })
     )
   })
-}
-
-export const resolveCircularDependencies = (circularRecipes: Recipe[]): Material[] => {
-  const data = useDataStore()
-  const circularLinks: Material[] = []
-
-  // Create copies of recipe data that we can modify
-  const modifiedRecipeData = new Map<
-    string,
-    {
-      ingredients: RecipeIngredient[]
-      products: RecipeIngredient[]
-    }
-  >()
-
-  // Initialize with copies of original data
-  circularRecipes.forEach((recipe) => {
-    modifiedRecipeData.set(recipe.name, {
-      ingredients: data.recipeIngredients(recipe.name).map((ing) => ({ ...ing })),
-      products: data.recipeProducts(recipe.name).map((prod) => ({ ...prod })),
-    })
-  })
-
-  // Find circular links and modify recipe data
-  for (const recipe of circularRecipes) {
-    const recipeData = modifiedRecipeData.get(recipe.name)!
-
-    for (const ingredient of recipeData.ingredients) {
-      // Check for self-referential catalyst first
-      const selfProduct = recipeData.products.find((p) => p.item === ingredient.item)
-      if (selfProduct) {
-        const neededAmount = ingredient.amount * recipe.count
-        const availableAmount = selfProduct.amount * recipe.count
-        const linkAmount = Math.min(neededAmount, availableAmount)
-
-        if (linkAmount > 0) {
-          // Create the self-referential link
-          circularLinks.push({
-            source: recipe.name,
-            sink: recipe.name,
-            material: ingredient.item,
-            amount: linkAmount,
-          })
-
-          // Reduce both ingredient requirement and product output
-          ingredient.amount -= linkAmount / recipe.count
-          selfProduct.amount -= linkAmount / recipe.count
-        }
-      }
-
-      // Then check for dependencies between different recipes
-      for (const otherRecipe of circularRecipes) {
-        if (otherRecipe === recipe) continue
-
-        const otherRecipeData = modifiedRecipeData.get(otherRecipe.name)!
-        const matchingProduct = otherRecipeData.products.find((p) => p.item === ingredient.item)
-
-        if (matchingProduct) {
-          const neededAmount = ingredient.amount * recipe.count
-          const availableAmount = matchingProduct.amount * otherRecipe.count
-          const linkAmount = Math.min(neededAmount, availableAmount)
-
-          if (linkAmount > 0) {
-            // Create the circular link
-            circularLinks.push({
-              source: otherRecipe.name,
-              sink: recipe.name,
-              material: ingredient.item,
-              amount: linkAmount,
-            })
-
-            // Reduce ingredient requirement for consuming recipe
-            ingredient.amount -= linkAmount / recipe.count
-
-            // Reduce product output for producing recipe
-            matchingProduct.amount -= linkAmount / otherRecipe.count
-          }
-        }
-      }
-    }
-  }
-
-  return circularLinks
 }
 
 // Identify circular recipes and return groupings of codependent recipes

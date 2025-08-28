@@ -1,12 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { solveRecipeChain } from '../graph-solver'
-import { setupMockDataStore } from './recipe-fixtures'
 import { RECIPES } from './recipe-input-fixtures'
 import { BASIC_TEST_CASES, COMPLEX_TEST_CASES } from './recipe-test-cases'
 import type { RecipeNode } from '../graph-node'
 import type { Material } from '@/types/factory'
-
-vi.mock('@/stores/data')
 
 // Helper function to test complete recipe chain solving
 const testRecipeChain = (
@@ -207,10 +204,6 @@ const expectRecipeBatchesToMatch = (actual: RecipeNode[], expectedBatches: strin
 }
 
 describe('graph-solver integration - production chain solving', () => {
-  beforeEach(() => {
-    setupMockDataStore()
-  })
-
   describe('simple production chains', () => {
     // Tests a basic 2-step production chain: Iron Ore -> Iron Ingot -> Iron Plate
     it('should handle simple production chain', () => {

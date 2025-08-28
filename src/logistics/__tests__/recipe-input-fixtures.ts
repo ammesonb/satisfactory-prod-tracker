@@ -10,6 +10,8 @@ export const BUILDINGS = {
   BLENDER: 'Desc_Blender_C',
   PARTICLE_ACCELERATOR: 'Desc_HadronCollider_C',
   MANUFACTURER: 'Desc_ManufacturerMk1_C',
+  PACKAGER: 'Desc_Packager_C',
+  QUANTUM_ENCODER: 'Desc_QuantumEncoder_C',
 }
 
 // Recipe factory function
@@ -18,7 +20,7 @@ export const makeRecipe = (
   amount: string,
   building: string,
   efficiency: number = 100,
-) => `${recipeName}@${efficiency}#${building}: "${amount}"`
+) => `"${recipeName}@${efficiency}#${building}": "${amount}"`
 
 // Recipe constants organized by production chains
 export const RECIPES = {
