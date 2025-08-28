@@ -5,6 +5,7 @@ import { BASIC_TEST_CASES, COMPLEX_TEST_CASES } from './recipe-test-cases'
 import type { RecipeNode } from '../graph-node'
 import type { Material } from '@/types/factory'
 import { RecipeChainError } from '@/errors/processing-errors'
+import { expectErrorWithMessage } from './error-test-helpers'
 
 // Helper function to test complete recipe chain solving
 const testRecipeChain = (
@@ -252,21 +253,17 @@ describe('graph-solver integration - production chain solving', () => {
         RECIPES.IRON_PLATE('2'), // Needs 6 iron ingots (3 each)
       ]
 
-      expect(() => solveRecipeChain(rawRecipes)).toThrow(RecipeChainError)
+      const error = expectErrorWithMessage(
+        () => solveRecipeChain(rawRecipes),
+        RecipeChainError,
+        {
+          unprocessedRecipes: expect.arrayContaining(['Recipe_IronPlate_C']),
+        },
+        'Recipe chain error',
+      )
 
-      try {
-        solveRecipeChain(rawRecipes)
-        expect.fail('Should have thrown RecipeChainError')
-      } catch (error) {
-        expect(error).toBeInstanceOf(RecipeChainError)
-        const recipeError = error as RecipeChainError
-        expect(recipeError.unprocessedRecipes).toContain('Recipe_IronPlate_C')
-        expect(recipeError.missingDependencies).toHaveProperty('Recipe_IronPlate_C')
-
-        const errorMessage = recipeError.toErrorMessage()
-        expect(errorMessage.summary).toBe('Recipe chain error')
-        expect(errorMessage.details).toContain('Could not resolve dependencies')
-      }
+      expect(error.missingDependencies).toHaveProperty('Recipe_IronPlate_C')
+      expect(error.toErrorMessage().details).toContain('Could not resolve dependencies')
     })
   })
 })

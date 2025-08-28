@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import type { Factory, Floor } from '@/types/factory'
 import { solveRecipeChain } from '@/logistics/graph-solver'
 import { useErrorStore } from '@/stores/errors'
-import type { UserFriendlyError } from '@/errors/recipe-errors'
+import { isUserFriendlyError } from '@/errors/type-guards'
 import type { RecipeNode } from '@/logistics/graph-node'
 
 export const useFactoryStore = defineStore('factory', {
@@ -27,8 +27,8 @@ export const useFactoryStore = defineStore('factory', {
       try {
         recipeNodes.push(...solveRecipeChain(recipes.split('\n').map((s) => s.trim())))
       } catch (error) {
-        if (error && typeof error === 'object' && 'toErrorMessage' in error) {
-          const { summary, details } = (error as UserFriendlyError).toErrorMessage()
+        if (isUserFriendlyError(error)) {
+          const { summary, details } = error.toErrorMessage()
           errorStore.setError(summary, details)
         } else {
           errorStore.setError(

@@ -7,6 +7,7 @@ import {
 } from '../graph-node'
 import type { Recipe, RecipeIngredient, RecipeProduct } from '@/types/data'
 import { SourceNodeNotFoundError, ProductNotFoundError } from '@/errors/processing-errors'
+import { expectErrorWithMessage } from './error-test-helpers'
 
 describe('graph-node unit tests', () => {
   describe('newRecipeNode', () => {
@@ -357,25 +358,19 @@ describe('graph-node unit tests', () => {
         },
       ]
 
-      expect(() => {
-        decrementConsumedProducts(recipesByName, links, [sourceRecipe])
-      }).toThrow(ProductNotFoundError)
+      const error = expectErrorWithMessage(
+        () => decrementConsumedProducts(recipesByName, links, [sourceRecipe]),
+        ProductNotFoundError,
+        {
+          material: 'Desc_NonExistent_C',
+          sourceRecipe: 'Recipe_Source_C',
+        },
+        'Recipe processing error',
+      )
 
-      try {
-        decrementConsumedProducts(recipesByName, links, [sourceRecipe])
-        expect.fail('Should have thrown ProductNotFoundError')
-      } catch (error) {
-        expect(error).toBeInstanceOf(ProductNotFoundError)
-        const productError = error as ProductNotFoundError
-        expect(productError.material).toBe('Desc_NonExistent_C')
-        expect(productError.sourceRecipe).toBe('Recipe_Source_C')
-
-        const errorMessage = productError.toErrorMessage()
-        expect(errorMessage.summary).toBe('Recipe processing error')
-        expect(errorMessage.details).toContain(
-          'Recipe "Recipe_Source_C" was expected to produce "Desc_NonExistent_C"',
-        )
-      }
+      expect(error.toErrorMessage().details).toContain(
+        'Recipe "Recipe_Source_C" was expected to produce "Desc_NonExistent_C"',
+      )
     })
 
     it('should throw SourceNodeNotFoundError when source recipe is missing', () => {
@@ -390,26 +385,20 @@ describe('graph-node unit tests', () => {
         },
       ]
 
-      expect(() => {
-        decrementConsumedProducts(recipesByName, links)
-      }).toThrow(SourceNodeNotFoundError)
+      const error = expectErrorWithMessage(
+        () => decrementConsumedProducts(recipesByName, links),
+        SourceNodeNotFoundError,
+        {
+          sourceRecipe: 'Recipe_MissingSource_C',
+          material: 'Desc_Material_C',
+          availableRecipes: [],
+        },
+        'Recipe processing error',
+      )
 
-      try {
-        decrementConsumedProducts(recipesByName, links)
-        expect.fail('Should have thrown SourceNodeNotFoundError')
-      } catch (error) {
-        expect(error).toBeInstanceOf(SourceNodeNotFoundError)
-        const sourceError = error as SourceNodeNotFoundError
-        expect(sourceError.sourceRecipe).toBe('Recipe_MissingSource_C')
-        expect(sourceError.material).toBe('Desc_Material_C')
-        expect(sourceError.availableRecipes).toEqual([])
-
-        const errorMessage = sourceError.toErrorMessage()
-        expect(errorMessage.summary).toBe('Recipe processing error')
-        expect(errorMessage.details).toContain(
-          'Recipe "Recipe_MissingSource_C" was expected to produce "Desc_Material_C"',
-        )
-      }
+      expect(error.toErrorMessage().details).toContain(
+        'Recipe "Recipe_MissingSource_C" was expected to produce "Desc_Material_C"',
+      )
     })
 
     it('should skip natural resource sources without error', () => {
