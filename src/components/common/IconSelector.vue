@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { refDebounced } from '@vueuse/core'
 import { useDataStore } from '@/stores/data'
 import { getIconURL } from '@/logistics/images'
@@ -32,11 +32,6 @@ const debouncedSearch = refDebounced(searchInput, 200)
 const updateSearch = (value: string) => {
   searchInput.value = value
 }
-
-// Load data when component mounts
-onMounted(() => {
-  dataStore.loadData()
-})
 
 // Get all available icons from items and buildings
 const allIcons = computed<IconOption[]>(() => {

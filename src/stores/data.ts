@@ -7,6 +7,20 @@ export const useDataStore = defineStore('data', {
     recipes: {} as Record<string, Recipe>,
     buildings: {} as Record<string, Building>,
   }),
+  getters: {
+    getRecipeDisplayName:
+      (state) =>
+      (recipeName: string): string => {
+        const recipe = state.recipes[recipeName]
+        return recipe?.name || recipeName
+      },
+    getBuildingDisplayName:
+      (state) =>
+      (buildingName: string): string => {
+        const building = state.buildings[buildingName]
+        return building?.name || buildingName
+      },
+  },
   actions: {
     addRecipe(recipe: Recipe) {
       this.recipes[recipe.name] = recipe

@@ -123,6 +123,10 @@ export const useFactoryStore = defineStore('factory', {
         recipeLinks,
       }
     },
+    setLinkBuiltState(linkId: string, built: boolean) {
+      if (!this.currentFactory) return
+      this.currentFactory.recipeLinks[linkId] = built
+    },
   },
   persist: true,
 })

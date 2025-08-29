@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { useFactoryStore } from '@/stores/factory'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useDataStore } from './stores/data'
 
+const dataStore = useDataStore()
 const factoryStore = useFactoryStore()
 const showAddFactoryModal = ref(false)
 
 const handleAddFactory = (factoryData: { name: string; icon: string; recipes: string }) => {
   factoryStore.addFactory(factoryData.name, factoryData.icon || 'default-icon', factoryData.recipes)
 }
+
+onMounted(dataStore.loadData)
 </script>
 
 <template>

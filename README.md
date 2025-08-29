@@ -24,7 +24,7 @@ such that a building will only be hidden if all the inputs, itself, and outputs 
 if an output from say, iron -> iron rod is checked, the INPUT for iron rod should also be checked
 
 - still want to show building name, count, etc as well as the amounts and percentages for inputs and outputs
-- anchor-based hyperlink for inputs and outputs
+- anchor-based hyperlink for inputs and outputs, should show floor along with recipe
 
 This template should help get you started developing with Vue 3 in Vite.
 

@@ -20,7 +20,7 @@ const theme = useTheme()
 watch(
   () => themeStore.isDark,
   (isDark) => {
-    theme.global.name.value = isDark ? 'dark' : 'light'
+    theme.change(isDark ? 'dark' : 'light')
   },
   { immediate: true },
 )

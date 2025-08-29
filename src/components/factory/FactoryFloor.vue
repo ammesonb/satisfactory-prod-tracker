@@ -52,21 +52,18 @@ const emit = defineEmits<{
       </div>
     </v-expansion-panel-title>
     <v-expansion-panel-text>
-      <v-row>
-        <v-col
+      <v-expansion-panels multiple>
+        <RecipeNode
           v-for="recipe in props.floor.recipes"
           :key="recipe.recipe.name"
-          cols="12"
-          sm="6"
-          md="4"
-        >
-          <v-card variant="outlined" class="pa-3">
-            <v-card-title class="text-body-1 pa-0">
-              {{ recipe.recipe.name }}
-            </v-card-title>
-          </v-card>
-        </v-col>
-      </v-row>
+          :recipe="recipe"
+          :completed="factoryStore.recipeComplete(recipe)"
+          @update:built="(value: boolean) => (recipe.built = value)"
+          @update:link-built="
+            (linkId: string, value: boolean) => factoryStore.setLinkBuiltState(linkId, value)
+          "
+        />
+      </v-expansion-panels>
     </v-expansion-panel-text>
   </v-expansion-panel>
 </template>
