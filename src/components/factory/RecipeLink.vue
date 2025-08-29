@@ -2,6 +2,7 @@
 import type { Material } from '@/types/factory'
 import { linkToString } from '@/logistics/graph-node'
 import { useDataStore } from '@/stores/data'
+import { useFactoryStore } from '@/stores/factory'
 import { computed } from 'vue'
 import CachedIcon from '@/components/common/CachedIcon.vue'
 
@@ -10,11 +11,8 @@ const props = defineProps<{
   type: 'input' | 'output'
 }>()
 
-const emit = defineEmits<{
-  'update:built': [linkId: string, value: boolean]
-}>()
-
 const data = useDataStore()
+const factoryStore = useFactoryStore()
 
 const linkId = computed(() => linkToString(props.link))
 const materialItem = computed(() => data.items[props.link.material])
@@ -26,16 +24,28 @@ const displayName = computed(() =>
     : data.getItemDisplayName(sourceOrSink.value) + ' (Resource)',
 )
 
+const built = computed(() => factoryStore.currentFactory?.recipeLinks[linkId.value] ?? false)
+
 const updateBuiltState = (value: boolean) => {
-  emit('update:built', linkId.value, value)
+  factoryStore.setLinkBuiltState(linkId.value, value)
 }
 </script>
 
 <template>
-  <v-card class="mb-2">
+  <v-card
+    class="mb-1"
+    hover
+    @click="updateBuiltState(!built)"
+    style="cursor: pointer; transition: all 0.2s ease"
+    :class="{
+      'elevation-2': true,
+      'bg-green-lighten-4': built,
+      'bg-surface': !built,
+    }"
+  >
     <v-card-text class="pa-2">
       <!-- Row 1: Icon + Material Name with Amount -->
-      <v-row no-gutters>
+      <v-row no-gutters class="mb-1">
         <v-col cols="auto" class="pr-2 d-flex justify-center align-center">
           <CachedIcon v-if="materialItem?.icon" :icon="materialItem.icon" :size="32" />
         </v-col>
@@ -51,8 +61,9 @@ const updateBuiltState = (value: boolean) => {
       <v-row no-gutters>
         <v-col cols="auto" class="pr-2 d-flex justify-center">
           <v-checkbox
-            :model-value="false"
+            :model-value="built"
             @update:model-value="(value: boolean | null) => updateBuiltState(value ?? false)"
+            @click.stop
             density="compact"
             hide-details
           />

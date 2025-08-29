@@ -123,6 +123,13 @@ export const useFactoryStore = defineStore('factory', {
         recipeLinks,
       }
     },
+    setRecipeBuilt(name: string, floorIndex: number, built: boolean) {
+      if (!this.currentFactory) return
+      const recipe = this.currentFactory.floors[floorIndex].recipes.find(
+        (recipe) => recipe.recipe.name === name,
+      )
+      if (recipe) recipe.built = built
+    },
     setLinkBuiltState(linkId: string, built: boolean) {
       if (!this.currentFactory) return
       this.currentFactory.recipeLinks[linkId] = built

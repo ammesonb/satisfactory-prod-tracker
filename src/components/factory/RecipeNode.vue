@@ -10,21 +10,9 @@ const props = defineProps<{
   completed: boolean
   panelValue: string
 }>()
-const emit = defineEmits<{
-  'update:built': [value: boolean]
-  'update:link-built': [linkId: string, value: boolean]
-}>()
 
 const data = useDataStore()
 const themeStore = useThemeStore()
-
-const updateBuiltState = (value: boolean) => {
-  emit('update:built', value)
-}
-
-const updateLinkBuiltState = (linkId: string, value: boolean) => {
-  emit('update:link-built', linkId, value)
-}
 
 const panelBgClass = computed(
   () =>
@@ -40,13 +28,18 @@ const titleBgClass = computed(
 <template>
   <v-expansion-panel :class="panelBgClass" :value="props.panelValue" :id="props.recipeId">
     <v-expansion-panel-title :class="titleBgClass">
-      <p class="text-h6">{{ data.getRecipeDisplayName(props.recipe.recipe.name) }}</p>
+      <div class="d-flex justify-space-between align-center w-100">
+        <p class="text-h6">{{ data.getRecipeDisplayName(props.recipe.recipe.name) }}</p>
+        <v-chip size="small" class="mr-2" color="info" variant="elevated">
+          x{{ props.recipe.recipe.count.toFixed(2) }}
+        </v-chip>
+      </div>
     </v-expansion-panel-title>
     <v-expansion-panel-text>
       <div class="d-flex justify-space-between align-start gap-4">
-        <RecipeInputs :links="props.recipe.inputs" @update:link-built="updateLinkBuiltState" />
-        <RecipeBuilding :recipe="props.recipe" @update:built="updateBuiltState" />
-        <RecipeOutputs :links="props.recipe.outputs" @update:link-built="updateLinkBuiltState" />
+        <RecipeInputs :links="props.recipe.inputs" />
+        <RecipeBuilding :recipe="props.recipe" />
+        <RecipeOutputs :links="props.recipe.outputs" />
       </div>
     </v-expansion-panel-text>
   </v-expansion-panel>

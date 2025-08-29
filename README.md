@@ -4,26 +4,19 @@
 
 ### UI:
 
-- have building on mouseover show raw recipe with native amounts
-- allow moving recipes to different floors, but must have all dependent recipes on that floor or earlier
+- show recipe details somewhere - underneath building checkbox in card?
+  - has ingredients / min / factory, products / min / factory, time per craft
+  - probably uses icons too
+- allow moving recipes to different floors
+  - must have all dependent recipes on that floor or earlier
   - how to do for codependent recipes like recycled plastic/rubber? move others/cascade checkbox?
 
 - show belt tier for ingredients/products into building
-- also show building counts so we know e.g. 680 iron ore @ 65 ore / min for each building
-- how many tier 1 belts, tier 2 belts, etc before having to switch?
+  - option to enable in bar
+  - probably easiest to show how many buildings fit tier 1, then 2, then 3, etc
+    - use a segment kind of display somehow?
+  - show on hover for something? or static panel?
 
-- display checkboxes for linked materials (inputs + outputs) and buildings like
-
-```
-input 1 -----            ----- output 1
-input 2 ----- building 1 ----- output 2
-input 3 -----            -----
-```
-
-such that a building will only be hidden if all the inputs, itself, and outputs are checked off
-if an output from say, iron -> iron rod is checked, the INPUT for iron rod should also be checked
-
-- still want to show building name, count, etc as well as the amounts and percentages for inputs and outputs
 - anchor-based hyperlink for inputs and outputs, should show floor along with recipe
 
 This template should help get you started developing with Vue 3 in Vite.
