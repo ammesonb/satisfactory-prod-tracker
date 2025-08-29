@@ -15,14 +15,10 @@ const data = useDataStore()
 const themeStore = useThemeStore()
 
 const panelBgClass = computed(
-  () =>
-    (props.completed ? 'bg-blue-grey' : 'bg-grey') +
-    (themeStore.isDark ? '-darken-2' : '-lighten-2'),
+  () => (props.completed ? 'bg-blue-grey' : 'bg-grey') + (themeStore.isDark ? '-darken-2' : ''),
 )
 
-const titleBgClass = computed(
-  () => (props.completed ? 'bg-blue-grey' : 'bg-grey') + (themeStore.isDark ? '-darken-1' : ''),
-)
+const titleBgClass = computed(() => (props.completed ? 'bg-green-lighten-4' : 'bg-grey-lighten-1'))
 </script>
 
 <template>
