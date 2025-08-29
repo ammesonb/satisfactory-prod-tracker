@@ -151,17 +151,17 @@ onMounted(() => {
 
 <style scoped>
 .nav-panel {
-  position: absolute;
-  bottom: 4rem; /* Just above the plus FAB */
-  right: 0;
+  position: fixed;
+  bottom: 5rem; /* Just above the plus FAB */
+  right: 1rem;
   width: 20rem;
-  max-width: calc(100vw - 6rem);
-  max-height: 60vh;
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100vh - 10rem); /* Leave space for FAB and top/bottom margins */
 }
 
 .nav-content {
   overflow-y: auto;
-  max-height: calc(60vh - 60px);
+  max-height: calc(100vh - 15rem); /* Adjust for panel padding, search bar, and margins */
 }
 
 .floor-item {

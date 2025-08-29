@@ -1,28 +1,12 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { useFactoryStore } from '@/stores/factory'
+import { useFloorNavigation } from '@/composables/useFloorNavigation'
 
 const factoryStore = useFactoryStore()
-const expandedFloors = ref<number[]>([])
+const { expandedFloors } = useFloorNavigation()
 const showEditModal = ref(false)
 const editFloorIndices = ref<number[]>([])
-
-watch(
-  () => [factoryStore.currentFactory],
-  () => {
-    if (factoryStore.currentFactory) {
-      // only show floors with incomplete recipes by default
-      expandedFloors.value = factoryStore.currentFactory.floors
-        .map((floor, index) =>
-          floor.recipes.some((recipe) => !factoryStore.recipeComplete(recipe)) ? index : undefined,
-        )
-        .filter((index): index is number => index !== undefined)
-    } else {
-      expandedFloors.value = []
-    }
-  },
-  { immediate: true },
-)
 
 const openEditModal = (floorIndex: number) => {
   editFloorIndices.value = [floorIndex]
