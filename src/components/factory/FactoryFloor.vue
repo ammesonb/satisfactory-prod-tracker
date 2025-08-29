@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { Floor } from '@/types/factory'
 import { getIconURL } from '@/logistics/images'
 import { useFactoryStore } from '@/stores/factory'
@@ -7,6 +7,7 @@ import { useFactoryStore } from '@/stores/factory'
 interface Props {
   floor: Floor
   floorNumber: number
+  expanded: boolean
 }
 
 const props = defineProps<Props>()
@@ -14,6 +15,25 @@ const props = defineProps<Props>()
 const factoryStore = useFactoryStore()
 
 const floorName = computed(() => factoryStore.getFloorDisplayName(props.floorNumber, props.floor))
+
+const expandedRecipes = ref<string[]>([])
+
+// Initialize expanded recipes on mount and when floor changes
+watch(
+  () => [props.floor, props.expanded],
+  () => {
+    if (factoryStore.selected) {
+      // wait slightly to allow panel to close before re-opening recipes,
+      // since confusing visual glitch
+      setTimeout(() => {
+        expandedRecipes.value = props.floor.recipes
+          .filter((recipe) => !factoryStore.recipeComplete(recipe))
+          .map((recipe) => `${props.floorNumber}-${recipe.recipe.name}`)
+      }, 250)
+    }
+  },
+  { immediate: true },
+)
 
 const emit = defineEmits<{
   'edit-floor': [floorIndex: number]
@@ -52,12 +72,13 @@ const emit = defineEmits<{
       </div>
     </v-expansion-panel-title>
     <v-expansion-panel-text>
-      <v-expansion-panels multiple>
+      <v-expansion-panels multiple v-model="expandedRecipes">
         <RecipeNode
           v-for="recipe in props.floor.recipes"
           :key="recipe.recipe.name"
           :recipe="recipe"
           :completed="factoryStore.recipeComplete(recipe)"
+          :panel-value="`${props.floorNumber}-${recipe.recipe.name}`"
           @update:built="(value: boolean) => (recipe.built = value)"
           @update:link-built="
             (linkId: string, value: boolean) => factoryStore.setLinkBuiltState(linkId, value)

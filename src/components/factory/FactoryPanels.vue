@@ -8,7 +8,7 @@ const showEditModal = ref(false)
 const editFloorIndices = ref<number[]>([])
 
 watch(
-  () => [factoryStore.selected, factoryStore.currentFactory?.recipeLinks],
+  () => [factoryStore.currentFactory],
   () => {
     if (factoryStore.currentFactory) {
       // only show floors with incomplete recipes by default
@@ -47,6 +47,7 @@ const openMassEditModal = () => {
         :key="index"
         :floor="floor"
         :floorNumber="index + 1"
+        :expanded="expandedFloors.includes(index)"
         @edit-floor="openEditModal"
       />
     </v-expansion-panels>

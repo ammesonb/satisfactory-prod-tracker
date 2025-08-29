@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { refDebounced } from '@vueuse/core'
 import { useDataStore } from '@/stores/data'
-import { getIconURL } from '@/logistics/images'
+import CachedIcon from '@/components/common/CachedIcon.vue'
 
 interface Props {
   modelValue?: string
@@ -108,27 +108,14 @@ const updateValue = (value: string | null) => {
   >
     <!-- Selected icon display -->
     <template #prepend-inner v-if="selectedIcon">
-      <v-img
-        :src="getIconURL(selectedIcon.icon, 64)"
-        width="24"
-        height="24"
-        class="me-2"
-        loading="lazy"
-      />
+      <CachedIcon :icon="selectedIcon.icon" :size="24" class="me-2" />
     </template>
 
     <!-- Dropdown item template -->
     <template #item="{ props: itemProps, item }">
       <v-list-item v-bind="itemProps">
         <template #prepend>
-          <img
-            :src="getIconURL(item.raw.icon, 64)"
-            width="32"
-            height="32"
-            class="me-3 icon-image"
-            loading="lazy"
-            :alt="item.raw.name"
-          />
+          <CachedIcon :icon="item.raw.icon" :size="32" :alt="item.raw.name" class="me-3" />
         </template>
 
         <v-list-item-subtitle class="text-capitalize">{{ item.raw.type }}</v-list-item-subtitle>

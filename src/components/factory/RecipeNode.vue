@@ -4,7 +4,7 @@ import { type RecipeNode } from '@/logistics/graph-node'
 import { useDataStore } from '@/stores/data'
 import { useThemeStore } from '@/stores/theme'
 
-const props = defineProps<{ recipe: RecipeNode; completed: boolean }>()
+const props = defineProps<{ recipe: RecipeNode; completed: boolean; panelValue: string }>()
 const emit = defineEmits<{
   'update:built': [value: boolean]
   'update:link-built': [linkId: string, value: boolean]
@@ -33,7 +33,7 @@ const titleBgClass = computed(
 </script>
 
 <template>
-  <v-expansion-panel :class="panelBgClass">
+  <v-expansion-panel :class="panelBgClass" :value="props.panelValue">
     <v-expansion-panel-title :class="titleBgClass">
       {{ data.getRecipeDisplayName(props.recipe.recipe.name) }}
     </v-expansion-panel-title>

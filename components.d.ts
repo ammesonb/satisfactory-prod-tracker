@@ -11,6 +11,7 @@ declare module 'vue' {
     AddFactoryModal: typeof import('./src/components/modals/AddFactoryModal.vue')['default']
     App: typeof import('./src/App.vue')['default']
     AppBar: typeof import('./src/components/layout/AppBar.vue')['default']
+    CachedIcon: typeof import('./src/components/common/CachedIcon.vue')['default']
     ErrorModal: typeof import('./src/components/modals/ErrorModal.vue')['default']
     FactoryDrawer: typeof import('./src/components/layout/FactoryDrawer.vue')['default']
     FactoryDrawerRow: typeof import('./src/components/layout/FactoryDrawerRow.vue')['default']

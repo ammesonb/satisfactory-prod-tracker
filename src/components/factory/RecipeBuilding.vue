@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { RecipeNode } from '@/logistics/graph-node'
-import { getIconURL } from '@/logistics/images'
 import { useDataStore } from '@/stores/data'
 import { computed } from 'vue'
+import CachedIcon from '@/components/common/CachedIcon.vue'
 
 const props = defineProps<{
   recipe: RecipeNode
@@ -24,17 +24,17 @@ const updateBuiltState = (value: boolean) => {
 <template>
   <div class="recipe-building text-center">
     <h4 class="text-h6 mb-3">Building</h4>
-    <v-card variant="outlined">
+    <v-card>
       <v-card-text class="pa-3">
         <div class="d-flex flex-column align-center gap-2">
           <v-checkbox
             :model-value="recipe.built"
-            @update:model-value="updateBuiltState"
+            @update:model-value="(value: boolean | null) => updateBuiltState(value ?? false)"
             label="Placed"
             density="compact"
             hide-details
           />
-          <v-img v-if="buildingIcon" :src="getIconURL(buildingIcon, 64)" :width="32" :height="32" />
+          <CachedIcon v-if="buildingIcon" :icon="buildingIcon" :size="32" />
           <div class="text-body-2 font-weight-medium text-center">
             {{ data.getBuildingDisplayName(recipe.recipe.building) }}
           </div>
