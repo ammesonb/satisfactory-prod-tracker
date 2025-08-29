@@ -9,7 +9,7 @@ import {
 } from '@/logistics/graph-node'
 import { getRecipeLinks, getLinksForCircularRecipes } from '@/logistics/graph-linker'
 import { RecipeChainError } from '@/errors/processing-errors'
-import { ZERO_THRESHOLD } from './constants'
+import { ZERO_THRESHOLD } from '@/logistics/constants'
 
 /**
  * Figures out recipe production chain in graph-style (breadth-first) manner.

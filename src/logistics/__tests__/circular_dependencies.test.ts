@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { findCircularRecipes, groupCircularRecipes } from '../dependency-resolver'
 import { useDataStore } from '@/stores/data'
 import type { Recipe } from '@/types/factory'
+import { findCircularRecipes, groupCircularRecipes } from '@/logistics/dependency-resolver'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 
 describe('findCircularRecipes', () => {

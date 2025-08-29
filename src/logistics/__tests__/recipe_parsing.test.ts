@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { parseRecipeString } from '../recipe-parser'
-import { isNaturalResource } from '../constants'
+import { parseRecipeString } from '@/logistics/recipe-parser'
+import { isNaturalResource } from '@/logistics/constants'
 import { RecipeFormatError, InvalidBuildingError, InvalidRecipeError } from '@/errors/recipe-errors'
 
 describe('recipe parsing and source selection', () => {

@@ -28,6 +28,14 @@ const handleAddFactory = (factoryData: { name: string; icon: string; recipes: st
           Select a factory from the sidebar to view its production chain.
         </p>
         <GettingStarted v-if="!factoryStore.hasFactories" />
+        <v-expansion-panels v-if="factoryStore.selected">
+          <FactoryFloor
+            v-for="(floor, index) in factoryStore.currentFactory.floors"
+            :key="index"
+            :floor="floor"
+            :floorNumber="index + 1"
+          />
+        </v-expansion-panels>
       </v-container>
       <v-fab
         icon="mdi-plus"

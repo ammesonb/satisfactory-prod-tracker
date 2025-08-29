@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { newRecipeNode } from '../graph-node'
-import { selectIngredientSources, getRecipeLinks } from '../graph-linker'
+import { newRecipeNode } from '@/logistics/graph-node'
+import { selectIngredientSources, getRecipeLinks } from '@/logistics/graph-linker'
 import type { RecipeIngredient } from '@/types/data'
 import { recipeDatabase } from './recipe-fixtures'
 

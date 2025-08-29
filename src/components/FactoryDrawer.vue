@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useFactoryStore } from '@/stores/factory'
-import FactoryRow from './FactoryRow.vue'
 
 const collapsed = ref(true)
 const factoryStore = useFactoryStore()
@@ -15,6 +14,7 @@ const factoryStore = useFactoryStore()
         :key="factory.name"
         :factory="factory"
         :rail="collapsed"
+        :selected="factoryStore.selected === factory.name"
         @select="factoryStore.setSelectedFactory(factory.name)"
       />
     </v-list>

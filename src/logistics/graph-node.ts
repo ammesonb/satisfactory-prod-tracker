@@ -1,6 +1,6 @@
 import type { Material, Recipe } from '@/types/factory'
 import type { RecipeIngredient, RecipeProduct } from '@/types/data'
-import { ZERO_THRESHOLD, isNaturalResource } from './constants'
+import { ZERO_THRESHOLD, isNaturalResource } from '@/logistics/constants'
 import { SourceNodeNotFoundError, ProductNotFoundError } from '@/errors/processing-errors'
 
 export interface RecipeNode {
