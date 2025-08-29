@@ -26,7 +26,14 @@ export const useFactoryStore = defineStore('factory', {
       const recipeNodes: RecipeNode[] = []
 
       try {
-        recipeNodes.push(...solveRecipeChain(recipes.split('\n').map((s) => s.trim())))
+        recipeNodes.push(
+          ...solveRecipeChain(
+            recipes
+              .trim()
+              .split('\n')
+              .map((s) => s.trim()),
+          ),
+        )
       } catch (error) {
         if (isUserFriendlyError(error)) {
           error.showError(errorStore)
@@ -47,11 +54,11 @@ export const useFactoryStore = defineStore('factory', {
 
       const floors: Floor[] = []
       for (const recipeNode of recipeNodes) {
-        while (recipeNode.batchNumber! > floors.length) {
+        while (recipeNode.batchNumber! >= floors.length) {
           floors.push({ recipes: [] })
         }
 
-        floors[recipeNode.batchNumber! - 1].recipes.push(recipeNode)
+        floors[recipeNode.batchNumber!].recipes.push(recipeNode)
       }
 
       this.factories[name] = {

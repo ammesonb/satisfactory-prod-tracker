@@ -14,6 +14,7 @@ const factoryStore = useFactoryStore()
         v-for="factory in factoryStore.factoryList"
         :key="factory.name"
         :factory="factory"
+        :rail="collapsed"
         @select="factoryStore.setSelectedFactory(factory.name)"
       />
     </v-list>
