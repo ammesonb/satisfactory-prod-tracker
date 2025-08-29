@@ -88,8 +88,14 @@ const saveChanges = () => {
       <v-card-title> Edit Floor{{ floorForms.length > 1 ? 's' : '' }} </v-card-title>
       <v-card-text>
         <v-form v-if="floorForms.length > 0">
-          <div v-for="(form, idx) in floorForms" :key="form.index" class="mb-6">
-            <h3 class="text-subtitle-1 font-weight-medium mb-3">
+          <v-card
+            v-for="form in floorForms"
+            :key="form.index"
+            class="mb-4"
+            variant="tonal"
+            elevation="0"
+          >
+            <v-card-title class="text-subtitle-1 font-weight-medium pb-2">
               {{
                 factoryStore.getFloorDisplayName(form.index + 1, {
                   name: form.originalName,
@@ -97,26 +103,22 @@ const saveChanges = () => {
                   recipes: [],
                 })
               }}
-            </h3>
+            </v-card-title>
 
-            <v-text-field
-              v-model="form.name"
-              label="Floor name"
-              variant="outlined"
-              density="compact"
-              class="mb-3"
-              placeholder="Enter floor name (optional)"
-              clearable
-            />
+            <v-card-text class="pt-0">
+              <v-text-field
+                v-model="form.name"
+                label="Floor name"
+                variant="filled"
+                density="compact"
+                class="mb-3"
+                placeholder="Enter floor name (optional)"
+                clearable
+              />
 
-            <IconSelector
-              v-model="form.icon"
-              placeholder="Search for a floor icon..."
-              class="mb-4"
-            />
-
-            <v-divider v-if="idx < floorForms.length - 1" class="mt-4" />
-          </div>
+              <IconSelector v-model="form.icon" placeholder="Search for a floor icon..." />
+            </v-card-text>
+          </v-card>
         </v-form>
       </v-card-text>
       <v-card-actions>

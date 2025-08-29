@@ -136,7 +136,6 @@ const updateValue = (value: string | null) => {
           />
         </template>
 
-        <v-list-item-title>{{ item.raw.name }}</v-list-item-title>
         <v-list-item-subtitle class="text-capitalize">{{ item.raw.type }}</v-list-item-subtitle>
       </v-list-item>
     </template>
