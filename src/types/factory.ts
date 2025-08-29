@@ -15,6 +15,7 @@ export interface Material {
 
 export interface Floor {
   name?: string
+  icon?: string
   recipes: RecipeNode[]
 }
 

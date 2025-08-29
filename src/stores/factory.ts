@@ -15,10 +15,40 @@ export const useFactoryStore = defineStore('factory', {
     hasFactories: (state) => Object.keys(state.factories).length > 0,
     currentFactory: (state) => state.factories[state.selected],
     factoryList: (state) => Object.values(state.factories || {}),
+    getFloorDisplayName: () => (floorIndex: number, floor: Floor) => {
+      return `Floor ${floorIndex}` + (floor.name ? ` - ${floor.name}` : '')
+    },
   },
   actions: {
     setSelectedFactory(factoryName: string) {
       this.selected = factoryName
+    },
+    updateFloorName(factoryName: string, floorIndex: number, name: string) {
+      const factory = this.factories[factoryName]
+      if (factory && factory.floors[floorIndex]) {
+        factory.floors[floorIndex].name = name
+      }
+    },
+    updateFloorIcon(factoryName: string, floorIndex: number, icon: string) {
+      const factory = this.factories[factoryName]
+      if (factory && factory.floors[floorIndex]) {
+        factory.floors[floorIndex].icon = icon
+      }
+    },
+    updateFloors(
+      factoryName: string,
+      updates: Array<{ index: number; name?: string; icon?: string }>,
+    ) {
+      const factory = this.factories[factoryName]
+      if (!factory) return
+
+      for (const update of updates) {
+        const floor = factory.floors[update.index]
+        if (floor) {
+          if ('name' in update) floor.name = update.name
+          if ('icon' in update) floor.icon = update.icon
+        }
+      }
     },
     addFactory(name: string, icon: string, recipes: string) {
       const errorStore = useErrorStore()

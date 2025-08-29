@@ -2,9 +2,13 @@
 import { ref, watch } from 'vue'
 import { useFactoryStore } from '@/stores/factory'
 import FactoryFloor from '@/components/FactoryFloor.vue'
+import FloorEditModal from '@/components/FloorEditModal.vue'
+import FactoryFloorsToolbar from '@/components/FactoryFloorsToolbar.vue'
 
 const factoryStore = useFactoryStore()
 const expandedFloors = ref<boolean[]>([])
+const showEditModal = ref(false)
+const editFloorIndices = ref<number[]>([])
 
 const updateExpandedFloor = (index: number, expanded: boolean) => {
   if (expandedFloors.value.length <= index) {
@@ -14,6 +18,18 @@ const updateExpandedFloor = (index: number, expanded: boolean) => {
     ]
   }
   expandedFloors.value[index] = expanded
+}
+
+const openEditModal = (floorIndex: number) => {
+  editFloorIndices.value = [floorIndex]
+  showEditModal.value = true
+}
+
+const openMassEditModal = () => {
+  if (factoryStore.currentFactory) {
+    editFloorIndices.value = factoryStore.currentFactory.floors.map((_, index) => index)
+    showEditModal.value = true
+  }
 }
 
 watch(
@@ -26,14 +42,25 @@ watch(
 </script>
 
 <template>
-  <v-expansion-panels v-if="factoryStore.selected" multiple variant="accordion">
-    <FactoryFloor
-      v-for="(floor, index) in factoryStore.currentFactory.floors"
-      :key="index"
-      :floor="floor"
-      :floorNumber="index + 1"
-      :expand-floor="expandedFloors[index] || false"
-      @update:expand-floor="updateExpandedFloor(index, $event)"
+  <div v-if="factoryStore.selected">
+    <FactoryFloorsToolbar @edit-all-floors="openMassEditModal" />
+
+    <v-expansion-panels multiple variant="accordion">
+      <FactoryFloor
+        v-for="(floor, index) in factoryStore.currentFactory.floors"
+        :key="index"
+        :floor="floor"
+        :floorNumber="index + 1"
+        :expand-floor="expandedFloors[index] || false"
+        @update:expand-floor="updateExpandedFloor(index, $event)"
+        @edit-floor="openEditModal"
+      />
+    </v-expansion-panels>
+
+    <FloorEditModal
+      v-model:show="showEditModal"
+      :factory-name="factoryStore.selected"
+      :floor-indices="editFloorIndices"
     />
-  </v-expansion-panels>
+  </div>
 </template>

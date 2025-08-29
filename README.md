@@ -4,8 +4,10 @@
 
 ### UI:
 
-- set icons on floors too
 - have building on mouseover show raw recipe with native amounts
+- allow moving recipes to different floors, but must have all dependent recipes on that floor or earlier
+  - how to do for codependent recipes like recycled plastic/rubber? move others/cascade checkbox?
+
 - show belt tier for ingredients/products into building
 - also show building counts so we know e.g. 680 iron ore @ 65 ore / min for each building
 - how many tier 1 belts, tier 2 belts, etc before having to switch?
