@@ -50,9 +50,14 @@ const updateBuiltState = (value: boolean) => {
           <CachedIcon v-if="materialItem?.icon" :icon="materialItem.icon" :size="32" />
         </v-col>
         <v-col class="d-flex justify-start">
-          <div class="text-body-2 font-weight-medium d-flex flex-column align-center">
+          <div
+            class="text-body-2 font-weight-medium d-flex flex-column align-center"
+            :class="{ 'text-black': built }"
+          >
             {{ materialItem?.name || link.material }}
-            <div class="text-caption text-medium-emphasis">{{ link.amount.toFixed(2) }}/min</div>
+            <div class="text-caption" :class="built ? 'text-black' : 'text-medium-emphasis'">
+              {{ link.amount.toFixed(2) }}/min
+            </div>
           </div>
         </v-col>
       </v-row>
@@ -69,7 +74,7 @@ const updateBuiltState = (value: boolean) => {
           />
         </v-col>
         <v-col class="d-flex align-center">
-          <div class="text-caption text-medium-emphasis">
+          <div class="text-caption" :class="built ? 'text-black' : 'text-medium-emphasis'">
             {{ type === 'input' ? 'from' : 'to' }} {{ displayName }}
           </div>
         </v-col>
