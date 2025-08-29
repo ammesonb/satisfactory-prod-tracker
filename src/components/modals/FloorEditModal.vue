@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useFactoryStore } from '@/stores/factory'
-import IconSelector from '@/components/IconSelector.vue'
 
 interface Props {
   show: boolean
