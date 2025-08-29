@@ -14,6 +14,7 @@ const factoryStore = useFactoryStore()
       <v-spacer />
       <v-btn
         variant="outlined"
+        color="secondary"
         prepend-icon="mdi-pencil-box-multiple"
         @click="emit('edit-all-floors')"
         :disabled="!factoryStore.currentFactory || factoryStore.currentFactory.floors.length === 0"

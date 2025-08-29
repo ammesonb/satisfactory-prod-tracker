@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import IconSelector from '@/components/IconSelector.vue'
 
 interface Props {
   modelValue: boolean
@@ -67,7 +66,7 @@ const addFactory = () => {
         <v-spacer />
         <v-btn variant="tonal" @click="clear">Cancel</v-btn>
         <v-btn
-          color="green"
+          color="secondary"
           variant="elevated"
           @click="addFactory"
           :disabled="!form.name || !form.recipes || !form.icon"

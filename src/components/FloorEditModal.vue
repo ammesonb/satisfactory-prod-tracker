@@ -124,7 +124,7 @@ const saveChanges = () => {
       <v-card-actions>
         <v-spacer />
         <v-btn variant="tonal" @click="clear">Cancel</v-btn>
-        <v-btn color="green" variant="elevated" @click="saveChanges" :disabled="!hasChanges">
+        <v-btn color="secondary" variant="elevated" @click="saveChanges" :disabled="!hasChanges">
           Save Changes
         </v-btn>
       </v-card-actions>

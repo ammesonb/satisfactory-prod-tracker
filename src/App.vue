@@ -24,7 +24,7 @@ const handleAddFactory = (factoryData: { name: string; icon: string; recipes: st
       </v-container>
       <v-fab
         icon="mdi-plus"
-        color="green"
+        color="secondary"
         location="bottom end"
         app
         @click="showAddFactoryModal = true"

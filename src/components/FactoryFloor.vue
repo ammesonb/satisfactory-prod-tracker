@@ -37,13 +37,14 @@ const emit = defineEmits<{
         </div>
         <v-spacer />
         <div class="d-flex align-center">
-          <v-chip size="small" color="secondary" variant="outlined" class="me-2">
+          <v-chip size="small" color="info" variant="outlined" class="me-2">
             {{ props.floor.recipes.length }} recipes
           </v-chip>
           <v-btn
             icon="mdi-pencil"
             size="small"
             variant="text"
+            color="secondary"
             @click.stop="emit('edit-floor', props.floorNumber - 1)"
             class="me-1"
           />
