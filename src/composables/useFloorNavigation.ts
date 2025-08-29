@@ -5,6 +5,14 @@ import { useFactoryStore } from '@/stores/factory'
 const expandedFloors = ref<number[]>([])
 let initialized = false
 
+const floorPrefix = 'floor-'
+const recipePrefix = 'recipe-'
+
+// Element ID formatters
+export const formatFloorId = (floorIndex: number): string => `${floorPrefix}${floorIndex}`
+export const formatRecipeId = (floorIndex: number, recipeName: string): string =>
+  `${recipePrefix}${floorIndex}-${recipeName}`
+
 export function useFloorNavigation() {
   const factoryStore = useFactoryStore()
 
@@ -57,8 +65,8 @@ export function useFloorNavigation() {
   }
 
   const navigateToElement = (elementId: string) => {
-    if (elementId.startsWith('floor-')) {
-      const floorIndex = parseInt(elementId.replace('floor-', ''))
+    if (elementId.startsWith(floorPrefix)) {
+      const floorIndex = parseInt(elementId.replace(floorPrefix, ''))
       expandFloor(floorIndex)
 
       // Scroll to element after a delay to ensure expansion
@@ -70,7 +78,7 @@ export function useFloorNavigation() {
           window.scrollTo({ top: y, behavior: 'smooth' })
         }
       }, 100)
-    } else if (elementId.startsWith('recipe-')) {
+    } else if (elementId.startsWith(recipePrefix)) {
       const parts = elementId.split('-')
       const floorIndex = parseInt(parts[1])
       expandFloor(floorIndex)

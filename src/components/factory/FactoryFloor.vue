@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import type { Floor } from '@/types/factory'
 import { getIconURL } from '@/logistics/images'
 import { useFactoryStore } from '@/stores/factory'
+import { formatFloorId, formatRecipeId } from '@/composables/useFloorNavigation'
 
 interface Props {
   floor: Floor
@@ -45,7 +46,7 @@ const emit = defineEmits<{
     class="mb-2"
     elevation="2"
     :value="props.floorNumber - 1"
-    :id="`floor-${props.floorNumber - 1}`"
+    :id="formatFloorId(props.floorNumber - 1)"
   >
     <v-expansion-panel-title>
       <div class="d-flex align-center w-100">
@@ -84,7 +85,7 @@ const emit = defineEmits<{
           :recipe="recipe"
           :completed="factoryStore.recipeComplete(recipe)"
           :panel-value="`${props.floorNumber}-${recipe.recipe.name}`"
-          :recipe-id="`recipe-${props.floorNumber - 1}-${recipe.recipe.name}`"
+          :recipe-id="formatRecipeId(props.floorNumber - 1, recipe.recipe.name)"
           @update:built="(value: boolean) => (recipe.built = value)"
           @update:link-built="
             (linkId: string, value: boolean) => factoryStore.setLinkBuiltState(linkId, value)

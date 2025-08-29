@@ -3,6 +3,7 @@ import { computed, ref, onMounted } from 'vue'
 import { useFactoryStore } from '@/stores/factory'
 import { useDataStore } from '@/stores/data'
 import { getIconURL } from '@/logistics/images'
+import { formatFloorId, formatRecipeId } from '@/composables/useFloorNavigation'
 
 const emit = defineEmits<{
   close: []
@@ -53,11 +54,11 @@ const filteredFloors = computed(() => {
 })
 
 const handleFloorClick = (floorIndex: number) => {
-  emit('navigate', `floor-${floorIndex}`)
+  emit('navigate', formatFloorId(floorIndex))
 }
 
 const handleRecipeClick = (floorIndex: number, recipeName: string) => {
-  emit('navigate', `recipe-${floorIndex}-${recipeName}`)
+  emit('navigate', formatRecipeId(floorIndex, recipeName))
 }
 
 onMounted(() => {

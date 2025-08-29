@@ -3,6 +3,7 @@ import type { Material } from '@/types/factory'
 import { linkToString } from '@/logistics/graph-node'
 import { useDataStore } from '@/stores/data'
 import { useFactoryStore } from '@/stores/factory'
+import { useFloorNavigation, formatRecipeId } from '@/composables/useFloorNavigation'
 import { computed } from 'vue'
 import CachedIcon from '@/components/common/CachedIcon.vue'
 
@@ -13,6 +14,7 @@ const props = defineProps<{
 
 const data = useDataStore()
 const factoryStore = useFactoryStore()
+const { navigateToElement } = useFloorNavigation()
 
 const linkId = computed(() => linkToString(props.link))
 const materialItem = computed(() => data.items[props.link.material])
@@ -23,11 +25,21 @@ const displayName = computed(() =>
     ? data.getRecipeDisplayName(sourceOrSink.value)
     : data.getItemDisplayName(sourceOrSink.value) + ' (Resource)',
 )
+const targetRecipe = computed(() =>
+  isRecipe.value ? factoryStore.getRecipeByName(sourceOrSink.value) : null,
+)
 
 const built = computed(() => factoryStore.currentFactory?.recipeLinks[linkId.value] ?? false)
 
 const updateBuiltState = (value: boolean) => {
   factoryStore.setLinkBuiltState(linkId.value, value)
+}
+
+const navigateToRecipe = () => {
+  if (targetRecipe.value?.batchNumber !== undefined) {
+    const recipeId = formatRecipeId(targetRecipe.value.batchNumber, targetRecipe.value.recipe.name)
+    navigateToElement(recipeId)
+  }
 }
 </script>
 
@@ -75,7 +87,17 @@ const updateBuiltState = (value: boolean) => {
         </v-col>
         <v-col class="d-flex align-center">
           <div class="text-caption" :class="built ? 'text-black' : 'text-medium-emphasis'">
-            {{ type === 'input' ? 'from' : 'to' }} {{ displayName }}
+            {{ type === 'input' ? 'from' : 'to' }}
+            <span
+              v-if="isRecipe"
+              @click.stop="navigateToRecipe"
+              class="text-decoration-underline"
+              style="cursor: pointer"
+            >
+              {{ displayName }}
+            </span>
+            <span v-else>{{ displayName }}</span>
+            <span v-if="isRecipe">&nbsp;(Floor {{ targetRecipe?.batchNumber! + 1 }})</span>
           </div>
         </v-col>
       </v-row>

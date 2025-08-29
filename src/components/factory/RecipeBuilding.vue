@@ -16,7 +16,7 @@ const buildingIcon = computed(() => data.buildings[props.recipe.recipe.building]
 
 const updateBuiltState = (value: boolean) => {
   if (factoryStore.currentFactory) {
-    factoryStore.setRecipeBuilt(props.recipe.recipe.name, props.recipe.batchNumber!, value)
+    factoryStore.setRecipeBuilt(props.recipe.recipe.name, value)
   }
 }
 </script>

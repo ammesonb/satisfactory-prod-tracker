@@ -123,16 +123,22 @@ export const useFactoryStore = defineStore('factory', {
         recipeLinks,
       }
     },
-    setRecipeBuilt(name: string, floorIndex: number, built: boolean) {
-      if (!this.currentFactory) return
-      const recipe = this.currentFactory.floors[floorIndex].recipes.find(
-        (recipe) => recipe.recipe.name === name,
-      )
+    setRecipeBuilt(name: string, built: boolean) {
+      const recipe = this.getRecipeByName(name)
       if (recipe) recipe.built = built
     },
     setLinkBuiltState(linkId: string, built: boolean) {
       if (!this.currentFactory) return
       this.currentFactory.recipeLinks[linkId] = built
+    },
+    getRecipeByName(recipeName: string): RecipeNode | null {
+      if (!this.currentFactory) return null
+
+      for (const floor of this.currentFactory.floors) {
+        const recipe = floor.recipes.find((r) => r.recipe.name === recipeName)
+        if (recipe) return recipe
+      }
+      return null
     },
   },
   persist: true,
