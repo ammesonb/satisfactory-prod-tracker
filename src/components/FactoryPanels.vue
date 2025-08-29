@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useFactoryStore } from '@/stores/factory'
-import FactoryFloor from '@/components/FactoryFloor.vue'
-import FloorEditModal from '@/components/FloorEditModal.vue'
-import FactoryFloorsToolbar from '@/components/FactoryFloorsToolbar.vue'
 
 const factoryStore = useFactoryStore()
 const expandedFloors = ref<boolean[]>([])
