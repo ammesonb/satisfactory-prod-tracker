@@ -19,6 +19,12 @@ const data = useDataStore()
 const linkId = computed(() => linkToString(props.link))
 const materialItem = computed(() => data.items[props.link.material])
 const sourceOrSink = computed(() => (props.type === 'input' ? props.link.source : props.link.sink))
+const isRecipe = computed(() => sourceOrSink.value in data.recipes)
+const displayName = computed(() =>
+  isRecipe.value
+    ? data.getRecipeDisplayName(sourceOrSink.value)
+    : data.getItemDisplayName(sourceOrSink.value) + ' (Resource)',
+)
 
 const updateBuiltState = (value: boolean) => {
   emit('update:built', linkId.value, value)
@@ -44,7 +50,7 @@ const updateBuiltState = (value: boolean) => {
         </div>
       </div>
       <div class="text-caption text-medium-emphasis mt-1">
-        {{ type === 'input' ? 'from' : 'to' }} {{ sourceOrSink }}
+        {{ type === 'input' ? 'from' : 'to' }} {{ displayName }}
       </div>
     </v-card-text>
   </v-card>

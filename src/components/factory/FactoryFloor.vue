@@ -41,7 +41,12 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <v-expansion-panel class="mb-2" elevation="2" :value="props.floorNumber - 1">
+  <v-expansion-panel
+    class="mb-2"
+    elevation="2"
+    :value="props.floorNumber - 1"
+    :id="`floor-${props.floorNumber - 1}`"
+  >
     <v-expansion-panel-title>
       <div class="d-flex align-center w-100">
         <div class="d-flex align-center">
@@ -79,6 +84,7 @@ const emit = defineEmits<{
           :recipe="recipe"
           :completed="factoryStore.recipeComplete(recipe)"
           :panel-value="`${props.floorNumber}-${recipe.recipe.name}`"
+          :recipe-id="`recipe-${props.floorNumber - 1}-${recipe.recipe.name}`"
           @update:built="(value: boolean) => (recipe.built = value)"
           @update:link-built="
             (linkId: string, value: boolean) => factoryStore.setLinkBuiltState(linkId, value)

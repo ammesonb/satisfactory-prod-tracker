@@ -8,11 +8,17 @@ export const useDataStore = defineStore('data', {
     buildings: {} as Record<string, Building>,
   }),
   getters: {
+    getItemDisplayName:
+      (state) =>
+      (itemName: string): string => {
+        const item = state.items[itemName]
+        return item?.name || itemName
+      },
     getRecipeDisplayName:
       (state) =>
       (recipeName: string): string => {
         const recipe = state.recipes[recipeName]
-        return recipe?.name || recipeName
+        return (recipe?.name || recipeName).replace(/^Alternate: /, '')
       },
     getBuildingDisplayName:
       (state) =>

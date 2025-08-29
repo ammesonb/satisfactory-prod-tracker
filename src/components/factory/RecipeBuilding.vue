@@ -26,16 +26,16 @@ const updateBuiltState = (value: boolean) => {
     <h4 class="text-h6 mb-3">Building</h4>
     <v-card>
       <v-card-text class="pa-3">
-        <div class="d-flex flex-column align-center gap-2">
+        <div class="d-flex flex-row align-center gap-2">
           <v-checkbox
             :model-value="recipe.built"
             @update:model-value="(value: boolean | null) => updateBuiltState(value ?? false)"
-            label="Placed"
+            label=""
             density="compact"
             hide-details
           />
           <CachedIcon v-if="buildingIcon" :icon="buildingIcon" :size="32" />
-          <div class="text-body-2 font-weight-medium text-center">
+          <div class="text-body-2 font-weight-medium text-center mr-3">
             {{ data.getBuildingDisplayName(recipe.recipe.building) }}
           </div>
           <v-chip size="small" color="primary" variant="outlined">

@@ -52,6 +52,8 @@ const openMassEditModal = () => {
       />
     </v-expansion-panels>
 
+    <FloatingNav />
+
     <FloorEditModal
       v-model:show="showEditModal"
       :factory-name="factoryStore.selected"
