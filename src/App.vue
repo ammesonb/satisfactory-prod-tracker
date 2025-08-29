@@ -33,6 +33,7 @@ onMounted(dataStore.loadData)
         app
         @click="showAddFactoryModal = true"
       />
+      <FloatingNav v-if="factoryStore.selected" />
     </v-main>
 
     <AddFactoryModal v-model="showAddFactoryModal" @add-factory="handleAddFactory" />

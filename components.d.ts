@@ -22,6 +22,7 @@ declare module 'vue' {
     FloorEditModal: typeof import('./src/components/modals/FloorEditModal.vue')['default']
     GettingStarted: typeof import('./src/components/common/GettingStarted.vue')['default']
     IconSelector: typeof import('./src/components/common/IconSelector.vue')['default']
+    NavPanel: typeof import('./src/components/layout/NavPanel.vue')['default']
     RecipeBuilding: typeof import('./src/components/factory/RecipeBuilding.vue')['default']
     RecipeInputs: typeof import('./src/components/factory/RecipeInputs.vue')['default']
     RecipeLink: typeof import('./src/components/factory/RecipeLink.vue')['default']
