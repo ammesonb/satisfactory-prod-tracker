@@ -19,6 +19,24 @@ export const NATURAL_RESOURCES = [
   'Desc_NuclearWaste_C',
 ]
 
-export const isNaturalResource = (item: string): boolean => {
-  return NATURAL_RESOURCES.includes(item)
-}
+export const FLUIDS = [
+  'Desc_Water_C',
+  'Desc_LiquidOil_C',
+  'Desc_HeavyOilResidue_C',
+  'Desc_NitrogenGas_C',
+  'Desc_Fuel_C',
+  'Desc_LiquidBiofuel_C',
+  'Desc_LiquidTurboFuel_C',
+  'Desc_AluminaSolution_C',
+  'Desc_SulfuricAcid_C',
+  'Desc_DissolvedSilica_C',
+  'Desc_NitricAcid_C',
+  'Desc_RocketFuel_C',
+  'Desc_IonizedFuel_C',
+  'Desc_QuantumEnergy_C',
+  'Desc_DarkEnergy_C',
+]
+
+export const isNaturalResource = (item: string): boolean => NATURAL_RESOURCES.includes(item)
+
+export const isFluid = (item: string): boolean => FLUIDS.includes(item)

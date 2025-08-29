@@ -21,7 +21,7 @@ export const useFactoryStore = defineStore('factory', {
     recipeComplete:
       (state) =>
       (recipe: RecipeNode): boolean => {
-        if (state.selected === '') {
+        if (state.selected === '' || !recipe.built) {
           return false
         }
 

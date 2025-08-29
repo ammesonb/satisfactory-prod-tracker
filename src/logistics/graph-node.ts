@@ -15,6 +15,7 @@ export interface RecipeNode {
   // TODO: this is probably easier to test for though, and represent on the UI actually
   inputs: Material[]
   outputs: Material[]
+  built: boolean
 }
 
 /**
@@ -32,6 +33,7 @@ export const newRecipeNode = (
   fullyConsumed: false,
   inputs: [],
   outputs: [],
+  built: false,
 })
 
 export const linkToString = (link: Material) => `${link.source}->${link.sink}[${link.material}]`
