@@ -10,6 +10,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AddFactoryModal: typeof import('./src/components/AddFactoryModal.vue')['default']
     App: typeof import('./src/App.vue')['default']
+    AppBar: typeof import('./src/components/AppBar.vue')['default']
     ErrorModal: typeof import('./src/components/ErrorModal.vue')['default']
     Factory: typeof import('./src/components/Factory.vue')['default']
     FactoryDrawer: typeof import('./src/components/FactoryDrawer.vue')['default']
@@ -20,6 +21,7 @@ declare module 'vue' {
     FloorEditModal: typeof import('./src/components/FloorEditModal.vue')['default']
     GettingStarted: typeof import('./src/components/GettingStarted.vue')['default']
     IconSelector: typeof import('./src/components/IconSelector.vue')['default']
+    ThemeSwitcher: typeof import('./src/components/ThemeSwitcher.vue')['default']
     VAlert: typeof import('vuetify/components')['VAlert']
     VApp: typeof import('vuetify/components')['VApp']
     VAppBar: typeof import('vuetify/components')['VAppBar']

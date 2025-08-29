@@ -9,7 +9,7 @@ const factoryStore = useFactoryStore()
 </script>
 
 <template>
-  <v-card flat class="mb-4">
+  <v-card class="mb-4" color="transparent" elevation="0">
     <v-card-text class="d-flex align-center py-2">
       <v-spacer />
       <v-btn

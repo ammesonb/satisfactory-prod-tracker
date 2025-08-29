@@ -12,14 +12,7 @@ const handleAddFactory = (factoryData: { name: string; icon: string; recipes: st
 
 <template>
   <v-app>
-    <v-app-bar>
-      <v-app-bar-title>
-        Factory Production Tracker
-        <v-chip v-if="factoryStore.selected" size="small" color="info" class="ms-2">
-          {{ factoryStore.selected }}
-        </v-chip>
-      </v-app-bar-title>
-    </v-app-bar>
+    <AppBar />
     <FactoryDrawer />
     <v-main>
       <v-container>

@@ -22,8 +22,12 @@ import { mdi } from 'vuetify/iconsets/mdi'
 
 import App from '@/App.vue'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import { useThemeStore } from '@/stores/theme'
 
 const vuetify = createVuetify({
+  theme: {
+    defaultTheme: 'dark',
+  },
   icons: {
     defaultSet: 'mdi',
     sets: {
@@ -33,6 +37,13 @@ const vuetify = createVuetify({
 })
 
 const app = createApp(App)
-app.use(createPinia().use(piniaPluginPersistedstate))
+const pinia = createPinia().use(piniaPluginPersistedstate)
+app.use(pinia)
 app.use(vuetify)
+
+// Initialize theme store to sync with Vuetify
 app.mount('#app')
+
+// Set initial theme after mount
+const themeStore = useThemeStore()
+themeStore.setTheme(themeStore.isDark)
