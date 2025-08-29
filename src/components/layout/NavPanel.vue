@@ -17,6 +17,7 @@ const searchInput = ref()
 const currentFactory = computed(() => factoryStore.currentFactory)
 
 const filteredFloors = computed(() => {
+  // only filter if search query present
   if (!currentFactory.value || !searchQuery.value) {
     return (
       currentFactory.value?.floors.map((floor, index) => ({ ...floor, originalIndex: index })) || []
@@ -30,16 +31,19 @@ const filteredFloors = computed(() => {
       const floorName = factoryStore.getFloorDisplayName(floorIndex + 1, floor).toLowerCase()
       const floorMatches = floorName.includes(query)
 
-      const filteredRecipes = floor.recipes.filter((recipe) => {
-        const recipeName = dataStore.getRecipeDisplayName(recipe.recipe.name).toLowerCase()
-        return recipeName.includes(query)
-      })
+      // only filter recipes if the floor does not match
+      const filteredRecipes = floorMatches
+        ? floor.recipes
+        : floor.recipes.filter((recipe) => {
+            const recipeName = dataStore.getRecipeDisplayName(recipe.recipe.name).toLowerCase()
+            return recipeName.includes(query)
+          })
 
       if (floorMatches || filteredRecipes.length > 0) {
         return {
           ...floor,
           originalIndex: floorIndex,
-          recipes: filteredRecipes.length > 0 ? filteredRecipes : floor.recipes,
+          recipes: filteredRecipes,
         }
       }
 
