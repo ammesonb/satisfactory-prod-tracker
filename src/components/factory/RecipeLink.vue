@@ -34,24 +34,35 @@ const updateBuiltState = (value: boolean) => {
 <template>
   <v-card class="mb-2">
     <v-card-text class="pa-2">
-      <div class="d-flex align-center gap-2">
-        <v-checkbox
-          :model-value="false"
-          @update:model-value="(value: boolean | null) => updateBuiltState(value ?? false)"
-          density="compact"
-          hide-details
-        />
-        <CachedIcon v-if="materialItem?.icon" :icon="materialItem.icon" :size="20" />
-        <div class="flex-grow-1">
-          <div class="text-body-2 font-weight-medium">
+      <!-- Row 1: Icon + Material Name with Amount -->
+      <v-row no-gutters>
+        <v-col cols="auto" class="pr-2 d-flex justify-center align-center">
+          <CachedIcon v-if="materialItem?.icon" :icon="materialItem.icon" :size="32" />
+        </v-col>
+        <v-col class="d-flex justify-start">
+          <div class="text-body-2 font-weight-medium d-flex flex-column align-center">
             {{ materialItem?.name || link.material }}
+            <div class="text-caption text-medium-emphasis">{{ link.amount.toFixed(2) }}/min</div>
           </div>
-          <div class="text-caption text-medium-emphasis">{{ link.amount.toFixed(2) }}/min</div>
-        </div>
-      </div>
-      <div class="text-caption text-medium-emphasis mt-1">
-        {{ type === 'input' ? 'from' : 'to' }} {{ displayName }}
-      </div>
+        </v-col>
+      </v-row>
+
+      <!-- Row 2: Checkbox + Source/Sink -->
+      <v-row no-gutters>
+        <v-col cols="auto" class="pr-2 d-flex justify-center">
+          <v-checkbox
+            :model-value="false"
+            @update:model-value="(value: boolean | null) => updateBuiltState(value ?? false)"
+            density="compact"
+            hide-details
+          />
+        </v-col>
+        <v-col class="d-flex align-center">
+          <div class="text-caption text-medium-emphasis">
+            {{ type === 'input' ? 'from' : 'to' }} {{ displayName }}
+          </div>
+        </v-col>
+      </v-row>
     </v-card-text>
   </v-card>
 </template>
