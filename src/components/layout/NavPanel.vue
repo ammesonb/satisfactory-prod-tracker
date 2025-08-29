@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useFactoryStore } from '@/stores/factory'
 import { useDataStore } from '@/stores/data'
 import { getIconURL } from '@/logistics/images'
@@ -11,8 +11,42 @@ const emit = defineEmits<{
 
 const factoryStore = useFactoryStore()
 const dataStore = useDataStore()
+const searchQuery = ref('')
+const searchInput = ref()
 
 const currentFactory = computed(() => factoryStore.currentFactory)
+
+const filteredFloors = computed(() => {
+  if (!currentFactory.value || !searchQuery.value) {
+    return (
+      currentFactory.value?.floors.map((floor, index) => ({ ...floor, originalIndex: index })) || []
+    )
+  }
+
+  const query = searchQuery.value.toLowerCase()
+
+  return currentFactory.value.floors
+    .map((floor, floorIndex) => {
+      const floorName = factoryStore.getFloorDisplayName(floorIndex + 1, floor).toLowerCase()
+      const floorMatches = floorName.includes(query)
+
+      const filteredRecipes = floor.recipes.filter((recipe) => {
+        const recipeName = dataStore.getRecipeDisplayName(recipe.recipe.name).toLowerCase()
+        return recipeName.includes(query)
+      })
+
+      if (floorMatches || filteredRecipes.length > 0) {
+        return {
+          ...floor,
+          originalIndex: floorIndex,
+          recipes: filteredRecipes.length > 0 ? filteredRecipes : floor.recipes,
+        }
+      }
+
+      return null
+    })
+    .filter((floor) => floor !== null)
+})
 
 const handleFloorClick = (floorIndex: number) => {
   emit('navigate', `floor-${floorIndex}`)
@@ -21,6 +55,12 @@ const handleFloorClick = (floorIndex: number) => {
 const handleRecipeClick = (floorIndex: number, recipeName: string) => {
   emit('navigate', `recipe-${floorIndex}-${recipeName}`)
 }
+
+onMounted(() => {
+  if (searchInput.value) {
+    searchInput.value.focus()
+  }
+})
 </script>
 
 <template>
@@ -33,14 +73,26 @@ const handleRecipeClick = (floorIndex: number, recipeName: string) => {
       <v-btn icon="mdi-close" size="small" variant="text" @click="emit('close')" />
     </v-card-title>
 
+    <div class="pa-3 pt-0">
+      <v-text-field
+        ref="searchInput"
+        v-model="searchQuery"
+        placeholder="Search floors and recipes..."
+        prepend-inner-icon="mdi-magnify"
+        density="compact"
+        hide-details
+        clearable
+      />
+    </div>
+
     <v-divider />
 
     <div class="nav-content">
       <v-list density="compact" class="py-0">
-        <template v-for="(floor, floorIndex) in currentFactory.floors" :key="floorIndex">
+        <template v-for="floor in filteredFloors" :key="floor.originalIndex">
           <!-- Floor Header -->
           <v-list-item
-            @click="handleFloorClick(floorIndex)"
+            @click="handleFloorClick(floor.originalIndex)"
             class="floor-item"
             :prepend-icon="floor.icon ? undefined : 'mdi-factory'"
           >
@@ -51,7 +103,7 @@ const handleRecipeClick = (floorIndex: number, recipeName: string) => {
             </template>
 
             <v-list-item-title class="font-weight-medium">
-              {{ factoryStore.getFloorDisplayName(floorIndex + 1, floor) }}
+              {{ factoryStore.getFloorDisplayName(floor.originalIndex + 1, floor) }}
             </v-list-item-title>
 
             <template #append>
@@ -65,8 +117,8 @@ const handleRecipeClick = (floorIndex: number, recipeName: string) => {
           <div class="recipe-list">
             <v-list-item
               v-for="recipe in floor.recipes"
-              :key="`${floorIndex}-${recipe.recipe.name}`"
-              @click="handleRecipeClick(floorIndex, recipe.recipe.name)"
+              :key="`${floor.originalIndex}-${recipe.recipe.name}`"
+              @click="handleRecipeClick(floor.originalIndex, recipe.recipe.name)"
               class="recipe-item"
               density="compact"
             >
