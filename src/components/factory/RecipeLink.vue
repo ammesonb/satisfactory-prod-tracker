@@ -90,9 +90,14 @@ const navigateToRecipe = () => {
             {{ type === 'input' ? 'from' : 'to' }}
             <span
               v-if="isRecipe"
-              @click.stop="navigateToRecipe"
-              class="text-decoration-underline"
-              style="cursor: pointer"
+              @click.prevent.stop="navigateToRecipe"
+              class="text-decoration-underline px-1 py-1"
+              style="cursor: pointer; margin: -4px; border-radius: 4px"
+              @mouseenter="
+                ($event.target as HTMLElement).style.backgroundColor =
+                  'rgba(var(--v-theme-on-surface), 0.1)'
+              "
+              @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'"
             >
               {{ displayName }}
             </span>
