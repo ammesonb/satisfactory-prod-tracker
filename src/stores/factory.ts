@@ -4,7 +4,7 @@ import type { Factory, Floor } from '@/types/factory'
 import { solveRecipeChain } from '@/logistics/graph-solver'
 import { useErrorStore } from '@/stores/errors'
 import { isUserFriendlyError } from '@/errors/type-guards'
-import type { RecipeNode } from '@/logistics/graph-node'
+import { linkToString, type RecipeNode } from '@/logistics/graph-node'
 
 export const useFactoryStore = defineStore('factory', {
   state: () => ({
@@ -18,6 +18,24 @@ export const useFactoryStore = defineStore('factory', {
     getFloorDisplayName: () => (floorIndex: number, floor: Floor) => {
       return `Floor ${floorIndex}` + (floor.name ? ` - ${floor.name}` : '')
     },
+    recipeComplete:
+      (state) =>
+      (recipe: RecipeNode): boolean => {
+        if (state.selected === '') {
+          return false
+        }
+
+        const factory = state.factories[state.selected]
+        if (!factory) {
+          return false
+        }
+
+        return (
+          [...recipe.inputs, ...recipe.outputs]
+            .map(linkToString)
+            .every((link) => factory.recipeLinks[link]) ?? false
+        )
+      },
   },
   actions: {
     setSelectedFactory(factoryName: string) {
@@ -83,18 +101,26 @@ export const useFactoryStore = defineStore('factory', {
       }
 
       const floors: Floor[] = []
+      const recipeLinks: Record<string, boolean> = {}
+
       for (const recipeNode of recipeNodes) {
         while (recipeNode.batchNumber! >= floors.length) {
           floors.push({ recipes: [] })
         }
 
         floors[recipeNode.batchNumber!].recipes.push(recipeNode)
+
+        // Initialize all recipe links as incomplete (false)
+        for (const link of [...recipeNode.inputs, ...recipeNode.outputs]) {
+          recipeLinks[linkToString(link)] = false
+        }
       }
 
       this.factories[name] = {
         name,
         icon,
         floors,
+        recipeLinks,
       }
     },
   },

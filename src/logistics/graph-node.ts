@@ -34,6 +34,8 @@ export const newRecipeNode = (
   outputs: [],
 })
 
+export const linkToString = (link: Material) => `${link.source}->${link.sink}[${link.material}]`
+
 /**
  * Determine the PRODUCED quantity of a recipe's ingredient.
  * This is used to calculate the external amount needed as an input for the recipe to be sustainable.

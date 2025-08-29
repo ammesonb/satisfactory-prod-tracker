@@ -23,4 +23,5 @@ export interface Factory {
   name: string
   icon: string
   floors: Floor[]
+  recipeLinks: Record<string, boolean>
 }

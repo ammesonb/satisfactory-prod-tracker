@@ -7,7 +7,6 @@ import { useFactoryStore } from '@/stores/factory'
 interface Props {
   floor: Floor
   floorNumber: number
-  expandFloor: boolean
 }
 
 const props = defineProps<Props>()
@@ -17,18 +16,12 @@ const factoryStore = useFactoryStore()
 const floorName = computed(() => factoryStore.getFloorDisplayName(props.floorNumber, props.floor))
 
 const emit = defineEmits<{
-  'update:expandFloor': [value: boolean]
   'edit-floor': [floorIndex: number]
 }>()
 </script>
 
 <template>
-  <v-expansion-panel
-    :model-value="props.expandFloor"
-    @update:model-value="emit('update:expandFloor', $event)"
-    class="mb-2"
-    elevation="2"
-  >
+  <v-expansion-panel class="mb-2" elevation="2" :value="props.floorNumber - 1">
     <v-expansion-panel-title>
       <div class="d-flex align-center w-100">
         <div class="d-flex align-center">

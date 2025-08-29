@@ -3,19 +3,26 @@ import { ref, watch } from 'vue'
 import { useFactoryStore } from '@/stores/factory'
 
 const factoryStore = useFactoryStore()
-const expandedFloors = ref<boolean[]>([])
+const expandedFloors = ref<number[]>([])
 const showEditModal = ref(false)
 const editFloorIndices = ref<number[]>([])
 
-const updateExpandedFloor = (index: number, expanded: boolean) => {
-  if (expandedFloors.value.length <= index) {
-    expandedFloors.value = [
-      ...expandedFloors.value,
-      ...Array(index - expandedFloors.value.length + 1).fill(false),
-    ]
-  }
-  expandedFloors.value[index] = expanded
-}
+watch(
+  () => [factoryStore.selected, factoryStore.currentFactory?.recipeLinks],
+  () => {
+    if (factoryStore.currentFactory) {
+      // only show floors with incomplete recipes by default
+      expandedFloors.value = factoryStore.currentFactory.floors
+        .map((floor, index) =>
+          floor.recipes.some((recipe) => !factoryStore.recipeComplete(recipe)) ? index : undefined,
+        )
+        .filter((index): index is number => index !== undefined)
+    } else {
+      expandedFloors.value = []
+    }
+  },
+  { immediate: true },
+)
 
 const openEditModal = (floorIndex: number) => {
   editFloorIndices.value = [floorIndex]
@@ -28,28 +35,18 @@ const openMassEditModal = () => {
     showEditModal.value = true
   }
 }
-
-watch(
-  () => factoryStore.selected,
-  () => {
-    expandedFloors.value = factoryStore.currentFactory.floors.map(() => true)
-  },
-  { immediate: true },
-)
 </script>
 
 <template>
   <div v-if="factoryStore.selected">
     <FactoryFloorsToolbar @edit-all-floors="openMassEditModal" />
 
-    <v-expansion-panels multiple variant="accordion">
+    <v-expansion-panels v-model="expandedFloors" multiple variant="accordion">
       <FactoryFloor
         v-for="(floor, index) in factoryStore.currentFactory.floors"
         :key="index"
         :floor="floor"
         :floorNumber="index + 1"
-        :expand-floor="expandedFloors[index] || false"
-        @update:expand-floor="updateExpandedFloor(index, $event)"
         @edit-floor="openEditModal"
       />
     </v-expansion-panels>
