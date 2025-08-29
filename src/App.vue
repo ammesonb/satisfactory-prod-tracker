@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useFactoryStore } from '@/stores/factory'
 import { ref } from 'vue'
-import GettingStarted from '@/components/GettingStarted.vue'
 
 const factoryStore = useFactoryStore()
 const showAddFactoryModal = ref(false)
@@ -16,9 +15,9 @@ const handleAddFactory = (factoryData: { name: string; icon: string; recipes: st
     <v-app-bar>
       <v-app-bar-title>
         Factory Production Tracker
-        <v-chip v-if="factoryStore.selected" size="small" color="info" class="ms-2">{{
-          factoryStore.selected
-        }}</v-chip>
+        <v-chip v-if="factoryStore.selected" size="small" color="info" class="ms-2">
+          {{ factoryStore.selected }}
+        </v-chip>
       </v-app-bar-title>
     </v-app-bar>
     <FactoryDrawer />
@@ -28,14 +27,7 @@ const handleAddFactory = (factoryData: { name: string; icon: string; recipes: st
           Select a factory from the sidebar to view its production chain.
         </p>
         <GettingStarted v-if="!factoryStore.hasFactories" />
-        <v-expansion-panels v-if="factoryStore.selected">
-          <FactoryFloor
-            v-for="(floor, index) in factoryStore.currentFactory.floors"
-            :key="index"
-            :floor="floor"
-            :floorNumber="index + 1"
-          />
-        </v-expansion-panels>
+        <FactoryPanels v-if="factoryStore.selected" />
       </v-container>
       <v-fab
         icon="mdi-plus"

@@ -4,6 +4,7 @@
 
 ### UI:
 
+- set icons on floors too
 - have building on mouseover show raw recipe with native amounts
 - show belt tier for ingredients/products into building
 - also show building counts so we know e.g. 680 iron ore @ 65 ore / min for each building
