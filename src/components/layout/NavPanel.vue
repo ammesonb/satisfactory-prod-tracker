@@ -96,10 +96,10 @@ const handleRecipeClick = (floorIndex: number, recipeName: string) => {
 <style scoped>
 .nav-panel {
   position: absolute;
-  bottom: 0;
+  bottom: 4rem; /* Just above the plus FAB */
   right: 0;
-  width: 320px;
-  max-width: calc(100vw - 100px);
+  width: 20rem;
+  max-width: calc(100vw - 6rem);
   max-height: 60vh;
 }
 
@@ -131,10 +131,18 @@ const handleRecipeClick = (floorIndex: number, recipeName: string) => {
   background-color: rgba(var(--v-theme-primary), 0.1);
 }
 
+@media (min-width: 1440px) {
+  .nav-panel {
+    bottom: 5rem;
+    width: 22rem;
+  }
+}
+
 @media (max-width: 600px) {
   .nav-panel {
-    width: 280px;
-    max-width: calc(100vw - 80px);
+    bottom: 3rem;
+    width: 18rem;
+    max-width: calc(100vw - 4rem);
   }
 }
 </style>

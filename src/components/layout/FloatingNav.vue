@@ -27,30 +27,13 @@ const toggleNav = () => {
 </script>
 
 <template>
-  <div class="floating-nav">
-    <v-fab
-      icon="mdi-map"
-      color="primary"
-      class="floating-toggle"
-      @click="toggleNav"
-      v-show="!isOpen"
-    />
+  <v-fab icon="mdi-map" color="primary" @click="toggleNav" v-show="!isOpen" />
 
-    <NavPanel v-if="isOpen" @close="handleClose" @navigate="handleNavigate" />
-  </div>
+  <NavPanel v-if="isOpen" @close="handleClose" @navigate="handleNavigate" />
 </template>
 
 <style scoped>
 .floating-nav {
-  position: fixed;
-  bottom: 72px;
-  right: 16px;
-  z-index: 1000;
-}
-
-@media (max-width: 600px) {
-  .floating-nav {
-    right: 10px;
-  }
+  position: relative;
 }
 </style>

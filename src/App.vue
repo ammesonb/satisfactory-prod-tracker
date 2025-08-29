@@ -2,6 +2,7 @@
 import { useFactoryStore } from '@/stores/factory'
 import { onMounted, ref } from 'vue'
 import { useDataStore } from './stores/data'
+import FloatingNav from './components/layout/FloatingNav.vue'
 
 const dataStore = useDataStore()
 const factoryStore = useFactoryStore()
@@ -26,14 +27,11 @@ onMounted(dataStore.loadData)
         <GettingStarted v-if="!factoryStore.hasFactories" />
         <FactoryPanels v-if="factoryStore.selected" />
       </v-container>
-      <v-fab
-        icon="mdi-plus"
-        color="secondary"
-        location="bottom end"
-        app
-        @click="showAddFactoryModal = true"
-      />
-      <FloatingNav v-if="factoryStore.selected" />
+      <!-- Grouped FABs -->
+      <div class="fab-container">
+        <FloatingNav v-if="factoryStore.selected" />
+        <v-fab icon="mdi-plus" color="secondary" @click="showAddFactoryModal = true" />
+      </div>
     </v-main>
 
     <AddFactoryModal v-model="showAddFactoryModal" @add-factory="handleAddFactory" />
@@ -44,5 +42,31 @@ onMounted(dataStore.loadData)
 <style scoped>
 code {
   color: green;
+}
+
+.fab-container {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 1000;
+}
+
+@media (min-width: 1440px) {
+  .fab-container {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .fab-container {
+    bottom: 0.75rem;
+    right: 0.75rem;
+    gap: 0.5rem;
+  }
 }
 </style>
