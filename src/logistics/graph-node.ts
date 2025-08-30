@@ -141,13 +141,18 @@ export const calculateTransportCapacity = (
   for (const capacity of capacities) {
     const buildings = Math.min(
       Math.floor((capacity - previousCapacity) / perBuildingThroughput),
-      remainingCount,
+      // convert remaining to a whole number, to avoid fractional building counts at the end
+      Math.ceil(remainingCount),
     )
 
     buildingCounts.push(buildings)
     remainingCount -= buildings
     // only increase capacity by the amount we actually used
     previousCapacity += buildings * perBuildingThroughput
+
+    if (remainingCount <= 0) {
+      break
+    }
   }
 
   return buildingCounts

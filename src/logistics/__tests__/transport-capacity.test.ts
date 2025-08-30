@@ -5,17 +5,17 @@ describe('calculateTransportCapacity', () => {
   describe('belt transport (solids)', () => {
     it('should handle single building within MK1 capacity', () => {
       const result = calculateTransportCapacity('Desc_IronIngot_C', 30, 1)
-      expect(result).toEqual([1, 0, 0, 0, 0, 0])
+      expect(result).toEqual([1])
     })
 
     it('should handle single building at MK1 capacity limit', () => {
       const result = calculateTransportCapacity('Desc_IronIngot_C', 60, 1)
-      expect(result).toEqual([1, 0, 0, 0, 0, 0])
+      expect(result).toEqual([1])
     })
 
     it('should skip MK1 when per-building exceeds capacity', () => {
       const result = calculateTransportCapacity('Desc_IronIngot_C', 80, 1)
-      expect(result).toEqual([0, 1, 0, 0, 0, 0])
+      expect(result).toEqual([0, 1])
     })
 
     it('should handle multiple buildings across tiers', () => {
@@ -24,7 +24,7 @@ describe('calculateTransportCapacity', () => {
       // MK2 (120): 1 building (80 <= 120)
       // MK3 (270): 2 buildings (80 + 80 = 160 <= 270)
       const result = calculateTransportCapacity('Desc_IronIngot_C', 240, 3)
-      expect(result).toEqual([0, 1, 2, 0, 0, 0])
+      expect(result).toEqual([0, 1, 2])
     })
 
     it('should handle high throughput requiring higher tiers', () => {
@@ -49,14 +49,14 @@ describe('calculateTransportCapacity', () => {
       // 300 total, 5 buildings = 60/building
       // All buildings can use MK1 (60 capacity each)
       const result = calculateTransportCapacity('Desc_IronIngot_C', 300, 5)
-      expect(result).toEqual([1, 1, 2, 1, 0, 0])
+      expect(result).toEqual([1, 1, 2, 1])
     })
   })
 
   describe('pipeline transport (fluids)', () => {
     it('should use pipeline capacities for fluids', () => {
       const result = calculateTransportCapacity('Desc_Water_C', 150, 1)
-      expect(result).toEqual([1, 0]) // Within MK1 pipeline (300)
+      expect(result).toEqual([1]) // Within MK1 pipeline (300)
     })
 
     it('should handle fluid throughput requiring MK2 pipeline', () => {
@@ -86,25 +86,31 @@ describe('calculateTransportCapacity', () => {
   })
 
   describe('edge cases', () => {
-    it('should handle zero amount', () => {
-      const result = calculateTransportCapacity('Desc_IronIngot_C', 0, 1)
-      expect(result).toEqual([1, 0, 0, 0, 0, 0]) // 0 throughput needs no buildings
+    it('should throw error for zero amount', () => {
+      expect(() => calculateTransportCapacity('Desc_IronIngot_C', 0, 1)).toThrow(
+        'Invalid total/recipe amounts: per-building amounts = 0',
+      )
     })
 
     it('should handle very small amounts', () => {
       const result = calculateTransportCapacity('Desc_IronIngot_C', 0.1, 1)
-      expect(result).toEqual([1, 0, 0, 0, 0, 0])
+      expect(result).toEqual([1])
+    })
+
+    it('should handle fractional remainders', () => {
+      const result = calculateTransportCapacity('Desc_Water_C', 130, 1.3)
+      expect(result).toEqual([2])
     })
 
     it('should handle single recipe count', () => {
       const result = calculateTransportCapacity('Desc_IronIngot_C', 100, 1)
-      expect(result).toEqual([0, 1, 0, 0, 0, 0])
+      expect(result).toEqual([0, 1])
     })
 
     it('should handle large recipe counts with low per-building throughput', () => {
       // 600 total, 10 buildings = 60/building
       const result = calculateTransportCapacity('Desc_IronIngot_C', 600, 10)
-      expect(result).toEqual([1, 1, 2, 4, 2, 0])
+      expect(result).toEqual([1, 1, 2, 4, 2])
     })
   })
 })
