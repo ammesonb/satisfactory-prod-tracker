@@ -18,6 +18,11 @@ describe('calculateTransportCapacity', () => {
       expect(result).toEqual([0, 1])
     })
 
+    it('should disperse lower-amount materials across multiple tiers', () => {
+      const result = calculateTransportCapacity('Desc_IronIngot_C', 186, 5.3)
+      expect(result).toEqual([1, 2, 3])
+    })
+
     it('should handle multiple buildings across tiers', () => {
       // 240 total, 3 buildings = 80/building
       // MK1 (60): 0 buildings (80 > 60)

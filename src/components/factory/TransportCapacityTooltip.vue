@@ -8,16 +8,30 @@ import {
   PIPELINE_ITEM_NAMES,
 } from '@/logistics/constants'
 import { useDataStore } from '@/stores/data'
+import { calculateTransportCapacity, type RecipeNode } from '@/logistics/graph-node'
+import type { Material } from '@/types/factory'
 
 const props = defineProps<{
-  material: string
-  buildingCounts: number[]
+  recipe: RecipeNode
+  link: Material
+  isHovered?: boolean
 }>()
 
 const data = useDataStore()
 
+const buildingCounts = computed(() => {
+  // Only calculate when hovered to improve performance
+  if (!props.isHovered) return []
+
+  return calculateTransportCapacity(
+    props.link.material,
+    props.link.amount,
+    props.recipe.recipe.count,
+  )
+})
+
 const transportConfig = computed(() => {
-  const isFluidMaterial = isFluid(props.material)
+  const isFluidMaterial = isFluid(props.link.material)
   return {
     units: isFluidMaterial ? 'm³/min' : 'items/min',
     capacities: isFluidMaterial ? PIPELINE_CAPACITIES : BELT_CAPACITIES,

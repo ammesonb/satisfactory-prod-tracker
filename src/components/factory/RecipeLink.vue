@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { Material } from '@/types/factory'
-import { linkToString, calculateTransportCapacity, type RecipeNode } from '@/logistics/graph-node'
+import { linkToString, type RecipeNode } from '@/logistics/graph-node'
 import { useDataStore } from '@/stores/data'
 import { useFactoryStore } from '@/stores/factory'
 import { useFloorNavigation, formatRecipeId } from '@/composables/useFloorNavigation'
 import { isFluid, BELT_ITEM_NAMES, PIPELINE_ITEM_NAMES } from '@/logistics/constants'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps<{
   link: Material
@@ -49,13 +49,7 @@ const transportIcon = computed(() => {
   return data.buildings[transport]?.icon ?? ''
 })
 
-const transportCapacity = computed(() => {
-  return calculateTransportCapacity(
-    props.link.material,
-    props.link.amount,
-    props.recipe.recipe.count,
-  )
-})
+const isTransportHovered = ref(false)
 </script>
 
 <template>
@@ -88,7 +82,11 @@ const transportCapacity = computed(() => {
           </div>
         </v-col>
         <v-col cols="auto" class="d-flex justify-end align-start">
-          <v-tooltip location="top" content-class="pa-0">
+          <v-tooltip
+            location="top"
+            content-class="pa-0"
+            @update:model-value="isTransportHovered = $event"
+          >
             <template v-slot:activator="{ props: tooltipProps }">
               <CachedIcon
                 :icon="transportIcon"
@@ -98,8 +96,9 @@ const transportCapacity = computed(() => {
               />
             </template>
             <TransportCapacityTooltip
-              :material="link.material"
-              :building-counts="transportCapacity"
+              :recipe="props.recipe"
+              :link="props.link"
+              :is-hovered="isTransportHovered"
             />
           </v-tooltip>
         </v-col>
