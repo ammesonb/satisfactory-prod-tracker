@@ -24,6 +24,7 @@ declare module 'vue' {
     IconSelector: typeof import('./src/components/common/IconSelector.vue')['default']
     NavPanel: typeof import('./src/components/layout/NavPanel.vue')['default']
     RecipeBuilding: typeof import('./src/components/factory/RecipeBuilding.vue')['default']
+    RecipeDetails: typeof import('./src/components/factory/RecipeDetails.vue')['default']
     RecipeInputs: typeof import('./src/components/factory/RecipeInputs.vue')['default']
     RecipeLink: typeof import('./src/components/factory/RecipeLink.vue')['default']
     RecipeNode: typeof import('./src/components/factory/RecipeNode.vue')['default']
@@ -60,10 +61,12 @@ declare module 'vue' {
     VListItemSubtitle: typeof import('vuetify/components')['VListItemSubtitle']
     VListItemTitle: typeof import('vuetify/components')['VListItemTitle']
     VMain: typeof import('vuetify/components')['VMain']
+    VMenu: typeof import('vuetify/components')['VMenu']
     VNavigationDrawer: typeof import('vuetify/components')['VNavigationDrawer']
     VRow: typeof import('vuetify/components')['VRow']
     VSpacer: typeof import('vuetify/components')['VSpacer']
     VTextarea: typeof import('vuetify/components')['VTextarea']
     VTextField: typeof import('vuetify/components')['VTextField']
+    VTooltip: typeof import('vuetify/components')['VTooltip']
   }
 }

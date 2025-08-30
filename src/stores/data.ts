@@ -39,6 +39,9 @@ export const useDataStore = defineStore('data', {
     },
     recipeIngredients(recipeName: string): RecipeIngredient[] {
       const recipe = this.recipes[recipeName]
+      if (!recipe) {
+        throw new Error(`Recipe not found: ${recipeName}`)
+      }
       return recipe.ingredients.map((ingredient) => {
         return {
           item: ingredient.item,
@@ -49,6 +52,9 @@ export const useDataStore = defineStore('data', {
     },
     recipeProducts(recipeName: string): RecipeProduct[] {
       const recipe = this.recipes[recipeName]
+      if (!recipe) {
+        throw new Error(`Recipe not found: ${recipeName}`)
+      }
       return recipe.products.map((product) => {
         return {
           item: product.item,

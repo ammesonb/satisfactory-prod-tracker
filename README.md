@@ -4,10 +4,6 @@
 
 ### UI:
 
-- show recipe details somewhere - underneath building checkbox in card?
-  - has ingredients / min / factory, products / min / factory, time per craft
-  - probably uses icons too
-
 - allow moving recipes to different floors
   - must have all dependent recipes on that floor or earlier
   - how to do for codependent recipes like recycled plastic/rubber? move others/cascade checkbox?
@@ -17,6 +13,8 @@
   - probably easiest to show how many buildings fit tier 1, then 2, then 3, etc
     - use a segment kind of display somehow?
   - show on hover for something? or static panel?
+
+- if node is not fully consumed, show available outputs in recipe link as "Product"
 
 This template should help get you started developing with Vue 3 in Vite.
 

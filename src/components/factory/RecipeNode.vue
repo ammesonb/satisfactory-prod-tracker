@@ -25,7 +25,22 @@ const titleBgClass = computed(() => (props.completed ? 'bg-green-lighten-4' : 'b
   <v-expansion-panel :class="panelBgClass" :value="props.panelValue" :id="props.recipeId">
     <v-expansion-panel-title :class="titleBgClass">
       <div class="d-flex justify-space-between align-center w-100">
-        <p class="text-h6">{{ data.getRecipeDisplayName(props.recipe.recipe.name) }}</p>
+        <div class="d-flex align-center gap-2">
+          <p class="text-h6">{{ data.getRecipeDisplayName(props.recipe.recipe.name) }}</p>
+          <v-tooltip interactive v-if="data.recipes[props.recipe.recipe.name]" content-class="pa-0">
+            <template v-slot:activator="{ props: activatorProps }">
+              <v-btn
+                v-bind="activatorProps"
+                icon="mdi-information"
+                size="medium"
+                variant="text"
+                color="info"
+                class="ml-1"
+              />
+            </template>
+            <RecipeDetails :recipe="props.recipe" />
+          </v-tooltip>
+        </div>
         <v-chip size="small" class="mr-2" color="info" variant="elevated">
           x{{ props.recipe.recipe.count.toFixed(2) }}
         </v-chip>
