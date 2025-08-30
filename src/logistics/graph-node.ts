@@ -137,7 +137,7 @@ export const calculateTransportCapacity = (
 
   const buildings = [0]
   // attempt to find a tier that fits the next pass of the recipe
-  for (let i = 0; i < recipeCount; i++) {
+  for (let i = 0; i < Math.ceil(recipeCount); i++) {
     // if the quantity exceeds the remaining capacity of this tier,
     // iteratively try the next tier until it fits or we run out of tiers
     while (
@@ -157,7 +157,7 @@ export const calculateTransportCapacity = (
     }
 
     // otherwise increment the count for this tier and add the amount used
-    buildings[buildings.length - 1]++
+    buildings[capacityIndex]++
     usedAmount += perRecipeAmount
   }
 
