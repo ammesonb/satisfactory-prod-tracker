@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import type { Material } from '@/types/factory'
-import { linkToString } from '@/logistics/graph-node'
+import { linkToString, calculateTransportCapacity, type RecipeNode } from '@/logistics/graph-node'
 import { useDataStore } from '@/stores/data'
 import { useFactoryStore } from '@/stores/factory'
 import { useFloorNavigation, formatRecipeId } from '@/composables/useFloorNavigation'
+import { isFluid, BELT_ITEM_NAMES, PIPELINE_ITEM_NAMES } from '@/logistics/constants'
 import { computed } from 'vue'
-import CachedIcon from '@/components/common/CachedIcon.vue'
 
 const props = defineProps<{
   link: Material
+  recipe: RecipeNode
   type: 'input' | 'output'
 }>()
 
@@ -42,6 +43,19 @@ const navigateToRecipe = () => {
     navigateToElement(recipeId)
   }
 }
+
+const transportIcon = computed(() => {
+  const transport = isFluid(props.link.material) ? PIPELINE_ITEM_NAMES[0] : BELT_ITEM_NAMES[0]
+  return data.buildings[transport]?.icon ?? ''
+})
+
+const transportCapacity = computed(() => {
+  return calculateTransportCapacity(
+    props.link.material,
+    props.link.amount,
+    props.recipe.recipe.count,
+  )
+})
 </script>
 
 <template>
@@ -72,6 +86,22 @@ const navigateToRecipe = () => {
               {{ link.amount.toFixed(2) }}/min
             </div>
           </div>
+        </v-col>
+        <v-col cols="auto" class="d-flex justify-end align-start">
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props: tooltipProps }">
+              <CachedIcon
+                :icon="transportIcon"
+                :size="24"
+                v-bind="tooltipProps"
+                style="cursor: help"
+              />
+            </template>
+            <TransportCapacityTooltip
+              :material="link.material"
+              :building-counts="transportCapacity"
+            />
+          </v-tooltip>
         </v-col>
       </v-row>
 

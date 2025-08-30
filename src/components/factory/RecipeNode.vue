@@ -68,6 +68,7 @@ const moveRecipe = (targetFloorIndex: number) => {
                 class="mr-1"
                 color="info"
                 variant="elevated"
+                style="cursor: help"
                 v-bind="activatorProps"
               >
                 x{{ props.recipe.recipe.count.toFixed(2) }}
@@ -98,9 +99,12 @@ const moveRecipe = (targetFloorIndex: number) => {
     </v-expansion-panel-title>
     <v-expansion-panel-text>
       <div class="d-flex justify-space-between align-start gap-4">
-        <RecipeInputs :links="props.recipe.inputs" />
+        <RecipeInputs :links="props.recipe.inputs" :recipe="props.recipe" />
         <RecipeBuilding :recipe="props.recipe" />
-        <RecipeOutputs :links="[...props.recipe.outputs, ...leftoverProducts]" />
+        <RecipeOutputs
+          :links="[...props.recipe.outputs, ...leftoverProducts]"
+          :recipe="props.recipe"
+        />
       </div>
     </v-expansion-panel-text>
   </v-expansion-panel>

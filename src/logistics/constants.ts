@@ -40,3 +40,17 @@ export const FLUIDS = [
 export const isNaturalResource = (item: string): boolean => NATURAL_RESOURCES.includes(item)
 
 export const isFluid = (item: string): boolean => FLUIDS.includes(item)
+
+export const BELT_CAPACITIES = [60, 120, 270, 480, 780, 1200]
+export const PIPELINE_CAPACITIES = [300, 600]
+
+export const BELT_ITEM_NAMES = [
+  'Desc_ConveyorBeltMk1_C',
+  'Desc_ConveyorBeltMk2_C',
+  'Desc_ConveyorBeltMk3_C',
+  'Desc_ConveyorBeltMk4_C',
+  'Desc_ConveyorBeltMk5_C',
+  'Desc_ConveyorBeltMk6_C',
+]
+
+export const PIPELINE_ITEM_NAMES = ['Desc_Pipeline_C', 'Desc_PipelineMK2_C']

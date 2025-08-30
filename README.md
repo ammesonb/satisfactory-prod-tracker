@@ -5,9 +5,10 @@
 ### UI:
 
 - show belt tier for ingredients/products into building
-  - show on hover "info" icon next to inputs/outputs, kinda like the recipe details
-  - probably easiest to show how many buildings fit tier 1, then 2, then 3, etc
-    - use a segment kind of display somehow?
+  - rounding issues
+  - tooltip alignment issues
+  - should be calculated once on factory creation, not each load
+  - still shows excess belts/pipes too
 
 This template should help get you started developing with Vue 3 in Vite.
 

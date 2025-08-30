@@ -30,6 +30,7 @@ declare module 'vue' {
     RecipeNode: typeof import('./src/components/factory/RecipeNode.vue')['default']
     RecipeOutputs: typeof import('./src/components/factory/RecipeOutputs.vue')['default']
     ThemeSwitcher: typeof import('./src/components/common/ThemeSwitcher.vue')['default']
+    TransportCapacityTooltip: typeof import('./src/components/factory/TransportCapacityTooltip.vue')['default']
     VAlert: typeof import('vuetify/components')['VAlert']
     VApp: typeof import('vuetify/components')['VApp']
     VAppBar: typeof import('vuetify/components')['VAppBar']
