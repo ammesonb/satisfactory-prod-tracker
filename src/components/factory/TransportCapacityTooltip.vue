@@ -30,11 +30,7 @@ const buildingCounts = computed(() => {
   const source = sources.find((s) => s.item === props.link.material)
   if (!source) return []
 
-  return calculateTransportCapacity(
-    isFluid(props.link.material),
-    source.amount,
-    source.amount * props.recipe.recipe.count,
-  )
+  return calculateTransportCapacity(props.link.material, source.amount, props.recipe.recipe.count)
 })
 
 const transportConfig = computed(() => {

@@ -3,6 +3,7 @@ import type { RecipeIngredient, RecipeProduct } from '@/types/data'
 import {
   ZERO_THRESHOLD,
   isNaturalResource,
+  isFluid,
   BELT_CAPACITIES,
   PIPELINE_CAPACITIES,
 } from '@/logistics/constants'
@@ -123,15 +124,17 @@ export const decrementConsumedProducts = (
  * Returns array of building counts for each transport tier.
  */
 export const calculateTransportCapacity = (
-  isFluid: boolean,
-  amountPerBuilding: number,
-  totalAmountNeeded: number,
+  material: string,
+  perRecipeAmount: number,
+  recipeCount: number,
 ): number[] => {
-  if (amountPerBuilding <= 0) {
-    throw new Error(`Invalid total/recipe amounts: per-building amounts = ${amountPerBuilding}`)
+  if (perRecipeAmount <= 0) {
+    throw new Error(`Invalid per-recipe amount: ${perRecipeAmount}`)
   }
 
-  const capacities = isFluid ? PIPELINE_CAPACITIES : BELT_CAPACITIES
+  const isFluidMaterial = isFluid(material)
+  const totalAmountNeeded = perRecipeAmount * recipeCount
+  const capacities = isFluidMaterial ? PIPELINE_CAPACITIES : BELT_CAPACITIES
   let capacityIndex = 0
   let previousCapacity = 0
 
@@ -141,13 +144,13 @@ export const calculateTransportCapacity = (
     const thisCapacity = capacities[capacityIndex] - previousCapacity
     const buildingsThisTier = Math.min(
       // how much will fit inside this tier
-      Math.floor(thisCapacity / amountPerBuilding),
+      Math.floor(thisCapacity / perRecipeAmount),
       // how many are needed to reach total amount
-      Math.ceil((totalAmountNeeded - previousCapacity) / amountPerBuilding),
+      Math.ceil((totalAmountNeeded - previousCapacity) / perRecipeAmount),
     )
     buildings.push(buildingsThisTier)
 
-    previousCapacity += buildingsThisTier * amountPerBuilding
+    previousCapacity += buildingsThisTier * perRecipeAmount
     capacityIndex++
   }
 
