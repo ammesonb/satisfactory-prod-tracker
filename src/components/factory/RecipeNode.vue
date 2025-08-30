@@ -31,10 +31,12 @@ const leftoverProducts: Ref<Material[]> = computed(() =>
 )
 
 const panelBgClass = computed(
-  () => (props.completed ? 'bg-blue-grey' : 'bg-grey') + (themeStore.isDark ? '-darken-2' : ''),
+  () =>
+    (props.completed ? 'bg-blue-grey' : 'bg-grey') +
+    (themeStore.isDark ? '-darken-2' : '-lighten-1'),
 )
 
-const titleBgClass = computed(() => (props.completed ? 'bg-green-lighten-4' : 'bg-grey-lighten-1'))
+const titleBgClass = computed(() => (props.completed ? 'bg-green-lighten-4' : 'bg-grey'))
 
 const availableFloors = computed(() => {
   if (!factoryStore.currentFactory) return []
