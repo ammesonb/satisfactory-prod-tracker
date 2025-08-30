@@ -5,7 +5,6 @@
 ### UI:
 
 - show belt tier for ingredients/products into building
-  - tooltip alignment issues
   - should be calculated once on factory creation, not each load
 
 This template should help get you started developing with Vue 3 in Vite.

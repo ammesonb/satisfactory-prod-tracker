@@ -88,7 +88,7 @@ const transportCapacity = computed(() => {
           </div>
         </v-col>
         <v-col cols="auto" class="d-flex justify-end align-start">
-          <v-tooltip location="top">
+          <v-tooltip location="top" content-class="pa-0">
             <template v-slot:activator="{ props: tooltipProps }">
               <CachedIcon
                 :icon="transportIcon"

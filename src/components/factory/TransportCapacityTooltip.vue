@@ -19,7 +19,6 @@ const data = useDataStore()
 const transportConfig = computed(() => {
   const isFluidMaterial = isFluid(props.material)
   return {
-    title: isFluidMaterial ? 'Pipeline Capacity' : 'Belt Capacity',
     units: isFluidMaterial ? 'm³/min' : 'items/min',
     capacities: isFluidMaterial ? PIPELINE_CAPACITIES : BELT_CAPACITIES,
     itemNames: isFluidMaterial ? PIPELINE_ITEM_NAMES : BELT_ITEM_NAMES,
@@ -29,28 +28,27 @@ const transportConfig = computed(() => {
 
 <template>
   <v-card class="pa-2" min-width="200">
-    <v-card-title class="text-body-2 pa-1">{{ transportConfig.title }}</v-card-title>
-
     <v-card-text class="pa-1">
-      <!-- Transport tier icons row -->
-      <div class="d-flex align-center justify-center mb-2">
-        <template v-for="(buildingCount, index) in buildingCounts" :key="index">
-          <CachedIcon
-            :icon="data.buildings[transportConfig.itemNames[index]]?.icon ?? ''"
-            :size="24"
-            :title="`MK${index + 1}: ${transportConfig.capacities[index]} ${transportConfig.units}`"
-          />
-          <span v-if="index < buildingCounts.length - 1" class="mx-1">-</span>
-        </template>
-      </div>
-
-      <!-- Building counts row -->
-      <div class="d-flex align-center justify-center text-caption">
-        <template v-for="(buildingCount, index) in buildingCounts" :key="`count-${index}`">
-          <span class="text-center" style="width: 24px">{{ buildingCount }}</span>
-          <span v-if="index < buildingCounts.length - 1" class="mx-1 opacity-0">-</span>
-        </template>
-      </div>
+      <!-- Transport capacity table -->
+      <v-table density="compact" class="transport-table">
+        <tbody>
+          <tr>
+            <template v-for="(buildingCount, index) in buildingCounts" :key="index">
+              <td class="text-center pa-1">
+                <div class="d-flex flex-column align-center">
+                  <CachedIcon
+                    :icon="data.buildings[transportConfig.itemNames[index]]?.icon ?? ''"
+                    :size="32"
+                  />
+                  <div class="text-caption text-medium-emphasis mt-1">
+                    {{ buildingCount }} &times; MK{{ index + 1 }}
+                  </div>
+                </div>
+              </td>
+            </template>
+          </tr>
+        </tbody>
+      </v-table>
     </v-card-text>
   </v-card>
 </template>

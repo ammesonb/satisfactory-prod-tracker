@@ -129,7 +129,7 @@ export const calculateTransportCapacity = (
   recipeCount: number,
 ): number[] => {
   const capacities = isFluid(material) ? PIPELINE_CAPACITIES : BELT_CAPACITIES
-  const perBuildingThroughput = totalAmount / recipeCount
+  const perBuildingThroughput = totalAmount / Math.ceil(recipeCount)
   if (perBuildingThroughput === 0) {
     throw new Error('Invalid total/recipe amounts: per-building amounts = 0')
   }
