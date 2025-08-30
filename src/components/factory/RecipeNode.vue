@@ -3,6 +3,7 @@ import { computed, type Ref } from 'vue'
 import { type RecipeNode } from '@/logistics/graph-node'
 import { useDataStore } from '@/stores/data'
 import { useThemeStore } from '@/stores/theme'
+import { useFactoryStore } from '@/stores/factory'
 import { type Material } from '@/types/factory'
 import { ZERO_THRESHOLD } from '@/logistics/constants'
 
@@ -11,10 +12,12 @@ const props = defineProps<{
   recipeId: string
   completed: boolean
   panelValue: string
+  currentFloorIndex: number
 }>()
 
 const data = useDataStore()
 const themeStore = useThemeStore()
+const factoryStore = useFactoryStore()
 
 const leftoverProducts: Ref<Material[]> = computed(() =>
   props.recipe.availableProducts
@@ -32,6 +35,22 @@ const panelBgClass = computed(
 )
 
 const titleBgClass = computed(() => (props.completed ? 'bg-green-lighten-4' : 'bg-grey-lighten-1'))
+
+const availableFloors = computed(() => {
+  if (!factoryStore.currentFactory) return []
+
+  return factoryStore.currentFactory.floors.map((floor, index) => ({
+    value: index,
+    title: factoryStore.getFloorDisplayName(index + 1, floor),
+    disabled: index === props.currentFloorIndex,
+  }))
+})
+
+const moveRecipe = (targetFloorIndex: number) => {
+  if (targetFloorIndex === props.currentFloorIndex) return
+
+  factoryStore.moveRecipe(props.recipe.recipe.name, props.currentFloorIndex, targetFloorIndex)
+}
 </script>
 
 <template>
@@ -39,24 +58,40 @@ const titleBgClass = computed(() => (props.completed ? 'bg-green-lighten-4' : 'b
     <v-expansion-panel-title :class="titleBgClass">
       <div class="d-flex justify-space-between align-center w-100">
         <div class="d-flex align-center gap-2">
-          <p class="text-h6">{{ data.getRecipeDisplayName(props.recipe.recipe.name) }}</p>
+          <p class="text-h6 mr-2">{{ data.getRecipeDisplayName(props.recipe.recipe.name) }}</p>
           <v-tooltip interactive v-if="data.recipes[props.recipe.recipe.name]" content-class="pa-0">
             <template v-slot:activator="{ props: activatorProps }">
-              <v-btn
-                v-bind="activatorProps"
-                icon="mdi-information"
-                size="medium"
-                variant="text"
+              <v-chip
+                size="small"
+                class="mr-1"
                 color="info"
-                class="ml-1"
-              />
+                variant="elevated"
+                v-bind="activatorProps"
+              >
+                x{{ props.recipe.recipe.count.toFixed(2) }}
+              </v-chip>
             </template>
             <RecipeDetails :recipe="props.recipe" />
           </v-tooltip>
         </div>
-        <v-chip size="small" class="mr-2" color="info" variant="elevated">
-          x{{ props.recipe.recipe.count.toFixed(2) }}
-        </v-chip>
+        <div class="d-flex align-center gap-2">
+          <v-select
+            :model-value="props.currentFloorIndex"
+            @update:model-value="moveRecipe"
+            @click.stop
+            :items="availableFloors"
+            density="compact"
+            hide-details
+            class="recipe-move-select mr-2"
+            bg-color="secondary"
+            variant="solo-filled"
+            :menu-props="{ closeOnContentClick: true }"
+          >
+            <template #prepend-inner>
+              <v-icon size="small">mdi-floor-plan</v-icon>
+            </template>
+          </v-select>
+        </div>
       </div>
     </v-expansion-panel-title>
     <v-expansion-panel-text>
@@ -68,3 +103,10 @@ const titleBgClass = computed(() => (props.completed ? 'bg-green-lighten-4' : 'b
     </v-expansion-panel-text>
   </v-expansion-panel>
 </template>
+
+<style scoped>
+.recipe-move-select {
+  max-width: 160px;
+  min-width: 120px;
+}
+</style>

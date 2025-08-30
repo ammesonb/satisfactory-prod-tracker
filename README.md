@@ -4,15 +4,10 @@
 
 ### UI:
 
-- allow moving recipes to different floors
-  - must have all dependent recipes on that floor or earlier
-  - how to do for codependent recipes like recycled plastic/rubber? move others/cascade checkbox?
-
 - show belt tier for ingredients/products into building
-  - option to enable in bar
+  - show on hover "info" icon next to inputs/outputs, kinda like the recipe details
   - probably easiest to show how many buildings fit tier 1, then 2, then 3, etc
     - use a segment kind of display somehow?
-  - show on hover for something? or static panel?
 
 This template should help get you started developing with Vue 3 in Vite.
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 import type { Floor } from '@/types/factory'
 import { getIconURL } from '@/logistics/images'
 import { useFactoryStore } from '@/stores/factory'
@@ -17,24 +17,20 @@ const factoryStore = useFactoryStore()
 
 const floorName = computed(() => factoryStore.getFloorDisplayName(props.floorNumber, props.floor))
 
-const expandedRecipes = ref<string[]>([])
-
-// Initialize expanded recipes on mount and when floor changes
-watch(
-  () => [props.floor, props.expanded],
-  () => {
-    if (factoryStore.selected) {
-      // wait slightly to allow panel to close before re-opening recipes,
-      // since confusing visual glitch
-      setTimeout(() => {
-        expandedRecipes.value = props.floor.recipes
-          .filter((recipe) => !factoryStore.recipeComplete(recipe))
-          .map((recipe) => `${props.floorNumber}-${recipe.recipe.name}`)
-      }, 250)
-    }
+const expandedRecipes = computed({
+  get: () => {
+    return props.floor.recipes
+      .filter((recipe) => recipe.expanded)
+      .map((recipe) => `${props.floorNumber}-${recipe.recipe.name}`)
   },
-  { immediate: true },
-)
+  set: (value: string[]) => {
+    // Update recipe expansion state when v-model changes
+    props.floor.recipes.forEach((recipe) => {
+      const panelValue = `${props.floorNumber}-${recipe.recipe.name}`
+      recipe.expanded = value.includes(panelValue)
+    })
+  },
+})
 
 const emit = defineEmits<{
   'edit-floor': [floorIndex: number]
@@ -86,6 +82,7 @@ const emit = defineEmits<{
           :completed="factoryStore.recipeComplete(recipe)"
           :panel-value="`${props.floorNumber}-${recipe.recipe.name}`"
           :recipe-id="formatRecipeId(props.floorNumber - 1, recipe.recipe.name)"
+          :current-floor-index="props.floorNumber - 1"
           @update:built="(value: boolean) => (recipe.built = value)"
           @update:link-built="
             (linkId: string, value: boolean) => factoryStore.setLinkBuiltState(linkId, value)

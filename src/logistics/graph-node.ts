@@ -16,6 +16,7 @@ export interface RecipeNode {
   inputs: Material[]
   outputs: Material[]
   built: boolean
+  expanded: boolean
 }
 
 /**
@@ -34,6 +35,7 @@ export const newRecipeNode = (
   inputs: [],
   outputs: [],
   built: false,
+  expanded: true,
 })
 
 export const linkToString = (link: Material) => `${link.source}->${link.sink}[${link.material}]`

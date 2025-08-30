@@ -140,6 +140,26 @@ export const useFactoryStore = defineStore('factory', {
       }
       return null
     },
+    moveRecipe(recipeName: string, fromFloorIndex: number, toFloorIndex: number) {
+      if (!this.currentFactory || fromFloorIndex === toFloorIndex) return
+
+      const fromFloor = this.currentFactory.floors[fromFloorIndex]
+      const toFloor = this.currentFactory.floors[toFloorIndex]
+
+      if (!fromFloor || !toFloor) return
+
+      // Find and remove recipe from source floor
+      const recipeIndex = fromFloor.recipes.findIndex((r) => r.recipe.name === recipeName)
+      if (recipeIndex === -1) return
+
+      const recipe = fromFloor.recipes.splice(recipeIndex, 1)[0]
+
+      // Update recipe's batch number to match new floor
+      recipe.batchNumber = toFloorIndex
+
+      // Add recipe to target floor
+      toFloor.recipes.push(recipe)
+    },
   },
   persist: true,
 })
