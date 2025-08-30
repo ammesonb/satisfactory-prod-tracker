@@ -3,7 +3,6 @@ import type { RecipeIngredient, RecipeProduct } from '@/types/data'
 import {
   ZERO_THRESHOLD,
   isNaturalResource,
-  isFluid,
   BELT_CAPACITIES,
   PIPELINE_CAPACITIES,
 } from '@/logistics/constants'
@@ -124,36 +123,33 @@ export const decrementConsumedProducts = (
  * Returns array of building counts for each transport tier.
  */
 export const calculateTransportCapacity = (
-  material: string,
-  totalAmount: number,
-  recipeCount: number,
+  isFluid: boolean,
+  amountPerBuilding: number,
+  totalAmountNeeded: number,
 ): number[] => {
-  const capacities = isFluid(material) ? PIPELINE_CAPACITIES : BELT_CAPACITIES
-  const perBuildingThroughput = totalAmount / Math.ceil(recipeCount)
-  if (perBuildingThroughput === 0) {
-    throw new Error('Invalid total/recipe amounts: per-building amounts = 0')
+  if (amountPerBuilding <= 0) {
+    throw new Error(`Invalid total/recipe amounts: per-building amounts = ${amountPerBuilding}`)
   }
 
-  const buildingCounts: number[] = []
-  let remainingCount = recipeCount
-
+  const capacities = isFluid ? PIPELINE_CAPACITIES : BELT_CAPACITIES
+  let capacityIndex = 0
   let previousCapacity = 0
-  for (const capacity of capacities) {
-    const buildings = Math.min(
-      Math.floor((capacity - previousCapacity) / perBuildingThroughput),
-      // convert remaining to a whole number, to avoid fractional building counts at the end
-      Math.ceil(remainingCount),
+
+  const buildings = []
+
+  while (capacityIndex < capacities.length && previousCapacity < totalAmountNeeded) {
+    const thisCapacity = capacities[capacityIndex] - previousCapacity
+    const buildingsThisTier = Math.min(
+      // how much will fit inside this tier
+      Math.floor(thisCapacity / amountPerBuilding),
+      // how many are needed to reach total amount
+      Math.ceil((totalAmountNeeded - previousCapacity) / amountPerBuilding),
     )
+    buildings.push(buildingsThisTier)
 
-    buildingCounts.push(buildings)
-    remainingCount -= buildings
-    // only increase capacity by the amount we actually used
-    previousCapacity += buildings * perBuildingThroughput
-
-    if (remainingCount <= 0) {
-      break
-    }
+    previousCapacity += buildingsThisTier * amountPerBuilding
+    capacityIndex++
   }
 
-  return buildingCounts
+  return buildings
 }

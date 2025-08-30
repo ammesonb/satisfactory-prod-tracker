@@ -14,6 +14,7 @@ import type { Material } from '@/types/factory'
 const props = defineProps<{
   recipe: RecipeNode
   link: Material
+  type: 'input' | 'output'
   isHovered?: boolean
 }>()
 
@@ -23,10 +24,16 @@ const buildingCounts = computed(() => {
   // Only calculate when hovered to improve performance
   if (!props.isHovered) return []
 
+  const sources = (props.type === 'input' ? data.recipeIngredients : data.recipeProducts)(
+    props.recipe.recipe.name,
+  )
+  const source = sources.find((s) => s.item === props.link.material)
+  if (!source) return []
+
   return calculateTransportCapacity(
-    props.link.material,
-    props.link.amount,
-    props.recipe.recipe.count,
+    isFluid(props.link.material),
+    source.amount,
+    source.amount * props.recipe.recipe.count,
   )
 })
 

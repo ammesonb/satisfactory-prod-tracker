@@ -98,6 +98,7 @@ const isTransportHovered = ref(false)
             <TransportCapacityTooltip
               :recipe="props.recipe"
               :link="props.link"
+              :type="props.type"
               :is-hovered="isTransportHovered"
             />
           </v-tooltip>
