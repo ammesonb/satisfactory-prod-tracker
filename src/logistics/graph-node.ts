@@ -17,8 +17,6 @@ export interface RecipeNode {
   availableProducts: RecipeProduct[]
   fullyConsumed: boolean
 
-  // TODO: do we need these? maybe just a straight list of links is actually fine?
-  // TODO: this is probably easier to test for though, and represent on the UI actually
   inputs: Material[]
   outputs: Material[]
   built: boolean
@@ -133,25 +131,34 @@ export const calculateTransportCapacity = (
   }
 
   const isFluidMaterial = isFluid(material)
-  const totalAmountNeeded = perRecipeAmount * recipeCount
   const capacities = isFluidMaterial ? PIPELINE_CAPACITIES : BELT_CAPACITIES
   let capacityIndex = 0
-  let previousCapacity = 0
+  let usedAmount = 0
 
-  const buildings = []
+  const buildings = [0]
+  // attempt to find a tier that fits the next pass of the recipe
+  for (let i = 0; i < recipeCount; i++) {
+    // if the quantity exceeds the remaining capacity of this tier,
+    // iteratively try the next tier until it fits or we run out of tiers
+    while (
+      usedAmount + perRecipeAmount > capacities[capacityIndex] &&
+      capacityIndex < capacities.length
+    ) {
+      capacityIndex++
 
-  while (capacityIndex < capacities.length && previousCapacity < totalAmountNeeded) {
-    const thisCapacity = capacities[capacityIndex] - previousCapacity
-    const buildingsThisTier = Math.min(
-      // how much will fit inside this tier
-      Math.floor(thisCapacity / perRecipeAmount),
-      // how many are needed to reach total amount
-      Math.ceil((totalAmountNeeded - previousCapacity) / perRecipeAmount),
-    )
-    buildings.push(buildingsThisTier)
+      // always push a "0" for the next tier's counts
+      buildings.push(0)
+    }
 
-    previousCapacity += buildingsThisTier * perRecipeAmount
-    capacityIndex++
+    // if we exceeded the last tier, drop the last zero since it doesn't exist
+    if (capacityIndex >= capacities.length) {
+      buildings.pop()
+      break
+    }
+
+    // otherwise increment the count for this tier and add the amount used
+    buildings[buildings.length - 1]++
+    usedAmount += perRecipeAmount
   }
 
   return buildings

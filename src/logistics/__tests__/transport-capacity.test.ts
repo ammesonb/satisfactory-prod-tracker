@@ -23,6 +23,11 @@ describe('calculateTransportCapacity', () => {
       expect(result).toEqual([0, 1, 2])
     })
 
+    it('should jump tiers for extremely high throughput recipe', () => {
+      const result = calculateTransportCapacity('Desc_IronIngot_C', 270, 3)
+      expect(result).toEqual([0, 0, 1, 0, 1, 1])
+    })
+
     it('should handle multiple buildings across tiers', () => {
       // 240 total, 3 buildings = 80/building
       // MK1 (60): 0 buildings (80 > 60)
