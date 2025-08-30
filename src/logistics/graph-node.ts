@@ -1,6 +1,6 @@
 import type { Material, Recipe } from '@/types/factory'
 import type { RecipeIngredient, RecipeProduct } from '@/types/data'
-import { ZERO_THRESHOLD, isNaturalResource } from '@/logistics/constants'
+import { ZERO_THRESHOLD, isNaturalResource, isFluid } from '@/logistics/constants'
 import { SourceNodeNotFoundError, ProductNotFoundError } from '@/errors/processing-errors'
 
 export interface RecipeNode {
@@ -111,4 +111,41 @@ export const decrementConsumedProducts = (
       (product) => product.amount <= ZERO_THRESHOLD,
     )
   }
+}
+
+const BELT_CAPACITIES = [60, 120, 270, 480, 780, 1200]
+const PIPELINE_CAPACITIES = [300, 600]
+
+/**
+ * Calculate transport capacity requirements for a given material and recipe count.
+ * Returns array of building counts for each transport tier.
+ */
+export const calculateTransportCapacity = (
+  material: string,
+  totalAmount: number,
+  recipeCount: number,
+): number[] => {
+  const capacities = isFluid(material) ? PIPELINE_CAPACITIES : BELT_CAPACITIES
+  const perBuildingThroughput = totalAmount / recipeCount
+  if (perBuildingThroughput === 0) {
+    throw new Error('Invalid total/recipe amounts: per-building amounts = 0')
+  }
+
+  const buildingCounts: number[] = []
+  let remainingCount = recipeCount
+
+  let previousCapacity = 0
+  for (const capacity of capacities) {
+    const buildings = Math.min(
+      Math.floor((capacity - previousCapacity) / perBuildingThroughput),
+      remainingCount,
+    )
+
+    buildingCounts.push(buildings)
+    remainingCount -= buildings
+    // only increase capacity by the amount we actually used
+    previousCapacity += buildings * perBuildingThroughput
+  }
+
+  return buildingCounts
 }
