@@ -23,7 +23,8 @@ const isRecipe = computed(() => sourceOrSink.value in data.recipes)
 const displayName = computed(() =>
   isRecipe.value
     ? data.getRecipeDisplayName(sourceOrSink.value)
-    : data.getItemDisplayName(sourceOrSink.value) + ' (Resource)',
+    : data.getItemDisplayName(sourceOrSink.value) +
+      (props.type === 'input' ? ' (Resource)' : 'Surplus'),
 )
 const targetRecipe = computed(() =>
   isRecipe.value ? factoryStore.getRecipeByName(sourceOrSink.value) : null,
@@ -87,7 +88,7 @@ const navigateToRecipe = () => {
         </v-col>
         <v-col class="d-flex align-center">
           <div class="text-caption" :class="built ? 'text-black' : 'text-medium-emphasis'">
-            {{ type === 'input' ? 'from' : 'to' }}
+            {{ type === 'input' ? 'from' : sourceOrSink.length > 0 ? 'to' : '' }}
             <span
               v-if="isRecipe"
               @click.prevent.stop="navigateToRecipe"

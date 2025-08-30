@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, type Ref } from 'vue'
 import { type RecipeNode } from '@/logistics/graph-node'
 import { useDataStore } from '@/stores/data'
 import { useThemeStore } from '@/stores/theme'
+import { type Material } from '@/types/factory'
+import { ZERO_THRESHOLD } from '@/logistics/constants'
 
 const props = defineProps<{
   recipe: RecipeNode
@@ -13,6 +15,17 @@ const props = defineProps<{
 
 const data = useDataStore()
 const themeStore = useThemeStore()
+
+const leftoverProducts: Ref<Material[]> = computed(() =>
+  props.recipe.availableProducts
+    .filter((p) => p.amount > ZERO_THRESHOLD)
+    .map((p) => ({
+      source: props.recipe.recipe.name,
+      sink: '',
+      material: p.item,
+      amount: p.amount,
+    })),
+)
 
 const panelBgClass = computed(
   () => (props.completed ? 'bg-blue-grey' : 'bg-grey') + (themeStore.isDark ? '-darken-2' : ''),
@@ -50,7 +63,7 @@ const titleBgClass = computed(() => (props.completed ? 'bg-green-lighten-4' : 'b
       <div class="d-flex justify-space-between align-start gap-4">
         <RecipeInputs :links="props.recipe.inputs" />
         <RecipeBuilding :recipe="props.recipe" />
-        <RecipeOutputs :links="props.recipe.outputs" />
+        <RecipeOutputs :links="[...props.recipe.outputs, ...leftoverProducts]" />
       </div>
     </v-expansion-panel-text>
   </v-expansion-panel>

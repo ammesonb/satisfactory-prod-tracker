@@ -14,8 +14,6 @@
     - use a segment kind of display somehow?
   - show on hover for something? or static panel?
 
-- if node is not fully consumed, show available outputs in recipe link as "Product"
-
 This template should help get you started developing with Vue 3 in Vite.
 
 ## Recommended IDE Setup
