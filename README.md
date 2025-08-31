@@ -16,26 +16,27 @@ This project draws inspiration from [Satisfactory Tools](https://www.satisfactor
 
 ## Features
 
-- Intelligent recipe ordering, to organize builds easily
-- Ability to move recipes to different "floors" later
-- Customizable floor names and icons
+### Intelligent recipe ordering, to organize builds easily
+
+### Ability to move recipes to different "floors" later
+
+### Customizable floor names and icons
 
 ![Floor Customization](images/floors.png)
 
-- Flexible navigation between recipe inputs and outputs + map panel
+### Flexible navigation between recipe inputs and outputs + map panel
 
 ![Map Panel](images/nav-panel.png)
 
-- Recipe snapshots included
+### Recipe snapshots included
 
 ![Recipe Tooltip](images/recipe-tooltip.png)
 
-- Logistics display showing number of buildings per belt or pipe tier
+### Logistics display showing number of buildings per belt or pipe tier
 
 ![Logistics](images/logistics.png)
 
-- Share functionality, to transfer to friends or between computers
-  - Includes build progress!
+### Share functionality, to transfer to friends or between computers (including build progress!)
 
 ![Import/Export](images/share.png)
 
@@ -44,8 +45,8 @@ This project draws inspiration from [Satisfactory Tools](https://www.satisfactor
 1. Click the green plus ("Add Factory") button in the bottom-right corner to begin.
 2. Enter a factory name and select an icon for it.
 3. Enter recipes either:
-   a. By hand, using a name and the quantity.
-   b. Or, by importing from Satisfactory Tools.
+   - By hand, using a name and the quantity.
+   - Or, by importing from Satisfactory Tools.
 4. Click "Add Factory" to save.
 
 NOTE: there are validations ensuring enough ingredients are available (excluding raw resources like ores and water), so recipe counts **do matter**.
