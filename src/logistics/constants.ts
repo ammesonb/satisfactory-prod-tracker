@@ -54,3 +54,5 @@ export const BELT_ITEM_NAMES = [
 ]
 
 export const PIPELINE_ITEM_NAMES = ['Desc_Pipeline_C', 'Desc_PipelineMK2_C']
+
+export const EXTERNAL_RECIPE = 'External'

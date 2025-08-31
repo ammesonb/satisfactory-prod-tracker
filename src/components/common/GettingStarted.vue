@@ -29,7 +29,7 @@ const sampleRecipes = `"Recipe_Alternate_SteelRod_C@100#Desc_ConstructorMk1_C": 
 
 const addSampleFactory = () => {
   try {
-    factoryStore.addFactory('Sample Factory', 'desc-modularframe-c', sampleRecipes.trim())
+    factoryStore.addFactory('Sample Factory', 'desc-modularframe-c', sampleRecipes.trim(), [])
     factoryStore.setSelectedFactory('Sample Factory')
   } catch (error) {
     console.error('Failed to add sample factory:', error)

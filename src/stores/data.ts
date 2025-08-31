@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { Item, Recipe, Building, RecipeIngredient, RecipeProduct } from '@/types/data'
+import { BELT_ITEM_NAMES, EXTERNAL_RECIPE } from '@/logistics/constants'
 
 export const useDataStore = defineStore('data', {
   state: () => ({
@@ -17,6 +18,9 @@ export const useDataStore = defineStore('data', {
     getRecipeDisplayName:
       (state) =>
       (recipeName: string): string => {
+        if (recipeName === EXTERNAL_RECIPE) {
+          return 'External'
+        }
         const recipe = state.recipes[recipeName]
         return (recipe?.name || recipeName).replace(/^Alternate: /, '')
       },
@@ -38,6 +42,10 @@ export const useDataStore = defineStore('data', {
       this.buildings[building.name] = building
     },
     recipeIngredients(recipeName: string): RecipeIngredient[] {
+      if (recipeName === EXTERNAL_RECIPE) {
+        return []
+      }
+
       const recipe = this.recipes[recipeName]
       if (!recipe) {
         throw new Error(`Recipe not found: ${recipeName}`)
@@ -51,6 +59,10 @@ export const useDataStore = defineStore('data', {
       })
     },
     recipeProducts(recipeName: string): RecipeProduct[] {
+      if (recipeName === EXTERNAL_RECIPE) {
+        return []
+      }
+
       const recipe = this.recipes[recipeName]
       if (!recipe) {
         throw new Error(`Recipe not found: ${recipeName}`)
@@ -64,9 +76,12 @@ export const useDataStore = defineStore('data', {
       })
     },
     getIcon(objectName: string): string {
+      if (objectName === EXTERNAL_RECIPE) {
+        return this.buildings[BELT_ITEM_NAMES[0]].icon
+      }
       if (this.recipes.hasOwnProperty(objectName)) {
         // Recipes don't have icons, so use the first product instead
-        objectName = this.recipes[objectName].products[0].item
+        return this.items[this.recipes[objectName].products[0].item].icon
       }
 
       if (this.items.hasOwnProperty(objectName)) {

@@ -9,7 +9,9 @@ import {
 } from '@/logistics/graph-node'
 import { getRecipeLinks, getLinksForCircularRecipes } from '@/logistics/graph-linker'
 import { RecipeChainError } from '@/errors/processing-errors'
-import { ZERO_THRESHOLD } from '@/logistics/constants'
+import { EXTERNAL_RECIPE, ZERO_THRESHOLD } from '@/logistics/constants'
+import type { RecipeProduct } from '@/types/data'
+import { BELT_ITEM_NAMES } from '@/logistics/constants'
 
 /**
  * Figures out recipe production chain in graph-style (breadth-first) manner.
@@ -23,7 +25,10 @@ import { ZERO_THRESHOLD } from '@/logistics/constants'
  * 3. Identify and add any recipes that are codependent, where all ingredients are satisified except for a mutual dependency.
  * 4. At end of batch, flip recipes from pending -> produced for next iteration
  */
-export const solveRecipeChain = (rawRecipes: string[]): RecipeNode[] => {
+export const solveRecipeChain = (
+  rawRecipes: string[],
+  externalInputs: RecipeProduct[],
+): RecipeNode[] => {
   const data = useDataStore()
 
   let pendingRecipes = rawRecipes
@@ -33,6 +38,16 @@ export const solveRecipeChain = (rawRecipes: string[]): RecipeNode[] => {
     )
   const circularRecipeGroups = groupCircularRecipes(pendingRecipes)
   const producedRecipes: Record<string, RecipeNode> = {}
+
+  if (externalInputs.length > 0) {
+    const externalRecipe = newRecipeNode(
+      { name: EXTERNAL_RECIPE, building: BELT_ITEM_NAMES[0], count: 1 },
+      [],
+      externalInputs,
+    )
+    produceRecipe(externalRecipe, 0, [])
+    producedRecipes[EXTERNAL_RECIPE] = externalRecipe
+  }
 
   let batch = -1
   while (pendingRecipes.length > 0) {
@@ -87,7 +102,7 @@ export const solveRecipeChain = (rawRecipes: string[]): RecipeNode[] => {
     )
   }
 
-  return Object.values(producedRecipes)
+  return Object.values(producedRecipes).filter((recipe) => recipe.recipe.name !== EXTERNAL_RECIPE)
 }
 
 const getMissingDependencies = (

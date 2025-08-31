@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { type RecipeEntry } from '@/types/factory'
-import { type ItemOption } from '@/types/data'
+import type { ItemOption, RecipeProduct } from '@/types/data'
 
 interface Props {
   modelValue: boolean
@@ -18,6 +18,7 @@ const form = ref({
   item: undefined as ItemOption | undefined,
   recipes: '',
   recipeList: [] as RecipeEntry[],
+  externalInputs: [] as RecipeProduct[],
 })
 
 const showDialog = computed({
@@ -26,7 +27,7 @@ const showDialog = computed({
 })
 
 const clear = () => {
-  form.value = { name: '', item: undefined, recipes: '', recipeList: [] }
+  form.value = { name: '', item: undefined, recipes: '', recipeList: [], externalInputs: [] }
   inputMode.value = 'recipe'
   showDialog.value = false
 }
@@ -43,6 +44,7 @@ const addFactory = () => {
     name: form.value.name,
     icon: form.value.item.icon,
     recipes: form.value.recipes,
+    externalInputs: form.value.externalInputs,
   }
 
   if (inputMode.value === 'recipe') {
@@ -60,6 +62,7 @@ const addFactory = () => {
   clear()
 }
 
+// TODO: update this with new instructions
 const instructions = `Import from Satisfactory Tools:
 
 1. 🏭 Create your factory on Satisfactory Tools

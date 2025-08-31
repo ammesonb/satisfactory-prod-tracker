@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { h } from 'vue'
+import { type RecipeProduct } from '@/types/data'
 import { type Factory, type Floor } from '@/types/factory'
 import { solveRecipeChain } from '@/logistics/graph-solver'
 import { useErrorStore } from '@/stores/errors'
@@ -69,7 +70,7 @@ export const useFactoryStore = defineStore('factory', {
         }
       }
     },
-    addFactory(name: string, icon: string, recipes: string) {
+    addFactory(name: string, icon: string, recipes: string, externalInputs: RecipeProduct[]) {
       const errorStore = useErrorStore()
 
       const recipeNodes: RecipeNode[] = []
@@ -81,6 +82,7 @@ export const useFactoryStore = defineStore('factory', {
               .trim()
               .split('\n')
               .map((s) => s.trim()),
+            externalInputs,
           ),
         )
       } catch (error) {
