@@ -114,9 +114,10 @@ watch(selectedRecipe, () => {
         variant="outlined"
         clearable
         class="mb-3"
+        :hide-details="true"
       />
 
-      <div class="d-flex gap-3 mb-3">
+      <div class="d-flex gap-3 mb-3 align-center">
         <v-text-field
           v-model.number="buildingCount"
           label="Building count"
@@ -125,6 +126,7 @@ watch(selectedRecipe, () => {
           variant="outlined"
           style="flex: 0 0 150px"
           class="me-2"
+          :hide-details="true"
         />
 
         <v-autocomplete
@@ -137,6 +139,7 @@ watch(selectedRecipe, () => {
           :disabled="!selectedRecipe || buildingOptions.length < 2"
           style="flex: 1"
           class="me-2"
+          :hide-details="true"
         >
           <template #item="{ props: itemProps, item }">
             <v-list-item v-bind="itemProps">
@@ -185,9 +188,9 @@ watch(selectedRecipe, () => {
                 <div class="d-flex flex-column text-body-2 font-weight-medium">
                   {{ index + 1 }}. {{ dataStore.getRecipeDisplayName(entry.recipe) }}
                   <div
-                    class="d-flex flex-row align-center text-caption text-medium-emphasis"
+                    class="d-flex flex-row align-center justify-start text-caption text-medium-emphasis"
                   >
-                    <CachedIcon v-if="entry.icon" :icon="entry.icon" :size="24" class="mr-2" />
+                    <CachedIcon v-if="entry.icon" :icon="entry.icon" :size="24" class="mr-1" />
                     {{ entry.count }}x {{ dataStore.getBuildingDisplayName(entry.building) }}
                   </div>
                 </div>
@@ -225,5 +228,13 @@ watch(selectedRecipe, () => {
 .recipe-entries {
   max-height: 300px;
   overflow-y: auto;
+}
+
+.recipe-entries .text-caption :deep(.cached-icon),
+.recipe-entries .text-caption :deep(.v-img),
+.recipe-entries .text-caption :deep(.v-responsive) {
+  max-width: 24px !important;
+  width: 24px !important;
+  flex: none !important;
 }
 </style>

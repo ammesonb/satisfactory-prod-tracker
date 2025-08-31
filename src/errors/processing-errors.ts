@@ -35,7 +35,8 @@ export class RecipeChainError extends Error implements UserFriendlyError {
           h(
             'v-list',
             {
-              class: 'bg-grey-lighten-5 rounded',
+              class: 'rounded',
+              color: 'surface',
               density: 'compact',
             },
             dependencyItems,

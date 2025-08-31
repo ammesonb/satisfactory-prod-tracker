@@ -19,7 +19,7 @@ export class RecipeFormatError extends Error implements UserFriendlyError {
             'v-card',
             {
               class: 'pa-3',
-              color: 'grey-lighten-4',
+              color: 'surface',
               variant: 'tonal',
             },
             [h('code', { class: 'text-body-2' }, `"recipe_name@efficiency#building": "count"`)],
