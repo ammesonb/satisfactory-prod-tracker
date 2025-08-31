@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useFactoryStore } from '@/stores/factory'
+import { useDataStore } from '@/stores/data'
+import { type ItemOption } from '@/types/data'
 
 interface Props {
   show: boolean
@@ -11,14 +13,15 @@ interface Props {
 interface FloorFormData {
   index: number
   name: string | undefined
-  icon: string | undefined
+  item: ItemOption | undefined
   originalName: string | undefined
-  originalIcon: string | undefined
+  originalItem: ItemOption | undefined
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits(['update:show'])
 
+const dataStore = useDataStore()
 const factoryStore = useFactoryStore()
 
 const showDialog = computed({
@@ -37,12 +40,22 @@ watch(
       if (factory) {
         floorForms.value = props.floorIndices.map((index) => {
           const floor = factory.floors[index]
+          // Construct a fake item option with just the image
+          const itemOption = floor?.iconItem
+            ? {
+                value: floor.iconItem,
+                name: dataStore.getItemDisplayName(floor.iconItem),
+                icon: dataStore.getIcon(floor.iconItem),
+                type: 'item' as const,
+              }
+            : undefined
+
           return {
             index,
             name: floor?.name,
-            icon: floor?.icon,
+            item: itemOption,
             originalName: floor?.name,
-            originalIcon: floor?.icon,
+            originalItem: itemOption,
           }
         })
       }
@@ -53,7 +66,7 @@ watch(
 
 const hasChanges = computed(() => {
   return floorForms.value.some(
-    (form) => form.name !== form.originalName || form.icon !== form.originalIcon,
+    (form) => form.name !== form.originalName || form.item?.value !== form.originalItem?.value,
   )
 })
 
@@ -66,11 +79,13 @@ const saveChanges = () => {
   if (!props.factoryName || !hasChanges.value) return
 
   const updates = floorForms.value
-    .filter((form) => form.name !== form.originalName || form.icon !== form.originalIcon)
+    .filter(
+      (form) => form.name !== form.originalName || form.item?.value !== form.originalItem?.value,
+    )
     .map((form) => ({
       index: form.index,
       name: form.name,
-      icon: form.icon,
+      iconItem: form.item?.value,
     }))
 
   if (updates.length > 0) {
@@ -83,9 +98,9 @@ const saveChanges = () => {
 
 <template>
   <v-dialog v-model="showDialog" max-width="600px">
-    <v-card>
+    <v-card class="d-flex flex-column" style="height: 80vh">
       <v-card-title> Edit Floor{{ floorForms.length > 1 ? 's' : '' }} </v-card-title>
-      <v-card-text>
+      <v-card-text class="flex-grow-1 overflow-y-auto">
         <v-form v-if="floorForms.length > 0">
           <v-card
             v-for="form in floorForms"
@@ -98,7 +113,7 @@ const saveChanges = () => {
               {{
                 factoryStore.getFloorDisplayName(form.index + 1, {
                   name: form.originalName,
-                  icon: form.originalIcon,
+                  iconItem: form.originalItem?.value,
                   recipes: [],
                 })
               }}
@@ -115,12 +130,12 @@ const saveChanges = () => {
                 clearable
               />
 
-              <IconSelector v-model="form.icon" placeholder="Search for a floor icon..." />
+              <ItemSelector v-model="form.item" placeholder="Search for a floor icon..." />
             </v-card-text>
           </v-card>
         </v-form>
       </v-card-text>
-      <v-card-actions>
+      <v-card-actions class="flex-shrink-0">
         <v-spacer />
         <v-btn variant="tonal" @click="clear">Cancel</v-btn>
         <v-btn color="secondary" variant="elevated" @click="saveChanges" :disabled="!hasChanges">

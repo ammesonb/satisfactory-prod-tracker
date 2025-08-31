@@ -1,15 +1,25 @@
 <script setup lang="ts">
-import { useFactoryStore } from '@/stores/factory'
 import { onMounted, ref } from 'vue'
-import { useDataStore } from './stores/data'
-import FloatingNav from './components/layout/FloatingNav.vue'
+import { useDataStore } from '@/stores/data'
+import { type RecipeProduct } from '@/types/data'
+import { useFactoryStore } from '@/stores/factory'
 
 const dataStore = useDataStore()
 const factoryStore = useFactoryStore()
 const showAddFactoryModal = ref(false)
 
-const handleAddFactory = (factoryData: { name: string; icon: string; recipes: string }) => {
-  factoryStore.addFactory(factoryData.name, factoryData.icon || 'default-icon', factoryData.recipes)
+const handleAddFactory = (factoryData: {
+  name: string
+  icon: string
+  recipes: string
+  externalInputs: RecipeProduct[]
+}) => {
+  factoryStore.addFactory(
+    factoryData.name,
+    factoryData.icon || 'default-icon',
+    factoryData.recipes,
+    factoryData.externalInputs,
+  )
 }
 
 onMounted(() => {

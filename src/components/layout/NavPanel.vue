@@ -99,11 +99,11 @@ onMounted(() => {
           <v-list-item
             @click="handleFloorClick(floor.originalIndex)"
             class="floor-item"
-            :prepend-icon="floor.icon ? undefined : 'mdi-factory'"
+            :prepend-icon="floor.iconItem ? dataStore.getIcon(floor.iconItem) : 'mdi-factory'"
           >
-            <template v-if="floor.icon" #prepend>
+            <template v-if="floor.iconItem" #prepend>
               <v-avatar size="24">
-                <v-img :src="getIconURL(floor.icon, 64)" />
+                <v-img :src="getIconURL(dataStore.getIcon(floor.iconItem), 64)" />
               </v-avatar>
             </template>
 

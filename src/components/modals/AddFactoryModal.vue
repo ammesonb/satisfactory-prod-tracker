@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { type RecipeEntry } from '@/types/factory'
-import IconSelector from '@/components/common/IconSelector.vue'
-import RecipeInput from '@/components/common/RecipeInput.vue'
+import type { ItemOption, RecipeProduct } from '@/types/data'
 
 interface Props {
   modelValue: boolean
@@ -16,9 +15,10 @@ const inputMode = ref<'recipe' | 'import'>('recipe')
 
 const form = ref({
   name: '',
-  icon: undefined as string | undefined,
+  item: undefined as ItemOption | undefined,
   recipes: '',
   recipeList: [] as RecipeEntry[],
+  externalInputs: [] as RecipeProduct[],
 })
 
 const showDialog = computed({
@@ -27,7 +27,7 @@ const showDialog = computed({
 })
 
 const clear = () => {
-  form.value = { name: '', icon: undefined, recipes: '', recipeList: [] }
+  form.value = { name: '', item: undefined, recipes: '', recipeList: [], externalInputs: [] }
   inputMode.value = 'recipe'
   showDialog.value = false
 }
@@ -35,19 +35,20 @@ const clear = () => {
 const addFactory = () => {
   if (
     !form.value.name ||
-    !form.value.icon ||
+    !form.value.item?.icon ||
     (!form.value.recipes && !form.value.recipeList.length)
   )
     return
 
   const factory = {
     name: form.value.name,
-    icon: form.value.icon,
+    icon: form.value.item.icon,
     recipes: form.value.recipes,
+    externalInputs: form.value.externalInputs,
   }
 
   if (inputMode.value === 'recipe') {
-    if (form.value.name && form.value.recipeList.length > 0 && form.value.icon) {
+    if (form.value.name && form.value.recipeList.length > 0 && form.value.item?.icon) {
       // Convert recipe list to the expected format
       const recipeStrings = form.value.recipeList.map((entry) => {
         return `"${entry.recipe}@1.0#${entry.building}": "${entry.count}"`
@@ -61,6 +62,7 @@ const addFactory = () => {
   clear()
 }
 
+// TODO: update this with new instructions
 const instructions = `Import from Satisfactory Tools:
 
 1. 🏭 Create your factory on Satisfactory Tools
@@ -85,8 +87,8 @@ const instructions = `Import from Satisfactory Tools:
             variant="outlined"
             class="mb-4"
           />
-          <IconSelector
-            v-model="form.icon"
+          <ItemSelector
+            v-model="form.item"
             placeholder="Search for a factory icon..."
             class="mb-4"
           />
@@ -124,9 +126,8 @@ const instructions = `Import from Satisfactory Tools:
             </v-tooltip>
           </div>
 
-          <!-- Recipe Mode -->
           <RecipeInput v-if="inputMode === 'recipe'" v-model="form.recipeList" />
-          <!-- Import Mode -->
+
           <v-textarea
             v-if="inputMode === 'import'"
             v-model="form.recipes"
@@ -136,10 +137,12 @@ const instructions = `Import from Satisfactory Tools:
             variant="outlined"
             required
             density="compact"
-            class="recipe-textarea"
+            class="recipe-textarea mb-4"
             :persistent-placeholder="true"
             :hide-details="true"
           />
+
+          <ExternalInputSelector v-model="form.externalInputs" />
         </v-form>
       </v-card-text>
       <v-card-actions class="flex-shrink-0 pa-4">
@@ -149,7 +152,7 @@ const instructions = `Import from Satisfactory Tools:
           color="secondary"
           variant="elevated"
           @click="addFactory"
-          :disabled="!form.name || (!form.recipes && !form.recipeList.length) || !form.icon"
+          :disabled="!form.name || (!form.recipes && !form.recipeList.length) || !form.item?.icon"
         >
           Add Factory
         </v-btn>

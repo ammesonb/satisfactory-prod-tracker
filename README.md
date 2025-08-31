@@ -27,16 +27,14 @@ This project draws inspiration from [Satisfactory Tools](https://www.satisfactor
 ## Quick Start
 
 ### Try It Out
+
 Want to see how it works? Click the **"Try Sample Recipes"** button when you first open the app to explore with pre-configured factory data.
 
 ### Add Your Own Factory
+
 1. Click the green **"Add Factory"** button in the bottom-right corner
 2. Enter a factory name and select an icon
 3. Add recipes manually or [import from Satisfactory Tools](https://github.com/ammesonb/satisfactory-prod-tracker/wiki/Import-from-Satisfactory-Tools)
 4. Click **"Add Factory"** to save
 
 For detailed feature descriptions, [FAQs](../../wiki/FAQ), and guides, see the [Wiki](../../wiki).
-
-## TODO:
-
-- External inputs (provided on factory creation)

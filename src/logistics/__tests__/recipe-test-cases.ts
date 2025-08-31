@@ -155,6 +155,37 @@ export const BASIC_TEST_CASES = {
       ],
     },
   },
+
+  // External inputs used
+  EXTERNAL_INPUTS: {
+    rawRecipes: [
+      RECIPES.IRON_PLATE('1'), // Needs 3 iron ingots
+    ],
+    expectedBatches: [['Recipe_IronPlate_C']],
+    expectedLinks: [
+      {
+        source: 'External',
+        sink: 'Recipe_IronPlate_C',
+        material: 'Desc_IronIngot_C',
+        amount: 30,
+      },
+    ],
+    expectedProducedItems: {
+      Desc_IronPlate_C: [
+        {
+          amount: 20,
+          recipe: expect.objectContaining({ name: 'Recipe_IronPlate_C' }),
+          isResource: false,
+        },
+      ],
+    },
+    externalInputs: [
+      {
+        item: 'Desc_IronIngot_C',
+        amount: 30,
+      },
+    ],
+  },
 }
 
 // Complex test cases with advanced production chains

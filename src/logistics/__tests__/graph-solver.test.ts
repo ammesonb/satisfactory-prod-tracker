@@ -3,6 +3,7 @@ import { RECIPES } from './recipe-input-fixtures'
 import { BASIC_TEST_CASES, COMPLEX_TEST_CASES } from './recipe-test-cases'
 import type { RecipeNode } from '@/logistics/graph-node'
 import { solveRecipeChain } from '@/logistics/graph-solver'
+import type { RecipeProduct } from '@/types/data'
 import type { Material } from '@/types/factory'
 import { RecipeChainError } from '@/errors/processing-errors'
 import { expectErrorWithMessage } from './error-test-helpers'
@@ -15,13 +16,14 @@ const testRecipeChain = (
     expectedBatches: string[][]
     expectedLinks: Material[]
     expectedProducedItems: Record<string, object[]>
+    externalInputs?: RecipeProduct[]
   },
 ) => {
   describe(description, () => {
     let result: RecipeNode[]
 
     beforeEach(() => {
-      result = solveRecipeChain(testCase.rawRecipes)
+      result = solveRecipeChain(testCase.rawRecipes, testCase.externalInputs || [])
     })
 
     it('has the correct number of recipe nodes', () => {
@@ -210,7 +212,7 @@ describe('graph-solver integration - production chain solving', () => {
     // Tests a basic 2-step production chain: Iron Ore -> Iron Ingot -> Iron Plate
     it('should handle simple production chain', () => {
       const testCase = BASIC_TEST_CASES.SIMPLE_PRODUCTION
-      const result = solveRecipeChain(testCase.rawRecipes)
+      const result = solveRecipeChain(testCase.rawRecipes, [])
 
       expect(result).toHaveLength(testCase.expectedBatches.flat().length)
       expectRecipeBatchesToMatch(result, testCase.expectedBatches)
@@ -229,6 +231,8 @@ describe('graph-solver integration - production chain solving', () => {
       'sufficient quantity produced by another recipe',
       BASIC_TEST_CASES.SUFFICIENT_QUANTITY,
     )
+
+    testRecipeChain('external inputs are used', BASIC_TEST_CASES.EXTERNAL_INPUTS)
   })
 
   describe('complex/codependent production chains', () => {
@@ -254,7 +258,7 @@ describe('graph-solver integration - production chain solving', () => {
       ]
 
       const error = expectErrorWithMessage(
-        () => solveRecipeChain(rawRecipes),
+        () => solveRecipeChain(rawRecipes, []),
         RecipeChainError,
         {
           unprocessedRecipes: expect.arrayContaining(['Recipe_IronPlate_C']),
