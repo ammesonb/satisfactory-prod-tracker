@@ -20,9 +20,12 @@ const selectedRecipe = ref<string>('')
 const buildingCount = ref<number>(1)
 const selectedBuilding = ref<string>('')
 
-// Available recipes with friendly names
+// Available recipes with friendly names, excluding already selected ones
 const recipeOptions = computed(() => {
+  const selectedRecipeKeys = props.modelValue.map((entry) => entry.recipe)
+
   return Object.keys(dataStore.recipes)
+    .filter((key) => !selectedRecipeKeys.includes(key))
     .map((key) => ({
       value: key,
       title: dataStore.getRecipeDisplayName(key),
