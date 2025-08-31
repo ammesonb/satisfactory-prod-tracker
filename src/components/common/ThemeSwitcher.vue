@@ -1,13 +1,3 @@
-<template>
-  <v-btn
-    icon
-    @click="toggleTheme"
-    :aria-label="themeStore.isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-  >
-    <v-icon>{{ themeStore.isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
-  </v-btn>
-</template>
-
 <script setup lang="ts">
 import { useThemeStore } from '@/stores/theme'
 import { useTheme } from 'vuetify'
@@ -29,3 +19,15 @@ const toggleTheme = () => {
   themeStore.toggleTheme()
 }
 </script>
+
+<template>
+  <v-btn
+    icon
+    @click="toggleTheme"
+    :aria-label="themeStore.isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+  >
+    <v-icon color="orange">{{
+      themeStore.isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'
+    }}</v-icon>
+  </v-btn>
+</template>

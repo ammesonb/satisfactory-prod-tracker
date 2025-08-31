@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { h } from 'vue'
-import type { Factory, Floor } from '@/types/factory'
+import { type Factory, type Floor } from '@/types/factory'
 import { solveRecipeChain } from '@/logistics/graph-solver'
 import { useErrorStore } from '@/stores/errors'
 import { isUserFriendlyError } from '@/errors/type-guards'
@@ -159,6 +159,28 @@ export const useFactoryStore = defineStore('factory', {
 
       // Add recipe to target floor
       toFloor.recipes.push(recipe)
+    },
+    exportFactories(factoryNames?: string[]) {
+      const factoriesToExport: Record<string, Factory> = {}
+
+      if (!factoryNames || factoryNames.length === 0) {
+        // Export all factories
+        Object.assign(factoriesToExport, this.factories)
+      } else {
+        // Export only selected factories
+        for (const name of factoryNames) {
+          if (this.factories[name]) {
+            factoriesToExport[name] = this.factories[name]
+          }
+        }
+      }
+
+      return factoriesToExport
+    },
+    importFactories(factories: Record<string, Factory>) {
+      for (const [factoryName, factoryData] of Object.entries(factories)) {
+        this.factories[factoryName] = factoryData
+      }
     },
   },
   persist: true,

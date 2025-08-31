@@ -70,7 +70,7 @@ const hideIncompleteRecipes = () => updateRecipeExpandedStates(false, false)
         <template v-slot:activator="{ props }">
           <v-btn
             variant="outlined"
-            color="warning"
+            color="orange"
             prepend-icon="mdi-alert-circle"
             v-bind="props"
             class="ml-2"

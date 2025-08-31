@@ -1,11 +1,8 @@
 # satisfactory-prod-tracker
 
-## IDEAS:
-
 ### UI:
 
-- show belt tier for ingredients/products into building
-  - should be calculated once on factory creation, not each load
+- make a real readme, with all this stuff tossed into a "development" section
 
 This template should help get you started developing with Vue 3 in Vite.
 
