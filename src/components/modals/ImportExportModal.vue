@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useFactoryStore } from '@/stores/factory'
 import ExportTab from './ExportTab.vue'
 import ImportTab from './ImportTab.vue'
 
+const factoryStore = useFactoryStore()
 const isOpen = defineModel<boolean>({ default: false })
 const activeTab = ref<'export' | 'import'>('export')
 const error = ref('')
+
+const defaultTab = computed(() => (factoryStore.hasFactories ? 'export' : 'import'))
 
 const clearError = () => {
   error.value = ''
@@ -21,7 +25,7 @@ const handleImportSuccess = () => {
 
 const resetModal = () => {
   error.value = ''
-  activeTab.value = 'export'
+  activeTab.value = defaultTab.value
 }
 
 // Reset when modal closes
