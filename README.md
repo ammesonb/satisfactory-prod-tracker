@@ -56,15 +56,15 @@ NOTE: there are validations ensuring enough ingredients are available (excluding
 To import from Satisfactory Tools, follow these steps:
 
 1. :factory: Create a factory on Satisfactory Tools as usual
-2. :tools: Open the browser dev tools (F12, Shift+Ctrl+I, Option+Command+I)
-3. :network: Go to the Network tab → Reload page → Find "solver" requests
+2. :wrench: Open the browser dev tools (F12, Shift+Ctrl+I, Option+Command+I)
+3. :globe_with_meridians: Go to the Network tab → Reload page → Find "solver" requests
 
 ![Dev Tools](images/satisfactory-tools-import.png)
 
-4. :requests: Use the requests pane to find the desired factory
-5. :response: In the solver request, go to the "Response" tab
-6. :copy: Copy all lines starting with "Recipe\_" (include quotes)
+4. :mag: Use the requests pane to find the desired factory
+5. :clipboard: In the solver request, go to the "Response" tab
+6. :page_facing_up: Copy all lines starting with "Recipe\_" (include quotes)
 
 ![Response Recipes](images/satisfactory-tools-response.png)
 
-7. :paste: Paste into the Recipes field below (one per line)
+7. :inbox_tray: Paste into the Recipes field below (one per line)
