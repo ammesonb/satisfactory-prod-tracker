@@ -126,9 +126,8 @@ const instructions = `Import from Satisfactory Tools:
             </v-tooltip>
           </div>
 
-          <!-- Recipe Mode -->
           <RecipeInput v-if="inputMode === 'recipe'" v-model="form.recipeList" />
-          <!-- Import Mode -->
+
           <v-textarea
             v-if="inputMode === 'import'"
             v-model="form.recipes"
@@ -138,10 +137,12 @@ const instructions = `Import from Satisfactory Tools:
             variant="outlined"
             required
             density="compact"
-            class="recipe-textarea"
+            class="recipe-textarea mb-4"
             :persistent-placeholder="true"
             :hide-details="true"
           />
+
+          <ExternalInputSelector v-model="form.externalInputs" />
         </v-form>
       </v-card-text>
       <v-card-actions class="flex-shrink-0 pa-4">

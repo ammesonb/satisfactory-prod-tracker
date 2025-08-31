@@ -34,10 +34,10 @@ const allItems = computed<ItemOption[]>(() => {
   const items: ItemOption[] = []
 
   // Add items
-  Object.values(dataStore.items).forEach((item) => {
+  Object.entries(dataStore.items).forEach(([key, item]) => {
     if (item.icon) {
       items.push({
-        value: item.icon,
+        value: key,
         name: item.name,
         icon: item.icon,
         type: 'item',
@@ -47,10 +47,10 @@ const allItems = computed<ItemOption[]>(() => {
 
   // Add buildings
   if (props.includeBuildings) {
-    Object.values(dataStore.buildings).forEach((building) => {
+    Object.entries(dataStore.buildings).forEach(([key, building]) => {
       if (building.icon) {
         items.push({
-          value: building.icon,
+          value: key,
           name: building.name,
           icon: building.icon,
           type: 'building',

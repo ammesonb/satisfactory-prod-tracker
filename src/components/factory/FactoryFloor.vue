@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { Floor } from '@/types/factory'
 import { getIconURL } from '@/logistics/images'
+import { useDataStore } from '@/stores/data'
 import { useFactoryStore } from '@/stores/factory'
 import { formatFloorId, formatRecipeId } from '@/composables/useFloorNavigation'
 
@@ -13,6 +14,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const dataStore = useDataStore()
 const factoryStore = useFactoryStore()
 
 const floorName = computed(() => factoryStore.getFloorDisplayName(props.floorNumber, props.floor))
@@ -48,9 +50,9 @@ const emit = defineEmits<{
       <div class="d-flex align-center w-100">
         <div class="d-flex align-center">
           <v-img
-            v-if="props.floor.icon"
+            v-if="props.floor.iconItem"
             class="me-3"
-            :src="getIconURL(props.floor.icon, 64)"
+            :src="getIconURL(dataStore.getIcon(props.floor.iconItem), 64)"
             width="24"
             height="24"
           />

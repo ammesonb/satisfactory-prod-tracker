@@ -22,7 +22,7 @@ export interface Material {
 
 export interface Floor {
   name?: string
-  icon?: string
+  iconItem?: string
   recipes: RecipeNode[]
 }
 

@@ -52,12 +52,12 @@ export const useFactoryStore = defineStore('factory', {
     updateFloorIcon(factoryName: string, floorIndex: number, icon: string) {
       const factory = this.factories[factoryName]
       if (factory && factory.floors[floorIndex]) {
-        factory.floors[floorIndex].icon = icon
+        factory.floors[floorIndex].iconItem = icon
       }
     },
     updateFloors(
       factoryName: string,
-      updates: Array<{ index: number; name?: string; icon?: string }>,
+      updates: Array<{ index: number; name?: string; iconItem?: string }>,
     ) {
       const factory = this.factories[factoryName]
       if (!factory) return
@@ -66,7 +66,7 @@ export const useFactoryStore = defineStore('factory', {
         const floor = factory.floors[update.index]
         if (floor) {
           if ('name' in update) floor.name = update.name
-          if ('icon' in update) floor.icon = update.icon
+          if ('iconItem' in update) floor.iconItem = update.iconItem
         }
       }
     },

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useFactoryStore } from '@/stores/factory'
+import { useDataStore } from '@/stores/data'
 import { type ItemOption } from '@/types/data'
 
 interface Props {
@@ -20,6 +21,7 @@ interface FloorFormData {
 const props = defineProps<Props>()
 const emit = defineEmits(['update:show'])
 
+const dataStore = useDataStore()
 const factoryStore = useFactoryStore()
 
 const showDialog = computed({
@@ -39,11 +41,11 @@ watch(
         floorForms.value = props.floorIndices.map((index) => {
           const floor = factory.floors[index]
           // Construct a fake item option with just the image
-          const itemOption = floor?.icon
+          const itemOption = floor?.iconItem
             ? {
-                value: floor.icon,
-                name: '',
-                icon: floor.icon,
+                value: floor.iconItem,
+                name: dataStore.getItemDisplayName(floor.iconItem),
+                icon: dataStore.getIcon(floor.iconItem),
                 type: 'item' as const,
               }
             : undefined
@@ -64,7 +66,7 @@ watch(
 
 const hasChanges = computed(() => {
   return floorForms.value.some(
-    (form) => form.name !== form.originalName || form.item?.icon !== form.originalItem?.icon,
+    (form) => form.name !== form.originalName || form.item?.value !== form.originalItem?.value,
   )
 })
 
@@ -78,12 +80,12 @@ const saveChanges = () => {
 
   const updates = floorForms.value
     .filter(
-      (form) => form.name !== form.originalName || form.item?.icon !== form.originalItem?.icon,
+      (form) => form.name !== form.originalName || form.item?.value !== form.originalItem?.value,
     )
     .map((form) => ({
       index: form.index,
       name: form.name,
-      icon: form.item?.icon,
+      iconItem: form.item?.value,
     }))
 
   if (updates.length > 0) {
@@ -111,7 +113,7 @@ const saveChanges = () => {
               {{
                 factoryStore.getFloorDisplayName(form.index + 1, {
                   name: form.originalName,
-                  icon: form.originalIcon,
+                  iconItem: form.originalItem?.value,
                   recipes: [],
                 })
               }}
