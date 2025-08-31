@@ -12,7 +12,13 @@ const handleAddFactory = (factoryData: { name: string; icon: string; recipes: st
   factoryStore.addFactory(factoryData.name, factoryData.icon || 'default-icon', factoryData.recipes)
 }
 
-onMounted(dataStore.loadData)
+onMounted(() => {
+  if (!(factoryStore.selected in factoryStore.factories)) {
+    factoryStore.selected = ''
+  }
+
+  dataStore.loadData()
+})
 </script>
 
 <template>
@@ -21,11 +27,15 @@ onMounted(dataStore.loadData)
     <FactoryDrawer />
     <v-main>
       <v-container>
-        <p v-if="factoryStore.hasFactories && !factoryStore.selected">
+        <p
+          v-if="
+            factoryStore.hasFactories && (!factoryStore.selected || !factoryStore.currentFactory)
+          "
+        >
           Select a factory from the sidebar to view its production chain.
         </p>
         <GettingStarted v-if="!factoryStore.hasFactories" />
-        <FactoryPanels v-if="factoryStore.selected" />
+        <FactoryPanels v-if="factoryStore.currentFactory" />
       </v-container>
       <!-- Grouped FABs -->
       <div class="fab-container">

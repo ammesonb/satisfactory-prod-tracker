@@ -35,7 +35,7 @@ const cancelDelete = () => {
     :active="props.selected"
   >
     <template #prepend>
-      <v-img :src="getIconURL(props.factory.icon, 64)" width="32" height="32" />
+      <v-img :src="getIconURL(props.factory.icon, 64)" width="32" height="32" class="mr-1" />
     </template>
     <template #append>
       <v-btn

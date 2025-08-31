@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useFactoryStore } from '@/stores/factory'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import FactorySelector from '../common/FactorySelector.vue'
 
 const emit = defineEmits<{
@@ -9,8 +9,6 @@ const emit = defineEmits<{
 
 const factoryStore = useFactoryStore()
 const selectedFactories = ref<string[]>([])
-
-const factoryList = computed(() => Object.values(factoryStore.factories))
 
 const exportToClipboard = async () => {
   if (selectedFactories.value.length === 0) {
@@ -51,7 +49,7 @@ const exportToFile = () => {
   <div>
     <FactorySelector
       v-model="selectedFactories"
-      :factories="factoryList"
+      :factories="factoryStore.factoryList"
       title="Select Factories to Export"
     />
 
