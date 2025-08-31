@@ -16,6 +16,7 @@ const factoryStore = useFactoryStore()
         :rail="collapsed"
         :selected="factoryStore.selected === factory.name"
         @select="factoryStore.setSelectedFactory(factory.name)"
+        @delete="factoryStore.removeFactory"
       />
     </v-list>
     <v-list v-else>
