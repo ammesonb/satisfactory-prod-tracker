@@ -60,6 +60,16 @@ const addFactory = () => {
   emit('add-factory', factory)
   clear()
 }
+
+const instructions = `Import from Satisfactory Tools:
+
+1. 🏭 Create your factory on Satisfactory Tools
+2. 🔧 Open browser dev tools (F12, Shift+Ctrl+I, Option+Command+I)
+3. 🌐 Go to Network tab → Reload page → Find "solver" requests
+4. 🔍 Use the requests pane to find the desired factory
+5. 📋 In the solver request, go to "Response" tab
+6. 📄 Copy all lines starting with "Recipe_" (include quotes)
+7. 📥 Paste into the Recipes field below (one per line)`
 </script>
 
 <template>
@@ -82,34 +92,53 @@ const addFactory = () => {
           />
 
           <!-- Input Mode Toggle -->
-          <div class="mb-4 d-flex justify-center">
+          <div class="mb-4 d-flex justify-center align-center">
             <v-btn-toggle
               v-model="inputMode"
               color="secondary"
               group
               mandatory
               variant="outlined"
-              class="mb-2"
+              class="mb-2 mr-2"
             >
               <v-btn value="recipe" size="small" rounded> Recipe Builder </v-btn>
               <v-btn value="import" size="small" rounded> Import from Satisfactory Tools </v-btn>
             </v-btn-toggle>
+
+            <v-tooltip
+              v-if="inputMode === 'import'"
+              location="top"
+              max-width="400"
+              content-class="bg-grey-darken-2"
+            >
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  icon="mdi-help-circle-outline"
+                  size="small"
+                  variant="text"
+                  color="info"
+                />
+              </template>
+              <div class="text-body-2" style="white-space: pre-line">{{ instructions }}</div>
+            </v-tooltip>
           </div>
 
           <!-- Recipe Mode -->
           <RecipeInput v-if="inputMode === 'recipe'" v-model="form.recipeList" />
-
           <!-- Import Mode -->
           <v-textarea
             v-if="inputMode === 'import'"
             v-model="form.recipes"
             label="Recipes"
-            placeholder="Enter recipes, one per line"
+            placeholder="Paste recipe lines from Satisfactory Tools here..."
             rows="8"
             variant="outlined"
             required
             density="compact"
             class="recipe-textarea"
+            :persistent-placeholder="true"
+            :hide-details="true"
           />
         </v-form>
       </v-card-text>

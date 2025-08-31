@@ -16,7 +16,7 @@ const craftTime = computed(() => data.recipes[props.recipe.recipe.name].time)
 </script>
 
 <template>
-  <v-card class="recipe-details pa-3" color="surface" variant="elevated">
+  <v-card class="recipe-details pa-3" color="background" variant="elevated">
     <div class="d-flex align-center gap-3 mb-3">
       <v-icon size="small" icon="mdi-clock-outline" color="primary" class="mr-2" />
       <span class="text-body-2 font-weight-medium text-on-surface">Craft Time</span>
