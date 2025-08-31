@@ -104,8 +104,6 @@ const performImport = () => {
 
 <template>
   <div>
-    <h3 class="mb-3">Import Factory Data</h3>
-
     <!-- Import Source Buttons -->
     <div class="d-flex gap-2 mb-4">
       <v-btn @click="importFromClipboard" variant="outlined" class="flex-grow-1">
@@ -126,16 +124,29 @@ const performImport = () => {
         title="Select Factories to Import"
       />
 
-      <!-- Import Button -->
-      <v-btn
-        color="primary"
-        @click="performImport"
-        :disabled="selectedFactories.length === 0"
-        block
-      >
-        <v-icon icon="mdi-import" class="me-2" />
-        Import Selected Factories
-      </v-btn>
+      <!-- Import Actions -->
+      <v-card variant="outlined" class="mt-4 pa-4">
+        <div class="d-flex align-center justify-space-between">
+          <div>
+            <div class="text-subtitle-2 mb-1">Import Selected Factories</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ selectedFactories.length }} factor{{
+                selectedFactories.length === 1 ? 'y' : 'ies'
+              }}
+              selected
+            </div>
+          </div>
+          <v-btn
+            color="secondary"
+            @click="performImport"
+            :disabled="selectedFactories.length === 0"
+            size="small"
+          >
+            <v-icon icon="mdi-import" class="me-1" />
+            Import
+          </v-btn>
+        </div>
+      </v-card>
     </div>
 
     <!-- Show message if no data -->

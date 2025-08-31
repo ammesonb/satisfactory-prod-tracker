@@ -40,15 +40,13 @@ const toggleFactory = (factoryName: string) => {
 
 <template>
   <div>
-    <h3 class="mb-3">{{ title }}</h3>
-
     <!-- Select All Checkbox -->
     <v-checkbox
       :model-value="allSelected"
       :indeterminate="someSelected && !allSelected"
       label="Select All"
       @click="toggleAll"
-      class="mb-2"
+      :hide-details="true"
     />
 
     <!-- Factory List -->
@@ -64,7 +62,7 @@ const toggleFactory = (factoryName: string) => {
               <v-checkbox
                 :model-value="selectedSet.has(factory.name)"
                 @click.stop="toggleFactory(factory.name)"
-                class="me-3"
+                :hide-details="true"
               />
               <CachedIcon :icon="factory.icon" :size="24" />
             </div>

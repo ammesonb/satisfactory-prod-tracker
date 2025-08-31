@@ -56,7 +56,7 @@ const handleModalChange = (value: boolean) => {
         {{ error }}
       </v-alert>
 
-      <v-tabs v-model="activeTab" color="primary">
+      <v-tabs v-model="activeTab" color="secondary">
         <v-tab value="export">
           <v-icon icon="mdi-export" class="me-2" />
           Export
@@ -67,7 +67,7 @@ const handleModalChange = (value: boolean) => {
         </v-tab>
       </v-tabs>
 
-      <v-card-text>
+      <v-card-text class="pt-0">
         <v-window v-model="activeTab">
           <!-- Export Tab -->
           <v-window-item value="export">
@@ -76,7 +76,7 @@ const handleModalChange = (value: boolean) => {
 
           <!-- Import Tab -->
           <v-window-item value="import">
-            <ImportTab @error="handleError" @success="handleImportSuccess" />
+            <ImportTab @error="handleError" @success="handleImportSuccess" class="mt-3"/>
           </v-window-item>
         </v-window>
       </v-card-text>

@@ -55,27 +55,39 @@ const exportToFile = () => {
       title="Select Factories to Export"
     />
 
-    <!-- Export Buttons -->
-    <div class="d-flex gap-2">
-      <v-btn
-        color="success"
-        @click="exportToClipboard"
-        :disabled="selectedFactories.length === 0"
-        variant="outlined"
-        class="flex-grow-1"
-      >
-        <v-icon icon="mdi-content-copy" class="me-2" />
-        Export to Clipboard
-      </v-btn>
-      <v-btn
-        color="success"
-        @click="exportToFile"
-        :disabled="selectedFactories.length === 0"
-        class="flex-grow-1"
-      >
-        <v-icon icon="mdi-download" class="me-2" />
-        Export to File
-      </v-btn>
-    </div>
+    <!-- Export Actions -->
+    <v-card variant="outlined" class="mt-4 pa-4">
+      <div class="d-flex align-center justify-space-between">
+        <div>
+          <div class="text-subtitle-2 mb-1">
+            Export {{ selectedFactories.length }} Factor{{
+              selectedFactories.length === 1 ? 'y' : 'ies'
+            }}
+          </div>
+        </div>
+        <div class="d-flex gap-3">
+          <v-btn
+            color="secondary"
+            @click="exportToClipboard"
+            :disabled="selectedFactories.length === 0"
+            variant="outlined"
+            size="small"
+            class="mr-2"
+          >
+            <v-icon icon="mdi-content-copy" class="me-2" />
+            Clipboard
+          </v-btn>
+          <v-btn
+            color="secondary"
+            @click="exportToFile"
+            :disabled="selectedFactories.length === 0"
+            size="small"
+          >
+            <v-icon icon="mdi-download" class="me-1" />
+            File
+          </v-btn>
+        </div>
+      </div>
+    </v-card>
   </div>
 </template>
