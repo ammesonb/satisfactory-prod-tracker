@@ -98,9 +98,9 @@ const saveChanges = () => {
 
 <template>
   <v-dialog v-model="showDialog" max-width="600px">
-    <v-card>
+    <v-card class="d-flex flex-column" style="height: 80vh;">
       <v-card-title> Edit Floor{{ floorForms.length > 1 ? 's' : '' }} </v-card-title>
-      <v-card-text>
+      <v-card-text class="flex-grow-1 overflow-y-auto">
         <v-form v-if="floorForms.length > 0">
           <v-card
             v-for="form in floorForms"
@@ -135,7 +135,7 @@ const saveChanges = () => {
           </v-card>
         </v-form>
       </v-card-text>
-      <v-card-actions>
+      <v-card-actions class="flex-shrink-0">
         <v-spacer />
         <v-btn variant="tonal" @click="clear">Cancel</v-btn>
         <v-btn color="secondary" variant="elevated" @click="saveChanges" :disabled="!hasChanges">
