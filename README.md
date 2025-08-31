@@ -38,3 +38,32 @@ This project draws inspiration from [Satisfactory Tools](https://www.satisfactor
   - Includes build progress!
 
 ![Import/Export](images/share.png)
+
+## Usage
+
+1. Click the green plus ("Add Factory") button in the bottom-right corner to begin.
+2. Enter a factory name and select an icon for it.
+3. Enter recipes either:
+   a. By hand, using a name and the quantity.
+   b. Or, by importing from Satisfactory Tools.
+4. Click "Add Factory" to save.
+
+NOTE: there are validations ensuring enough ingredients are available (excluding raw resources like ores and water), so recipe counts **do matter**.
+
+### Satisfactory Tools Import
+
+To import from Satisfactory Tools, follow these steps:
+
+1. :factory: Create a factory on Satisfactory Tools as usual
+2. :tools: Open the browser dev tools (F12, Shift+Ctrl+I, Option+Command+I)
+3. :network: Go to the Network tab → Reload page → Find "solver" requests
+
+![Dev Tools](images/satisfactory-tools-import.png)
+
+4. :requests: Use the requests pane to find the desired factory
+5. :response: In the solver request, go to the "Response" tab
+6. :copy: Copy all lines starting with "Recipe\_" (include quotes)
+
+![Response Recipes](images/satisfactory-tools-response.png)
+
+7. :paste: Paste into the Recipes field below (one per line)
