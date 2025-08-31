@@ -28,7 +28,7 @@ This project draws inspiration from [Satisfactory Tools](https://www.satisfactor
 
 1. Click the green **"Add Factory"** button in the bottom-right corner
 2. Enter a factory name and select an icon
-3. Add recipes manually or [import from Satisfactory Tools](../../wiki/Satisfactory-Tools-Import)
+3. Add recipes manually or [import from Satisfactory Tools](../../wiki/Import-from-Satisfactory-Tools)
 4. Click **"Add Factory"** to save
 
 For detailed feature descriptions, FAQs, and guides, see the [Wiki](../../wiki).
