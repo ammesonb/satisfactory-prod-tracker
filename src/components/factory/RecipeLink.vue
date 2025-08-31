@@ -4,7 +4,12 @@ import { linkToString, type RecipeNode } from '@/logistics/graph-node'
 import { useDataStore } from '@/stores/data'
 import { useFactoryStore } from '@/stores/factory'
 import { useFloorNavigation, formatRecipeId } from '@/composables/useFloorNavigation'
-import { isFluid, BELT_ITEM_NAMES, PIPELINE_ITEM_NAMES } from '@/logistics/constants'
+import {
+  isFluid,
+  BELT_ITEM_NAMES,
+  PIPELINE_ITEM_NAMES,
+  EXTERNAL_RECIPE,
+} from '@/logistics/constants'
 import { computed, ref } from 'vue'
 
 const props = defineProps<{
@@ -25,7 +30,11 @@ const displayName = computed(() =>
   isRecipe.value
     ? data.getRecipeDisplayName(sourceOrSink.value)
     : data.getItemDisplayName(sourceOrSink.value) +
-      (props.type === 'input' ? ' (Resource)' : 'Surplus'),
+      (props.link.source === EXTERNAL_RECIPE
+        ? ''
+        : props.type === 'input'
+          ? ' (Resource)'
+          : 'Surplus'),
 )
 const targetRecipe = computed(() =>
   isRecipe.value ? factoryStore.getRecipeByName(sourceOrSink.value) : null,

@@ -98,7 +98,7 @@ const saveChanges = () => {
 
 <template>
   <v-dialog v-model="showDialog" max-width="600px">
-    <v-card class="d-flex flex-column" style="height: 80vh;">
+    <v-card class="d-flex flex-column" style="height: 80vh">
       <v-card-title> Edit Floor{{ floorForms.length > 1 ? 's' : '' }} </v-card-title>
       <v-card-text class="flex-grow-1 overflow-y-auto">
         <v-form v-if="floorForms.length > 0">
