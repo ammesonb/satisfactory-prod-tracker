@@ -13,7 +13,7 @@ export const useFactoryStore = defineStore('factory', {
   }),
   getters: {
     hasFactories: (state) => Object.keys(state.factories).length > 0,
-    currentFactory: (state) => state.factories[state.selected],
+    currentFactory: (state) => state.factories[state.selected] || null,
     factoryList: (state) => Object.values(state.factories || {}),
     getFloorDisplayName: () => (floorIndex: number, floor: Floor) => {
       return `Floor ${floorIndex}` + (floor.name ? ` - ${floor.name}` : '')
@@ -124,6 +124,9 @@ export const useFactoryStore = defineStore('factory', {
       }
     },
     removeFactory(name: string) {
+      if (this.currentFactory?.name === name) {
+        this.selected = ''
+      }
       delete this.factories[name]
     },
     setRecipeBuilt(name: string, built: boolean) {
