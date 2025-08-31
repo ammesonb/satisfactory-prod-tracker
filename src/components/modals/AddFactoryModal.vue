@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { type RecipeEntry } from '@/types/factory'
+import IconSelector from '@/components/common/IconSelector.vue'
+import RecipeInput from '@/components/common/RecipeInput.vue'
 
 interface Props {
   modelValue: boolean
@@ -8,10 +11,14 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits(['update:modelValue', 'add-factory'])
 
+// Input mode toggle - default is recipe mode
+const inputMode = ref<'recipe' | 'import'>('recipe')
+
 const form = ref({
   name: '',
   icon: undefined as string | undefined,
   recipes: '',
+  recipeList: [] as RecipeEntry[],
 })
 
 const showDialog = computed({
@@ -20,23 +27,46 @@ const showDialog = computed({
 })
 
 const clear = () => {
-  form.value = { name: '', icon: undefined, recipes: '' }
+  form.value = { name: '', icon: undefined, recipes: '', recipeList: [] }
+  inputMode.value = 'recipe'
   showDialog.value = false
 }
 
 const addFactory = () => {
-  if (form.value.name && form.value.recipes && form.value.icon) {
-    emit('add-factory', { ...form.value })
-    clear()
+  if (
+    !form.value.name ||
+    !form.value.icon ||
+    (!form.value.recipes && !form.value.recipeList.length)
+  )
+    return
+
+  const factory = {
+    name: form.value.name,
+    icon: form.value.icon,
+    recipes: form.value.recipes,
   }
+
+  if (inputMode.value === 'recipe') {
+    if (form.value.name && form.value.recipeList.length > 0 && form.value.icon) {
+      // Convert recipe list to the expected format
+      const recipeStrings = form.value.recipeList.map((entry) => {
+        return `"${entry.recipe}@1.0#${entry.building}": "${entry.count}"`
+      })
+
+      factory.recipes = recipeStrings.join('\n')
+    }
+  }
+
+  emit('add-factory', factory)
+  clear()
 }
 </script>
 
 <template>
-  <v-dialog v-model="showDialog" max-width="600px">
-    <v-card>
+  <v-dialog v-model="showDialog" max-width="600px" scrollable>
+    <v-card class="d-flex flex-column" style="height: 80vh">
       <v-card-title>Add a new factory</v-card-title>
-      <v-card-text>
+      <v-card-text class="flex-grow-1 overflow-y-auto">
         <v-form>
           <v-text-field
             v-model="form.name"
@@ -50,7 +80,28 @@ const addFactory = () => {
             placeholder="Search for a factory icon..."
             class="mb-4"
           />
+
+          <!-- Input Mode Toggle -->
+          <div class="mb-4 d-flex justify-center">
+            <v-btn-toggle
+              v-model="inputMode"
+              color="secondary"
+              group
+              mandatory
+              variant="outlined"
+              class="mb-2"
+            >
+              <v-btn value="recipe" size="small" rounded> Recipe Builder </v-btn>
+              <v-btn value="import" size="small" rounded> Import from Satisfactory Tools </v-btn>
+            </v-btn-toggle>
+          </div>
+
+          <!-- Recipe Mode -->
+          <RecipeInput v-if="inputMode === 'recipe'" v-model="form.recipeList" />
+
+          <!-- Import Mode -->
           <v-textarea
+            v-if="inputMode === 'import'"
             v-model="form.recipes"
             label="Recipes"
             placeholder="Enter recipes, one per line"
@@ -62,14 +113,14 @@ const addFactory = () => {
           />
         </v-form>
       </v-card-text>
-      <v-card-actions>
+      <v-card-actions class="flex-shrink-0 pa-4">
         <v-spacer />
         <v-btn variant="tonal" @click="clear">Cancel</v-btn>
         <v-btn
           color="secondary"
           variant="elevated"
           @click="addFactory"
-          :disabled="!form.name || !form.recipes || !form.icon"
+          :disabled="!form.name || (!form.recipes && !form.recipeList.length) || !form.icon"
         >
           Add Factory
         </v-btn>

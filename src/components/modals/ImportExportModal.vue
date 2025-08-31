@@ -76,7 +76,7 @@ const handleModalChange = (value: boolean) => {
 
           <!-- Import Tab -->
           <v-window-item value="import">
-            <ImportTab @error="handleError" @success="handleImportSuccess" class="mt-3"/>
+            <ImportTab @error="handleError" @success="handleImportSuccess" class="mt-3" />
           </v-window-item>
         </v-window>
       </v-card-text>

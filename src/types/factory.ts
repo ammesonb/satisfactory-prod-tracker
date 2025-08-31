@@ -6,6 +6,13 @@ export interface Recipe {
   count: number
 }
 
+export interface RecipeEntry {
+  recipe: string
+  building: string
+  count: number
+  icon: string
+}
+
 export interface Material {
   source: string
   sink: string
