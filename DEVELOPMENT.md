@@ -19,6 +19,14 @@ Users can create multiple factories, add recipes, and view production chains and
 - Node.js ^20.19.0 || >=22.12.0
 - npm (comes with Node.js)
 
+## Recommended IDE Setup
+
+[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+
+## Type Support for `.vue` Imports in TS
+
+TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+
 ## Setup
 
 ```bash

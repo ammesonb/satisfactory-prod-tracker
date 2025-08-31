@@ -1,43 +1,40 @@
-# satisfactory-prod-tracker
+# Satisfactory Production Tracker
 
-### UI:
+**Stop losing track of factory connections.**
 
-- make a real readme, with all this stuff tossed into a "development" section
+Ever build a massive factory only to discover you're missing one crucial ingredient connection at the end?
+This production tracker solves the problem that existing Satisfactory tools ignore: **tracking the links between your factories**, not just what you're building.
 
-This template should help get you started developing with Vue 3 in Vite.
+Unlike other production planners that focus on recipes and ratios, this tool visualizes your entire supply chain as an interconnected network.
+See exactly where each input comes from and where each output goes - across multiple factory floors - so you never miss a connection again.
 
-## Recommended IDE Setup
+This project draws inspiration from [Satisfactory Tools](https://www.satisfactorytools.com/1.0/production) and [Satisfactory Production Planner](https://satisfactoryproductionplanner.com/).
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Preview
 
-## Type Support for `.vue` Imports in TS
+![Preview](images/preview.png)
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## Features
 
-## Customize configuration
+- Intelligent recipe ordering, to organize builds easily
+- Ability to move recipes to different "floors" later
+- Customizable floor names and icons
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+![Floor Customization](images/floors.png)
 
-## Project Setup
+- Flexible navigation between recipe inputs and outputs + map panel
 
-```sh
-npm install
-```
+![Map Panel](images/nav-panel.png)
 
-### Compile and Hot-Reload for Development
+- Recipe snapshots included
 
-```sh
-npm run dev
-```
+![Recipe Tooltip](images/recipe-tooltip.png)
 
-### Type-Check, Compile and Minify for Production
+- Logistics display showing number of buildings per belt or pipe tier
 
-```sh
-npm run build
-```
+![Logistics](images/logistics.png)
 
-### Lint with [ESLint](https://eslint.org/)
+- Share functionality, to transfer to friends or between computers
+  - Includes build progress!
 
-```sh
-npm run lint
-```
+![Import/Export](images/share.png)
