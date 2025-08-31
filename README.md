@@ -31,4 +31,4 @@ This project draws inspiration from [Satisfactory Tools](https://www.satisfactor
 3. Add recipes manually or [import from Satisfactory Tools](../../wiki/Import-from-Satisfactory-Tools)
 4. Click **"Add Factory"** to save
 
-For detailed feature descriptions, FAQs, and guides, see the [Wiki](../../wiki).
+For detailed feature descriptions, [FAQs](../../wiki/FAQ), and guides, see the [Wiki](../../wiki).
