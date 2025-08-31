@@ -123,6 +123,9 @@ export const useFactoryStore = defineStore('factory', {
         recipeLinks,
       }
     },
+    removeFactory(name: string) {
+      delete this.factories[name]
+    },
     setRecipeBuilt(name: string, built: boolean) {
       const recipe = this.getRecipeByName(name)
       if (recipe) recipe.built = built
