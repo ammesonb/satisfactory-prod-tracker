@@ -28,6 +28,7 @@ declare module 'vue' {
     ImportExportMenu: typeof import('./src/components/common/ImportExportMenu.vue')['default']
     ImportExportModal: typeof import('./src/components/modals/ImportExportModal.vue')['default']
     ImportTab: typeof import('./src/components/modals/ImportTab.vue')['default']
+    ItemSelector: typeof import('./src/components/common/ItemSelector.vue')['default']
     NavPanel: typeof import('./src/components/layout/NavPanel.vue')['default']
     RecipeBuilding: typeof import('./src/components/factory/RecipeBuilding.vue')['default']
     RecipeDetails: typeof import('./src/components/factory/RecipeDetails.vue')['default']

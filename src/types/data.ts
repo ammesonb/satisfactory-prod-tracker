@@ -152,3 +152,11 @@ export interface GameData {
   miners: Record<string, Miner>
   buildings: Record<string, Building>
 }
+
+// This is used for item selection
+export interface ItemOption {
+  value: string
+  name: string
+  icon: string
+  type: 'item' | 'building'
+}

@@ -2,27 +2,23 @@
 import { ref, computed } from 'vue'
 import { refDebounced } from '@vueuse/core'
 import { useDataStore } from '@/stores/data'
+import { type ItemOption } from '@/types/data'
 import CachedIcon from '@/components/common/CachedIcon.vue'
 
 interface Props {
-  modelValue?: string
+  modelValue?: ItemOption
   placeholder?: string
   disabled?: boolean
-}
-
-interface IconOption {
-  value: string
-  name: string
-  icon: string
-  type: 'item' | 'building'
+  includeBuildings?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  placeholder: 'Search for an icon...',
+  placeholder: 'Search for an item...',
+  includeBuildings: true,
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string | undefined]
+  'update:modelValue': [value: ItemOption | undefined]
 }>()
 
 const dataStore = useDataStore()
@@ -34,13 +30,13 @@ const updateSearch = (value: string) => {
 }
 
 // Get all available icons from items and buildings
-const allIcons = computed<IconOption[]>(() => {
-  const icons: IconOption[] = []
+const allItems = computed<ItemOption[]>(() => {
+  const items: ItemOption[] = []
 
   // Add items
   Object.values(dataStore.items).forEach((item) => {
     if (item.icon) {
-      icons.push({
+      items.push({
         value: item.icon,
         name: item.name,
         icon: item.icon,
@@ -50,40 +46,42 @@ const allIcons = computed<IconOption[]>(() => {
   })
 
   // Add buildings
-  Object.values(dataStore.buildings).forEach((building) => {
-    if (building.icon) {
-      icons.push({
-        value: building.icon,
-        name: building.name,
-        icon: building.icon,
-        type: 'building',
-      })
-    }
-  })
+  if (props.includeBuildings) {
+    Object.values(dataStore.buildings).forEach((building) => {
+      if (building.icon) {
+        items.push({
+          value: building.icon,
+          name: building.name,
+          icon: building.icon,
+          type: 'building',
+        })
+      }
+    })
+  }
 
-  return icons.sort((a, b) => a.name.localeCompare(b.name))
+  return items.sort((a, b) => a.name.localeCompare(b.name))
 })
 
 // Performance optimized: only show filtered results, limited count
-const filteredIcons = computed<IconOption[]>(() => {
-  const query = debouncedSearch.value.toLowerCase().trim()
+const filteredItems = computed<ItemOption[]>(() => {
+  const query = debouncedSearch.value?.toLowerCase().trim()
 
   if (!query) {
     // Show only first 20 items when no search to avoid loading all images
-    return allIcons.value.slice(0, 20)
+    return allItems.value.slice(0, 20)
   }
 
   // When searching, show up to 50 matching results
-  return allIcons.value.filter((icon) => icon.name.toLowerCase().includes(query)).slice(0, 50)
+  return allItems.value.filter((item) => item.name.toLowerCase().includes(query)).slice(0, 50)
 })
 
 // Selected icon for display
-const selectedIcon = computed<IconOption | undefined>(() => {
+const selectedItem = computed<ItemOption | undefined>(() => {
   if (!props.modelValue) return undefined
-  return allIcons.value.find((icon) => icon.value === props.modelValue)
+  return allItems.value.find((item) => item.value === props.modelValue?.value)
 })
 
-const updateValue = (value: string | null) => {
+const updateValue = (value: ItemOption | null) => {
   emit('update:modelValue', value || undefined)
 }
 </script>
@@ -94,11 +92,11 @@ const updateValue = (value: string | null) => {
     @update:model-value="updateValue"
     :search="searchInput"
     @update:search="updateSearch"
-    :items="filteredIcons"
+    :items="filteredItems"
     :placeholder="props.placeholder"
     :disabled="props.disabled"
     item-title="name"
-    item-value="value"
+    return-object
     clearable
     hide-details
     variant="outlined"
@@ -107,8 +105,8 @@ const updateValue = (value: string | null) => {
     no-filter
   >
     <!-- Selected icon display -->
-    <template #prepend-inner v-if="selectedIcon">
-      <CachedIcon :icon="selectedIcon.icon" :size="24" class="me-2" />
+    <template #prepend-inner v-if="selectedItem">
+      <CachedIcon :icon="selectedItem.icon" :size="24" class="me-2" />
     </template>
 
     <!-- Dropdown item template -->
@@ -125,9 +123,9 @@ const updateValue = (value: string | null) => {
     <!-- No data message -->
     <template #no-data>
       <div class="px-4 py-2 text-center text-medium-emphasis">
-        <div v-if="allIcons.length === 0">Loading icons...</div>
-        <div v-else-if="!searchInput">Start typing to search icons...</div>
-        <div v-else>No icons found for "{{ searchInput }}"</div>
+        <div v-if="allItems.length === 0">Loading items...</div>
+        <div v-else-if="!searchInput">Start typing to search items...</div>
+        <div v-else>No items found for "{{ searchInput }}"</div>
       </div>
     </template>
   </v-autocomplete>

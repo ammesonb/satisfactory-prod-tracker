@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { type RecipeEntry } from '@/types/factory'
-import IconSelector from '@/components/common/IconSelector.vue'
-import RecipeInput from '@/components/common/RecipeInput.vue'
+import { type ItemOption } from '@/types/data'
 
 interface Props {
   modelValue: boolean
@@ -16,7 +15,7 @@ const inputMode = ref<'recipe' | 'import'>('recipe')
 
 const form = ref({
   name: '',
-  icon: undefined as string | undefined,
+  item: undefined as ItemOption | undefined,
   recipes: '',
   recipeList: [] as RecipeEntry[],
 })
@@ -27,7 +26,7 @@ const showDialog = computed({
 })
 
 const clear = () => {
-  form.value = { name: '', icon: undefined, recipes: '', recipeList: [] }
+  form.value = { name: '', item: undefined, recipes: '', recipeList: [] }
   inputMode.value = 'recipe'
   showDialog.value = false
 }
@@ -35,19 +34,19 @@ const clear = () => {
 const addFactory = () => {
   if (
     !form.value.name ||
-    !form.value.icon ||
+    !form.value.item?.icon ||
     (!form.value.recipes && !form.value.recipeList.length)
   )
     return
 
   const factory = {
     name: form.value.name,
-    icon: form.value.icon,
+    icon: form.value.item.icon,
     recipes: form.value.recipes,
   }
 
   if (inputMode.value === 'recipe') {
-    if (form.value.name && form.value.recipeList.length > 0 && form.value.icon) {
+    if (form.value.name && form.value.recipeList.length > 0 && form.value.item?.icon) {
       // Convert recipe list to the expected format
       const recipeStrings = form.value.recipeList.map((entry) => {
         return `"${entry.recipe}@1.0#${entry.building}": "${entry.count}"`
@@ -85,8 +84,8 @@ const instructions = `Import from Satisfactory Tools:
             variant="outlined"
             class="mb-4"
           />
-          <IconSelector
-            v-model="form.icon"
+          <ItemSelector
+            v-model="form.item"
             placeholder="Search for a factory icon..."
             class="mb-4"
           />
@@ -149,7 +148,7 @@ const instructions = `Import from Satisfactory Tools:
           color="secondary"
           variant="elevated"
           @click="addFactory"
-          :disabled="!form.name || (!form.recipes && !form.recipeList.length) || !form.icon"
+          :disabled="!form.name || (!form.recipes && !form.recipeList.length) || !form.item?.icon"
         >
           Add Factory
         </v-btn>

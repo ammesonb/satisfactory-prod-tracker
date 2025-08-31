@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useFactoryStore } from '@/stores/factory'
+import { type ItemOption } from '@/types/data'
 
 interface Props {
   show: boolean
@@ -11,9 +12,9 @@ interface Props {
 interface FloorFormData {
   index: number
   name: string | undefined
-  icon: string | undefined
+  item: ItemOption | undefined
   originalName: string | undefined
-  originalIcon: string | undefined
+  originalItem: ItemOption | undefined
 }
 
 const props = defineProps<Props>()
@@ -37,12 +38,22 @@ watch(
       if (factory) {
         floorForms.value = props.floorIndices.map((index) => {
           const floor = factory.floors[index]
+          // Construct a fake item option with just the image
+          const itemOption = floor?.icon
+            ? {
+                value: floor.icon,
+                name: '',
+                icon: floor.icon,
+                type: 'item' as const,
+              }
+            : undefined
+
           return {
             index,
             name: floor?.name,
-            icon: floor?.icon,
+            item: itemOption,
             originalName: floor?.name,
-            originalIcon: floor?.icon,
+            originalItem: itemOption,
           }
         })
       }
@@ -53,7 +64,7 @@ watch(
 
 const hasChanges = computed(() => {
   return floorForms.value.some(
-    (form) => form.name !== form.originalName || form.icon !== form.originalIcon,
+    (form) => form.name !== form.originalName || form.item?.icon !== form.originalItem?.icon,
   )
 })
 
@@ -66,11 +77,13 @@ const saveChanges = () => {
   if (!props.factoryName || !hasChanges.value) return
 
   const updates = floorForms.value
-    .filter((form) => form.name !== form.originalName || form.icon !== form.originalIcon)
+    .filter(
+      (form) => form.name !== form.originalName || form.item?.icon !== form.originalItem?.icon,
+    )
     .map((form) => ({
       index: form.index,
       name: form.name,
-      icon: form.icon,
+      icon: form.item?.icon,
     }))
 
   if (updates.length > 0) {
@@ -115,7 +128,7 @@ const saveChanges = () => {
                 clearable
               />
 
-              <IconSelector v-model="form.icon" placeholder="Search for a floor icon..." />
+              <ItemSelector v-model="form.item" placeholder="Search for a floor icon..." />
             </v-card-text>
           </v-card>
         </v-form>
