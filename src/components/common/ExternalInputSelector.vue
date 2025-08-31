@@ -71,7 +71,7 @@ const removeExternalInput = (index: number) => {
       <v-expansion-panel-text>
         <div class="mb-4">
           <p class="text-body-2 text-medium-emphasis mb-3">
-            Add items that will be provided externally (not produced by recipes in this factory).
+            Add items that will be provided from an external source.
           </p>
 
           <!-- Add new external input form -->
