@@ -14,7 +14,8 @@ export const useFactoryStore = defineStore('factory', {
   getters: {
     hasFactories: (state) => Object.keys(state.factories).length > 0,
     currentFactory: (state) => state.factories[state.selected] || null,
-    factoryList: (state) => Object.values(state.factories || {}).sort((a, b) => a.name.localeCompare(b.name)),
+    factoryList: (state) =>
+      Object.values(state.factories || {}).sort((a, b) => a.name.localeCompare(b.name)),
     getFloorDisplayName: () => (floorIndex: number, floor: Floor) => {
       return `Floor ${floorIndex}` + (floor.name ? ` - ${floor.name}` : '')
     },
