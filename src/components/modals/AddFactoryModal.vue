@@ -72,6 +72,13 @@ const instructions = `Import from Satisfactory Tools:
 5. 📋 In the solver request, go to "Response" tab
 6. 📄 Copy all lines starting with "Recipe_" (include quotes)
 7. 📥 Paste into the Recipes field below (one per line)`
+
+const openHelpWiki = () => {
+  window.open(
+    'https://github.com/ammesonb/satisfactory-prod-tracker/wiki/Import-from-Satisfactory-Tools',
+    '_blank',
+  )
+}
 </script>
 
 <template>
@@ -107,23 +114,20 @@ const instructions = `Import from Satisfactory Tools:
               <v-btn value="import" size="small" rounded> Import from Satisfactory Tools </v-btn>
             </v-btn-toggle>
 
-            <v-tooltip
-              v-if="inputMode === 'import'"
-              location="top"
-              max-width="400"
-              content-class="bg-grey-darken-2"
-            >
-              <template v-slot:activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  icon="mdi-help-circle-outline"
-                  size="small"
-                  variant="text"
-                  color="info"
-                />
-              </template>
-              <div class="text-body-2" style="white-space: pre-line">{{ instructions }}</div>
-            </v-tooltip>
+            <div v-if="inputMode === 'import'" @click="openHelpWiki">
+              <v-tooltip location="top" max-width="400" content-class="bg-grey-darken-2">
+                <template v-slot:activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    icon="mdi-help-circle-outline"
+                    size="small"
+                    variant="text"
+                    color="info"
+                  />
+                </template>
+                <div class="text-body-2" style="white-space: pre-line">{{ instructions }}</div>
+              </v-tooltip>
+            </div>
           </div>
 
           <RecipeInput v-if="inputMode === 'recipe'" v-model="form.recipeList" />
