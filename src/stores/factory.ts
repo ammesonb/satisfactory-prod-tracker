@@ -170,21 +170,11 @@ export const useFactoryStore = defineStore('factory', {
       toFloor.recipes.push(recipe)
     },
     exportFactories(factoryNames?: string[]) {
-      const factoriesToExport: Record<string, Factory> = {}
-
-      if (!factoryNames || factoryNames.length === 0) {
-        // Export all factories
-        Object.assign(factoriesToExport, this.factories)
-      } else {
-        // Export only selected factories
-        for (const name of factoryNames) {
-          if (this.factories[name]) {
-            factoriesToExport[name] = this.factories[name]
-          }
-        }
-      }
-
-      return factoriesToExport
+      return Object.fromEntries(
+        Object.entries(this.factories).filter(
+          ([name]) => factoryNames?.includes(name) || factoryNames?.length === 0,
+        ),
+      )
     },
     importFactories(factories: Record<string, Factory>) {
       for (const [factoryName, factoryData] of Object.entries(factories)) {

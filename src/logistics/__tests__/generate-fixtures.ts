@@ -20,7 +20,7 @@ function loadGameData(): GameData {
 function analyzeItems(items: Record<string, Item>) {
   for (const [key, value] of Object.entries(items)) {
     if (key.startsWith('Desc_')) {
-      console.log(`${key}: {name: '${value.name}'},`)
+      console.log(`${key}: {name: '${value.name}', icon: '${value.icon}'},`)
     }
   }
 }
@@ -28,7 +28,7 @@ function analyzeItems(items: Record<string, Item>) {
 function analyzeBuildings(buildings: Record<string, Building>) {
   for (const [key, building] of Object.entries(buildings)) {
     if (key.startsWith('Desc_') && building?.metadata?.manufacturingSpeed > 0) {
-      console.log(`${key}: {name: '${building.name}'},`)
+      console.log(`${key}: {name: '${building.name}', icon: '${building.icon}'},`)
     }
   }
 }
