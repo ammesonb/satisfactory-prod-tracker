@@ -66,13 +66,18 @@ const allItems = computed<ItemOption[]>(() => {
 const filteredItems = computed<ItemOption[]>(() => {
   const query = debouncedSearch.value?.toLowerCase().trim()
 
-  if (!query) {
-    // Show only first 20 items when no search to avoid loading all images
-    return allItems.value.slice(0, 20)
+  const MAX_RESULTS = 20
+
+  const results: ItemOption[] = []
+
+  for (let i = 0; i < allItems.value.length && results.length < MAX_RESULTS; i++) {
+    const item = allItems.value[i]
+    if (item.name.toLowerCase().includes(query)) {
+      results.push(item)
+    }
   }
 
-  // When searching, show up to 50 matching results
-  return allItems.value.filter((item) => item.name.toLowerCase().includes(query)).slice(0, 50)
+  return results
 })
 
 // Selected icon for display
