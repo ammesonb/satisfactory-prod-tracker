@@ -6248,5 +6248,17 @@ export function createMockDataStore() {
       return recipe ? recipe.products : []
     }),
     items: itemDatabase,
+    getItemDisplayName: vi.fn((itemKey: string) => {
+      const item =
+        itemDatabase[itemKey] ||
+        itemDatabase[Object.keys(itemDatabase).find((key) => itemDatabase[key].icon === itemKey)]
+      return item?.name || itemKey
+    }),
+    getIcon: vi.fn((itemKey: string) => {
+      const item =
+        itemDatabase[itemKey] ||
+        itemDatabase[Object.keys(itemDatabase).find((key) => itemDatabase[key].icon === itemKey)]
+      return item?.icon || itemKey
+    }),
   }
 }

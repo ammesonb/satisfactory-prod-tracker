@@ -35,7 +35,7 @@ const addExternalInput = () => {
   if (existingIndex >= 0) {
     // Update existing quantity
     const updated = [...props.modelValue]
-    updated[existingIndex].amount += newInput.amount
+    updated[existingIndex].amount = newInput.amount
     emit('update:modelValue', updated)
   } else {
     // Add new input
@@ -99,7 +99,7 @@ const removeExternalInput = (index: number) => {
               <v-btn
                 color="primary"
                 variant="elevated"
-                :disabled="!selectedItem"
+                :disabled="!selectedItem || quantity <= 0"
                 @click="addExternalInput"
                 block
                 class="h-100"
