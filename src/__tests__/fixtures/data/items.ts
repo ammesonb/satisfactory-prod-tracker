@@ -1,4 +1,4 @@
-import { Item } from '../types/dataStore'
+import type { Item } from '@/__tests__/fixtures/types/dataStore'
 
 export const itemDatabase: Record<string, Item> = {
   Desc_NuclearWaste_C: { name: 'Uranium Waste', icon: 'desc-nuclearwaste-c' },

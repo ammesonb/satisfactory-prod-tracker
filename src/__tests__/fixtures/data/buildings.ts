@@ -1,4 +1,4 @@
-import { Building } from '../types/dataStore'
+import type { Building } from '@/__tests__/fixtures/types/dataStore'
 
 export const buildingDatabase: Record<string, Building> = {
   Desc_QuantumEncoder_C: { name: 'Quantum Encoder', icon: 'desc-quantumencoder-c' },

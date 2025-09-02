@@ -5,6 +5,10 @@
     "lib": ["ES2020"],
     "types": ["vitest/globals"]
   },
-  "include": ["src/**/*.vue", "src/**/__tests__/*.ts"],
+  "include": [
+    "src/**/*.vue",
+    "src/**/__tests__/*.ts",
+    "src/__tests__/**/*.ts",
+  ],
   "exclude": []
 }

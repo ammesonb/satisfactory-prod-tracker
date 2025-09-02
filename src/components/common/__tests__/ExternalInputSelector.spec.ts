@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import ExternalInputSelector from '../ExternalInputSelector.vue'
+import ExternalInputSelector from '@/components/common/ExternalInputSelector.vue'
 import { itemDatabase } from '@/__tests__/fixtures/data'
 import type { RecipeProduct } from '@/types/data'
 
 // Import the component test setup
-import '../../__tests__/component-setup'
+import '@/components/__tests__/component-setup'
 
 describe('ExternalInputSelector', () => {
   const mockProps = {

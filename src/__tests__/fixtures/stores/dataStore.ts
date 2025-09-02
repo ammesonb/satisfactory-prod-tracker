@@ -1,4 +1,4 @@
-import { buildingDatabase, itemDatabase, recipeDatabase } from '../data'
+import { buildingDatabase, itemDatabase, recipeDatabase } from '@/__tests__/fixtures/data'
 import { vi } from 'vitest'
 
 /**

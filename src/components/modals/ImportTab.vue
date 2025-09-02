@@ -2,7 +2,7 @@
 import { useFactoryStore } from '@/stores/factory'
 import { asFactory, type Factory } from '@/types/factory'
 import { ref, watch } from 'vue'
-import FactorySelector from '../common/FactorySelector.vue'
+import FactorySelector from '@/components/common/FactorySelector.vue'
 
 const emit = defineEmits<{
   error: [message: string]

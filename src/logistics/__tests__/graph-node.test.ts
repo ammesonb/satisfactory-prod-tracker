@@ -4,7 +4,7 @@ import {
   getCatalystQuantity,
   produceRecipe,
   decrementConsumedProducts,
-} from '../graph-node'
+} from '@/logistics/graph-node'
 import type { Recipe, RecipeIngredient, RecipeProduct } from '@/types/data'
 import { SourceNodeNotFoundError, ProductNotFoundError } from '@/errors/processing-errors'
 import { expectErrorWithMessage } from './error-test-helpers'

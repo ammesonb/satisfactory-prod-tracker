@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculateTransportCapacity } from '../graph-node'
+import { calculateTransportCapacity } from '@/logistics/graph-node'
 
 describe('calculateTransportCapacity', () => {
   describe('belt transport (solids)', () => {
