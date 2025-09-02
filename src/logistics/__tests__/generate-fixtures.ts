@@ -40,9 +40,12 @@ function analyzeRecipes(recipes: Record<string, Recipe>) {
     }
 
     const craftsPerMin = 60 / value.time
+    const producedIn = value.producedIn.length > 0 ? `"${value.producedIn.join('", "')}"` : ''
 
     console.log(`${key}: {
       name: '${value.name}',
+      time: ${value.time},
+      producedIn: [${producedIn}],
       ingredients: [
       ${value.ingredients
         .map(

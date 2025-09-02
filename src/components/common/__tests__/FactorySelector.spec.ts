@@ -3,18 +3,9 @@ import { mount } from '@vue/test-utils'
 import FactorySelector from '@/components/common/FactorySelector.vue'
 import type { Factory } from '@/types/factory'
 import { itemDatabase } from '@/__tests__/fixtures/data'
+import { getStubs, SupportedStubs } from '@/__tests__/componentStubs'
 
-// Import the component test setup
 import '@/components/__tests__/component-setup'
-
-// Mock CachedIcon component
-vi.mock('@/components/common/CachedIcon.vue', () => ({
-  default: {
-    name: 'CachedIcon',
-    props: ['icon', 'size'],
-    template: '<div class="cached-icon" :data-icon="icon" :data-size="size"></div>',
-  },
-}))
 
 const IRON_FACTORY = 'Iron Factory'
 const COPPER_FACTORY = 'Copper Factory'
@@ -70,20 +61,14 @@ describe('FactorySelector', () => {
   })
 
   // Helper function to mount component
-  const setupComponent = (
+  const mountFactorySelector = (
     props: { factories?: Factory[]; title?: string; modelValue?: string[] } = {},
   ) => {
     const finalProps = { ...defaultProps, ...props }
     return mount(FactorySelector, {
       props: finalProps,
       global: {
-        stubs: {
-          CachedIcon: {
-            name: 'CachedIcon',
-            props: ['icon', 'size'],
-            template: '<div class="cached-icon" :data-icon="icon" :data-size="size"></div>',
-          },
-        },
+        stubs: getStubs(SupportedStubs.CachedIcon),
       },
     })
   }
@@ -112,7 +97,7 @@ describe('FactorySelector', () => {
 
   describe('Initial State', () => {
     it('shows Select All checkbox unchecked initially', () => {
-      const wrapper = setupComponent()
+      const wrapper = mountFactorySelector()
 
       const selectAllCheckbox = getSelectAllCheckbox(wrapper)
       expect(wrapper.text()).toContain('Select All')
@@ -120,7 +105,7 @@ describe('FactorySelector', () => {
     })
 
     it('shows no factories selected initially', () => {
-      const wrapper = setupComponent()
+      const wrapper = mountFactorySelector()
 
       const factoryCheckboxes = getAllFactoryCheckboxes(wrapper)
       factoryCheckboxes.forEach((checkbox) => {
@@ -131,7 +116,7 @@ describe('FactorySelector', () => {
 
   describe('Factory Display', () => {
     it('displays all factories from props', () => {
-      const wrapper = setupComponent()
+      const wrapper = mountFactorySelector()
 
       const listItems = getFactoryListItems(wrapper)
       expect(listItems).toHaveLength(3)
@@ -141,10 +126,10 @@ describe('FactorySelector', () => {
     })
 
     it('shows factory icons for each factory', () => {
-      const wrapper = setupComponent()
+      const wrapper = mountFactorySelector()
 
       // Check that CachedIcon components are present via their mock div elements
-      const cachedIcons = wrapper.findAll('.cached-icon')
+      const cachedIcons = wrapper.findAll('.cached-icon-stub')
       expect(cachedIcons).toHaveLength(3)
 
       expect(cachedIcons[0].attributes('data-icon')).toBe(itemDatabase.Desc_IronIngot_C.icon)
@@ -153,7 +138,7 @@ describe('FactorySelector', () => {
     })
 
     it('handles empty factory list', () => {
-      const wrapper = setupComponent({ factories: [] })
+      const wrapper = mountFactorySelector({ factories: [] })
 
       const listItems = getFactoryListItems(wrapper)
       expect(listItems).toHaveLength(0)
@@ -165,7 +150,7 @@ describe('FactorySelector', () => {
 
   describe('Individual Factory Selection', () => {
     it('selects factory when checkbox is clicked', async () => {
-      const wrapper = setupComponent()
+      const wrapper = mountFactorySelector()
 
       const factoryCheckboxes = getAllFactoryCheckboxes(wrapper)
       await factoryCheckboxes[0].trigger('click')
@@ -175,7 +160,7 @@ describe('FactorySelector', () => {
     })
 
     it('selects factory when list item is clicked', async () => {
-      const wrapper = setupComponent()
+      const wrapper = mountFactorySelector()
 
       const listItems = getFactoryListItems(wrapper)
       await listItems[1].trigger('click')
@@ -185,7 +170,7 @@ describe('FactorySelector', () => {
     })
 
     it('deselects factory when already selected', async () => {
-      const wrapper = setupComponent({ modelValue: [IRON_FACTORY] })
+      const wrapper = mountFactorySelector({ modelValue: [IRON_FACTORY] })
 
       const factoryCheckboxes = getAllFactoryCheckboxes(wrapper)
       await factoryCheckboxes[0].trigger('click')
@@ -195,7 +180,7 @@ describe('FactorySelector', () => {
     })
 
     it('can select multiple factories', async () => {
-      const wrapper = setupComponent()
+      const wrapper = mountFactorySelector()
 
       const factoryCheckboxes = getAllFactoryCheckboxes(wrapper)
       await factoryCheckboxes[0].trigger('click')
@@ -209,7 +194,7 @@ describe('FactorySelector', () => {
 
   describe('Select All Functionality', () => {
     it('selects all factories when Select All is clicked and none are selected', async () => {
-      const wrapper = setupComponent()
+      const wrapper = mountFactorySelector()
 
       const selectAllCheckbox = getSelectAllCheckbox(wrapper)
       await selectAllCheckbox.trigger('click')
@@ -219,7 +204,7 @@ describe('FactorySelector', () => {
     })
 
     it('deselects all factories when Select All is clicked and all are selected', async () => {
-      const wrapper = setupComponent({
+      const wrapper = mountFactorySelector({
         modelValue: [IRON_FACTORY, COPPER_FACTORY, STEEL_FACTORY],
       })
 
@@ -231,7 +216,7 @@ describe('FactorySelector', () => {
     })
 
     it('selects all when Select All is clicked in indeterminate state', async () => {
-      const wrapper = setupComponent({ modelValue: [IRON_FACTORY] })
+      const wrapper = mountFactorySelector({ modelValue: [IRON_FACTORY] })
 
       const selectAllCheckbox = getSelectAllCheckbox(wrapper)
       await selectAllCheckbox.trigger('click')
@@ -243,14 +228,14 @@ describe('FactorySelector', () => {
 
   describe('Checkbox States', () => {
     it('shows Select All as unchecked when no factories selected', () => {
-      const wrapper = setupComponent({ modelValue: [] })
+      const wrapper = mountFactorySelector({ modelValue: [] })
 
       const selectAllCheckbox = getSelectAllCheckbox(wrapper)
       expect(selectAllCheckbox.element.checked).toBe(false)
     })
 
     it('shows Select All as checked when all factories selected', () => {
-      const wrapper = setupComponent({
+      const wrapper = mountFactorySelector({
         modelValue: [IRON_FACTORY, COPPER_FACTORY, STEEL_FACTORY],
       })
 
@@ -261,7 +246,7 @@ describe('FactorySelector', () => {
 
   describe('Model Value Updates', () => {
     it('reflects initial modelValue in checkbox states', () => {
-      const wrapper = setupComponent({ modelValue: [IRON_FACTORY, STEEL_FACTORY] })
+      const wrapper = mountFactorySelector({ modelValue: [IRON_FACTORY, STEEL_FACTORY] })
 
       const factoryCheckboxes = getAllFactoryCheckboxes(wrapper)
       expect(factoryCheckboxes[0].element.checked).toBe(true) // Iron
@@ -270,7 +255,7 @@ describe('FactorySelector', () => {
     })
 
     it('emits correct factory names in selection order', async () => {
-      const wrapper = setupComponent()
+      const wrapper = mountFactorySelector()
 
       const listItems = getFactoryListItems(wrapper)
       await listItems[2].trigger('click') // Steel Production Complex
@@ -282,7 +267,7 @@ describe('FactorySelector', () => {
     })
 
     it('maintains selection order when deselecting middle item', async () => {
-      const wrapper = setupComponent({
+      const wrapper = mountFactorySelector({
         modelValue: [IRON_FACTORY, COPPER_FACTORY, STEEL_FACTORY],
       })
 
@@ -296,7 +281,7 @@ describe('FactorySelector', () => {
 
   describe('Edge Cases', () => {
     it('prevents event propagation on checkbox click to avoid double toggle', async () => {
-      const wrapper = setupComponent()
+      const wrapper = mountFactorySelector()
 
       const factoryCheckboxes = getAllFactoryCheckboxes(wrapper)
       const clickEvent = new Event('click', { bubbles: true })
@@ -310,7 +295,7 @@ describe('FactorySelector', () => {
     })
 
     it('handles modelValue with non-existent factory names', () => {
-      const wrapper = setupComponent({ modelValue: ['Non-existent Factory', IRON_FACTORY] })
+      const wrapper = mountFactorySelector({ modelValue: ['Non-existent Factory', IRON_FACTORY] })
 
       const factoryCheckboxes = getAllFactoryCheckboxes(wrapper)
       expect(factoryCheckboxes[0].element.checked).toBe(true) // Iron Factory should still be checked
@@ -320,7 +305,7 @@ describe('FactorySelector', () => {
 
     it('handles single factory correctly', () => {
       const singleFactory = [mockFactories[0]]
-      const wrapper = setupComponent({ factories: singleFactory })
+      const wrapper = mountFactorySelector({ factories: singleFactory })
 
       // Select the single factory
       const factoryCheckboxes = getAllFactoryCheckboxes(wrapper)
@@ -334,7 +319,7 @@ describe('FactorySelector', () => {
 
   describe('Accessibility', () => {
     it('has proper ARIA attributes on checkboxes', () => {
-      const wrapper = setupComponent()
+      const wrapper = mountFactorySelector()
 
       const selectAllCheckbox = getSelectAllCheckbox(wrapper)
       expect(selectAllCheckbox.attributes('type')).toBe('checkbox')
@@ -346,7 +331,7 @@ describe('FactorySelector', () => {
     })
 
     it('maintains focus order through factory list', () => {
-      const wrapper = setupComponent()
+      const wrapper = mountFactorySelector()
 
       const listItems = getFactoryListItems(wrapper)
       listItems.forEach((item) => {

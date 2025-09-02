@@ -4,17 +4,23 @@ export const recipeDatabase: Record<string, RecipeData> = {
     name: 'Recipe_Fake_IronIngot_C',
     ingredients: [{ item: 'Desc_OreIron_C', amount: 1 }],
     products: [{ item: 'Desc_IronIngot_C', amount: 1 }],
+    time: 5,
+    producedIn: ['Desc_SmelterMk1_C'],
   },
   Recipe_Fake_CopperIngot_C: {
     name: 'Recipe_Fake_CopperIngot_C',
     ingredients: [{ item: 'Desc_OreCopper_C', amount: 1 }],
     products: [{ item: 'Desc_CopperIngot_C', amount: 1 }],
+    time: 5,
+    producedIn: ['Desc_SmelterMk1_C'],
   },
 
   Recipe_Fake_AluminaSolutionRaw_C: {
     name: 'Recipe_AluminaSolutionRaw_C',
     ingredients: [{ item: 'Desc_OreBauxite_C', amount: 2 }],
     products: [{ item: 'Desc_AluminaSolution_C', amount: 30 }],
+    time: 5,
+    producedIn: ['Desc_SmelterMk1_C'],
   },
   Recipe_Fake_AluminaSolution_C: {
     name: 'Recipe_AluminaSolution_C',
@@ -23,8 +29,10 @@ export const recipeDatabase: Record<string, RecipeData> = {
       { item: 'Desc_AluminaSolution_C', amount: 60 },
       { item: 'Desc_Water_C', amount: 120 },
     ],
+    time: 5,
+    producedIn: ['Desc_SmelterMk1_C'],
   },
-
+  // is fake, since actually an alternate
   Recipe_PureCateriumIngot_C: {
     name: 'Recipe_PureCateriumIngot_C',
     ingredients: [
@@ -32,6 +40,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
       { item: 'Desc_Water_C', amount: 2 },
     ],
     products: [{ item: 'Desc_GoldIngot_C', amount: 2 }],
+    time: 5,
+    producedIn: ['Desc_SmelterMk1_C'],
   },
   // Fake recycled rubber and plastic recipes
   Recipe_Fake_RecycledRubber_C: {
@@ -50,9 +60,11 @@ export const recipeDatabase: Record<string, RecipeData> = {
     ],
     products: [{ item: 'Desc_Plastic_C', amount: 60 }],
   },
-
+  // real recipes start here
   Recipe_IronPlate_C: {
     name: 'Iron Plate',
+    time: 6,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronIngot_C',
@@ -68,6 +80,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_IronRod_C: {
     name: 'Iron Rod',
+    time: 4,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronIngot_C',
@@ -83,6 +97,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_XenoZapper_C: {
     name: 'Xeno-Zapper',
+    time: 40,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_IronRod_C',
@@ -110,6 +126,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_IngotIron_C: {
     name: 'Iron Ingot',
+    time: 2,
+    producedIn: ['Desc_SmelterMk1_C'],
     ingredients: [
       {
         item: 'Desc_OreIron_C',
@@ -125,6 +143,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_RocketFuel_Nitro_C: {
     name: 'Alternate: Nitro Rocket Fuel',
+    time: 2.4,
+    producedIn: ['Desc_Blender_C'],
     ingredients: [
       {
         item: 'Desc_LiquidFuel_C',
@@ -156,6 +176,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_RocketFuel_C: {
     name: 'Rocket Fuel',
+    time: 6,
+    producedIn: ['Desc_Blender_C'],
     ingredients: [
       {
         item: 'Desc_LiquidTurboFuel_C',
@@ -179,6 +201,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PackagedRocketFuel_C: {
     name: 'Packaged Rocket Fuel',
+    time: 1,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_RocketFuel_C',
@@ -198,6 +222,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_UnpackageRocketFuel_C: {
     name: 'Unpackage Rocket Fuel',
+    time: 1,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_PackagedRocketFuel_C',
@@ -217,6 +243,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_IonizedFuel_Dark_C: {
     name: 'Alternate: Dark-Ion Fuel',
+    time: 3,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_PackagedRocketFuel_C',
@@ -240,6 +268,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_DarkEnergy_C: {
     name: 'Dark Matter Residue',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -255,6 +285,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_QuantumEnergy_C: {
     name: 'Excited Photonic Matter',
+    time: 3,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [],
     products: [
       {
@@ -265,6 +297,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_DarkMatter_C: {
     name: 'Dark Matter Crystal',
+    time: 2,
+    producedIn: ['Desc_HadronCollider_C'],
     ingredients: [
       {
         item: 'Desc_Diamond_C',
@@ -284,6 +318,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SuperpositionOscillator_C: {
     name: 'Superposition Oscillator',
+    time: 12,
+    producedIn: ['Desc_QuantumEncoder_C'],
     ingredients: [
       {
         item: 'Desc_DarkMatter_C',
@@ -315,6 +351,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_TemporalProcessor_C: {
     name: 'Neural-Quantum Processor',
+    time: 20,
+    producedIn: ['Desc_QuantumEncoder_C'],
     ingredients: [
       {
         item: 'Desc_TimeCrystal_C',
@@ -346,6 +384,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SpaceElevatorPart_12_C: {
     name: 'AI Expansion Server',
+    time: 15,
+    producedIn: ['Desc_QuantumEncoder_C'],
     ingredients: [
       {
         item: 'Desc_SpaceElevatorPart_6_C',
@@ -377,6 +417,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_IonizedFuel_C: {
     name: 'Ionized Fuel',
+    time: 24,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_RocketFuel_C',
@@ -400,6 +442,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PackagedIonizedFuel_C: {
     name: 'Packaged Ionized Fuel',
+    time: 3,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_IonizedFuel_C',
@@ -419,6 +463,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_UnpackageIonizedFuel_C: {
     name: 'Unpackage Ionized Fuel',
+    time: 3,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_PackagedIonizedFuel_C',
@@ -438,6 +484,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Diamond_Turbo_C: {
     name: 'Alternate: Turbo Diamonds',
+    time: 3,
+    producedIn: ['Desc_HadronCollider_C'],
     ingredients: [
       {
         item: 'Desc_Coal_C',
@@ -457,6 +505,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SAMFluctuator_C: {
     name: 'SAM Fluctuator',
+    time: 6,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -480,6 +530,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_FicsiteMesh_C: {
     name: 'Ficsite Trigon',
+    time: 6,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_FicsiteIngot_C',
@@ -495,6 +547,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_FicsiteIngot_Iron_C: {
     name: 'Ficsite Ingot (Iron)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -514,6 +568,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_TimeCrystal_C: {
     name: 'Time Crystal',
+    time: 10,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_Diamond_C',
@@ -529,6 +585,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Diamond_C: {
     name: 'Diamonds',
+    time: 2,
+    producedIn: ['Desc_HadronCollider_C'],
     ingredients: [
       {
         item: 'Desc_Coal_C',
@@ -544,6 +602,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_IngotSAM_C: {
     name: 'Reanimated SAM',
+    time: 2,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_SAM_C',
@@ -559,6 +619,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SpaceElevatorPart_10_C: {
     name: 'Biochemical Sculptor',
+    time: 120,
+    producedIn: ['Desc_Blender_C'],
     ingredients: [
       {
         item: 'Desc_SpaceElevatorPart_7_C',
@@ -582,6 +644,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_FicsiteIngot_AL_C: {
     name: 'Ficsite Ingot (Aluminum)',
+    time: 2,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -601,6 +665,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_FicsiteIngot_CAT_C: {
     name: 'Ficsite Ingot (Caterium)',
+    time: 4,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -620,6 +686,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Bauxite_Caterium_C: {
     name: 'Bauxite (Caterium)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -639,6 +707,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Bauxite_Copper_C: {
     name: 'Bauxite (Copper)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -658,6 +728,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Caterium_Copper_C: {
     name: 'Caterium Ore (Copper)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -677,6 +749,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Caterium_Quartz_C: {
     name: 'Caterium Ore (Quartz)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -696,6 +770,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Coal_Iron_C: {
     name: 'Coal (Iron)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -715,6 +791,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Coal_Limestone_C: {
     name: 'Coal (Limestone)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -734,6 +812,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Copper_Quartz_C: {
     name: 'Copper Ore (Quartz)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -753,6 +833,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Copper_Sulfur_C: {
     name: 'Copper Ore (Sulfur)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -772,6 +854,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Iron_Limestone_C: {
     name: 'Iron Ore (Limestone)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -791,6 +875,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Limestone_Sulfur_C: {
     name: 'Limestone (Sulfur)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -810,6 +896,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Nitrogen_Bauxite_C: {
     name: 'Nitrogen Gas (Bauxite)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -829,6 +917,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Nitrogen_Caterium_C: {
     name: 'Nitrogen Gas (Caterium)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -848,6 +938,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Quartz_Bauxite_C: {
     name: 'Raw Quartz (Bauxite)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -867,6 +959,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Quartz_Coal_C: {
     name: 'Raw Quartz (Coal)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -886,6 +980,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Sulfur_Coal_C: {
     name: 'Sulfur (Coal)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -905,6 +1001,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Sulfur_Iron_C: {
     name: 'Sulfur (Iron)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -924,6 +1022,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Uranium_Bauxite_C: {
     name: 'Uranium Ore (Bauxite)',
+    time: 6,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_SAMIngot_C',
@@ -943,6 +1043,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Turbofuel_C: {
     name: 'Turbofuel',
+    time: 16,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_LiquidFuel_C',
@@ -962,6 +1064,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PackagedTurboFuel_C: {
     name: 'Packaged Turbofuel',
+    time: 6,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_LiquidTurboFuel_C',
@@ -981,6 +1085,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_UnpackageTurboFuel_C: {
     name: 'Unpackage Turbofuel',
+    time: 6,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_TurboFuel_C',
@@ -1000,6 +1106,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Coal_1_C: {
     name: 'Alternate: Charcoal',
+    time: 4,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_Wood_C',
@@ -1015,6 +1123,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Coal_2_C: {
     name: 'Alternate: Biocoal',
+    time: 8,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_GenericBiomass_C',
@@ -1030,6 +1140,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_EnrichedCoal_C: {
     name: 'Alternate: Compacted Coal',
+    time: 12,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Coal_C',
@@ -1049,6 +1161,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_CircuitBoard_C: {
     name: 'Circuit Board',
+    time: 8,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_CopperSheet_C',
@@ -1068,6 +1182,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_LiquidFuel_C: {
     name: 'Fuel',
+    time: 6,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_LiquidOil_C',
@@ -1087,6 +1203,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PetroleumCoke_C: {
     name: 'Petroleum Coke',
+    time: 6,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_HeavyOilResidue_C',
@@ -1102,6 +1220,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Plastic_C: {
     name: 'Plastic',
+    time: 6,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_LiquidOil_C',
@@ -1121,6 +1241,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Rubber_C: {
     name: 'Rubber',
+    time: 6,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_LiquidOil_C',
@@ -1140,6 +1262,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_ResidualFuel_C: {
     name: 'Residual Fuel',
+    time: 6,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_HeavyOilResidue_C',
@@ -1155,6 +1279,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_ResidualPlastic_C: {
     name: 'Residual Plastic',
+    time: 6,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_PolymerResin_C',
@@ -1174,6 +1300,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_ResidualRubber_C: {
     name: 'Residual Rubber',
+    time: 6,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_PolymerResin_C',
@@ -1193,6 +1321,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Diamond_Pink_C: {
     name: 'Alternate: Pink Diamonds',
+    time: 4,
+    producedIn: ['Desc_Converter_C'],
     ingredients: [
       {
         item: 'Desc_Coal_C',
@@ -1212,6 +1342,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Diamond_Petroleum_C: {
     name: 'Alternate: Petroleum Diamonds',
+    time: 2,
+    producedIn: ['Desc_HadronCollider_C'],
     ingredients: [
       {
         item: 'Desc_PetroleumCoke_C',
@@ -1227,6 +1359,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Diamond_OilBased_C: {
     name: 'Alternate: Oil-Based Diamonds',
+    time: 3,
+    producedIn: ['Desc_HadronCollider_C'],
     ingredients: [
       {
         item: 'Desc_LiquidOil_C',
@@ -1242,6 +1376,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Diamond_Cloudy_C: {
     name: 'Alternate: Cloudy Diamonds',
+    time: 3,
+    producedIn: ['Desc_HadronCollider_C'],
     ingredients: [
       {
         item: 'Desc_Coal_C',
@@ -1261,6 +1397,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_DarkMatter_Trap_C: {
     name: 'Alternate: Dark Matter Trap',
+    time: 2,
+    producedIn: ['Desc_HadronCollider_C'],
     ingredients: [
       {
         item: 'Desc_TimeCrystal_C',
@@ -1280,6 +1418,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_DarkMatter_Crystallization_C: {
     name: 'Alternate: Dark Matter Crystallization',
+    time: 3,
+    producedIn: ['Desc_HadronCollider_C'],
     ingredients: [
       {
         item: 'Desc_DarkEnergy_C',
@@ -1295,6 +1435,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_WetConcrete_C: {
     name: 'Alternate: Wet Concrete',
+    time: 3,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_Stone_C',
@@ -1314,6 +1456,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_TurboHeavyFuel_C: {
     name: 'Alternate: Turbo Heavy Fuel',
+    time: 8,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_HeavyOilResidue_C',
@@ -1333,6 +1477,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_SteelRod_C: {
     name: 'Alternate: Steel Rod',
+    time: 5,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_SteelIngot_C',
@@ -1348,6 +1494,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SteelBeam_C: {
     name: 'Steel Beam',
+    time: 4,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_SteelIngot_C',
@@ -1363,6 +1511,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SteelPipe_C: {
     name: 'Steel Pipe',
+    time: 6,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_SteelIngot_C',
@@ -1378,6 +1528,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_IngotSteel_C: {
     name: 'Steel Ingot',
+    time: 4,
+    producedIn: ['Desc_FoundryMk1_C'],
     ingredients: [
       {
         item: 'Desc_OreIron_C',
@@ -1397,6 +1549,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SpaceElevatorPart_2_C: {
     name: 'Versatile Framework',
+    time: 24,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_ModularFrame_C',
@@ -1416,6 +1570,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_SteelCanister_C: {
     name: 'Alternate: Steel Canister',
+    time: 6,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_SteelIngot_C',
@@ -1431,6 +1587,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_FluidCanister_C: {
     name: 'Empty Canister',
+    time: 4,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_Plastic_C',
@@ -1446,6 +1604,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Fuel_C: {
     name: 'Packaged Fuel',
+    time: 3,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_LiquidFuel_C',
@@ -1465,6 +1625,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_LiquidBiofuel_C: {
     name: 'Liquid Biofuel',
+    time: 4,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_Biofuel_C',
@@ -1484,6 +1646,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PackagedBiofuel_C: {
     name: 'Packaged Liquid Biofuel',
+    time: 3,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_LiquidBiofuel_C',
@@ -1503,6 +1667,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PackagedCrudeOil_C: {
     name: 'Packaged Oil',
+    time: 4,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_LiquidOil_C',
@@ -1522,6 +1688,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PackagedOilResidue_C: {
     name: 'Packaged Heavy Oil Residue',
+    time: 4,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_HeavyOilResidue_C',
@@ -1541,6 +1709,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PackagedWater_C: {
     name: 'Packaged Water',
+    time: 2,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_Water_C',
@@ -1560,6 +1730,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_UnpackageBioFuel_C: {
     name: 'Unpackage Liquid Biofuel',
+    time: 2,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_PackagedBiofuel_C',
@@ -1579,6 +1751,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_UnpackageFuel_C: {
     name: 'Unpackage Fuel',
+    time: 2,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_Fuel_C',
@@ -1598,6 +1772,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_UnpackageOil_C: {
     name: 'Unpackage Oil',
+    time: 2,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_PackagedOil_C',
@@ -1617,6 +1793,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_UnpackageOilResidue_C: {
     name: 'Unpackage Heavy Oil Residue',
+    time: 6,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_PackagedOilResidue_C',
@@ -1636,6 +1814,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_UnpackageWater_C: {
     name: 'Unpackage Water',
+    time: 1,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_PackagedWater_C',
@@ -1655,6 +1835,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_SteamedCopperSheet_C: {
     name: 'Alternate: Steamed Copper Sheet',
+    time: 8,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_CopperIngot_C',
@@ -1674,6 +1856,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_RubberConcrete_C: {
     name: 'Alternate: Rubber Concrete',
+    time: 6,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Stone_C',
@@ -1693,6 +1877,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_RecycledRubber_C: {
     name: 'Alternate: Recycled Rubber',
+    time: 12,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_Plastic_C',
@@ -1712,6 +1898,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_PureQuartzCrystal_C: {
     name: 'Alternate: Pure Quartz Crystal',
+    time: 8,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_RawQuartz_C',
@@ -1731,6 +1919,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_QuartzCrystal_C: {
     name: 'Quartz Crystal',
+    time: 8,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_RawQuartz_C',
@@ -1746,6 +1936,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_PureIronIngot_C: {
     name: 'Alternate: Pure Iron Ingot',
+    time: 12,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_OreIron_C',
@@ -1765,6 +1957,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_PureCopperIngot_C: {
     name: 'Alternate: Pure Copper Ingot',
+    time: 24,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_OreCopper_C',
@@ -1784,6 +1978,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_PureCateriumIngot_C: {
     name: 'Alternate: Pure Caterium Ingot',
+    time: 5,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_OreGold_C',
@@ -1803,6 +1999,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PureAluminumIngot_C: {
     name: 'Alternate: Pure Aluminum Ingot',
+    time: 2,
+    producedIn: ['Desc_SmelterMk1_C'],
     ingredients: [
       {
         item: 'Desc_AluminumScrap_C',
@@ -1818,6 +2016,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_AluminumCasing_C: {
     name: 'Aluminum Casing',
+    time: 2,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_AluminumIngot_C',
@@ -1833,6 +2033,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_AluminumSheet_C: {
     name: 'Alclad Aluminum Sheet',
+    time: 6,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_AluminumIngot_C',
@@ -1852,6 +2054,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_AluminaSolution_C: {
     name: 'Alumina Solution',
+    time: 6,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_OreBauxite_C',
@@ -1875,6 +2079,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_AluminumScrap_C: {
     name: 'Aluminum Scrap',
+    time: 1,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_AluminaSolution_C',
@@ -1898,6 +2104,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PackagedAlumina_C: {
     name: 'Packaged Alumina Solution',
+    time: 1,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_AluminaSolution_C',
@@ -1917,6 +2125,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_IngotAluminum_C: {
     name: 'Aluminum Ingot',
+    time: 4,
+    producedIn: ['Desc_FoundryMk1_C'],
     ingredients: [
       {
         item: 'Desc_AluminumScrap_C',
@@ -1936,6 +2146,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Silica_C: {
     name: 'Silica',
+    time: 8,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_RawQuartz_C',
@@ -1951,6 +2163,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_CrystalOscillator_C: {
     name: 'Crystal Oscillator',
+    time: 120,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_QuartzCrystal_C',
@@ -1974,6 +2188,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_UnpackageAlumina_C: {
     name: 'Unpackage Alumina Solution',
+    time: 1,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_PackagedAlumina_C',
@@ -1993,6 +2209,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_PolymerResin_C: {
     name: 'Alternate: Polymer Resin',
+    time: 6,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_LiquidOil_C',
@@ -2012,6 +2230,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_PlasticSmartPlating_C: {
     name: 'Alternate: Plastic Smart Plating',
+    time: 24,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronPlateReinforced_C',
@@ -2035,6 +2255,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_HighSpeedWiring_C: {
     name: 'Alternate: Automated Speed Wiring',
+    time: 32,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Stator_C',
@@ -2058,6 +2280,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_EncasedIndustrialBeam_C: {
     name: 'Encased Industrial Beam',
+    time: 10,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_SteelPlate_C',
@@ -2077,6 +2301,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Motor_C: {
     name: 'Motor',
+    time: 12,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Rotor_C',
@@ -2096,6 +2322,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Stator_C: {
     name: 'Stator',
+    time: 12,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_SteelPipe_C',
@@ -2115,6 +2343,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SpaceElevatorPart_3_C: {
     name: 'Automated Wiring',
+    time: 24,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Stator_C',
@@ -2134,6 +2364,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_AILimiter_C: {
     name: 'AI Limiter',
+    time: 12,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_CopperSheet_C',
@@ -2153,6 +2385,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_HeavyOilResidue_C: {
     name: 'Alternate: Heavy Oil Residue',
+    time: 6,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_LiquidOil_C',
@@ -2172,6 +2406,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_HeavyFlexibleFrame_C: {
     name: 'Alternate: Heavy Flexible Frame',
+    time: 16,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_ModularFrame_C',
@@ -2199,6 +2435,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Computer_C: {
     name: 'Computer',
+    time: 24,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_CircuitBoard_C',
@@ -2222,6 +2460,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_ModularFrameHeavy_C: {
     name: 'Heavy Modular Frame',
+    time: 30,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_ModularFrame_C',
@@ -2249,6 +2489,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SpaceElevatorPart_4_C: {
     name: 'Modular Engine',
+    time: 60,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Motor_C',
@@ -2272,6 +2514,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SpaceElevatorPart_5_C: {
     name: 'Adaptive Control Unit',
+    time: 60,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_SpaceElevatorPart_3_C',
@@ -2299,6 +2543,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_FusedWire_C: {
     name: 'Alternate: Fused Wire',
+    time: 20,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_CopperIngot_C',
@@ -2318,6 +2564,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_FlexibleFramework_C: {
     name: 'Alternate: Flexible Framework',
+    time: 16,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_ModularFrame_C',
@@ -2341,6 +2589,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_ElectrodeCircuitBoard_C: {
     name: 'Alternate: Electrode Circuit Board',
+    time: 12,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Rubber_C',
@@ -2360,6 +2610,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_ElectroAluminumScrap_C: {
     name: 'Alternate: Electrode Aluminum Scrap',
+    time: 4,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_AluminaSolution_C',
@@ -2383,6 +2635,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_DilutedPackagedFuel_C: {
     name: 'Alternate: Diluted Packaged Fuel',
+    time: 2,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_HeavyOilResidue_C',
@@ -2402,6 +2656,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_CopperRotor_C: {
     name: 'Alternate: Copper Rotor',
+    time: 16,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_CopperSheet_C',
@@ -2421,6 +2677,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_ModularFrame_C: {
     name: 'Modular Frame',
+    time: 60,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronPlateReinforced_C',
@@ -2440,6 +2698,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Rotor_C: {
     name: 'Rotor',
+    time: 15,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronRod_C',
@@ -2459,6 +2719,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_CopperSheet_C: {
     name: 'Copper Sheet',
+    time: 6,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_CopperIngot_C',
@@ -2474,6 +2736,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SpaceElevatorPart_1_C: {
     name: 'Smart Plating',
+    time: 30,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronPlateReinforced_C',
@@ -2493,6 +2757,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_CopperAlloyIngot_C: {
     name: 'Alternate: Copper Alloy Ingot',
+    time: 6,
+    producedIn: ['Desc_FoundryMk1_C'],
     ingredients: [
       {
         item: 'Desc_OreCopper_C',
@@ -2512,6 +2778,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_CokeSteelIngot_C: {
     name: 'Alternate: Coke Steel Ingot',
+    time: 12,
+    producedIn: ['Desc_FoundryMk1_C'],
     ingredients: [
       {
         item: 'Desc_OreIron_C',
@@ -2531,6 +2799,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_CoatedIronPlate_C: {
     name: 'Alternate: Coated Iron Plate',
+    time: 8,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronIngot_C',
@@ -2550,6 +2820,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_CoatedIronCanister_C: {
     name: 'Alternate: Coated Iron Canister',
+    time: 4,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronPlate_C',
@@ -2569,6 +2841,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_CoatedCable_C: {
     name: 'Alternate: Coated Cable',
+    time: 8,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_Wire_C',
@@ -2588,6 +2862,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_BoltedFrame_C: {
     name: 'Alternate: Bolted Frame',
+    time: 24,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronPlateReinforced_C',
@@ -2607,6 +2883,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_AdheredIronPlate_C: {
     name: 'Alternate: Adhered Iron Plate',
+    time: 16,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronPlate_C',
@@ -2626,6 +2904,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_TurboPressureMotor_C: {
     name: 'Alternate: Turbo Pressure Motor',
+    time: 32,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Motor_C',
@@ -2653,6 +2933,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PlutoniumCell_C: {
     name: 'Encased Plutonium Cell',
+    time: 12,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_PlutoniumPellet_C',
@@ -2672,6 +2954,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PressureConversionCube_C: {
     name: 'Pressure Conversion Cube',
+    time: 60,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_ModularFrameFused_C',
@@ -2691,6 +2975,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_NitricAcid_C: {
     name: 'Nitric Acid',
+    time: 6,
+    producedIn: ['Desc_Blender_C'],
     ingredients: [
       {
         item: 'Desc_NitrogenGas_C',
@@ -2714,6 +3000,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_NonFissileUranium_C: {
     name: 'Non-Fissile Uranium',
+    time: 24,
+    producedIn: ['Desc_Blender_C'],
     ingredients: [
       {
         item: 'Desc_NuclearWaste_C',
@@ -2745,6 +3033,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_CopperDust_C: {
     name: 'Copper Powder',
+    time: 6,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_CopperIngot_C',
@@ -2760,6 +3050,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Plutonium_C: {
     name: 'Plutonium Pellet',
+    time: 60,
+    producedIn: ['Desc_HadronCollider_C'],
     ingredients: [
       {
         item: 'Desc_NonFissibleUranium_C',
@@ -2779,6 +3071,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PlutoniumFuelRod_C: {
     name: 'Plutonium Fuel Rod',
+    time: 240,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_PlutoniumCell_C',
@@ -2806,6 +3100,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PackagedNitricAcid_C: {
     name: 'Packaged Nitric Acid',
+    time: 2,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_NitricAcid_C',
@@ -2825,6 +3121,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SpaceElevatorPart_9_C: {
     name: 'Nuclear Pasta',
+    time: 120,
+    producedIn: ['Desc_HadronCollider_C'],
     ingredients: [
       {
         item: 'Desc_CopperDust_C',
@@ -2844,6 +3142,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_UnpackageNitricAcid_C: {
     name: 'Unpackage Nitric Acid',
+    time: 3,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_PackagedNitricAcid_C',
@@ -2863,6 +3163,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_TurboBlendFuel_C: {
     name: 'Alternate: Turbo Blend Fuel',
+    time: 8,
+    producedIn: ['Desc_Blender_C'],
     ingredients: [
       {
         item: 'Desc_LiquidFuel_C',
@@ -2890,6 +3192,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_UraniumCell_C: {
     name: 'Encased Uranium Cell',
+    time: 12,
+    producedIn: ['Desc_Blender_C'],
     ingredients: [
       {
         item: 'Desc_OreUranium_C',
@@ -2917,6 +3221,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_CoolingSystem_C: {
     name: 'Cooling System',
+    time: 10,
+    producedIn: ['Desc_Blender_C'],
     ingredients: [
       {
         item: 'Desc_AluminumPlateReinforced_C',
@@ -2944,6 +3250,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Battery_C: {
     name: 'Battery',
+    time: 3,
+    producedIn: ['Desc_Blender_C'],
     ingredients: [
       {
         item: 'Desc_SulfuricAcid_C',
@@ -2971,6 +3279,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_ComputerSuper_C: {
     name: 'Supercomputer',
+    time: 32,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Computer_C',
@@ -2998,6 +3308,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_RadioControlUnit_C: {
     name: 'Radio Control Unit',
+    time: 48,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_AluminumCasing_C',
@@ -3021,6 +3333,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SulfuricAcid_C: {
     name: 'Sulfuric Acid',
+    time: 6,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_Sulfur_C',
@@ -3040,6 +3354,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PackagedSulfuricAcid_C: {
     name: 'Packaged Sulfuric Acid',
+    time: 3,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_SulfuricAcid_C',
@@ -3059,6 +3375,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SpaceElevatorPart_7_C: {
     name: 'Assembly Director System',
+    time: 80,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_SpaceElevatorPart_5_C',
@@ -3078,6 +3396,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_HighSpeedConnector_C: {
     name: 'High-Speed Connector',
+    time: 16,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_HighSpeedWire_C',
@@ -3101,6 +3421,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_UnpackageSulfuricAcid_C: {
     name: 'Unpackage Sulfuric Acid',
+    time: 1,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_PackagedSulfuricAcid_C',
@@ -3120,6 +3442,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_SuperStateComputer_C: {
     name: 'Alternate: Super-State Computer',
+    time: 25,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Computer_C',
@@ -3147,6 +3471,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_ElectromagneticControlRod_C: {
     name: 'Electromagnetic Control Rod',
+    time: 30,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Stator_C',
@@ -3166,6 +3492,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_NuclearFuelRod_C: {
     name: 'Uranium Fuel Rod',
+    time: 150,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_UraniumCell_C',
@@ -3189,6 +3517,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SpaceElevatorPart_6_C: {
     name: 'Magnetic Field Generator',
+    time: 120,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_SpaceElevatorPart_2_C',
@@ -3208,6 +3538,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_SloppyAlumina_C: {
     name: 'Alternate: Sloppy Alumina',
+    time: 3,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_OreBauxite_C',
@@ -3227,6 +3559,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_RadioControlSystem_C: {
     name: 'Alternate: Radio Control System',
+    time: 40,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_CrystalOscillator_C',
@@ -3254,6 +3588,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_PlutoniumFuelUnit_C: {
     name: 'Alternate: Plutonium Fuel Unit',
+    time: 120,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_PlutoniumCell_C',
@@ -3273,6 +3609,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_OCSupercomputer_C: {
     name: 'Alternate: OC Supercomputer',
+    time: 20,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_ModularFrameLightweight_C',
@@ -3292,6 +3630,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_HeatSink_C: {
     name: 'Heat Sink',
+    time: 8,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_AluminumPlate_C',
@@ -3311,6 +3651,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_FusedModularFrame_C: {
     name: 'Fused Modular Frame',
+    time: 40,
+    producedIn: ['Desc_Blender_C'],
     ingredients: [
       {
         item: 'Desc_ModularFrameHeavy_C',
@@ -3334,6 +3676,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_GasTank_C: {
     name: 'Empty Fluid Tank',
+    time: 1,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_AluminumIngot_C',
@@ -3349,6 +3693,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PackagedNitrogen_C: {
     name: 'Packaged Nitrogen Gas',
+    time: 1,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_NitrogenGas_C',
@@ -3368,6 +3714,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_UnpackageNitrogen_C: {
     name: 'Unpackage Nitrogen Gas',
+    time: 1,
+    producedIn: ['Desc_Packager_C'],
     ingredients: [
       {
         item: 'Desc_PackagedNitrogenGas_C',
@@ -3387,6 +3735,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_InstantScrap_C: {
     name: 'Alternate: Instant Scrap',
+    time: 6,
+    producedIn: ['Desc_Blender_C'],
     ingredients: [
       {
         item: 'Desc_OreBauxite_C',
@@ -3418,6 +3768,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_InstantPlutoniumCell_C: {
     name: 'Alternate: Instant Plutonium Cell',
+    time: 120,
+    producedIn: ['Desc_HadronCollider_C'],
     ingredients: [
       {
         item: 'Desc_NonFissibleUranium_C',
@@ -3437,6 +3789,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_HeatFusedFrame_C: {
     name: 'Alternate: Heat-Fused Frame',
+    time: 20,
+    producedIn: ['Desc_Blender_C'],
     ingredients: [
       {
         item: 'Desc_ModularFrameHeavy_C',
@@ -3464,6 +3818,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_FertileUranium_C: {
     name: 'Alternate: Fertile Uranium',
+    time: 12,
+    producedIn: ['Desc_Blender_C'],
     ingredients: [
       {
         item: 'Desc_OreUranium_C',
@@ -3495,6 +3851,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_ElectricMotor_C: {
     name: 'Alternate: Electric Motor',
+    time: 16,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_ElectromagneticControlRod_C',
@@ -3514,6 +3872,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_DilutedFuel_C: {
     name: 'Alternate: Diluted Fuel',
+    time: 6,
+    producedIn: ['Desc_Blender_C'],
     ingredients: [
       {
         item: 'Desc_HeavyOilResidue_C',
@@ -3533,6 +3893,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_CoolingDevice_C: {
     name: 'Alternate: Cooling Device',
+    time: 24,
+    producedIn: ['Desc_Blender_C'],
     ingredients: [
       {
         item: 'Desc_AluminumPlateReinforced_C',
@@ -3556,6 +3918,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_ClassicBattery_C: {
     name: 'Alternate: Classic Battery',
+    time: 8,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Sulfur_C',
@@ -3583,6 +3947,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_AutomatedMiner_C: {
     name: 'Alternate: Automated Miner',
+    time: 60,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_SteelPipe_C',
@@ -3602,6 +3968,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_AlcladCasing_C: {
     name: 'Alternate: Alclad Casing',
+    time: 8,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_AluminumIngot_C',
@@ -3621,6 +3989,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_SteelPipe_Molded_C: {
     name: 'Alternate: Molded Steel Pipe',
+    time: 6,
+    producedIn: ['Desc_FoundryMk1_C'],
     ingredients: [
       {
         item: 'Desc_SteelIngot_C',
@@ -3640,6 +4010,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_SteelPipe_Iron_C: {
     name: 'Alternate: Iron Pipe',
+    time: 12,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronIngot_C',
@@ -3655,6 +4027,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_SteelCastedPlate_C: {
     name: 'Alternate: Steel Cast Plate',
+    time: 4,
+    producedIn: ['Desc_FoundryMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronIngot_C',
@@ -3674,6 +4048,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_SteelBeam_Molded_C: {
     name: 'Alternate: Molded Beam',
+    time: 12,
+    producedIn: ['Desc_FoundryMk1_C'],
     ingredients: [
       {
         item: 'Desc_SteelIngot_C',
@@ -3693,6 +4069,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_SteelBeam_Aluminum_C: {
     name: 'Alternate: Aluminum Beam',
+    time: 8,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_AluminumIngot_C',
@@ -3708,6 +4086,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_AluminumRod_C: {
     name: 'Alternate: Aluminum Rod',
+    time: 8,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_AluminumIngot_C',
@@ -3723,6 +4103,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_AILimiter_Plastic_C: {
     name: 'Alternate: Plastic AI Limiter',
+    time: 15,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_HighSpeedWire_C',
@@ -3742,6 +4124,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Silica_Distilled_C: {
     name: 'Alternate: Distilled Silica',
+    time: 6,
+    producedIn: ['Desc_Blender_C'],
     ingredients: [
       {
         item: 'Desc_DissolvedSilica_C',
@@ -3769,6 +4153,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Quartz_Purified_C: {
     name: 'Alternate: Quartz Purification',
+    time: 12,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_RawQuartz_C',
@@ -3792,6 +4178,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Quartz_Fused_C: {
     name: 'Alternate: Fused Quartz Crystal',
+    time: 20,
+    producedIn: ['Desc_FoundryMk1_C'],
     ingredients: [
       {
         item: 'Desc_RawQuartz_C',
@@ -3811,6 +4199,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_IronIngot_Leached_C: {
     name: 'Alternate: Leached Iron ingot',
+    time: 6,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_OreIron_C',
@@ -3830,6 +4220,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_IronIngot_Basic_C: {
     name: 'Alternate: Basic Iron Ingot',
+    time: 12,
+    producedIn: ['Desc_FoundryMk1_C'],
     ingredients: [
       {
         item: 'Desc_OreIron_C',
@@ -3849,6 +4241,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_CopperIngot_Tempered_C: {
     name: 'Alternate: Tempered Copper Ingot',
+    time: 12,
+    producedIn: ['Desc_FoundryMk1_C'],
     ingredients: [
       {
         item: 'Desc_OreCopper_C',
@@ -3868,6 +4262,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_CopperIngot_Leached_C: {
     name: 'Alternate: Leached Copper Ingot',
+    time: 12,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_OreCopper_C',
@@ -3887,6 +4283,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_CateriumIngot_Tempered_C: {
     name: 'Alternate: Tempered Caterium Ingot',
+    time: 8,
+    producedIn: ['Desc_FoundryMk1_C'],
     ingredients: [
       {
         item: 'Desc_OreGold_C',
@@ -3906,6 +4304,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_CateriumIngot_Leached_C: {
     name: 'Alternate: Leached Caterium Ingot',
+    time: 10,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_OreGold_C',
@@ -3925,6 +4325,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Wire_2_C: {
     name: 'Alternate: Caterium Wire',
+    time: 4,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_GoldIngot_C',
@@ -3940,6 +4342,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Wire_1_C: {
     name: 'Alternate: Iron Wire',
+    time: 24,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronIngot_C',
@@ -3955,6 +4359,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_UraniumCell_1_C: {
     name: 'Alternate: Infused Uranium Cell',
+    time: 12,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_OreUranium_C',
@@ -3982,6 +4388,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_IngotCaterium_C: {
     name: 'Caterium Ingot',
+    time: 4,
+    producedIn: ['Desc_SmelterMk1_C'],
     ingredients: [
       {
         item: 'Desc_OreGold_C',
@@ -3997,6 +4405,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_TurboMotor_1_C: {
     name: 'Alternate: Turbo Electric Motor',
+    time: 64,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Motor_C',
@@ -4024,6 +4434,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_MotorTurbo_C: {
     name: 'Turbo Motor',
+    time: 32,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_CoolingSystem_C',
@@ -4051,6 +4463,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SpaceElevatorPart_8_C: {
     name: 'Thermal Propulsion Rocket',
+    time: 120,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_SpaceElevatorPart_4_C',
@@ -4078,6 +4492,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Stator_C: {
     name: 'Alternate: Quickwire Stator',
+    time: 15,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_SteelPipe_C',
@@ -4097,6 +4513,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Silica_C: {
     name: 'Alternate: Cheap Silica',
+    time: 8,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_RawQuartz_C',
@@ -4116,6 +4534,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Screw_2_C: {
     name: 'Alternate: Steel Screw',
+    time: 12,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_SteelPlate_C',
@@ -4131,6 +4551,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Screw_C: {
     name: 'Alternate: Cast Screw',
+    time: 24,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronIngot_C',
@@ -4146,6 +4568,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Rotor_C: {
     name: 'Alternate: Steel Rotor',
+    time: 12,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_SteelPipe_C',
@@ -4165,6 +4589,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_EncasedIndustrialBeam_C: {
     name: 'Alternate: Encased Industrial Pipe',
+    time: 15,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_SteelPipe_C',
@@ -4184,6 +4610,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_ReinforcedIronPlate_2_C: {
     name: 'Alternate: Stitched Iron Plate',
+    time: 32,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronPlate_C',
@@ -4203,6 +4631,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_ReinforcedIronPlate_1_C: {
     name: 'Alternate: Bolted Iron Plate',
+    time: 12,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronPlate_C',
@@ -4222,6 +4652,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_RadioControlUnit_1_C: {
     name: 'Alternate: Radio Connection Unit',
+    time: 16,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_AluminumPlateReinforced_C',
@@ -4245,6 +4677,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Quickwire_C: {
     name: 'Alternate: Fused Quickwire',
+    time: 8,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_GoldIngot_C',
@@ -4264,6 +4698,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Plastic_1_C: {
     name: 'Alternate: Recycled Plastic',
+    time: 12,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_Rubber_C',
@@ -4283,6 +4719,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_NuclearFuelRod_1_C: {
     name: 'Alternate: Uranium Fuel Unit',
+    time: 300,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_UraniumCell_C',
@@ -4310,6 +4748,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Motor_1_C: {
     name: 'Alternate: Rigor Motor',
+    time: 48,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Rotor_C',
@@ -4333,6 +4773,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_ModularFrame_C: {
     name: 'Alternate: Steeled Frame',
+    time: 60,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronPlateReinforced_C',
@@ -4352,6 +4794,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_IngotSteel_2_C: {
     name: 'Alternate: Compacted Steel Ingot',
+    time: 24,
+    producedIn: ['Desc_FoundryMk1_C'],
     ingredients: [
       {
         item: 'Desc_OreIron_C',
@@ -4371,6 +4815,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_IngotSteel_1_C: {
     name: 'Alternate: Solid Steel Ingot',
+    time: 3,
+    producedIn: ['Desc_FoundryMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronIngot_C',
@@ -4390,6 +4836,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_IngotIron_C: {
     name: 'Alternate: Iron Alloy Ingot',
+    time: 12,
+    producedIn: ['Desc_FoundryMk1_C'],
     ingredients: [
       {
         item: 'Desc_OreIron_C',
@@ -4409,6 +4857,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_HighSpeedConnector_C: {
     name: 'Alternate: Silicon High-Speed Connector',
+    time: 40,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_HighSpeedWire_C',
@@ -4432,6 +4882,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_ModularFrameHeavy_C: {
     name: 'Alternate: Heavy Encased Frame',
+    time: 64,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_ModularFrame_C',
@@ -4459,6 +4911,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_HeatSink_1_C: {
     name: 'Alternate: Heat Exchanger',
+    time: 6,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_AluminumCasing_C',
@@ -4478,6 +4932,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Gunpowder_1_C: {
     name: 'Alternate: Fine Black Powder',
+    time: 8,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Sulfur_C',
@@ -4497,6 +4953,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_ElectromagneticControlRod_1_C: {
     name: 'Alternate: Electromagnetic Connection Rod',
+    time: 15,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Stator_C',
@@ -4516,6 +4974,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_CrystalOscillator_C: {
     name: 'Alternate: Insulated Crystal Oscillator',
+    time: 32,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_QuartzCrystal_C',
@@ -4539,6 +4999,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Concrete_C: {
     name: 'Alternate: Fine Concrete',
+    time: 12,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Silica_C',
@@ -4558,6 +5020,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Computer_2_C: {
     name: 'Alternate: Crystal Computer',
+    time: 36,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_CircuitBoard_C',
@@ -4577,6 +5041,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Computer_1_C: {
     name: 'Alternate: Caterium Computer',
+    time: 16,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_CircuitBoard_C',
@@ -4600,6 +5066,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_CircuitBoard_2_C: {
     name: 'Alternate: Caterium Circuit Board',
+    time: 48,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Plastic_C',
@@ -4619,6 +5087,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_CircuitBoard_1_C: {
     name: 'Alternate: Silicon Circuit Board',
+    time: 24,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_CopperSheet_C',
@@ -4638,6 +5108,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Cable_2_C: {
     name: 'Alternate: Quickwire Cable',
+    time: 24,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_HighSpeedWire_C',
@@ -4657,6 +5129,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_Cable_1_C: {
     name: 'Alternate: Insulated Cable',
+    time: 12,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Wire_C',
@@ -4676,6 +5150,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Ficsonium_C: {
     name: 'Ficsonium',
+    time: 6,
+    producedIn: ['Desc_HadronCollider_C'],
     ingredients: [
       {
         item: 'Desc_PlutoniumWaste_C',
@@ -4699,6 +5175,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_FicsoniumFuelRod_C: {
     name: 'Ficsonium Fuel Rod',
+    time: 24,
+    producedIn: ['Desc_QuantumEncoder_C'],
     ingredients: [
       {
         item: 'Desc_Ficsonium_C',
@@ -4730,6 +5208,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SingularityCell_C: {
     name: 'Singularity Cell',
+    time: 60,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_SpaceElevatorPart_9_C',
@@ -4757,6 +5237,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SpaceElevatorPart_11_C: {
     name: 'Ballistic Warp Drive',
+    time: 60,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_SpaceElevatorPart_8_C',
@@ -4784,6 +5266,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Hoverpack_C: {
     name: 'Hoverpack',
+    time: 120,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_Motor_C',
@@ -4811,6 +5295,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_FilterHazmat_C: {
     name: 'Iodine-Infused Filter',
+    time: 16,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Filter_C',
@@ -4834,6 +5320,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_HazmatSuit_C: {
     name: 'Hazmat Suit',
+    time: 120,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_Rubber_C',
@@ -4861,6 +5349,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_JetPack_C: {
     name: 'Jetpack',
+    time: 60,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_Motor_C',
@@ -4888,6 +5378,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Quickwire_C: {
     name: 'Quickwire',
+    time: 5,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_GoldIngot_C',
@@ -4903,6 +5395,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_XenoBasher_C: {
     name: 'Xeno-Basher',
+    time: 80,
+    producedIn: [],
     ingredients: [
       {
         item: 'BP_EquipmentDescriptorShockShank_C',
@@ -4930,6 +5424,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Biofuel_C: {
     name: 'Solid Biofuel',
+    time: 4,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_GenericBiomass_C',
@@ -4945,6 +5441,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Chainsaw_C: {
     name: 'Chainsaw',
+    time: 60,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_IronPlateReinforced_C',
@@ -4972,6 +5470,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Protein_Hog_C: {
     name: 'Hog Protein',
+    time: 3,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_HogParts_C',
@@ -4987,6 +5487,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Protein_Spitter_C: {
     name: 'Spitter Protein',
+    time: 3,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_SpitterParts_C',
@@ -5002,6 +5504,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Biomass_Mycelia_C: {
     name: 'Biomass (Mycelia)',
+    time: 4,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_Mycelia_C',
@@ -5017,6 +5521,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PowerCrystalShard_1_C: {
     name: 'Power Shard (1)',
+    time: 8,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_Crystal_C',
@@ -5032,6 +5538,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Gunpowder_C: {
     name: 'Black Powder',
+    time: 4,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Coal_C',
@@ -5051,6 +5559,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_AlienPowerFuel_C: {
     name: 'Alien Power Matrix',
+    time: 24,
+    producedIn: ['Desc_QuantumEncoder_C'],
     ingredients: [
       {
         item: 'Desc_SAMFluctuator_C',
@@ -5082,6 +5592,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_ObjectScanner_C: {
     name: 'Object Scanner',
+    time: 40,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_IronPlateReinforced_C',
@@ -5105,6 +5617,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Protein_Stinger_C: {
     name: 'Stinger Protein',
+    time: 3,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_StingerParts_C',
@@ -5120,6 +5634,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Protein_Crab_C: {
     name: 'Hatcher Protein',
+    time: 3,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_HatcherParts_C',
@@ -5135,6 +5651,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_AlienDNACapsule_C: {
     name: 'Alien DNA Capsule',
+    time: 6,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_AlienProtein_C',
@@ -5150,6 +5668,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Biomass_AlienProtein_C: {
     name: 'Biomass (Alien Protein)',
+    time: 4,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_AlienProtein_C',
@@ -5165,6 +5685,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_MedicinalInhalerAlienOrgans_C: {
     name: 'Protein Inhaler',
+    time: 20,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_AlienProtein_C',
@@ -5184,6 +5706,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SpikedRebar_C: {
     name: 'Iron Rebar',
+    time: 4,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronRod_C',
@@ -5199,6 +5723,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_RebarGun_C: {
     name: 'Rebar Gun',
+    time: 60,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_IronPlateReinforced_C',
@@ -5222,6 +5748,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_CartridgeSmart_C: {
     name: 'Homing Rifle Ammo',
+    time: 24,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_CartridgeStandard_C',
@@ -5241,6 +5769,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_BladeRunners_C: {
     name: 'Blade Runners',
+    time: 60,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_Silica_C',
@@ -5264,6 +5794,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Rebar_Stunshot_C: {
     name: 'Stun Rebar',
+    time: 6,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_SpikedRebar_C',
@@ -5283,6 +5815,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_ZipLine_C: {
     name: 'Zipline',
+    time: 40,
+    producedIn: [],
     ingredients: [
       {
         item: 'BP_EquipmentDescriptorShockShank_C',
@@ -5310,6 +5844,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_FilterGasMask_C: {
     name: 'Gas Filter',
+    time: 8,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Fabric_C',
@@ -5333,6 +5869,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Gasmask_C: {
     name: 'Gas Mask',
+    time: 60,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_Fabric_C',
@@ -5356,6 +5894,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_NobeliskGas_C: {
     name: 'Gas Nobelisk',
+    time: 12,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_NobeliskExplosive_C',
@@ -5375,6 +5915,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_TherapeuticInhaler_C: {
     name: 'Therapeutic Inhaler',
+    time: 20,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_Mycelia_C',
@@ -5398,6 +5940,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_MedicinalInhaler_C: {
     name: 'Vitamin Inhaler',
+    time: 20,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_Mycelia_C',
@@ -5417,6 +5961,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Parachute_C: {
     name: 'Parachute',
+    time: 40,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_Fabric_C',
@@ -5436,6 +5982,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Alternate_PolyesterFabric_C: {
     name: 'Alternate: Polyester Fabric',
+    time: 2,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_PolymerResin_C',
@@ -5455,6 +6003,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Fabric_C: {
     name: 'Fabric',
+    time: 4,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Mycelia_C',
@@ -5474,6 +6024,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_NutritionalInhaler_C: {
     name: 'Nutritional Inhaler',
+    time: 20,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_Shroom_C',
@@ -5497,6 +6049,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SyntheticPowerShard_C: {
     name: 'Synthetic Power Shard',
+    time: 12,
+    producedIn: ['Desc_QuantumEncoder_C'],
     ingredients: [
       {
         item: 'Desc_TimeCrystal_C',
@@ -5528,6 +6082,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PowerCrystalShard_3_C: {
     name: 'Power Shard (5)',
+    time: 24,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_Crystal_mk3_C',
@@ -5543,6 +6099,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PowerCrystalShard_2_C: {
     name: 'Power Shard (2)',
+    time: 12,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_Crystal_mk2_C',
@@ -5558,6 +6116,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_NobeliskShockwave_C: {
     name: 'Pulse Nobelisk',
+    time: 60,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_NobeliskExplosive_C',
@@ -5577,6 +6137,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Rebar_Spreadshot_C: {
     name: 'Shatter Rebar',
+    time: 12,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_SpikedRebar_C',
@@ -5596,6 +6158,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_CartridgeChaos_Packaged_C: {
     name: 'Turbo Rifle Ammo',
+    time: 12,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_CartridgeStandard_C',
@@ -5619,6 +6183,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_CartridgeChaos_C: {
     name: 'Turbo Rifle Ammo',
+    time: 12,
+    producedIn: ['Desc_Blender_C'],
     ingredients: [
       {
         item: 'Desc_CartridgeStandard_C',
@@ -5642,6 +6208,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_NobeliskNuke_C: {
     name: 'Nuke Nobelisk',
+    time: 120,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_NobeliskExplosive_C',
@@ -5669,6 +6237,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Cartridge_C: {
     name: 'Rifle Ammo',
+    time: 12,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_CopperSheet_C',
@@ -5688,6 +6258,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Rebar_Explosive_C: {
     name: 'Explosive Rebar',
+    time: 12,
+    producedIn: ['Desc_ManufacturerMk1_C'],
     ingredients: [
       {
         item: 'Desc_SpikedRebar_C',
@@ -5711,6 +6283,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_SpaceRifleMk1_C: {
     name: 'Rifle',
+    time: 120,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_Motor_C',
@@ -5738,6 +6312,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_NobeliskCluster_C: {
     name: 'Cluster Nobelisk',
+    time: 24,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_NobeliskExplosive_C',
@@ -5757,6 +6333,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Nobelisk_C: {
     name: 'Nobelisk',
+    time: 6,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_Gunpowder_C',
@@ -5776,6 +6354,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_NobeliskDetonator_C: {
     name: 'Nobelisk Detonator',
+    time: 80,
+    producedIn: [],
     ingredients: [
       {
         item: 'BP_EquipmentDescriptorObjectScanner_C',
@@ -5799,6 +6379,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_GunpowderMK2_C: {
     name: 'Smokeless Powder',
+    time: 6,
+    producedIn: ['Desc_OilRefinery_C'],
     ingredients: [
       {
         item: 'Desc_Gunpowder_C',
@@ -5818,6 +6400,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_FactoryCart_C: {
     name: 'Factory Cart(TM)',
+    time: 20,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_IronPlateReinforced_C',
@@ -5841,6 +6425,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_GoldenCart_C: {
     name: 'Golden Factory Cart(TM)',
+    time: 20,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_GoldIngot_C',
@@ -5864,6 +6450,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Biomass_Leaves_C: {
     name: 'Biomass (Leaves)',
+    time: 5,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_Leaves_C',
@@ -5879,6 +6467,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Biomass_Wood_C: {
     name: 'Biomass (Wood)',
+    time: 4,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_Wood_C',
@@ -5894,6 +6484,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_IronPlateReinforced_C: {
     name: 'Reinforced Iron Plate',
+    time: 12,
+    producedIn: ['Desc_AssemblerMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronPlate_C',
@@ -5913,6 +6505,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Concrete_C: {
     name: 'Concrete',
+    time: 4,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_Stone_C',
@@ -5928,6 +6522,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Screw_C: {
     name: 'Screw',
+    time: 6,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_IronRod_C',
@@ -5943,6 +6539,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Cable_C: {
     name: 'Cable',
+    time: 2,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_Wire_C',
@@ -5958,6 +6556,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_Wire_C: {
     name: 'Wire',
+    time: 4,
+    producedIn: ['Desc_ConstructorMk1_C'],
     ingredients: [
       {
         item: 'Desc_CopperIngot_C',
@@ -5973,6 +6573,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_IngotCopper_C: {
     name: 'Copper Ingot',
+    time: 2,
+    producedIn: ['Desc_SmelterMk1_C'],
     ingredients: [
       {
         item: 'Desc_OreCopper_C',
@@ -5988,6 +6590,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
   },
   Recipe_PortableMiner_C: {
     name: 'Portable Miner',
+    time: 40,
+    producedIn: [],
     ingredients: [
       {
         item: 'Desc_IronPlate_C',

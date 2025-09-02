@@ -160,3 +160,9 @@ export interface ItemOption {
   icon: string
   type: 'item' | 'building'
 }
+
+export interface RecipeOption {
+  value: string
+  title: string
+  icon: string
+}

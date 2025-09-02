@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { refDebounced } from '@vueuse/core'
 import { useDataStore } from '@/stores/data'
+import { type RecipeOption } from '@/types/data'
 import { type RecipeEntry } from '@/types/factory'
-import CachedIcon from '@/components/common/CachedIcon.vue'
 
 interface Props {
   modelValue: RecipeEntry[]
@@ -19,9 +20,15 @@ const dataStore = useDataStore()
 const selectedRecipe = ref<string>('')
 const buildingCount = ref<number>(1)
 const selectedBuilding = ref<string>('')
+const searchInput = ref('')
+const debouncedSearch = refDebounced(searchInput, 200)
 
-// Available recipes with friendly names, excluding already selected ones
-const recipeOptions = computed(() => {
+const updateSearch = (value: string) => {
+  searchInput.value = value
+}
+
+// All available recipes with icons, excluding already selected ones
+const allRecipeOptions = computed(() => {
   const selectedRecipeKeys = props.modelValue.map((entry) => entry.recipe)
 
   return Object.keys(dataStore.recipes)
@@ -29,8 +36,27 @@ const recipeOptions = computed(() => {
     .map((key) => ({
       value: key,
       title: dataStore.getRecipeDisplayName(key),
+      icon: getRecipeProductIcon(key),
     }))
     .sort((a, b) => a.title.localeCompare(b.title))
+})
+
+// Performance optimized: only show filtered results, limited count
+const recipeOptions = computed<RecipeOption[]>(() => {
+  const query = debouncedSearch.value?.toLowerCase().trim()
+
+  const MAX_RESULTS = 20
+
+  const results: RecipeOption[] = []
+
+  for (let i = 0; i < allRecipeOptions.value.length && results.length < MAX_RESULTS; i++) {
+    const recipe = allRecipeOptions.value[i]
+    if (recipe.title.toLowerCase().includes(query)) {
+      results.push(recipe)
+    }
+  }
+
+  return results
 })
 
 // Available buildings for selected recipe
@@ -56,7 +82,7 @@ watch(
 )
 
 const canAddRecipe = computed(() => {
-  return selectedRecipe.value && selectedBuilding.value && buildingCount.value > 0
+  return !!selectedRecipe.value && !!selectedBuilding.value && buildingCount.value > 0
 })
 
 const addRecipe = () => {
@@ -110,6 +136,8 @@ watch(selectedRecipe, () => {
     <div class="recipe-form">
       <v-autocomplete
         v-model="selectedRecipe"
+        :search="searchInput"
+        @update:search="updateSearch"
         :items="recipeOptions"
         label="Recipe"
         item-title="title"
@@ -118,7 +146,28 @@ watch(selectedRecipe, () => {
         clearable
         class="mb-3"
         :hide-details="true"
-      />
+        autocomplete="off"
+        :menu-props="{ closeOnContentClick: true }"
+        no-filter
+      >
+        <!-- Dropdown item template with icons -->
+        <template #item="{ props: itemProps, item }">
+          <v-list-item v-bind="itemProps">
+            <template #prepend>
+              <CachedIcon :icon="item.raw.icon" :size="32" :alt="item.raw.title" class="me-3" />
+            </template>
+          </v-list-item>
+        </template>
+
+        <!-- No data message -->
+        <template #no-data>
+          <div class="px-4 py-2 text-center text-medium-emphasis">
+            <div v-if="allRecipeOptions.length === 0">Loading recipes...</div>
+            <div v-else-if="!searchInput">Start typing to search recipes...</div>
+            <div v-else>No recipes found for "{{ searchInput }}"</div>
+          </div>
+        </template>
+      </v-autocomplete>
 
       <div class="d-flex gap-3 mb-3 align-center">
         <v-text-field

@@ -6,11 +6,9 @@ import { useDataStore } from '@/stores/data'
 import { createPinia, setActivePinia, type Pinia } from 'pinia'
 import { itemDatabase, buildingDatabase } from '@/__tests__/fixtures/data'
 import type { ItemOption } from '@/types/data'
-
-// Import the component test setup
+import { getStubs, SupportedStubs } from '@/__tests__/componentStubs'
 import '@/components/__tests__/component-setup'
 
-// Mock the data store
 vi.mock('@/stores/data', () => ({
   useDataStore: vi.fn(),
 }))
@@ -62,12 +60,19 @@ describe('ItemSelector', () => {
     await wrapper.vm.$nextTick()
   }
 
+  const mountItemSelector = (props = {}) => {
+    return mount(ItemSelector, {
+      props,
+      global: {
+        stubs: getStubs(SupportedStubs.CachedIcon),
+      },
+    })
+  }
+
   describe('Items Inclusion', () => {
     it('includes only items when includeBuildings is false', () => {
-      const wrapper = mount(ItemSelector, {
-        props: {
-          includeBuildings: false,
-        },
+      const wrapper = mountItemSelector({
+        includeBuildings: false,
       })
 
       const allItems = wrapper.vm.allItems
@@ -83,7 +88,7 @@ describe('ItemSelector', () => {
     })
 
     it('includes items and buildings when includeBuildings is true (default)', () => {
-      const wrapper = mount(ItemSelector)
+      const wrapper = mountItemSelector()
 
       const allItems = wrapper.vm.allItems
       const items = allItems.filter((item: ItemOption) => item.type === 'item')
@@ -104,7 +109,7 @@ describe('ItemSelector', () => {
 
   describe('Search Filtering', () => {
     it('filters items based on search text', async () => {
-      const wrapper = mount(ItemSelector)
+      const wrapper = mountItemSelector()
 
       await triggerSearch(wrapper, 'iron')
 
@@ -116,7 +121,7 @@ describe('ItemSelector', () => {
     })
 
     it('returns multiple matches when search text matches multiple items', async () => {
-      const wrapper = mount(ItemSelector)
+      const wrapper = mountItemSelector()
 
       await triggerSearch(wrapper, 'ingot')
 
@@ -128,7 +133,7 @@ describe('ItemSelector', () => {
     })
 
     it('is case insensitive', async () => {
-      const wrapper = mount(ItemSelector)
+      const wrapper = mountItemSelector()
 
       await triggerSearch(wrapper, 'IRON')
       const filteredItems = wrapper.vm.filteredItems
@@ -140,14 +145,14 @@ describe('ItemSelector', () => {
 
   describe('Item Limits and Sorting', () => {
     it('shows only first 20 items when no search query', () => {
-      const wrapper = mount(ItemSelector)
+      const wrapper = mountItemSelector()
 
       const filteredItems = wrapper.vm.filteredItems
       expect(filteredItems).toHaveLength(20)
     })
 
     it('sorts items alphabetically by name', () => {
-      const wrapper = mount(ItemSelector)
+      const wrapper = mountItemSelector()
 
       const allItems = wrapper.vm.allItems
       const itemNames = allItems.map((item: ItemOption) => item.name)
@@ -159,7 +164,7 @@ describe('ItemSelector', () => {
 
   describe('Value Emission and Updates', () => {
     it('emits update:modelValue when item is selected', async () => {
-      const wrapper = mount(ItemSelector)
+      const wrapper = mountItemSelector()
 
       const testItem: ItemOption = {
         value: 'Desc_IronIngot_C',
@@ -177,7 +182,7 @@ describe('ItemSelector', () => {
     })
 
     it('emits undefined when item is cleared', async () => {
-      const wrapper = mount(ItemSelector)
+      const wrapper = mountItemSelector()
 
       wrapper.vm.updateValue(null)
       await nextTick()
@@ -195,10 +200,8 @@ describe('ItemSelector', () => {
         type: 'item',
       }
 
-      const wrapper = mount(ItemSelector, {
-        props: {
-          modelValue: testItem,
-        },
+      const wrapper = mountItemSelector({
+        modelValue: testItem,
       })
 
       expect(wrapper.vm.selectedItem?.value).toBe(testItem.value)
@@ -217,7 +220,7 @@ describe('ItemSelector', () => {
       } as unknown as ReturnType<typeof useDataStore>
       vi.mocked(useDataStore).mockImplementation(() => emptyMockDataStore)
 
-      const wrapper = mount(ItemSelector)
+      const wrapper = mountItemSelector()
 
       // Verify the component state that would drive the "Loading items..." template
       expect(wrapper.vm.allItems).toHaveLength(0)
@@ -230,7 +233,7 @@ describe('ItemSelector', () => {
     })
 
     it('shows initial items when no search text is entered', () => {
-      const wrapper = mount(ItemSelector)
+      const wrapper = mountItemSelector()
 
       // Verify initial state - should show first 20 items, no search
       expect(wrapper.vm.searchInput).toBe('')
@@ -240,7 +243,7 @@ describe('ItemSelector', () => {
     })
 
     it('has empty results when search yields no matches', async () => {
-      const wrapper = mount(ItemSelector)
+      const wrapper = mountItemSelector()
 
       await triggerSearch(wrapper, 'nonexistentitem123')
 
@@ -257,7 +260,7 @@ describe('ItemSelector', () => {
 
   describe('Component Props', () => {
     it('uses default placeholder text', () => {
-      const wrapper = mount(ItemSelector)
+      const wrapper = mountItemSelector()
 
       // Check the props directly since Vuetify might not render placeholder as HTML attribute
       expect(wrapper.props('placeholder')).toBe('Search for an item...')
@@ -265,20 +268,16 @@ describe('ItemSelector', () => {
 
     it('uses custom placeholder when provided', () => {
       const customPlaceholder = 'Choose an item...'
-      const wrapper = mount(ItemSelector, {
-        props: {
-          placeholder: customPlaceholder,
-        },
+      const wrapper = mountItemSelector({
+        placeholder: customPlaceholder,
       })
 
       expect(wrapper.props('placeholder')).toBe(customPlaceholder)
     })
 
     it('disables component when disabled prop is true', () => {
-      const wrapper = mount(ItemSelector, {
-        props: {
-          disabled: true,
-        },
+      const wrapper = mountItemSelector({
+        disabled: true,
       })
 
       expect(wrapper.props('disabled')).toBe(true)
@@ -287,7 +286,7 @@ describe('ItemSelector', () => {
 
   describe('Debounced Search', () => {
     it('debounces search input updates', async () => {
-      const wrapper = mount(ItemSelector)
+      const wrapper = mountItemSelector()
 
       // Rapidly change search input
       wrapper.vm.searchInput = 'iron'

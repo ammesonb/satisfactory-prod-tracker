@@ -3,7 +3,6 @@ import { ref, computed } from 'vue'
 import { refDebounced } from '@vueuse/core'
 import { useDataStore } from '@/stores/data'
 import { type ItemOption } from '@/types/data'
-import CachedIcon from '@/components/common/CachedIcon.vue'
 
 interface Props {
   modelValue?: ItemOption
