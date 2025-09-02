@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import CachedIcon from '../CachedIcon.vue'
-import { itemDatabase } from '../../../logistics/__tests__/recipe-fixtures'
+import CachedIcon from '@/components/common/CachedIcon.vue'
+import { itemDatabase } from '@/__tests__/fixtures/data'
 import { getIconURL } from '@/logistics/images'
 
 // Import the component test setup

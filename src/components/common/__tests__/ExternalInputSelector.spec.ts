@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import ExternalInputSelector from '../ExternalInputSelector.vue'
-import { itemDatabase } from '../../../logistics/__tests__/recipe-fixtures'
+import { itemDatabase } from '@/__tests__/fixtures/data'
 import type { RecipeProduct } from '@/types/data'
 
 // Import the component test setup
