@@ -8,7 +8,12 @@ import { itemDatabase, buildingDatabase, recipeDatabase } from '@/__tests__/fixt
 import { type RecipeData } from '@/__tests__/fixtures/types/dataStore'
 import { type RecipeOption } from '@/types/data'
 import type { RecipeEntry } from '@/types/factory'
-import { getStubs, SupportedStubs } from '@/__tests__/componentStubs'
+import {
+  getStubs,
+  SupportedStubs,
+  setComponentData,
+  setComponentDataAndTick,
+} from '@/__tests__/componentStubs'
 
 // Import the component test setup
 import '@/components/__tests__/component-setup'
@@ -70,7 +75,7 @@ describe('RecipeInput', () => {
   })
 
   const triggerSearch = async (wrapper: ReturnType<typeof mount>, searchText: string) => {
-    wrapper.vm.searchInput = searchText
+    setComponentData(wrapper, { searchInput: searchText })
     // Wait for debounced search (200ms + extra time)
     await new Promise((resolve) => setTimeout(resolve, 250))
     await wrapper.vm.$nextTick()
@@ -141,7 +146,7 @@ describe('RecipeInput', () => {
       const wrapper = mountRecipeInput()
 
       // Rapidly change search input
-      wrapper.vm.searchInput = 'ingot'
+      setComponentData(wrapper, { searchInput: 'ingot' })
 
       // Before debounce timeout, debouncedSearch should still be empty
       expect(wrapper.vm.debouncedSearch).toBe('')
@@ -164,8 +169,9 @@ describe('RecipeInput', () => {
       const wrapper = mountRecipeInput()
 
       // Use multi-building recipe to ensure building selection is required
-      wrapper.vm.selectedRecipe = multiBuildingRecipe
-      await wrapper.vm.$nextTick()
+      await setComponentDataAndTick(wrapper, {
+        selectedRecipe: multiBuildingRecipe,
+      })
 
       expect(wrapper.vm.canAddRecipe).toBe(false)
     })
@@ -174,20 +180,23 @@ describe('RecipeInput', () => {
       const wrapper = mountRecipeInput()
 
       const firstRecipeKey = Object.keys(mockRecipes)[0]
-      wrapper.vm.selectedRecipe = firstRecipeKey
-      wrapper.vm.selectedBuilding = 'Desc_ConstructorMk1_C'
-      wrapper.vm.buildingCount = 0
-      await wrapper.vm.$nextTick()
+      await setComponentDataAndTick(wrapper, {
+        selectedRecipe: firstRecipeKey,
+        selectedBuilding: 'Desc_ConstructorMk1_C',
+        buildingCount: 0,
+      })
 
       expect(wrapper.vm.canAddRecipe).toBe(false)
 
-      wrapper.vm.buildingCount = -5
-      await wrapper.vm.$nextTick()
+      await setComponentDataAndTick(wrapper, {
+        buildingCount: -5,
+      })
 
       expect(wrapper.vm.canAddRecipe).toBe(false)
 
-      wrapper.vm.buildingCount = 3
-      await wrapper.vm.$nextTick()
+      await setComponentDataAndTick(wrapper, {
+        buildingCount: 3,
+      })
 
       expect(wrapper.vm.canAddRecipe).toBe(true)
     })
@@ -196,10 +205,11 @@ describe('RecipeInput', () => {
       const wrapper = mountRecipeInput()
 
       const firstRecipeKey = Object.keys(mockRecipes)[0]
-      wrapper.vm.selectedRecipe = firstRecipeKey
-      wrapper.vm.selectedBuilding = 'Desc_ConstructorMk1_C'
-      wrapper.vm.buildingCount = 2
-      await wrapper.vm.$nextTick()
+      await setComponentDataAndTick(wrapper, {
+        selectedRecipe: firstRecipeKey,
+        selectedBuilding: 'Desc_ConstructorMk1_C',
+        buildingCount: 2,
+      })
 
       expect(wrapper.vm.canAddRecipe).toBe(true)
     })
@@ -213,8 +223,7 @@ describe('RecipeInput', () => {
         (key) => mockRecipes[key].producedIn.length === 1,
       )!
 
-      wrapper.vm.selectedRecipe = singleBuildingRecipe
-      await wrapper.vm.$nextTick()
+      await setComponentDataAndTick(wrapper, { selectedRecipe: singleBuildingRecipe })
 
       expect(wrapper.vm.buildingOptions).toHaveLength(1)
       expect(wrapper.vm.selectedBuilding).toBe(mockRecipes[singleBuildingRecipe].producedIn[0])
@@ -223,8 +232,7 @@ describe('RecipeInput', () => {
     it('does not auto-select when recipe has multiple building options', async () => {
       const wrapper = mountRecipeInput()
 
-      wrapper.vm.selectedRecipe = multiBuildingRecipe // Has multiple buildings
-      await wrapper.vm.$nextTick()
+      await setComponentDataAndTick(wrapper, { selectedRecipe: multiBuildingRecipe }) // Has multiple buildings
 
       expect(wrapper.vm.buildingOptions.length).toBeGreaterThan(1)
       expect(wrapper.vm.selectedBuilding).toBe('')
@@ -233,8 +241,7 @@ describe('RecipeInput', () => {
     it('provides correct building options for selected recipe', async () => {
       const wrapper = mountRecipeInput()
 
-      wrapper.vm.selectedRecipe = multiBuildingRecipe
-      await wrapper.vm.$nextTick()
+      await setComponentDataAndTick(wrapper, { selectedRecipe: multiBuildingRecipe })
 
       const buildingOptions = wrapper.vm.buildingOptions
       expect(buildingOptions).toHaveLength(2)
@@ -249,13 +256,11 @@ describe('RecipeInput', () => {
         (key) => mockRecipes[key].producedIn.length === 1,
       )!
 
-      wrapper.vm.selectedRecipe = singleBuildingRecipe
-      await wrapper.vm.$nextTick()
+      await setComponentDataAndTick(wrapper, { selectedRecipe: singleBuildingRecipe })
       expect(wrapper.vm.selectedBuilding).toBe(mockRecipes[singleBuildingRecipe].producedIn[0])
 
       // Change to multi-building recipe
-      wrapper.vm.selectedRecipe = multiBuildingRecipe
-      await wrapper.vm.$nextTick()
+      await setComponentDataAndTick(wrapper, { selectedRecipe: multiBuildingRecipe })
 
       expect(wrapper.vm.selectedBuilding).toBe('')
     })
@@ -271,10 +276,11 @@ describe('RecipeInput', () => {
 
       const firstRecipeKey = Object.keys(mockRecipes)[0]
       const buildingKey = mockRecipes[firstRecipeKey].producedIn[0]
-      wrapper.vm.selectedRecipe = firstRecipeKey
-      wrapper.vm.selectedBuilding = buildingKey
-      wrapper.vm.buildingCount = 3
-      await wrapper.vm.$nextTick()
+      await setComponentDataAndTick(wrapper, {
+        selectedRecipe: firstRecipeKey,
+        selectedBuilding: buildingKey,
+        buildingCount: 3,
+      })
 
       wrapper.vm.addRecipe()
       await nextTick()
@@ -295,10 +301,11 @@ describe('RecipeInput', () => {
       const wrapper = mountRecipeInput()
 
       const firstRecipeKey = Object.keys(mockRecipes)[0]
-      wrapper.vm.selectedRecipe = firstRecipeKey
-      wrapper.vm.selectedBuilding = 'Desc_ConstructorMk1_C'
-      wrapper.vm.buildingCount = 3
-      await wrapper.vm.$nextTick()
+      await setComponentDataAndTick(wrapper, {
+        selectedRecipe: firstRecipeKey,
+        selectedBuilding: 'Desc_ConstructorMk1_C',
+        buildingCount: 3,
+      })
 
       wrapper.vm.addRecipe()
       await nextTick()

@@ -26,7 +26,7 @@ export function getStubs(...stubs: SupportedStubs[]) {
       acc[stubType] = componentStubs[stubType]
       return acc
     },
-    {} as Record<string, any>,
+    {} as Record<string, unknown>,
   )
 }
 
@@ -36,4 +36,30 @@ export function getStubs(...stubs: SupportedStubs[]) {
  */
 export function getAllStubs() {
   return { ...componentStubs }
+}
+
+/**
+ * Set component data properties for testing
+ * @param wrapper The Vue Test Utils wrapper
+ * @param data Object with data properties to set
+ */
+export function setComponentData<T extends Record<string, unknown>>(
+  wrapper: { vm: T; $nextTick?: () => Promise<void> },
+  data: T,
+) {
+  Object.assign(wrapper.vm, data)
+}
+
+/**
+ * Set component data properties and wait for next tick
+ * @param wrapper The Vue Test Utils wrapper
+ * @param data Object with data properties to set
+ */
+export async function setComponentDataAndTick<T extends Record<string, unknown>>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  wrapper: { vm: any },
+  data: T,
+) {
+  Object.assign(wrapper.vm, data)
+  await wrapper.vm.$nextTick()
 }

@@ -6,7 +6,7 @@ import { useDataStore } from '@/stores/data'
 import { createPinia, setActivePinia, type Pinia } from 'pinia'
 import { itemDatabase, buildingDatabase } from '@/__tests__/fixtures/data'
 import type { ItemOption } from '@/types/data'
-import { getStubs, SupportedStubs } from '@/__tests__/componentStubs'
+import { getStubs, SupportedStubs, setComponentData } from '@/__tests__/componentStubs'
 import '@/components/__tests__/component-setup'
 
 vi.mock('@/stores/data', () => ({
@@ -54,7 +54,7 @@ describe('ItemSelector', () => {
   })
 
   const triggerSearch = async (wrapper: ReturnType<typeof mount>, searchText: string) => {
-    wrapper.vm.searchInput = searchText
+    setComponentData(wrapper, { searchInput: searchText })
     // Wait for debounced search (200ms + extra time)
     await new Promise((resolve) => setTimeout(resolve, 250))
     await wrapper.vm.$nextTick()
@@ -289,7 +289,7 @@ describe('ItemSelector', () => {
       const wrapper = mountItemSelector()
 
       // Rapidly change search input
-      wrapper.vm.searchInput = 'iron'
+      setComponentData(wrapper, { searchInput: 'iron' })
 
       // Before debounce timeout, debouncedSearch should still be empty
       expect(wrapper.vm.debouncedSearch).toBe('')

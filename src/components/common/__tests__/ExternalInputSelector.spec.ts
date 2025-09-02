@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils'
 import ExternalInputSelector from '@/components/common/ExternalInputSelector.vue'
 import { itemDatabase } from '@/__tests__/fixtures/data'
 import type { RecipeProduct } from '@/types/data'
+import { setComponentDataAndTick } from '@/__tests__/componentStubs'
 
 // Import the component test setup
 import '@/components/__tests__/component-setup'
@@ -45,11 +46,12 @@ describe('ExternalInputSelector', () => {
     wrapper: ReturnType<typeof mount>,
     item: typeof itemDatabase.Desc_IronIngot_C,
   ) => {
-    wrapper.vm.selectedItem = {
-      value: item.icon,
-      title: item.name,
-    }
-    await wrapper.vm.$nextTick()
+    await setComponentDataAndTick(wrapper, {
+      selectedItem: {
+        value: item.icon,
+        title: item.name,
+      },
+    })
   }
 
   const getLastEmittedValue = (
