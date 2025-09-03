@@ -46,4 +46,4 @@ app.mount('#app')
 
 // Set initial theme after mount
 const themeStore = useThemeStore()
-themeStore.setTheme(themeStore.isDark)
+themeStore.setDarkTheme(themeStore.isDark)

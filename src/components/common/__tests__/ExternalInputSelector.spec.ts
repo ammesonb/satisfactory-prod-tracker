@@ -3,7 +3,12 @@ import { mount } from '@vue/test-utils'
 import ExternalInputSelector from '@/components/common/ExternalInputSelector.vue'
 import { itemDatabase } from '@/__tests__/fixtures/data'
 import type { RecipeProduct } from '@/types/data'
-import { setComponentDataAndTick } from '@/__tests__/componentStubs'
+import { setComponentDataAndTick, getVmProperty } from '@/__tests__/componentStubs'
+
+// Component property constants
+const COMPONENT_PROPS = {
+  SELECTED_ITEM: 'selectedItem',
+} as const
 
 // Import the component test setup
 import '@/components/__tests__/component-setup'
@@ -211,8 +216,8 @@ describe('ExternalInputSelector', () => {
       await addButton.trigger('click')
 
       // Form should be reset
-      expect(wrapper.vm.selectedItem).toBeUndefined()
-      expect(wrapper.vm.quantity).toBe(1)
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.SELECTED_ITEM)).toBeUndefined()
+      expect(getVmProperty(wrapper, 'quantity')).toBe(1)
     })
   })
 
