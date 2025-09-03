@@ -4,7 +4,7 @@ import type { Floor } from '@/types/factory'
 import { getIconURL } from '@/logistics/images'
 import { useDataStore } from '@/stores/data'
 import { useFactoryStore } from '@/stores/factory'
-import { formatFloorId, formatRecipeId } from '@/composables/useFloorNavigation'
+import { formatFloorId } from '@/composables/useFloorNavigation'
 
 interface Props {
   floor: Floor
@@ -23,13 +23,12 @@ const expandedRecipes = computed({
   get: () => {
     return props.floor.recipes
       .filter((recipe) => recipe.expanded)
-      .map((recipe) => `${props.floorNumber}-${recipe.recipe.name}`)
+      .map((recipe) => recipe.recipe.name)
   },
   set: (value: string[]) => {
     // Update recipe expansion state when v-model changes
     props.floor.recipes.forEach((recipe) => {
-      const panelValue = `${props.floorNumber}-${recipe.recipe.name}`
-      recipe.expanded = value.includes(panelValue)
+      recipe.expanded = value.includes(recipe.recipe.name)
     })
   },
 })
@@ -81,9 +80,6 @@ const emit = defineEmits<{
           v-for="recipe in props.floor.recipes"
           :key="recipe.recipe.name"
           :recipe="recipe"
-          :completed="factoryStore.recipeComplete(recipe)"
-          :panel-value="`${props.floorNumber}-${recipe.recipe.name}`"
-          :recipe-id="formatRecipeId(props.floorNumber - 1, recipe.recipe.name)"
           :current-floor-index="props.floorNumber - 1"
           @update:built="(value: boolean) => (recipe.built = value)"
           @update:link-built="

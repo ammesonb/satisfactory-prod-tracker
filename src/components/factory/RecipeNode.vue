@@ -6,18 +6,19 @@ import { useThemeStore } from '@/stores/theme'
 import { useFactoryStore } from '@/stores/factory'
 import { type Material } from '@/types/factory'
 import { ZERO_THRESHOLD } from '@/logistics/constants'
+import { formatRecipeId } from '@/composables/useFloorNavigation'
 
 const props = defineProps<{
   recipe: RecipeNode
-  recipeId: string
-  completed: boolean
-  panelValue: string
   currentFloorIndex: number
 }>()
 
 const data = useDataStore()
 const themeStore = useThemeStore()
 const factoryStore = useFactoryStore()
+
+const recipeId = computed(() => formatRecipeId(props.currentFloorIndex, props.recipe.recipe.name))
+const recipeComplete = computed(() => factoryStore.recipeComplete(props.recipe))
 
 const leftoverProducts: Ref<Material[]> = computed(() =>
   props.recipe.availableProducts
@@ -32,11 +33,11 @@ const leftoverProducts: Ref<Material[]> = computed(() =>
 
 const panelBgClass = computed(
   () =>
-    (props.completed ? 'bg-blue-grey' : 'bg-grey') +
+    (recipeComplete.value ? 'bg-blue-grey' : 'bg-grey') +
     (themeStore.isDark ? '-darken-2' : '-lighten-1'),
 )
 
-const titleBgClass = computed(() => (props.completed ? 'bg-green-lighten-4' : 'bg-grey'))
+const titleBgClass = computed(() => (recipeComplete.value ? 'bg-green-lighten-4' : 'bg-grey'))
 
 const availableFloors = computed(() => {
   if (!factoryStore.currentFactory) return []
@@ -56,7 +57,7 @@ const moveRecipe = (targetFloorIndex: number) => {
 </script>
 
 <template>
-  <v-expansion-panel :class="panelBgClass" :value="props.panelValue" :id="props.recipeId">
+  <v-expansion-panel :class="panelBgClass" :value="props.recipe.recipe.name" :id="recipeId">
     <v-expansion-panel-title :class="titleBgClass">
       <div class="d-flex justify-space-between align-center w-100">
         <div class="d-flex align-center gap-2">
