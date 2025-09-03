@@ -13,6 +13,7 @@ import {
   SupportedStubs,
   setComponentData,
   setComponentDataAndTick,
+  getVmProperty,
 } from '@/__tests__/componentStubs'
 
 // Import the component test setup
@@ -25,6 +26,19 @@ vi.mock('@/stores/data', () => ({
 
 const multiBuildingRecipe = 'Recipe_PureCateriumIngot_C'
 const fakeBuildingOptions = ['Desc_OilRefinery_C', 'Desc_Blender_C']
+
+// Component property constants
+const COMPONENT_PROPS = {
+  RECIPE_OPTIONS: 'recipeOptions',
+  ALL_RECIPE_OPTIONS: 'allRecipeOptions',
+  DEBOUNCED_SEARCH: 'debouncedSearch',
+  SEARCH_INPUT: 'searchInput',
+  CAN_ADD_RECIPE: 'canAddRecipe',
+  SELECTED_RECIPE: 'selectedRecipe',
+  SELECTED_BUILDING: 'selectedBuilding',
+  BUILDING_COUNT: 'buildingCount',
+  BUILDING_OPTIONS: 'buildingOptions',
+} as const
 
 describe('RecipeInput', () => {
   let mockDataStore: ReturnType<typeof useDataStore>
@@ -75,7 +89,7 @@ describe('RecipeInput', () => {
   })
 
   const triggerSearch = async (wrapper: ReturnType<typeof mount>, searchText: string) => {
-    setComponentData(wrapper, { searchInput: searchText })
+    setComponentData(wrapper, { [COMPONENT_PROPS.SEARCH_INPUT]: searchText })
     // Wait for debounced search (200ms + extra time)
     await new Promise((resolve) => setTimeout(resolve, 250))
     await wrapper.vm.$nextTick()
@@ -99,7 +113,10 @@ describe('RecipeInput', () => {
 
       await triggerSearch(wrapper, 'ingot')
 
-      const filteredOptions = wrapper.vm.recipeOptions
+      const filteredOptions = getVmProperty(
+        wrapper,
+        COMPONENT_PROPS.RECIPE_OPTIONS,
+      ) as RecipeOption[]
       expect(filteredOptions.length).toBeGreaterThan(0)
       expect(
         filteredOptions.every((option: RecipeOption) =>
@@ -111,7 +128,10 @@ describe('RecipeInput', () => {
     it('limits recipe options to 20 results', () => {
       const wrapper = mountRecipeInput()
 
-      const filteredOptions = wrapper.vm.recipeOptions
+      const filteredOptions = getVmProperty(
+        wrapper,
+        COMPONENT_PROPS.RECIPE_OPTIONS,
+      ) as RecipeOption[]
       expect(filteredOptions.length).toBeLessThanOrEqual(20)
     })
 
@@ -128,14 +148,20 @@ describe('RecipeInput', () => {
 
       const wrapper = mountRecipeInput({ modelValue: selectedRecipes })
 
-      const allOptions = wrapper.vm.allRecipeOptions
+      const allOptions = getVmProperty(
+        wrapper,
+        COMPONENT_PROPS.ALL_RECIPE_OPTIONS,
+      ) as RecipeOption[]
       expect(allOptions.every((option: RecipeOption) => option.value !== firstRecipeKey)).toBe(true)
     })
 
     it('sorts recipe options alphabetically by title', () => {
       const wrapper = mountRecipeInput()
 
-      const allOptions = wrapper.vm.allRecipeOptions
+      const allOptions = getVmProperty(
+        wrapper,
+        COMPONENT_PROPS.ALL_RECIPE_OPTIONS,
+      ) as RecipeOption[]
       const titles = allOptions.map((option: RecipeOption) => option.title)
       const sortedTitles = [...titles].sort((a, b) => a.localeCompare(b))
 
@@ -146,14 +172,14 @@ describe('RecipeInput', () => {
       const wrapper = mountRecipeInput()
 
       // Rapidly change search input
-      setComponentData(wrapper, { searchInput: 'ingot' })
+      setComponentData(wrapper, { [COMPONENT_PROPS.SEARCH_INPUT]: 'ingot' })
 
       // Before debounce timeout, debouncedSearch should still be empty
-      expect(wrapper.vm.debouncedSearch).toBe('')
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.DEBOUNCED_SEARCH)).toBe('')
 
       // Wait for debounce
       await new Promise((resolve) => setTimeout(resolve, 250))
-      expect(wrapper.vm.debouncedSearch).toBe('ingot')
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.DEBOUNCED_SEARCH)).toBe('ingot')
     })
   })
 
@@ -161,8 +187,8 @@ describe('RecipeInput', () => {
     it('disables add button when no recipe is selected', () => {
       const wrapper = mountRecipeInput()
 
-      expect(wrapper.vm.canAddRecipe).toBe(false)
-      expect(wrapper.vm.selectedRecipe).toBe('')
+      expect(getVmProperty(wrapper, 'canAddRecipe')).toBe(false)
+      expect(getVmProperty(wrapper, 'selectedRecipe')).toBe('')
     })
 
     it('disables add button when no building is selected', async () => {
@@ -170,10 +196,10 @@ describe('RecipeInput', () => {
 
       // Use multi-building recipe to ensure building selection is required
       await setComponentDataAndTick(wrapper, {
-        selectedRecipe: multiBuildingRecipe,
+        [COMPONENT_PROPS.SELECTED_RECIPE]: multiBuildingRecipe,
       })
 
-      expect(wrapper.vm.canAddRecipe).toBe(false)
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.CAN_ADD_RECIPE)).toBe(false)
     })
 
     it('disables add button for zero or negative building count', async () => {
@@ -181,24 +207,24 @@ describe('RecipeInput', () => {
 
       const firstRecipeKey = Object.keys(mockRecipes)[0]
       await setComponentDataAndTick(wrapper, {
-        selectedRecipe: firstRecipeKey,
-        selectedBuilding: 'Desc_ConstructorMk1_C',
-        buildingCount: 0,
+        [COMPONENT_PROPS.SELECTED_RECIPE]: firstRecipeKey,
+        [COMPONENT_PROPS.SELECTED_BUILDING]: 'Desc_ConstructorMk1_C',
+        [COMPONENT_PROPS.BUILDING_COUNT]: 0,
       })
 
-      expect(wrapper.vm.canAddRecipe).toBe(false)
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.CAN_ADD_RECIPE)).toBe(false)
 
       await setComponentDataAndTick(wrapper, {
-        buildingCount: -5,
+        [COMPONENT_PROPS.BUILDING_COUNT]: -5,
       })
 
-      expect(wrapper.vm.canAddRecipe).toBe(false)
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.CAN_ADD_RECIPE)).toBe(false)
 
       await setComponentDataAndTick(wrapper, {
-        buildingCount: 3,
+        [COMPONENT_PROPS.BUILDING_COUNT]: 3,
       })
 
-      expect(wrapper.vm.canAddRecipe).toBe(true)
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.CAN_ADD_RECIPE)).toBe(true)
     })
 
     it('enables add button when all fields are valid', async () => {
@@ -206,12 +232,12 @@ describe('RecipeInput', () => {
 
       const firstRecipeKey = Object.keys(mockRecipes)[0]
       await setComponentDataAndTick(wrapper, {
-        selectedRecipe: firstRecipeKey,
-        selectedBuilding: 'Desc_ConstructorMk1_C',
-        buildingCount: 2,
+        [COMPONENT_PROPS.SELECTED_RECIPE]: firstRecipeKey,
+        [COMPONENT_PROPS.SELECTED_BUILDING]: 'Desc_ConstructorMk1_C',
+        [COMPONENT_PROPS.BUILDING_COUNT]: 2,
       })
 
-      expect(wrapper.vm.canAddRecipe).toBe(true)
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.CAN_ADD_RECIPE)).toBe(true)
     })
   })
 
@@ -223,27 +249,38 @@ describe('RecipeInput', () => {
         (key) => mockRecipes[key].producedIn.length === 1,
       )!
 
-      await setComponentDataAndTick(wrapper, { selectedRecipe: singleBuildingRecipe })
+      await setComponentDataAndTick(wrapper, {
+        [COMPONENT_PROPS.SELECTED_RECIPE]: singleBuildingRecipe,
+      })
 
-      expect(wrapper.vm.buildingOptions).toHaveLength(1)
-      expect(wrapper.vm.selectedBuilding).toBe(mockRecipes[singleBuildingRecipe].producedIn[0])
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.BUILDING_OPTIONS)).toHaveLength(1)
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.SELECTED_BUILDING)).toBe(
+        mockRecipes[singleBuildingRecipe].producedIn[0],
+      )
     })
 
     it('does not auto-select when recipe has multiple building options', async () => {
       const wrapper = mountRecipeInput()
 
-      await setComponentDataAndTick(wrapper, { selectedRecipe: multiBuildingRecipe }) // Has multiple buildings
+      await setComponentDataAndTick(wrapper, {
+        [COMPONENT_PROPS.SELECTED_RECIPE]: multiBuildingRecipe,
+      }) // Has multiple buildings
 
-      expect(wrapper.vm.buildingOptions.length).toBeGreaterThan(1)
-      expect(wrapper.vm.selectedBuilding).toBe('')
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.BUILDING_OPTIONS).length).toBeGreaterThan(1)
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.SELECTED_BUILDING)).toBe('')
     })
 
     it('provides correct building options for selected recipe', async () => {
       const wrapper = mountRecipeInput()
 
-      await setComponentDataAndTick(wrapper, { selectedRecipe: multiBuildingRecipe })
+      await setComponentDataAndTick(wrapper, {
+        [COMPONENT_PROPS.SELECTED_RECIPE]: multiBuildingRecipe,
+      })
 
-      const buildingOptions = wrapper.vm.buildingOptions
+      const buildingOptions = getVmProperty(
+        wrapper,
+        COMPONENT_PROPS.BUILDING_OPTIONS,
+      ) as RecipeOption[]
       expect(buildingOptions).toHaveLength(2)
       expect(buildingOptions.map((opt: RecipeOption) => opt.value)).toEqual(fakeBuildingOptions)
     })
@@ -256,13 +293,19 @@ describe('RecipeInput', () => {
         (key) => mockRecipes[key].producedIn.length === 1,
       )!
 
-      await setComponentDataAndTick(wrapper, { selectedRecipe: singleBuildingRecipe })
-      expect(wrapper.vm.selectedBuilding).toBe(mockRecipes[singleBuildingRecipe].producedIn[0])
+      await setComponentDataAndTick(wrapper, {
+        [COMPONENT_PROPS.SELECTED_RECIPE]: singleBuildingRecipe,
+      })
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.SELECTED_BUILDING)).toBe(
+        mockRecipes[singleBuildingRecipe].producedIn[0],
+      )
 
       // Change to multi-building recipe
-      await setComponentDataAndTick(wrapper, { selectedRecipe: multiBuildingRecipe })
+      await setComponentDataAndTick(wrapper, {
+        [COMPONENT_PROPS.SELECTED_RECIPE]: multiBuildingRecipe,
+      })
 
-      expect(wrapper.vm.selectedBuilding).toBe('')
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.SELECTED_BUILDING)).toBe('')
     })
 
     it('sets building selectionwhen recipe changes to single-building recipe ', () => {
@@ -277,9 +320,9 @@ describe('RecipeInput', () => {
       const firstRecipeKey = Object.keys(mockRecipes)[0]
       const buildingKey = mockRecipes[firstRecipeKey].producedIn[0]
       await setComponentDataAndTick(wrapper, {
-        selectedRecipe: firstRecipeKey,
-        selectedBuilding: buildingKey,
-        buildingCount: 3,
+        [COMPONENT_PROPS.SELECTED_RECIPE]: firstRecipeKey,
+        [COMPONENT_PROPS.SELECTED_BUILDING]: buildingKey,
+        [COMPONENT_PROPS.BUILDING_COUNT]: 3,
       })
 
       wrapper.vm.addRecipe()
@@ -302,17 +345,17 @@ describe('RecipeInput', () => {
 
       const firstRecipeKey = Object.keys(mockRecipes)[0]
       await setComponentDataAndTick(wrapper, {
-        selectedRecipe: firstRecipeKey,
-        selectedBuilding: 'Desc_ConstructorMk1_C',
-        buildingCount: 3,
+        [COMPONENT_PROPS.SELECTED_RECIPE]: firstRecipeKey,
+        [COMPONENT_PROPS.SELECTED_BUILDING]: 'Desc_ConstructorMk1_C',
+        [COMPONENT_PROPS.BUILDING_COUNT]: 3,
       })
 
       wrapper.vm.addRecipe()
       await nextTick()
 
-      expect(wrapper.vm.selectedRecipe).toBe('')
-      expect(wrapper.vm.selectedBuilding).toBe('')
-      expect(wrapper.vm.buildingCount).toBe(1)
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.SELECTED_RECIPE)).toBe('')
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.SELECTED_BUILDING)).toBe('')
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.BUILDING_COUNT)).toBe(1)
     })
 
     it('removes recipe when remove button is clicked', async () => {
@@ -375,16 +418,18 @@ describe('RecipeInput', () => {
 
       const wrapper = mountRecipeInput()
 
-      expect(wrapper.vm.allRecipeOptions).toHaveLength(0)
-      expect(wrapper.vm.recipeOptions).toHaveLength(0)
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.ALL_RECIPE_OPTIONS)).toHaveLength(0)
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.RECIPE_OPTIONS)).toHaveLength(0)
     })
 
     it('shows initial recipes when no search text is entered', () => {
       const wrapper = mountRecipeInput()
 
-      expect(wrapper.vm.searchInput).toBe('')
-      expect(wrapper.vm.debouncedSearch).toBe('')
-      expect(wrapper.vm.recipeOptions.length).toBeGreaterThan(0)
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.SEARCH_INPUT)).toBe('')
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.DEBOUNCED_SEARCH)).toBe('')
+      expect(
+        (getVmProperty(wrapper, COMPONENT_PROPS.RECIPE_OPTIONS) as RecipeOption[]).length,
+      ).toBeGreaterThan(0)
     })
 
     it('has empty results when search yields no matches', async () => {
@@ -392,9 +437,9 @@ describe('RecipeInput', () => {
 
       await triggerSearch(wrapper, 'nonexistentrecipe123')
 
-      expect(wrapper.vm.recipeOptions).toHaveLength(0)
-      expect(wrapper.vm.searchInput).toBe('nonexistentrecipe123')
-      expect(wrapper.vm.debouncedSearch).toBe('nonexistentrecipe123')
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.RECIPE_OPTIONS)).toHaveLength(0)
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.SEARCH_INPUT)).toBe('nonexistentrecipe123')
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.DEBOUNCED_SEARCH)).toBe('nonexistentrecipe123')
     })
   })
 })

@@ -12,6 +12,6 @@ export interface RecipeData {
   name: string
   ingredients: { item: string; amount: number }[]
   products: { item: string; amount: number }[]
-  producedIn?: string[]
-  time?: number
+  producedIn: string[]
+  time: number
 }

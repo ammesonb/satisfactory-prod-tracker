@@ -6,8 +6,22 @@ import { useDataStore } from '@/stores/data'
 import { createPinia, setActivePinia, type Pinia } from 'pinia'
 import { itemDatabase, buildingDatabase } from '@/__tests__/fixtures/data'
 import type { ItemOption } from '@/types/data'
-import { getStubs, SupportedStubs, setComponentData } from '@/__tests__/componentStubs'
+import {
+  getStubs,
+  SupportedStubs,
+  setComponentData,
+  getVmProperty,
+} from '@/__tests__/componentStubs'
 import '@/components/__tests__/component-setup'
+
+// Component property constants
+const COMPONENT_PROPS = {
+  ALL_ITEMS: 'allItems',
+  FILTERED_ITEMS: 'filteredItems',
+  SEARCH_INPUT: 'searchInput',
+  DEBOUNCED_SEARCH: 'debouncedSearch',
+  SELECTED_ITEM: 'selectedItem',
+} as const
 
 vi.mock('@/stores/data', () => ({
   useDataStore: vi.fn(),
@@ -54,7 +68,7 @@ describe('ItemSelector', () => {
   })
 
   const triggerSearch = async (wrapper: ReturnType<typeof mount>, searchText: string) => {
-    setComponentData(wrapper, { searchInput: searchText })
+    setComponentData(wrapper, { [COMPONENT_PROPS.SEARCH_INPUT]: searchText })
     // Wait for debounced search (200ms + extra time)
     await new Promise((resolve) => setTimeout(resolve, 250))
     await wrapper.vm.$nextTick()
@@ -75,7 +89,10 @@ describe('ItemSelector', () => {
         includeBuildings: false,
       })
 
-      const allItems = wrapper.vm.allItems
+      const allItems = getVmProperty(
+        wrapper,
+        COMPONENT_PROPS.ALL_ITEMS,
+      ) as ItemOption[] as ItemOption[]
       expect(allItems.every((item: ItemOption) => item.type === 'item')).toBe(true)
       expect(
         allItems.some((item: ItemOption) => item.name === itemDatabase.Desc_IronIngot_C.name),
@@ -90,7 +107,7 @@ describe('ItemSelector', () => {
     it('includes items and buildings when includeBuildings is true (default)', () => {
       const wrapper = mountItemSelector()
 
-      const allItems = wrapper.vm.allItems
+      const allItems = getVmProperty(wrapper, COMPONENT_PROPS.ALL_ITEMS) as ItemOption[]
       const items = allItems.filter((item: ItemOption) => item.type === 'item')
       const buildings = allItems.filter((item: ItemOption) => item.type === 'building')
 
@@ -113,7 +130,7 @@ describe('ItemSelector', () => {
 
       await triggerSearch(wrapper, 'iron')
 
-      const filteredItems = wrapper.vm.filteredItems
+      const filteredItems = getVmProperty(wrapper, COMPONENT_PROPS.FILTERED_ITEMS) as ItemOption[]
       expect(filteredItems.length).toBeGreaterThan(0)
       expect(
         filteredItems.every((item: ItemOption) => item.name.toLowerCase().includes('iron')),
@@ -125,7 +142,7 @@ describe('ItemSelector', () => {
 
       await triggerSearch(wrapper, 'ingot')
 
-      const filteredItems = wrapper.vm.filteredItems
+      const filteredItems = getVmProperty(wrapper, COMPONENT_PROPS.FILTERED_ITEMS) as ItemOption[]
       expect(filteredItems.length).toBeGreaterThan(1)
       expect(
         filteredItems.every((item: ItemOption) => item.name.toLowerCase().includes('ingot')),
@@ -136,7 +153,7 @@ describe('ItemSelector', () => {
       const wrapper = mountItemSelector()
 
       await triggerSearch(wrapper, 'IRON')
-      const filteredItems = wrapper.vm.filteredItems
+      const filteredItems = getVmProperty(wrapper, COMPONENT_PROPS.FILTERED_ITEMS) as ItemOption[]
       expect(
         filteredItems.some((item: ItemOption) => item.name.toLowerCase().includes('iron')),
       ).toBe(true)
@@ -147,14 +164,14 @@ describe('ItemSelector', () => {
     it('shows only first 20 items when no search query', () => {
       const wrapper = mountItemSelector()
 
-      const filteredItems = wrapper.vm.filteredItems
+      const filteredItems = getVmProperty(wrapper, COMPONENT_PROPS.FILTERED_ITEMS) as ItemOption[]
       expect(filteredItems).toHaveLength(20)
     })
 
     it('sorts items alphabetically by name', () => {
       const wrapper = mountItemSelector()
 
-      const allItems = wrapper.vm.allItems
+      const allItems = getVmProperty(wrapper, COMPONENT_PROPS.ALL_ITEMS) as ItemOption[]
       const itemNames = allItems.map((item: ItemOption) => item.name)
       const sortedNames = [...itemNames].sort((a, b) => a.localeCompare(b))
 
@@ -204,10 +221,10 @@ describe('ItemSelector', () => {
         modelValue: testItem,
       })
 
-      expect(wrapper.vm.selectedItem?.value).toBe(testItem.value)
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.SELECTED_ITEM)?.value).toBe(testItem.value)
 
       await wrapper.setProps({ modelValue: undefined })
-      expect(wrapper.vm.selectedItem).toBeUndefined()
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.SELECTED_ITEM)).toBeUndefined()
     })
   })
 
@@ -223,9 +240,9 @@ describe('ItemSelector', () => {
       const wrapper = mountItemSelector()
 
       // Verify the component state that would drive the "Loading items..." template
-      expect(wrapper.vm.allItems).toHaveLength(0)
-      expect(wrapper.vm.filteredItems).toHaveLength(0)
-      expect(wrapper.vm.searchInput).toBe('')
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.ALL_ITEMS) as ItemOption[]).toHaveLength(0)
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.FILTERED_ITEMS) as ItemOption[]).toHaveLength(0)
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.SEARCH_INPUT)).toBe('')
 
       // Verify autocomplete receives empty items array
       const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
@@ -236,10 +253,14 @@ describe('ItemSelector', () => {
       const wrapper = mountItemSelector()
 
       // Verify initial state - should show first 20 items, no search
-      expect(wrapper.vm.searchInput).toBe('')
-      expect(wrapper.vm.debouncedSearch).toBe('')
-      expect(wrapper.vm.filteredItems.length).toBe(20) // Should show exactly 20 items
-      expect(wrapper.vm.allItems.length).toBeGreaterThan(20) // We have more items available
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.SEARCH_INPUT)).toBe('')
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.DEBOUNCED_SEARCH)).toBe('')
+      expect((getVmProperty(wrapper, COMPONENT_PROPS.FILTERED_ITEMS) as ItemOption[]).length).toBe(
+        20,
+      ) // Should show exactly 20 items
+      expect(
+        (getVmProperty(wrapper, COMPONENT_PROPS.ALL_ITEMS) as ItemOption[]).length,
+      ).toBeGreaterThan(20) // We have more items available
     })
 
     it('has empty results when search yields no matches', async () => {
@@ -248,9 +269,9 @@ describe('ItemSelector', () => {
       await triggerSearch(wrapper, 'nonexistentitem123')
 
       // Verify the state that would drive "No items found" message
-      expect(wrapper.vm.filteredItems).toHaveLength(0)
-      expect(wrapper.vm.searchInput).toBe('nonexistentitem123')
-      expect(wrapper.vm.debouncedSearch).toBe('nonexistentitem123')
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.FILTERED_ITEMS) as ItemOption[]).toHaveLength(0)
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.SEARCH_INPUT)).toBe('nonexistentitem123')
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.DEBOUNCED_SEARCH)).toBe('nonexistentitem123')
 
       // Verify autocomplete receives empty items array (triggers no-data slot)
       const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
@@ -292,11 +313,11 @@ describe('ItemSelector', () => {
       setComponentData(wrapper, { searchInput: 'iron' })
 
       // Before debounce timeout, debouncedSearch should still be empty
-      expect(wrapper.vm.debouncedSearch).toBe('')
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.DEBOUNCED_SEARCH)).toBe('')
 
       // Wait for debounce
       await new Promise((resolve) => setTimeout(resolve, 250))
-      expect(wrapper.vm.debouncedSearch).toBe('iron')
+      expect(getVmProperty(wrapper, COMPONENT_PROPS.DEBOUNCED_SEARCH)).toBe('iron')
     })
   })
 })

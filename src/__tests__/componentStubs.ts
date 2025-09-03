@@ -2,6 +2,8 @@
  * Shared component stubs for testing
  */
 
+import type { VueWrapper } from '@vue/test-utils'
+
 export enum SupportedStubs {
   CachedIcon = 'CachedIcon',
 }
@@ -43,10 +45,7 @@ export function getAllStubs() {
  * @param wrapper The Vue Test Utils wrapper
  * @param data Object with data properties to set
  */
-export function setComponentData<T extends Record<string, unknown>>(
-  wrapper: { vm: T; $nextTick?: () => Promise<void> },
-  data: T,
-) {
+export function setComponentData(wrapper: VueWrapper, data: Record<string, unknown>) {
   Object.assign(wrapper.vm, data)
 }
 
@@ -62,4 +61,15 @@ export async function setComponentDataAndTick<T extends Record<string, unknown>>
 ) {
   Object.assign(wrapper.vm, data)
   await wrapper.vm.$nextTick()
+}
+
+/**
+ * Get a component property safely without TypeScript errors
+ * @param wrapper The Vue Test Utils wrapper
+ * @param property The property name to get
+ * @returns The property value
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getVmProperty(wrapper: { vm: any }, property: string): unknown {
+  return wrapper.vm[property]
 }
