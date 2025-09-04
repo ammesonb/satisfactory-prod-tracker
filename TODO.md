@@ -1,5 +1,9 @@
 ## Data redesign
 
+- Switch stores to a provide/inject pattern
+- More composables, stores should really only be storage not business logic
+- Same for computed properties
+
 - Clean up factory recipeList/object data
   - Should be object with list computed, perhaps?
   - Easier to look up that way
