@@ -3,7 +3,12 @@ import { mount } from '@vue/test-utils'
 import ExternalInputSelector from '@/components/common/ExternalInputSelector.vue'
 import { itemDatabase } from '@/__tests__/fixtures/data'
 import type { RecipeProduct } from '@/types/data'
-import { setComponentDataAndTick, getVmProperty } from '@/__tests__/componentStubs'
+import {
+  setComponentDataAndTick,
+  getVmProperty,
+  getStubs,
+  SupportedStubs,
+} from '@/__tests__/componentStubs'
 
 const COMPONENT_PROPS = {
   SELECTED_ITEM: 'selectedItem',
@@ -20,7 +25,10 @@ describe('ExternalInputSelector', () => {
 
   // Helper function to mount component and expand panel
   const setupComponent = async (props: { modelValue: RecipeProduct[] } = mockProps) => {
-    const wrapper = mount(ExternalInputSelector, { props })
+    const wrapper = mount(ExternalInputSelector, {
+      props,
+      global: { stubs: getStubs(SupportedStubs.CachedIcon) },
+    })
     await wrapper.vm.$nextTick()
 
     // Expand the panel to access content

@@ -3,17 +3,24 @@
  */
 
 import type { VueWrapper } from '@vue/test-utils'
+import type { Stubs, Stub } from '@vue/test-utils/dist/types'
 
 export enum SupportedStubs {
   CachedIcon = 'CachedIcon',
+  RecipeNode = 'RecipeNode',
 }
 
-export const componentStubs = {
+export const componentStubs: Stubs = {
   [SupportedStubs.CachedIcon]: {
     name: 'CachedIcon',
     props: ['icon', 'size', 'alt'],
     template:
       '<div class="cached-icon-stub" :data-icon="icon" :data-size="size" :data-alt="alt"></div>',
+  },
+  [SupportedStubs.RecipeNode]: {
+    name: 'RecipeNode',
+    template: '<div class="recipe-node">Recipe Node</div>',
+    props: ['recipe', 'currentFloorIndex'],
   },
 } as const
 
@@ -22,13 +29,13 @@ export const componentStubs = {
  * @param stubs Array of stub types to include
  * @returns Object with component stubs
  */
-export function getStubs(...stubs: SupportedStubs[]) {
+export function getStubs(...stubs: SupportedStubs[]): Record<string, Stub> {
   return stubs.reduce(
     (acc, stubType) => {
       acc[stubType] = componentStubs[stubType]
       return acc
     },
-    {} as Record<string, unknown>,
+    {} as Record<string, Stub>,
   )
 }
 
