@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useErrorStore } from '@/stores/errors'
+import { getStores } from '@/composables/useStores'
 
-const errorStore = useErrorStore()
+const { errorStore } = getStores()
 
 const showDialog = computed({
   get: () => errorStore.show,

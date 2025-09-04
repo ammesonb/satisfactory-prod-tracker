@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { ItemOption, RecipeProduct } from '@/types/data'
-import { useDataStore } from '@/stores/data'
+import { getStores } from '@/composables/useStores'
 import ItemSelector from '@/components/common/ItemSelector.vue'
 import CachedIcon from '@/components/common/CachedIcon.vue'
 
@@ -14,7 +14,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: RecipeProduct[]]
 }>()
 
-const dataStore = useDataStore()
+const { dataStore } = getStores()
 
 // Form state for adding new external input
 const selectedItem = ref<ItemOption>()

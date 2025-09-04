@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useFactoryStore } from '@/stores/factory'
+import { getStores } from '@/composables/useStores'
 
 const collapsed = ref(true)
-const factoryStore = useFactoryStore()
+const { factoryStore } = getStores()
 const searchQuery = ref('')
 
 const filteredFactories = computed(() => {

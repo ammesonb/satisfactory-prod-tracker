@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { computed, type Ref } from 'vue'
 import { type RecipeNode } from '@/logistics/graph-node'
-import { useDataStore } from '@/stores/data'
-import { useThemeStore } from '@/stores/theme'
-import { useFactoryStore } from '@/stores/factory'
+import { getStores } from '@/composables/useStores'
 import { type Material } from '@/types/factory'
 import { ZERO_THRESHOLD } from '@/logistics/constants'
 
@@ -15,9 +13,7 @@ const props = defineProps<{
   currentFloorIndex: number
 }>()
 
-const data = useDataStore()
-const themeStore = useThemeStore()
-const factoryStore = useFactoryStore()
+const { dataStore: data, themeStore, factoryStore } = getStores()
 
 const leftoverProducts: Ref<Material[]> = computed(() =>
   props.recipe.availableProducts

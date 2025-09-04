@@ -7,7 +7,7 @@ import {
   BELT_ITEM_NAMES,
   PIPELINE_ITEM_NAMES,
 } from '@/logistics/constants'
-import { useDataStore } from '@/stores/data'
+import { getStores } from '@/composables/useStores'
 import { calculateTransportCapacity, type RecipeNode } from '@/logistics/graph-node'
 import type { Material } from '@/types/factory'
 
@@ -18,7 +18,7 @@ const props = defineProps<{
   isHovered?: boolean
 }>()
 
-const data = useDataStore()
+const { dataStore: data } = getStores()
 
 const buildingCounts = computed(() => {
   // Only calculate when hovered to improve performance

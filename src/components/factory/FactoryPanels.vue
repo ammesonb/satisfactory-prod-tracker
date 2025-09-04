@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useFactoryStore } from '@/stores/factory'
+import { getStores } from '@/composables/useStores'
 import { useFloorNavigation } from '@/composables/useFloorNavigation'
 
-const factoryStore = useFactoryStore()
+const { factoryStore } = getStores()
 const { expandedFloors } = useFloorNavigation()
 const showEditModal = ref(false)
 const editFloorIndices = ref<number[]>([])

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
-import { useFactoryStore } from '@/stores/factory'
-import { useDataStore } from '@/stores/data'
+import { getStores } from '@/composables/useStores'
 import { getIconURL } from '@/logistics/images'
 import { formatFloorId, formatRecipeId } from '@/composables/useFloorNavigation'
 
@@ -10,8 +9,7 @@ const emit = defineEmits<{
   navigate: [elementId: string]
 }>()
 
-const factoryStore = useFactoryStore()
-const dataStore = useDataStore()
+const { factoryStore, dataStore } = getStores()
 const searchQuery = ref('')
 const searchInput = ref()
 

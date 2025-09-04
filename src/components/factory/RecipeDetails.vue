@@ -2,13 +2,13 @@
 import { computed } from 'vue'
 import { type RecipeNode } from '@/logistics/graph-node'
 import { getIconURL } from '@/logistics/images'
-import { useDataStore } from '@/stores/data'
+import { getStores } from '@/composables/useStores'
 
 const props = defineProps<{
   recipe: RecipeNode
 }>()
 
-const data = useDataStore()
+const { dataStore: data } = getStores()
 
 const ingredients = computed(() => data.recipeIngredients(props.recipe.recipe.name))
 const products = computed(() => data.recipeProducts(props.recipe.recipe.name))

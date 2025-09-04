@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useFactoryStore } from '@/stores/factory'
-import { useDataStore } from '@/stores/data'
+import { getStores } from '@/composables/useStores'
 import { type ItemOption } from '@/types/data'
 
 interface Props {
@@ -21,8 +20,7 @@ interface FloorFormData {
 const props = defineProps<Props>()
 const emit = defineEmits(['update:show'])
 
-const dataStore = useDataStore()
-const factoryStore = useFactoryStore()
+const { dataStore, factoryStore } = getStores()
 
 const showDialog = computed({
   get: () => props.show,
