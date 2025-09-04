@@ -22,7 +22,7 @@ const openMassEditModal = () => {
 </script>
 
 <template>
-  <div v-if="factoryStore.selected">
+  <div v-if="factoryStore.currentFactory">
     <FactoryFloorsToolbar @edit-all-floors="openMassEditModal" />
 
     <v-expansion-panels v-model="expandedFloors" multiple variant="accordion">
