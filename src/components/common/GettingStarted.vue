@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useFactoryStore } from '@/stores/factory'
+import { getStores } from '@/composables/useStores'
 
-const factoryStore = useFactoryStore()
+const { factoryStore } = getStores()
 const steps = [
   {
     title: 'Add Factory',

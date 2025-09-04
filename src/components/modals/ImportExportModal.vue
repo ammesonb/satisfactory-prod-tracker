@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useFactoryStore } from '@/stores/factory'
+import { getStores } from '@/composables/useStores'
 import ExportTab from './ExportTab.vue'
 import ImportTab from './ImportTab.vue'
 
-const factoryStore = useFactoryStore()
+const { factoryStore } = getStores()
 const isOpen = defineModel<boolean>({ default: false })
 const activeTab = ref<'export' | 'import'>('export')
 const error = ref('')

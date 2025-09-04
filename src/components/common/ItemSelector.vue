@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { refDebounced } from '@vueuse/core'
-import { useDataStore } from '@/stores/data'
+import { getStores } from '@/composables/useStores'
 import { type ItemOption } from '@/types/data'
-import CachedIcon from '@/components/common/CachedIcon.vue'
 
 interface Props {
   modelValue?: ItemOption
@@ -21,7 +20,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: ItemOption | undefined]
 }>()
 
-const dataStore = useDataStore()
+const { dataStore } = getStores()
 const searchInput = ref('')
 const debouncedSearch = refDebounced(searchInput, 200)
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useFactoryStore } from '@/stores/factory'
+import { getStores } from '@/composables/useStores'
 import { ref } from 'vue'
 import FactorySelector from '../common/FactorySelector.vue'
 
@@ -7,7 +7,7 @@ const emit = defineEmits<{
   error: [message: string]
 }>()
 
-const factoryStore = useFactoryStore()
+const { factoryStore } = getStores()
 const selectedFactories = ref<string[]>([])
 
 const exportToClipboard = async () => {

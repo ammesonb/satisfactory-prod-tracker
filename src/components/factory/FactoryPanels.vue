@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useFactoryStore } from '@/stores/factory'
+import { getStores } from '@/composables/useStores'
 import { useFloorNavigation } from '@/composables/useFloorNavigation'
 
-const factoryStore = useFactoryStore()
+const { factoryStore } = getStores()
 const { expandedFloors } = useFloorNavigation()
 const showEditModal = ref(false)
 const editFloorIndices = ref<number[]>([])
@@ -22,7 +22,7 @@ const openMassEditModal = () => {
 </script>
 
 <template>
-  <div v-if="factoryStore.selected">
+  <div v-if="factoryStore.currentFactory">
     <FactoryFloorsToolbar @edit-all-floors="openMassEditModal" />
 
     <v-expansion-panels v-model="expandedFloors" multiple variant="accordion">

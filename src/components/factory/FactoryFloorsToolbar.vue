@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { useFactoryStore } from '@/stores/factory'
+import { getStores } from '@/composables/useStores'
 import { useFloorNavigation } from '@/composables/useFloorNavigation'
 
 const emit = defineEmits<{
   'edit-all-floors': []
 }>()
 
-const factoryStore = useFactoryStore()
+const { factoryStore } = getStores()
 const { expandFloor, collapseFloor } = useFloorNavigation()
 
 const updateRecipeExpandedStates = (isComplete: boolean, expanded: boolean) => {

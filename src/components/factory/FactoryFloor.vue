@@ -2,8 +2,7 @@
 import { computed } from 'vue'
 import type { Floor } from '@/types/factory'
 import { getIconURL } from '@/logistics/images'
-import { useDataStore } from '@/stores/data'
-import { useFactoryStore } from '@/stores/factory'
+import { getStores } from '@/composables/useStores'
 import { formatFloorId, formatRecipeId } from '@/composables/useFloorNavigation'
 
 interface Props {
@@ -14,8 +13,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const dataStore = useDataStore()
-const factoryStore = useFactoryStore()
+const { dataStore, factoryStore } = getStores()
 
 const floorName = computed(() => factoryStore.getFloorDisplayName(props.floorNumber, props.floor))
 

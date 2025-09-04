@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useThemeStore } from '@/stores/theme'
+import { getStores } from '@/composables/useStores'
 import { useTheme } from 'vuetify'
 import { watch } from 'vue'
 
-const themeStore = useThemeStore()
+const { themeStore } = getStores()
 const theme = useTheme()
 
 // Watch for theme changes and update Vuetify

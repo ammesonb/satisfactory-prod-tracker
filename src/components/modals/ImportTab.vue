@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useFactoryStore } from '@/stores/factory'
+import { getStores } from '@/composables/useStores'
 import { asFactory, type Factory } from '@/types/factory'
 import { ref, watch } from 'vue'
 import FactorySelector from '../common/FactorySelector.vue'
@@ -9,7 +9,7 @@ const emit = defineEmits<{
   success: []
 }>()
 
-const factoryStore = useFactoryStore()
+const { factoryStore } = getStores()
 const selectedFactories = ref<string[]>([])
 const importData = ref('')
 const importFactories = ref<Record<string, Factory>>({})

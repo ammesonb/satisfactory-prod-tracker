@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useFactoryStore } from '@/stores/factory'
+import { getStores } from '@/composables/useStores'
 import ImportExportModal from '@/components/modals/ImportExportModal.vue'
 import { ref } from 'vue'
 
-const factoryStore = useFactoryStore()
+const { factoryStore } = getStores()
 const showImportExport = ref(false)
 </script>
 

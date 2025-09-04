@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useDataStore } from '@/stores/data'
+import { getStores } from '@/composables/useStores'
 import { type RecipeEntry } from '@/types/factory'
 import CachedIcon from '@/components/common/CachedIcon.vue'
 
@@ -13,7 +13,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: RecipeEntry[]]
 }>()
 
-const dataStore = useDataStore()
+const { dataStore } = getStores()
 
 // Form inputs
 const selectedRecipe = ref<string>('')

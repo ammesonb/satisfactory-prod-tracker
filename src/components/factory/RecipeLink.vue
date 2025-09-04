@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { Material } from '@/types/factory'
 import { linkToString, type RecipeNode } from '@/logistics/graph-node'
-import { useDataStore } from '@/stores/data'
-import { useFactoryStore } from '@/stores/factory'
+import { getStores } from '@/composables/useStores'
 import { useFloorNavigation, formatRecipeId } from '@/composables/useFloorNavigation'
 import {
   isFluid,
@@ -18,8 +17,7 @@ const props = defineProps<{
   type: 'input' | 'output'
 }>()
 
-const data = useDataStore()
-const factoryStore = useFactoryStore()
+const { dataStore: data, factoryStore } = getStores()
 const { navigateToElement } = useFloorNavigation()
 
 const linkId = computed(() => linkToString(props.link))

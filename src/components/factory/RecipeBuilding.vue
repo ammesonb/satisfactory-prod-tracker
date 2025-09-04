@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { RecipeNode } from '@/logistics/graph-node'
-import { useDataStore } from '@/stores/data'
-import { useFactoryStore } from '@/stores/factory'
+import { getStores } from '@/composables/useStores'
 import { computed } from 'vue'
 import CachedIcon from '@/components/common/CachedIcon.vue'
 
@@ -9,8 +8,7 @@ const props = defineProps<{
   recipe: RecipeNode
 }>()
 
-const data = useDataStore()
-const factoryStore = useFactoryStore()
+const { dataStore: data, factoryStore } = getStores()
 
 const buildingIcon = computed(() => data.buildings[props.recipe.recipe.building]?.icon)
 

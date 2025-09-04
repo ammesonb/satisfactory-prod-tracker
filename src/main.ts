@@ -22,7 +22,13 @@ import { mdi } from 'vuetify/iconsets/mdi'
 
 import App from '@/App.vue'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import { useThemeStore } from '@/stores/theme'
+import { useThemeStore, useDataStore, useFactoryStore, useErrorStore } from '@/stores'
+import {
+  DATA_STORE_KEY,
+  FACTORY_STORE_KEY,
+  THEME_STORE_KEY,
+  ERROR_STORE_KEY,
+} from '@/composables/useStores'
 
 const vuetify = createVuetify({
   theme: {
@@ -41,9 +47,20 @@ const pinia = createPinia().use(piniaPluginPersistedstate)
 app.use(pinia)
 app.use(vuetify)
 
+// Initialize stores
+const dataStore = useDataStore()
+const factoryStore = useFactoryStore()
+const themeStore = useThemeStore()
+const errorStore = useErrorStore()
+
+// Provide stores for dependency injection
+app.provide(DATA_STORE_KEY, dataStore)
+app.provide(FACTORY_STORE_KEY, factoryStore)
+app.provide(THEME_STORE_KEY, themeStore)
+app.provide(ERROR_STORE_KEY, errorStore)
+
 // Initialize theme store to sync with Vuetify
 app.mount('#app')
 
 // Set initial theme after mount
-const themeStore = useThemeStore()
 themeStore.setTheme(themeStore.isDark)
