@@ -94,13 +94,3 @@ export interface IErrorStore {
   info: () => ErrorBuilder
   hide: () => void
 }
-
-/**
- * Union type for all store interfaces
- */
-export type StoreInterfaces = {
-  data: IDataStore
-  factory: IFactoryStore
-  theme: IThemeStore
-  error: IErrorStore
-}
