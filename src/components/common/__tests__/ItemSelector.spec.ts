@@ -3,7 +3,6 @@ import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import ItemSelector from '@/components/common/ItemSelector.vue'
 import { useDataStore } from '@/stores/data'
-import { createPinia, setActivePinia, type Pinia } from 'pinia'
 import { itemDatabase, buildingDatabase } from '@/__tests__/fixtures/data'
 import type { ItemOption } from '@/types/data'
 import {
@@ -12,9 +11,7 @@ import {
   setComponentData,
   getVmProperty,
 } from '@/__tests__/componentStubs'
-import '@/components/__tests__/component-setup'
 
-// Component property constants
 const COMPONENT_PROPS = {
   ALL_ITEMS: 'allItems',
   FILTERED_ITEMS: 'filteredItems',
@@ -29,7 +26,6 @@ vi.mock('@/stores/data', () => ({
 
 describe('ItemSelector', () => {
   let mockDataStore: ReturnType<typeof useDataStore>
-  let pinia: Pinia
 
   const mockItems = [
     'Desc_IronIngot_C',
@@ -56,9 +52,6 @@ describe('ItemSelector', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-
-    pinia = createPinia()
-    setActivePinia(pinia)
 
     mockDataStore = {
       items: mockItems,

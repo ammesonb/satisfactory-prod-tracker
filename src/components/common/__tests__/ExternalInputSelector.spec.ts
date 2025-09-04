@@ -5,13 +5,9 @@ import { itemDatabase } from '@/__tests__/fixtures/data'
 import type { RecipeProduct } from '@/types/data'
 import { setComponentDataAndTick, getVmProperty } from '@/__tests__/componentStubs'
 
-// Component property constants
 const COMPONENT_PROPS = {
   SELECTED_ITEM: 'selectedItem',
 } as const
-
-// Import the component test setup
-import '@/components/__tests__/component-setup'
 
 describe('ExternalInputSelector', () => {
   const mockProps = {

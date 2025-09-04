@@ -5,8 +5,6 @@ import type { Factory } from '@/types/factory'
 import { itemDatabase } from '@/__tests__/fixtures/data'
 import { getStubs, SupportedStubs } from '@/__tests__/componentStubs'
 
-import '@/components/__tests__/component-setup'
-
 const IRON_FACTORY = 'Iron Factory'
 const COPPER_FACTORY = 'Copper Factory'
 const STEEL_FACTORY = 'Steel Production Complex'

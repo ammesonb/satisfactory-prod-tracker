@@ -2,18 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import ThemeSwitcher from '@/components/common/ThemeSwitcher.vue'
 import { useThemeStore } from '@/stores/theme'
-import { createPinia, setActivePinia, type Pinia } from 'pinia'
-
-import '@/components/__tests__/component-setup'
 
 describe('ThemeSwitcher', () => {
-  let pinia: Pinia
   let themeStore: ReturnType<typeof useThemeStore>
 
   beforeEach(() => {
     vi.clearAllMocks()
-    pinia = createPinia()
-    setActivePinia(pinia)
     themeStore = useThemeStore()
   })
 

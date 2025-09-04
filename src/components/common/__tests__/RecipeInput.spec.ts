@@ -16,10 +16,6 @@ import {
   getVmProperty,
 } from '@/__tests__/componentStubs'
 
-// Import the component test setup
-import '@/components/__tests__/component-setup'
-
-// Mock the data store
 vi.mock('@/stores/data', () => ({
   useDataStore: vi.fn(),
 }))

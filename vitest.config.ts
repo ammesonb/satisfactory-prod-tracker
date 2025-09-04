@@ -7,16 +7,19 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     globals: true,
-    setupFiles: ['./src/logistics/__tests__/test-setup.ts'],
+    setupFiles: [
+      './src/logistics/__tests__/test-setup.ts',
+      './src/components/__tests__/component-setup.ts',
+    ],
     server: {
       deps: {
-        inline: ['vuetify']
-      }
-    }
+        inline: ['vuetify'],
+      },
+    },
   },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
-  }
+  },
 })

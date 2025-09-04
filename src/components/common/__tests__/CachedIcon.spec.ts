@@ -4,9 +4,6 @@ import CachedIcon from '@/components/common/CachedIcon.vue'
 import { itemDatabase } from '@/__tests__/fixtures/data'
 import { getIconURL } from '@/logistics/images'
 
-// Import the component test setup
-import '@/components/__tests__/component-setup'
-
 // Mock the images module to track calls
 vi.mock('@/logistics/images', () => ({
   getIconURL: vi.fn(

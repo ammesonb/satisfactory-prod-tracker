@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch, ref } from 'vue'
 import type { Floor } from '@/types/factory'
 import { getIconURL } from '@/logistics/images'
 import { useDataStore } from '@/stores/data'
@@ -19,13 +19,32 @@ const factoryStore = useFactoryStore()
 
 const floorName = computed(() => factoryStore.getFloorDisplayName(props.floorNumber, props.floor))
 
-const expandedRecipes = computed({
-  get: () => {
-    return props.floor.recipes
-      .filter((recipe) => recipe.expanded)
-      .map((recipe) => recipe.recipe.name)
+// Use a ref to track expanded recipes for reactivity
+const expandedRecipesRef = ref<string[]>([])
+
+// Initialize and watch for changes
+const updateExpandedRecipes = () => {
+  expandedRecipesRef.value = props.floor.recipes
+    .filter((recipe) => recipe.expanded)
+    .map((recipe) => recipe.recipe.name)
+}
+
+// Initialize
+updateExpandedRecipes()
+
+// Watch for changes in recipe expansion - use immediate to catch initial changes
+watch(
+  () => props.floor.recipes.map((recipe) => recipe.expanded),
+  () => {
+    updateExpandedRecipes()
   },
+  { immediate: true, flush: 'post' },
+)
+
+const expandedRecipes = computed({
+  get: () => expandedRecipesRef.value,
   set: (value: string[]) => {
+    expandedRecipesRef.value = value
     // Update recipe expansion state when v-model changes
     props.floor.recipes.forEach((recipe) => {
       recipe.expanded = value.includes(recipe.recipe.name)
@@ -81,10 +100,6 @@ const emit = defineEmits<{
           :key="recipe.recipe.name"
           :recipe="recipe"
           :current-floor-index="props.floorNumber - 1"
-          @update:built="(value: boolean) => (recipe.built = value)"
-          @update:link-built="
-            (linkId: string, value: boolean) => factoryStore.setLinkBuiltState(linkId, value)
-          "
         />
       </v-expansion-panels>
     </v-expansion-panel-text>
