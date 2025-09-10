@@ -105,27 +105,7 @@ const removeRecipe = (index: number) => {
         </v-col>
       </v-row>
 
-      <div v-if="modelValue.length > 0" class="recipe-list">
-        <v-divider class="mb-3" />
-        <h4 class="text-subtitle-2 mb-3">Selected Recipes</h4>
-
-        <div class="recipe-entries">
-          <v-card
-            v-for="(entry, index) in modelValue"
-            :key="`${entry.recipe}-${entry.building}-${index}`"
-            variant="outlined"
-            class="mb-2"
-          >
-            <v-card-text>
-              <RecipeListItem
-                :entry="entry"
-                :row-number="index + 1"
-                @remove="removeRecipe(index)"
-              />
-            </v-card-text>
-          </v-card>
-        </div>
-      </div>
+      <RecipeDisplay :recipes="modelValue" @remove="removeRecipe" />
     </div>
   </div>
 </template>
@@ -142,8 +122,4 @@ const removeRecipe = (index: number) => {
   margin-bottom: 16px;
 }
 
-.recipe-entries {
-  max-height: 300px;
-  overflow-y: auto;
-}
 </style>

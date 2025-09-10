@@ -35,6 +35,8 @@ declare module 'vue' {
     NavPanel: typeof import('./src/components/layout/NavPanel.vue')['default']
     RecipeBuilding: typeof import('./src/components/factory/RecipeBuilding.vue')['default']
     RecipeDetails: typeof import('./src/components/factory/RecipeDetails.vue')['default']
+    RecipeDisplay: typeof import('./src/components/modals/add-factory/RecipeDisplay.vue')['default']
+    RecipeForm: typeof import('./src/components/modals/add-factory/RecipeForm.vue')['default']
     RecipeInput: typeof import('./src/components/modals/add-factory/RecipeInput.vue')['default']
     RecipeInputs: typeof import('./src/components/factory/RecipeInputs.vue')['default']
     RecipeLink: typeof import('./src/components/factory/RecipeLink.vue')['default']
