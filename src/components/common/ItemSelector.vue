@@ -1,133 +1,57 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { refDebounced } from '@vueuse/core'
+import { computed } from 'vue'
 import { getStores } from '@/composables/useStores'
 import { type ItemOption } from '@/types/data'
+import GameDataSelector from '@/components/common/GameDataSelector.vue'
+import { itemsToOptions } from '@/utils/items'
+import { buildingsToOptions } from '@/utils/buildings'
+import type { IconConfig, DisplayConfig } from '@/types/ui'
 
 interface Props {
   modelValue?: ItemOption
-  placeholder?: string
   disabled?: boolean
   includeBuildings?: boolean
+  displayConfig?: Partial<DisplayConfig>
+  iconConfig?: Partial<IconConfig>
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  placeholder: 'Search for an item...',
   includeBuildings: true,
+  displayConfig: () => ({ placeholder: 'Search for an item...' }),
+  iconConfig: () => ({}) as IconConfig,
 })
 
-const emit = defineEmits<{
+defineEmits<{
   'update:modelValue': [value: ItemOption | undefined]
 }>()
 
 const { dataStore } = getStores()
-const searchInput = ref('')
-const debouncedSearch = refDebounced(searchInput, 200)
 
-const updateSearch = (value: string) => {
-  searchInput.value = value
-}
-
-// Get all available icons from items and buildings
+// Get all available items and buildings with icons
 const allItems = computed<ItemOption[]>(() => {
-  const items: ItemOption[] = []
-
-  // Add items
-  Object.entries(dataStore.items).forEach(([key, item]) => {
-    if (item.icon) {
-      items.push({
-        value: key,
-        name: item.name,
-        icon: item.icon,
-        type: 'item',
-      })
-    }
-  })
-
-  // Add buildings
+  const options = itemsToOptions(dataStore.items)
   if (props.includeBuildings) {
-    Object.entries(dataStore.buildings).forEach(([key, building]) => {
-      if (building.icon) {
-        items.push({
-          value: key,
-          name: building.name,
-          icon: building.icon,
-          type: 'building',
-        })
-      }
-    })
+    options.push(...buildingsToOptions(dataStore.buildings))
   }
-
-  return items.sort((a, b) => a.name.localeCompare(b.name))
+  return options.sort((a, b) => a.name.localeCompare(b.name))
 })
 
-// Performance optimized: only show filtered results, limited count
-const filteredItems = computed<ItemOption[]>(() => {
-  const query = debouncedSearch.value?.toLowerCase().trim()
-
-  if (!query) {
-    // Show only first 20 items when no search to avoid loading all images
-    return allItems.value.slice(0, 20)
-  }
-
-  // When searching, show up to 50 matching results
-  return allItems.value.filter((item) => item.name.toLowerCase().includes(query)).slice(0, 50)
-})
-
-// Selected icon for display
-const selectedItem = computed<ItemOption | undefined>(() => {
-  if (!props.modelValue) return undefined
-  return allItems.value.find((item) => item.value === props.modelValue?.value)
-})
-
-const updateValue = (value: ItemOption | null) => {
-  emit('update:modelValue', value || undefined)
-}
+// Merge showType with includeBuildings logic
+const displayConfig = computed(() => ({
+  ...props.displayConfig,
+  showType: props.includeBuildings,
+}))
 </script>
 
 <template>
-  <v-autocomplete
+  <GameDataSelector
     :model-value="props.modelValue"
-    @update:model-value="updateValue"
-    :search="searchInput"
-    @update:search="updateSearch"
-    :items="filteredItems"
-    :placeholder="props.placeholder"
+    @update:model-value="$emit('update:modelValue', $event)"
+    :items="allItems"
     :disabled="props.disabled"
-    item-title="name"
-    return-object
-    clearable
-    hide-details
-    variant="outlined"
-    autocomplete="off"
-    :menu-props="{ closeOnContentClick: true }"
-    no-filter
-  >
-    <!-- Selected icon display -->
-    <template #prepend-inner v-if="selectedItem">
-      <CachedIcon :icon="selectedItem.icon" :size="24" class="me-2" />
-    </template>
-
-    <!-- Dropdown item template -->
-    <template #item="{ props: itemProps, item }">
-      <v-list-item v-bind="itemProps">
-        <template #prepend>
-          <CachedIcon :icon="item.raw.icon" :size="32" :alt="item.raw.name" class="me-3" />
-        </template>
-
-        <v-list-item-subtitle class="text-capitalize">{{ item.raw.type }}</v-list-item-subtitle>
-      </v-list-item>
-    </template>
-
-    <!-- No data message -->
-    <template #no-data>
-      <div class="px-4 py-2 text-center text-medium-emphasis">
-        <div v-if="allItems.length === 0">Loading items...</div>
-        <div v-else-if="!searchInput">Start typing to search items...</div>
-        <div v-else>No items found for "{{ searchInput }}"</div>
-      </div>
-    </template>
-  </v-autocomplete>
+    :display-config="displayConfig"
+    :icon-config="props.iconConfig"
+  />
 </template>
 
 <style scoped>

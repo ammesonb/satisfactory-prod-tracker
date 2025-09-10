@@ -33,28 +33,31 @@ onMounted(() => {
 
 <template>
   <v-app>
-    <AppBar />
-    <FactoryDrawer />
-    <v-main>
-      <v-container>
-        <p
-          v-if="
-            factoryStore.hasFactories && (!factoryStore.selected || !factoryStore.currentFactory)
-          "
-        >
-          Select a factory from the sidebar to view its production chain.
-        </p>
-        <GettingStarted v-if="!factoryStore.hasFactories" />
-        <FactoryPanels v-if="factoryStore.currentFactory" />
-      </v-container>
-      <!-- Grouped FABs -->
-      <div class="fab-container">
-        <FloatingNav v-if="factoryStore.selected" />
-        <v-fab icon="mdi-plus" color="secondary" @click="showAddFactoryModal = true" />
-      </div>
-    </v-main>
+    <LoadingScreen v-if="dataStore.isLoading" />
+    <template v-else>
+      <AppBar />
+      <FactoryDrawer />
+      <v-main>
+        <v-container>
+          <p
+            v-if="
+              factoryStore.hasFactories && (!factoryStore.selected || !factoryStore.currentFactory)
+            "
+          >
+            Select a factory from the sidebar to view its production chain.
+          </p>
+          <GettingStarted v-if="!factoryStore.hasFactories" />
+          <FactoryPanels v-if="factoryStore.currentFactory" />
+        </v-container>
+        <!-- Grouped FABs -->
+        <div class="fab-container">
+          <FloatingNav v-if="factoryStore.selected" />
+          <v-fab icon="mdi-plus" color="secondary" @click="showAddFactoryModal = true" />
+        </div>
+      </v-main>
 
-    <AddFactoryModal v-model="showAddFactoryModal" @add-factory="handleAddFactory" />
+      <AddFactoryModal v-model="showAddFactoryModal" @add-factory="handleAddFactory" />
+    </template>
     <ErrorModal />
   </v-app>
 </template>

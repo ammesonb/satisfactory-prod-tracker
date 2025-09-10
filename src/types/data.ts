@@ -158,5 +158,5 @@ export interface ItemOption {
   value: string
   name: string
   icon: string
-  type: 'item' | 'building'
+  type: 'item' | 'building' | 'recipe'
 }

@@ -25,14 +25,16 @@ const materialItem = computed(() => data.items[props.link.material])
 const sourceOrSink = computed(() => (props.type === 'input' ? props.link.source : props.link.sink))
 const isRecipe = computed(() => sourceOrSink.value in data.recipes)
 const displayName = computed(() =>
-  isRecipe.value
-    ? data.getRecipeDisplayName(sourceOrSink.value)
-    : data.getItemDisplayName(sourceOrSink.value) +
-      (props.link.source === EXTERNAL_RECIPE
-        ? ''
-        : props.type === 'input'
-          ? ' (Resource)'
-          : 'Surplus'),
+  sourceOrSink.value === ''
+    ? ''
+    : isRecipe.value
+      ? data.getRecipeDisplayName(sourceOrSink.value)
+      : data.getItemDisplayName(sourceOrSink.value) +
+        (props.link.source === EXTERNAL_RECIPE
+          ? ''
+          : props.type === 'input'
+            ? ' (Resource)'
+            : 'Surplus'),
 )
 const targetRecipe = computed(() =>
   isRecipe.value ? factoryStore.getRecipeByName(sourceOrSink.value) : null,

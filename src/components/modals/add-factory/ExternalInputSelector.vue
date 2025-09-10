@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { ItemOption, RecipeProduct } from '@/types/data'
-import { getStores } from '@/composables/useStores'
-import ItemSelector from '@/components/common/ItemSelector.vue'
-import CachedIcon from '@/components/common/CachedIcon.vue'
 
 interface Props {
   modelValue: RecipeProduct[]
@@ -13,8 +10,6 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   'update:modelValue': [value: RecipeProduct[]]
 }>()
-
-const { dataStore } = getStores()
 
 // Form state for adding new external input
 const selectedItem = ref<ItemOption>()
@@ -114,23 +109,13 @@ const removeExternalInput = (index: number) => {
         <div v-if="modelValue.length > 0">
           <h4 class="text-subtitle-2 mb-3">Added External Inputs:</h4>
           <div class="d-flex flex-wrap gap-2 align-center">
-            <v-chip
+            <ExternalInputItem
               v-for="(input, index) in modelValue"
-              :key="`${input.item}-${index}`"
-              size="large"
-              variant="outlined"
-              closable
-              @click:close="removeExternalInput(index)"
-              class="external-input-chip"
-            >
-              <template #prepend>
-                <CachedIcon :icon="dataStore.getIcon(input.item)" :size="20" class="me-2" />
-              </template>
-
-              {{ dataStore.getItemDisplayName(input.item) }}
-
-              <v-badge :content="input.amount" color="primary" inline class="ml-2" />
-            </v-chip>
+              :key="input.item"
+              :item="input.item"
+              :amount="input.amount"
+              @remove="removeExternalInput(index)"
+            />
           </div>
         </div>
 
