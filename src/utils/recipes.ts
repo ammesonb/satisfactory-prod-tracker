@@ -1,5 +1,6 @@
 import type { Recipe, RecipeIngredient, RecipeProduct } from '@/types/data'
 import { EXTERNAL_RECIPE } from '@/logistics/constants'
+import { memoize } from '@/utils/cache'
 
 const scaleAmount = (amount: number, time: number) => amount * (60 / time)
 
@@ -53,3 +54,23 @@ export const getRecipeProducts = (
     amount: scaleAmount(product.amount, recipe.time),
   }))
 }
+
+const recipesToOptionsInternal = (
+  recipes: Record<string, Recipe>,
+  getRecipeDisplayName: (key: string) => string,
+  excludeKeys: string[] = [],
+): Array<{ value: string; title: string }> => {
+  return Object.keys(recipes)
+    .filter((key) => !excludeKeys.includes(key))
+    .map((key) => ({
+      value: key,
+      title: getRecipeDisplayName(key),
+    }))
+    .sort((a, b) => a.title.localeCompare(b.title))
+}
+
+export const recipesToOptions = memoize(
+  recipesToOptionsInternal,
+  (recipes, _getRecipeDisplayName, excludeKeys) =>
+    `${JSON.stringify(recipes)}-${excludeKeys?.join(',') || ''}`,
+)

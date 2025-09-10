@@ -25,6 +25,7 @@ declare module 'vue' {
     FactorySelector: typeof import('./src/components/common/FactorySelector.vue')['default']
     FloatingNav: typeof import('./src/components/layout/FloatingNav.vue')['default']
     FloorEditModal: typeof import('./src/components/modals/FloorEditModal.vue')['default']
+    GameDataSelector: typeof import('./src/components/common/GameDataSelector.vue')['default']
     GettingStarted: typeof import('./src/components/common/GettingStarted.vue')['default']
     ImportExportModal: typeof import('./src/components/modals/ImportExportModal.vue')['default']
     ImportTab: typeof import('./src/components/modals/ImportTab.vue')['default']
