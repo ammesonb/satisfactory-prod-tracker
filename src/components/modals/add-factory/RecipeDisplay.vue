@@ -5,7 +5,7 @@ interface Props {
   recipes: RecipeEntry[]
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 const emit = defineEmits<{
   remove: [index: number]
 }>()
@@ -16,13 +16,13 @@ const removeRecipe = (index: number) => {
 </script>
 
 <template>
-  <div v-if="recipes.length > 0" class="recipe-display">
+  <div v-if="props.recipes.length > 0" class="recipe-display">
     <v-divider class="mb-3" />
     <h4 class="text-subtitle-2 mb-3">Selected Recipes</h4>
 
     <div class="recipe-entries">
       <v-card
-        v-for="(entry, index) in recipes"
+        v-for="(entry, index) in props.recipes"
         :key="`${entry.recipe}-${entry.building}-${index}`"
         variant="outlined"
         class="mb-2"
