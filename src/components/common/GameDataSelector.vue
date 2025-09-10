@@ -50,20 +50,21 @@ const { searchInput, filteredItems, updateSearch } = useDataSearch(
   props.searchOptions,
 )
 
-// Find the full selected item with icon from items array
-const selectedItem = computed<ItemOption | undefined>(() => {
-  if (!props.modelValue) return undefined
-  return props.items.find((item) => item.value === props.modelValue?.value) || props.modelValue
-})
+const selectedItem = computed<ItemOption | undefined>(() => props.modelValue)
 
-const updateValue = (value: ItemOption | null) => {
-  emit('update:modelValue', value || undefined)
+const updateValue = (value: ItemOption | undefined) => {
+  if (!value) {
+    emit('update:modelValue', undefined)
+    return
+  }
+
+  emit('update:modelValue', value)
 }
 </script>
 
 <template>
   <v-autocomplete
-    :model-value="props.modelValue"
+    :model-value="selectedItem"
     @update:model-value="updateValue"
     :search="searchInput"
     @update:search="updateSearch"

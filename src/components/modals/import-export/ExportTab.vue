@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { getStores } from '@/composables/useStores'
 import { ref } from 'vue'
-import FactorySelector from '../common/FactorySelector.vue'
 
 const emit = defineEmits<{
   error: [message: string]

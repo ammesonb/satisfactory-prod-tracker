@@ -21,7 +21,7 @@ const { displayName: itemName, icon } = getItemDetails(dataStore, props.item)
     variant="outlined"
     closable
     @click:close="emit('remove')"
-    class="external-input-chip"
+    class="external-input-chip mr-2"
   >
     <template #prepend>
       <CachedIcon :icon="icon" :size="20" class="me-2" />

@@ -18,6 +18,7 @@ export interface IDataStore {
   getItemDisplayName: (itemName: string) => string
   getRecipeDisplayName: (recipeName: string) => string
   getBuildingDisplayName: (buildingName: string) => string
+  getRecipeProductionBuildings: (recipeName: string) => string[]
 
   // Actions
   addRecipe: (recipe: Recipe) => void

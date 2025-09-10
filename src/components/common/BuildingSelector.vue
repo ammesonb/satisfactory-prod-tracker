@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { getStores } from '@/composables/useStores'
 import { buildingsToOptions } from '@/utils/buildings'
 import { type ItemOption } from '@/types/data'
@@ -14,10 +14,10 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  displayConfig: () => ({ placeholder: 'Search for a building...' }),
+  displayConfig: () => ({ placeholder: 'Search for a building...', label: 'Building' }),
 })
 
-defineEmits<{
+const emit = defineEmits<{
   'update:modelValue': [value: ItemOption | undefined]
 }>()
 
@@ -33,12 +33,23 @@ const allBuildings = computed<ItemOption[]>(() => {
 
   return buildings
 })
+
+// Auto-select if exactly one building option
+watch(
+  allBuildings,
+  (buildings) => {
+    if (buildings.length === 1 && !props.modelValue) {
+      emit('update:modelValue', buildings[0])
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
   <GameDataSelector
     :model-value="props.modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
+    @update:model-value="emit('update:modelValue', $event)"
     :items="allBuildings"
     :disabled="props.disabled"
     :display-config="props.displayConfig"

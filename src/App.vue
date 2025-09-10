@@ -3,7 +3,6 @@ import { onMounted, ref } from 'vue'
 import { useDataStore } from '@/stores/data'
 import { type RecipeProduct } from '@/types/data'
 import { useFactoryStore } from '@/stores/factory'
-import LoadingScreen from '@/components/common/LoadingScreen.vue'
 
 const dataStore = useDataStore()
 const factoryStore = useFactoryStore()

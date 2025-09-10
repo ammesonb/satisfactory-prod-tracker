@@ -29,6 +29,10 @@ export const useDataStore = defineStore('data', {
       (state) =>
       (buildingName: string): string =>
         formatBuildingName(state.buildings, buildingName),
+    getRecipeProductionBuildings:
+      (state) =>
+      (recipeName: string): string[] =>
+        state.recipes[recipeName]?.producedIn ?? [],
   },
   actions: {
     addRecipe(recipe: Recipe) {

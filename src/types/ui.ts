@@ -1,3 +1,5 @@
+import type { VAutocomplete } from 'vuetify/components'
+
 export interface SearchOptions {
   debounceMs?: number
   maxResults?: number

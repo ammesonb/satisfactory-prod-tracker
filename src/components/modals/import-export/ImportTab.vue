@@ -2,7 +2,6 @@
 import { getStores } from '@/composables/useStores'
 import { asFactory, type Factory } from '@/types/factory'
 import { ref, watch } from 'vue'
-import FactorySelector from '../common/FactorySelector.vue'
 
 const emit = defineEmits<{
   error: [message: string]

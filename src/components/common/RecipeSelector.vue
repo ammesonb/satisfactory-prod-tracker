@@ -15,7 +15,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   excludeKeys: () => [],
-  displayConfig: () => ({ placeholder: 'Search for a recipe...' }),
+  displayConfig: () => ({ placeholder: 'Search for a recipe...', label: 'Recipe' }),
 })
 
 defineEmits<{
