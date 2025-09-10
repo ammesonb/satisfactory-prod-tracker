@@ -121,5 +121,4 @@ const removeRecipe = (index: number) => {
   padding: 16px;
   margin-bottom: 16px;
 }
-
 </style>

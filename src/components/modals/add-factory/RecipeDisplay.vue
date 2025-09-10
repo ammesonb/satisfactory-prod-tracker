@@ -28,11 +28,7 @@ const removeRecipe = (index: number) => {
         class="mb-2"
       >
         <v-card-text>
-          <RecipeListItem
-            :entry="entry"
-            :row-number="index + 1"
-            @remove="removeRecipe(index)"
-          />
+          <RecipeListItem :entry="entry" :row-number="index + 1" @remove="removeRecipe(index)" />
         </v-card-text>
       </v-card>
     </div>
