@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { toRef } from 'vue'
+import { computed, toRef } from 'vue'
 import type { ItemOption } from '@/types/data'
 import type { SearchOptions } from '@/types/ui'
 import { useDataSearch } from '@/composables/useDataSearch'
@@ -27,26 +27,34 @@ interface Props {
   clearable?: boolean
   class?: string
   searchOptions?: SearchOptions
-  iconConfig: IconConfig
-  displayConfig: DisplayConfig
+  iconConfig?: IconConfig
+  displayConfig?: DisplayConfig
 }
 
 const props = withDefaults(defineProps<Props>(), {
   clearable: true,
+  disabled: false,
   searchOptions: () => ({}),
-  iconConfig: () => ({
-    showIcons: true,
-    dropdownIconSize: 32,
-    selectedIconSize: 24,
-  }),
-  displayConfig: () => ({
-    showType: false,
-    variant: 'outlined',
-    density: 'default',
-    placeholder: 'Search...',
-    hideDetails: true,
-  }),
+  iconConfig: () => ({}),
+  displayConfig: () => ({}),
 })
+
+// Merge provided configs with defaults
+const iconConfig = computed(() => ({
+  showIcons: true,
+  dropdownIconSize: 32,
+  selectedIconSize: 24,
+  ...props.iconConfig,
+}))
+
+const displayConfig = computed(() => ({
+  showType: false,
+  variant: 'outlined' as const,
+  density: 'default' as const,
+  placeholder: 'Search...',
+  hideDetails: true,
+  ...props.displayConfig,
+}))
 
 const emit = defineEmits<{
   'update:modelValue': [value: ItemOption | undefined]
@@ -69,41 +77,33 @@ const updateValue = (value: ItemOption | null) => {
     :search="searchInput"
     @update:search="updateSearch"
     :items="filteredItems"
-    :placeholder="props.displayConfig.placeholder"
+    :placeholder="displayConfig.placeholder"
     :disabled="props.disabled"
     item-title="name"
     item-value="value"
     :return-object="true"
     :clearable="props.clearable"
-    :hide-details="props.displayConfig.hideDetails"
-    :variant="props.displayConfig.variant"
-    :density="props.displayConfig.density"
+    :hide-details="displayConfig.hideDetails"
+    :variant="displayConfig.variant"
+    :density="displayConfig.density"
     :class="props.class"
-    :label="props.displayConfig.label"
+    :label="displayConfig.label"
     autocomplete="off"
     :menu-props="{ closeOnContentClick: true }"
     no-filter
   >
     <!-- Selected icon display -->
-    <template #prepend-inner v-if="props.iconConfig.showIcons && props.modelValue?.icon">
-      <CachedIcon
-        :icon="props.modelValue.icon"
-        :size="props.iconConfig.selectedIconSize"
-        class="me-2"
-      />
+    <template #prepend-inner v-if="iconConfig.showIcons && props.modelValue?.icon">
+      <CachedIcon :icon="props.modelValue.icon" :size="iconConfig.selectedIconSize" class="me-2" />
     </template>
 
     <!-- Dropdown item template -->
     <template #item="{ props: itemProps, item }">
       <v-list-item v-bind="itemProps">
-        <template #prepend v-if="props.iconConfig.showIcons && item.raw.icon">
-          <CachedIcon
-            :icon="item.raw.icon"
-            :size="props.iconConfig.dropdownIconSize"
-            class="me-3"
-          />
+        <template #prepend v-if="iconConfig.showIcons && item.raw.icon">
+          <CachedIcon :icon="item.raw.icon" :size="iconConfig.dropdownIconSize" class="me-3" />
         </template>
-        <template #append v-if="props.displayConfig.showType && item.raw.type">
+        <template #append v-if="displayConfig.showType && item.raw.type">
           <v-chip size="x-small" variant="outlined" class="text-capitalize">
             {{ item.raw.type }}
           </v-chip>
