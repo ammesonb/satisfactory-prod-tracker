@@ -3,21 +3,22 @@ import { computed } from 'vue'
 import { getStores } from '@/composables/useStores'
 import { recipesToOptions } from '@/utils/recipes'
 import { type ItemOption } from '@/types/data'
-import GameDataSelector from '@/components/common/GameDataSelector.vue'
+import type { DisplayConfig, IconConfig } from '@/types/ui'
 
 interface Props {
   modelValue?: ItemOption
-  placeholder?: string
-  disabled?: boolean
   excludeKeys?: string[]
+  disabled?: boolean
+  displayConfig?: Partial<DisplayConfig>
+  iconConfig?: Partial<IconConfig>
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  placeholder: 'Search for a recipe...',
   excludeKeys: () => [],
+  displayConfig: () => ({ placeholder: 'Search for a recipe...' }),
 })
 
-const emit = defineEmits<{
+defineEmits<{
   'update:modelValue': [value: ItemOption | undefined]
 }>()
 
@@ -34,31 +35,15 @@ const allRecipes = computed<ItemOption[]>(() =>
     }),
   ),
 )
-
-const selectedRecipe = computed<ItemOption | undefined>(() =>
-  props.modelValue
-    ? allRecipes.value.find((recipe) => recipe.value === props.modelValue?.value)
-    : undefined,
-)
-
-const updateValue = (value: ItemOption | undefined) => {
-  emit('update:modelValue', value)
-}
 </script>
 
 <template>
   <GameDataSelector
-    :model-value="selectedRecipe"
-    @update:model-value="updateValue"
+    :model-value="props.modelValue"
+    @update:model-value="$emit('update:modelValue', $event)"
     :items="allRecipes"
     :disabled="props.disabled"
-    :clearable="true"
-    :display-config="{
-      showType: false,
-      variant: 'outlined',
-      density: 'default',
-      placeholder: props.placeholder,
-      hideDetails: true,
-    }"
+    :display-config="props.displayConfig"
+    :icon-config="props.iconConfig"
   />
 </template>

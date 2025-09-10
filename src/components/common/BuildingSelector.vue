@@ -3,51 +3,45 @@ import { computed } from 'vue'
 import { getStores } from '@/composables/useStores'
 import { buildingsToOptions } from '@/utils/buildings'
 import { type ItemOption } from '@/types/data'
-import GameDataSelector from '@/components/common/GameDataSelector.vue'
+import type { IconConfig, DisplayConfig } from '@/types/ui'
 
 interface Props {
   modelValue?: ItemOption
-  placeholder?: string
   disabled?: boolean
+  filterKeys?: string[]
+  displayConfig?: Partial<DisplayConfig>
+  iconConfig?: Partial<IconConfig>
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  placeholder: 'Search for a building...',
+  displayConfig: () => ({ placeholder: 'Search for a building...' }),
 })
 
-const emit = defineEmits<{
+defineEmits<{
   'update:modelValue': [value: ItemOption | undefined]
 }>()
 
 const { dataStore } = getStores()
 
-// Get all buildings as ItemOptions
-const allBuildings = computed<ItemOption[]>(() => buildingsToOptions(dataStore.buildings))
+// Get buildings as ItemOptions, optionally filtered
+const allBuildings = computed<ItemOption[]>(() => {
+  const buildings = buildingsToOptions(dataStore.buildings)
 
-const selectedBuilding = computed<ItemOption | undefined>(() =>
-  props.modelValue
-    ? allBuildings.value.find((building) => building.value === props.modelValue?.value)
-    : undefined,
-)
+  if (props.filterKeys && props.filterKeys.length > 0) {
+    return buildings.filter((building) => props.filterKeys!.includes(building.value))
+  }
 
-const updateValue = (value: ItemOption | undefined) => {
-  emit('update:modelValue', value)
-}
+  return buildings
+})
 </script>
 
 <template>
   <GameDataSelector
-    :model-value="selectedBuilding"
-    @update:model-value="updateValue"
+    :model-value="props.modelValue"
+    @update:model-value="$emit('update:modelValue', $event)"
     :items="allBuildings"
     :disabled="props.disabled"
-    :clearable="true"
-    :display-config="{
-      showType: false,
-      variant: 'outlined',
-      density: 'default',
-      placeholder: props.placeholder,
-      hideDetails: true,
-    }"
+    :display-config="props.displayConfig"
+    :icon-config="props.iconConfig"
   />
 </template>

@@ -5,20 +5,23 @@ import { type ItemOption } from '@/types/data'
 import GameDataSelector from '@/components/common/GameDataSelector.vue'
 import { itemsToOptions } from '@/utils/items'
 import { buildingsToOptions } from '@/utils/buildings'
+import type { IconConfig, DisplayConfig } from '@/types/ui'
 
 interface Props {
   modelValue?: ItemOption
-  placeholder?: string
   disabled?: boolean
   includeBuildings?: boolean
+  displayConfig?: Partial<DisplayConfig>
+  iconConfig?: Partial<IconConfig>
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  placeholder: 'Search for an item...',
   includeBuildings: true,
+  displayConfig: () => ({ placeholder: 'Search for an item...' }),
+  iconConfig: () => ({}) as IconConfig,
 })
 
-const emit = defineEmits<{
+defineEmits<{
   'update:modelValue': [value: ItemOption | undefined]
 }>()
 
@@ -33,35 +36,21 @@ const allItems = computed<ItemOption[]>(() => {
   return options.sort((a, b) => a.name.localeCompare(b.name))
 })
 
-const selectedItem = computed<ItemOption | undefined>(() => {
-  if (!props.modelValue) return undefined
-  return allItems.value.find((item) => item.value === props.modelValue?.value)
-})
-
-const updateValue = (value: ItemOption | undefined) => {
-  emit('update:modelValue', value)
-}
+// Merge showType with includeBuildings logic
+const displayConfig = computed(() => ({
+  ...props.displayConfig,
+  showType: props.includeBuildings,
+}))
 </script>
 
 <template>
   <GameDataSelector
-    :model-value="selectedItem"
-    @update:model-value="updateValue"
+    :model-value="props.modelValue"
+    @update:model-value="$emit('update:modelValue', $event)"
     :items="allItems"
     :disabled="props.disabled"
-    :clearable="true"
-    :icon-config="{
-      showIcons: true,
-      dropdownIconSize: 32,
-      selectedIconSize: 24,
-    }"
-    :display-config="{
-      showType: props.includeBuildings,
-      variant: 'outlined',
-      density: 'default',
-      placeholder: props.placeholder,
-      hideDetails: true,
-    }"
+    :display-config="displayConfig"
+    :icon-config="props.iconConfig"
   />
 </template>
 

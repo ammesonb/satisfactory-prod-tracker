@@ -1,24 +1,9 @@
 <script setup lang="ts">
 import { computed, toRef } from 'vue'
 import type { ItemOption } from '@/types/data'
-import type { SearchOptions } from '@/types/ui'
+import type { SearchOptions, IconConfig, DisplayConfig } from '@/types/ui'
 import { useDataSearch } from '@/composables/useDataSearch'
 import type { VAutocomplete } from 'vuetify/components'
-
-interface IconConfig {
-  showIcons?: boolean
-  dropdownIconSize?: number
-  selectedIconSize?: number
-}
-
-interface DisplayConfig {
-  showType?: boolean
-  variant?: VAutocomplete['variant']
-  density?: VAutocomplete['density']
-  placeholder?: string
-  hideDetails?: boolean
-  label?: string
-}
 
 interface Props {
   modelValue?: ItemOption
@@ -65,6 +50,12 @@ const { searchInput, filteredItems, updateSearch } = useDataSearch(
   props.searchOptions,
 )
 
+// Find the full selected item with icon from items array
+const selectedItem = computed<ItemOption | undefined>(() => {
+  if (!props.modelValue) return undefined
+  return props.items.find((item) => item.value === props.modelValue?.value) || props.modelValue
+})
+
 const updateValue = (value: ItemOption | null) => {
   emit('update:modelValue', value || undefined)
 }
@@ -93,8 +84,8 @@ const updateValue = (value: ItemOption | null) => {
     no-filter
   >
     <!-- Selected icon display -->
-    <template #prepend-inner v-if="iconConfig.showIcons && props.modelValue?.icon">
-      <CachedIcon :icon="props.modelValue.icon" :size="iconConfig.selectedIconSize" class="me-2" />
+    <template #prepend-inner v-if="iconConfig.showIcons && selectedItem?.icon">
+      <CachedIcon :icon="selectedItem.icon" :size="iconConfig.selectedIconSize" class="me-2" />
     </template>
 
     <!-- Dropdown item template -->

@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { getStores } from '@/composables/useStores'
 import { type RecipeEntry } from '@/types/factory'
-import CachedIcon from '@/components/common/CachedIcon.vue'
+import { type ItemOption } from '@/types/data'
 
 interface Props {
   modelValue: RecipeEntry[]
@@ -16,43 +16,18 @@ const emit = defineEmits<{
 const { dataStore } = getStores()
 
 // Form inputs
-const selectedRecipe = ref<string>('')
+const selectedRecipe = ref<ItemOption>()
 const buildingCount = ref<number>(1)
-const selectedBuilding = ref<string>('')
+const selectedBuilding = ref<ItemOption>()
 
-// Available recipes with friendly names, excluding already selected ones
-const recipeOptions = computed(() => {
-  const selectedRecipeKeys = props.modelValue.map((entry) => entry.recipe)
+// Excluded recipe keys for RecipeSelector
+const excludedRecipeKeys = computed(() => props.modelValue.map((entry) => entry.recipe))
 
-  return Object.keys(dataStore.recipes)
-    .filter((key) => !selectedRecipeKeys.includes(key))
-    .map((key) => ({
-      value: key,
-      title: dataStore.getRecipeDisplayName(key),
-    }))
-    .sort((a, b) => a.title.localeCompare(b.title))
-})
-
-// Available buildings for selected recipe
-const buildingOptions = computed(() => {
-  if (!selectedRecipe.value || !dataStore.recipes[selectedRecipe.value]) {
-    return []
-  }
-  return dataStore.recipes[selectedRecipe.value].producedIn.map((buildingKey) => ({
-    value: buildingKey,
-    title: dataStore.getBuildingDisplayName(buildingKey),
-    icon: dataStore.buildings[buildingKey]?.icon || '',
-  }))
-})
-
-watch(
-  buildingOptions,
-  () => {
-    if (buildingOptions.value.length === 1) {
-      selectedBuilding.value = buildingOptions.value[0].value
-    }
-  },
-  { immediate: true },
+// Available building keys for selected recipe
+const availableBuildingKeys = computed<string[]>(() =>
+  selectedRecipe.value && dataStore.recipes[selectedRecipe.value.value]
+    ? dataStore.recipes[selectedRecipe.value.value].producedIn
+    : [],
 )
 
 const canAddRecipe = computed(() => {
@@ -60,11 +35,11 @@ const canAddRecipe = computed(() => {
 })
 
 const addRecipe = () => {
-  if (canAddRecipe.value) {
-    const building = dataStore.buildings[selectedBuilding.value]
+  if (canAddRecipe.value && selectedRecipe.value && selectedBuilding.value) {
+    const building = dataStore.buildings[selectedBuilding.value.value]
     const newEntry: RecipeEntry = {
-      recipe: selectedRecipe.value,
-      building: selectedBuilding.value,
+      recipe: selectedRecipe.value.value,
+      building: selectedBuilding.value.value,
       count: buildingCount.value,
       icon: building?.icon || '',
     }
@@ -73,8 +48,8 @@ const addRecipe = () => {
     emit('update:modelValue', updatedList)
 
     // Reset inputs
-    selectedRecipe.value = ''
-    selectedBuilding.value = ''
+    selectedRecipe.value = undefined
+    selectedBuilding.value = undefined
     buildingCount.value = 1
   }
 }
@@ -85,21 +60,17 @@ const removeRecipe = (index: number) => {
   emit('update:modelValue', updatedList)
 }
 
-const getRecipeProductIcon = (recipeName: string): string => {
-  const products = dataStore.recipeProducts(recipeName)
-  if (products.length > 0) {
-    const firstProduct = products[0].item
-    return dataStore.items[firstProduct]?.icon || ''
-  }
-  return ''
-}
-
 // Auto-select building if only one option
 watch(selectedRecipe, () => {
-  if (buildingOptions.value.length === 1) {
-    selectedBuilding.value = buildingOptions.value[0].value
+  if (availableBuildingKeys.value.length === 1) {
+    selectedBuilding.value = {
+      value: availableBuildingKeys.value[0],
+      name: dataStore.getBuildingDisplayName(availableBuildingKeys.value[0]),
+      icon: dataStore.getIcon(availableBuildingKeys.value[0]),
+      type: 'building' as const,
+    }
   } else {
-    selectedBuilding.value = ''
+    selectedBuilding.value = undefined
   }
 })
 </script>
@@ -108,16 +79,14 @@ watch(selectedRecipe, () => {
   <div class="recipe-input">
     <!-- Recipe Selection Form -->
     <div class="recipe-form">
-      <v-autocomplete
+      <RecipeSelector
         v-model="selectedRecipe"
-        :items="recipeOptions"
-        label="Recipe"
-        item-title="title"
-        item-value="value"
-        variant="outlined"
-        clearable
+        :exclude-keys="excludedRecipeKeys"
+        :display-config="{
+          placeholder: 'Select a recipe...',
+          label: 'Recipe',
+        }"
         class="mb-3"
-        :hide-details="true"
       />
 
       <div class="d-flex gap-3 mb-3 align-center">
@@ -132,33 +101,17 @@ watch(selectedRecipe, () => {
           :hide-details="true"
         />
 
-        <v-autocomplete
+        <BuildingSelector
           v-model="selectedBuilding"
-          :items="buildingOptions"
-          label="Building"
-          item-title="title"
-          item-value="value"
-          variant="outlined"
-          :disabled="!selectedRecipe || buildingOptions.length < 2"
+          :filter-keys="availableBuildingKeys"
+          :disabled="!selectedRecipe || availableBuildingKeys.length < 2"
+          :display-config="{
+            placeholder: 'Select building...',
+            label: 'Building',
+          }"
           style="flex: 1"
           class="me-2"
-          :hide-details="true"
-        >
-          <template #item="{ props: itemProps, item }">
-            <v-list-item v-bind="itemProps">
-              <template #prepend v-if="item.raw.icon">
-                <CachedIcon :icon="item.raw.icon" :size="24" class="me-2" />
-              </template>
-            </v-list-item>
-          </template>
-
-          <template #selection="{ item }">
-            <div class="d-flex align-center">
-              <CachedIcon v-if="item.raw.icon" :icon="item.raw.icon" :size="20" class="me-2" />
-              {{ item.raw.title }}
-            </div>
-          </template>
-        </v-autocomplete>
+        />
 
         <v-btn
           @click="addRecipe"
@@ -187,7 +140,7 @@ watch(selectedRecipe, () => {
             <v-card-text class="d-flex align-center py-3">
               <!-- Recipe product icon -->
               <div class="d-flex flex-row align-center mr-3">
-                <CachedIcon :icon="getRecipeProductIcon(entry.recipe)" :size="32" class="mr-2" />
+                <CachedIcon :icon="dataStore.getIcon(entry.recipe)" :size="32" class="mr-2" />
                 <div class="d-flex flex-column text-body-2 font-weight-medium">
                   {{ index + 1 }}. {{ dataStore.getRecipeDisplayName(entry.recipe) }}
                   <div
