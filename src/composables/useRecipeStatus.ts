@@ -19,8 +19,12 @@ export function useRecipeStatus() {
     if (recipe) recipe.built = built
   }
 
-  const setLinkBuilt = (linkId: string, built: boolean) => {
-    factoryStore.setLinkBuiltState(linkId, built)
+  const isLinkBuilt = (link: Material) => {
+    return !!factoryStore.currentFactory?.recipeLinks[linkToString(link)]
+  }
+
+  const setLinkBuilt = (link: Material, built: boolean) => {
+    factoryStore.setLinkBuiltState(linkToString(link), built)
   }
 
   const getRecipePanelValue = (recipe: RecipeNode) => {
@@ -40,6 +44,7 @@ export function useRecipeStatus() {
   return {
     isRecipeComplete,
     setRecipeBuilt,
+    isLinkBuilt,
     setLinkBuilt,
     getRecipePanelValue,
     leftoverProductsAsLinks,

@@ -10,13 +10,12 @@ import { useRecipeStatus } from '@/composables/useRecipeStatus'
 interface Props {
   floor: Floor
   floorNumber: number
-  expanded: boolean
 }
 
 const props = defineProps<Props>()
 
 const { dataStore } = getStores()
-const { getFloorDisplayName } = useFloorManagement()
+const { getFloorDisplayName, openFloorEditor } = useFloorManagement()
 const { getRecipePanelValue } = useRecipeStatus()
 
 const floorName = computed(() => getFloorDisplayName(props.floorNumber, props.floor))
@@ -32,10 +31,6 @@ const expandedRecipes = computed({
     })
   },
 })
-
-const emit = defineEmits<{
-  'edit-floor': [floorIndex: number]
-}>()
 </script>
 
 <template>
@@ -68,7 +63,7 @@ const emit = defineEmits<{
             size="small"
             variant="text"
             color="secondary"
-            @click.stop="emit('edit-floor', props.floorNumber - 1)"
+            @click.stop="openFloorEditor(props.floorNumber - 1)"
             class="me-1"
           />
         </div>

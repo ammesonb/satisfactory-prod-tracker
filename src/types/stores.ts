@@ -48,7 +48,6 @@ export interface IFactoryStore {
   setSelectedFactory: (factoryName: string) => void
   addFactory: (name: string, icon: string, recipes: string, externalInputs: RecipeProduct[]) => void
   removeFactory: (name: string) => void
-  setRecipeBuilt: (name: string, built: boolean) => void
   setLinkBuiltState: (linkId: string, built: boolean) => void
   getRecipeByName: (recipeName: string) => RecipeNode | null
   exportFactories: (factoryNames?: string[]) => Record<string, Factory>

@@ -1,15 +1,9 @@
 <script setup lang="ts">
 import type { Material } from '@/types/factory'
-import { linkToString, type RecipeNode } from '@/logistics/graph-node'
-import { getStores } from '@/composables/useStores'
-import { useFloorNavigation, formatRecipeId } from '@/composables/useFloorNavigation'
-import {
-  isFluid,
-  BELT_ITEM_NAMES,
-  PIPELINE_ITEM_NAMES,
-  EXTERNAL_RECIPE,
-} from '@/logistics/constants'
+import type { RecipeNode } from '@/logistics/graph-node'
 import { computed, ref } from 'vue'
+import { useRecipeStatus } from '@/composables/useRecipeStatus'
+import { useLinkData } from '@/composables/useLinkData'
 
 const props = defineProps<{
   link: Material
@@ -17,56 +11,27 @@ const props = defineProps<{
   type: 'input' | 'output'
 }>()
 
-const { dataStore: data, factoryStore } = getStores()
-const { navigateToElement } = useFloorNavigation()
+const { setLinkBuilt, isLinkBuilt } = useRecipeStatus()
 
-const linkId = computed(() => linkToString(props.link))
-const materialItem = computed(() => data.items[props.link.material])
-const sourceOrSink = computed(() => (props.type === 'input' ? props.link.source : props.link.sink))
-const isRecipe = computed(() => sourceOrSink.value in data.recipes)
-const displayName = computed(() =>
-  sourceOrSink.value === ''
-    ? ''
-    : isRecipe.value
-      ? data.getRecipeDisplayName(sourceOrSink.value)
-      : data.getItemDisplayName(sourceOrSink.value) +
-        (props.link.source === EXTERNAL_RECIPE
-          ? ''
-          : props.type === 'input'
-            ? ' (Resource)'
-            : 'Surplus'),
-)
-const targetRecipe = computed(() =>
-  isRecipe.value ? factoryStore.getRecipeByName(sourceOrSink.value) : null,
+const { materialItem, transportIcon } = useLinkData(
+  computed(() => props.link),
+  computed(() => props.type),
 )
 
-const built = computed(() => factoryStore.currentFactory?.recipeLinks[linkId.value] ?? false)
+const built = computed(() => isLinkBuilt(props.link))
 
 const updateBuiltState = (value: boolean) => {
-  factoryStore.setLinkBuiltState(linkId.value, value)
+  setLinkBuilt(props.link, value)
 }
-
-const navigateToRecipe = () => {
-  if (targetRecipe.value?.batchNumber !== undefined) {
-    const recipeId = formatRecipeId(targetRecipe.value.batchNumber, targetRecipe.value.recipe.name)
-    navigateToElement(recipeId)
-  }
-}
-
-const transportIcon = computed(() => {
-  const transport = isFluid(props.link.material) ? PIPELINE_ITEM_NAMES[0] : BELT_ITEM_NAMES[0]
-  return data.buildings[transport]?.icon ?? ''
-})
 
 const isTransportHovered = ref(false)
 </script>
 
 <template>
   <v-card
-    class="mb-1"
+    class="recipe-link mb-1"
     hover
     @click="updateBuiltState(!built)"
-    style="cursor: pointer; transition: all 0.2s ease"
     :class="{
       'elevation-2': true,
       'bg-green-lighten-4': built,
@@ -126,26 +91,16 @@ const isTransportHovered = ref(false)
           />
         </v-col>
         <v-col class="d-flex align-center">
-          <div class="text-caption" :class="built ? 'text-black' : 'text-medium-emphasis'">
-            {{ type === 'input' ? 'from' : sourceOrSink.length > 0 ? 'to' : '' }}
-            <span
-              v-if="isRecipe"
-              @click.prevent.stop="navigateToRecipe"
-              class="text-decoration-underline px-1 py-1"
-              style="cursor: pointer; margin: -4px; border-radius: 4px"
-              @mouseenter="
-                ($event.target as HTMLElement).style.backgroundColor =
-                  'rgba(var(--v-theme-on-surface), 0.1)'
-              "
-              @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'"
-            >
-              {{ displayName }}
-            </span>
-            <span v-else>{{ displayName }}</span>
-            <span v-if="isRecipe">&nbsp;(Floor {{ targetRecipe?.batchNumber! + 1 }})</span>
-          </div>
+          <RecipeLinkTarget :link="props.link" :type="props.type" />
         </v-col>
       </v-row>
     </v-card-text>
   </v-card>
 </template>
+
+<style lang="css" scoped>
+.recipe-link {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+</style>

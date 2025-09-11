@@ -113,6 +113,11 @@ export function useFloorNavigation() {
     }
   }
 
+  const navigateToRecipe = (recipe: RecipeNode) => {
+    if (recipe.batchNumber === undefined) return
+    navigateToElement(formatRecipeId(recipe.batchNumber, recipe.recipe.name))
+  }
+
   return {
     expandedFloors,
     expandFloor,
@@ -121,5 +126,6 @@ export function useFloorNavigation() {
     toggleFloor,
     navigateToElement,
     initializeExpansion,
+    navigateToRecipe,
   }
 }

@@ -40,6 +40,7 @@ declare module 'vue' {
     RecipeInput: typeof import('./src/components/modals/add-factory/RecipeInput.vue')['default']
     RecipeInputs: typeof import('./src/components/factory/RecipeInputs.vue')['default']
     RecipeLink: typeof import('./src/components/factory/RecipeLink.vue')['default']
+    RecipeLinkTarget: typeof import('./src/components/factory/RecipeLinkTarget.vue')['default']
     RecipeListItem: typeof import('./src/components/modals/add-factory/RecipeListItem.vue')['default']
     RecipeNode: typeof import('./src/components/factory/RecipeNode.vue')['default']
     RecipeOutputs: typeof import('./src/components/factory/RecipeOutputs.vue')['default']

@@ -3,24 +3,24 @@ import { computed } from 'vue'
 import { getStores } from '@/composables/useStores'
 import { ExpandRecipeState, useFloorNavigation } from '@/composables/useFloorNavigation'
 import { useRecipeStatus } from '@/composables/useRecipeStatus'
-
-const emit = defineEmits<{
-  'edit-all-floors': []
-}>()
+import { useFloorManagement } from '@/composables/useFloorManagement'
 
 const { factoryStore } = getStores()
 const factoryHasFloors = computed(() => (factoryStore.currentFactory?.floors.length ?? 0) > 0)
 const { setRecipeExpansionFromCompletion } = useFloorNavigation()
 const { isRecipeComplete } = useRecipeStatus()
+const { openFloorEditor } = useFloorManagement()
 
-const showCompleteRecipes = () =>
-  setRecipeExpansionFromCompletion(ExpandRecipeState.Complete, true, isRecipeComplete)
-const hideCompleteRecipes = () =>
-  setRecipeExpansionFromCompletion(ExpandRecipeState.Complete, false, isRecipeComplete)
-const showIncompleteRecipes = () =>
-  setRecipeExpansionFromCompletion(ExpandRecipeState.Incomplete, true, isRecipeComplete)
-const hideIncompleteRecipes = () =>
-  setRecipeExpansionFromCompletion(ExpandRecipeState.Incomplete, false, isRecipeComplete)
+const menuActions = {
+  showCompleteRecipes: () =>
+    setRecipeExpansionFromCompletion(ExpandRecipeState.Complete, true, isRecipeComplete),
+  hideCompleteRecipes: () =>
+    setRecipeExpansionFromCompletion(ExpandRecipeState.Complete, false, isRecipeComplete),
+  showIncompleteRecipes: () =>
+    setRecipeExpansionFromCompletion(ExpandRecipeState.Incomplete, true, isRecipeComplete),
+  hideIncompleteRecipes: () =>
+    setRecipeExpansionFromCompletion(ExpandRecipeState.Incomplete, false, isRecipeComplete),
+}
 </script>
 
 <template>
@@ -43,10 +43,10 @@ const hideIncompleteRecipes = () =>
           </v-btn>
         </template>
         <v-list>
-          <v-list-item @click="showCompleteRecipes">
+          <v-list-item @click="menuActions.showCompleteRecipes">
             <v-list-item-title>Show recipes</v-list-item-title>
           </v-list-item>
-          <v-list-item @click="hideCompleteRecipes">
+          <v-list-item @click="menuActions.hideCompleteRecipes">
             <v-list-item-title>Hide recipes</v-list-item-title>
           </v-list-item>
         </v-list>
@@ -68,10 +68,10 @@ const hideIncompleteRecipes = () =>
           </v-btn>
         </template>
         <v-list>
-          <v-list-item @click="showIncompleteRecipes">
+          <v-list-item @click="menuActions.showIncompleteRecipes">
             <v-list-item-title>Show recipes</v-list-item-title>
           </v-list-item>
-          <v-list-item @click="hideIncompleteRecipes">
+          <v-list-item @click="menuActions.hideIncompleteRecipes">
             <v-list-item-title>Hide recipes</v-list-item-title>
           </v-list-item>
         </v-list>
@@ -81,7 +81,7 @@ const hideIncompleteRecipes = () =>
         variant="outlined"
         color="secondary"
         prepend-icon="mdi-pencil-box-multiple"
-        @click="emit('edit-all-floors')"
+        @click="openFloorEditor()"
         class="ml-2"
         :disabled="!factoryHasFloors"
       >

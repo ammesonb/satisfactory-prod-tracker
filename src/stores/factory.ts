@@ -84,10 +84,6 @@ export const useFactoryStore = defineStore('factory', {
       }
       delete this.factories[name]
     },
-    setRecipeBuilt(name: string, built: boolean) {
-      const recipe = this.getRecipeByName(name)
-      if (recipe) recipe.built = built
-    },
     setLinkBuiltState(linkId: string, built: boolean) {
       if (!this.currentFactory) return
       this.currentFactory.recipeLinks[linkId] = built

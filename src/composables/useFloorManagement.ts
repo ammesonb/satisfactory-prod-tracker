@@ -1,9 +1,18 @@
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { getStores } from '@/composables/useStores'
 import type { Floor } from '@/types/factory'
+import type { ItemOption } from '@/types/data'
+
+export interface FloorFormData {
+  index: number
+  name: string | undefined
+  item: ItemOption | undefined
+  originalName: string | undefined
+  originalItem: ItemOption | undefined
+}
 
 export function useFloorManagement() {
-  const { factoryStore } = getStores()
+  const { factoryStore, dataStore } = getStores()
 
   const getFloorDisplayName = (floorIndex: number, floor: Floor): string => {
     return `Floor ${floorIndex}` + (floor.name ? ` - ${floor.name}` : '')
@@ -74,7 +83,75 @@ export function useFloorManagement() {
     toFloor.recipes.push(recipe)
   }
 
+  // Floor editor modal state
+  const showFloorEditor = ref(false)
+  const editFloorIndex = ref<number | null>(null)
+
+  const openFloorEditor = (floorIndex?: number) => {
+    editFloorIndex.value = floorIndex ?? null
+    showFloorEditor.value = true
+  }
+
+  const closeFloorEditor = () => {
+    showFloorEditor.value = false
+    editFloorIndex.value = null
+  }
+
+  // Floor form template generation
+  const getFloorFormsTemplate = (): FloorFormData[] => {
+    if (!factoryStore.currentFactory) return []
+
+    const indicesToEdit =
+      editFloorIndex.value !== null
+        ? [editFloorIndex.value] // Single floor mode
+        : factoryStore.currentFactory.floors.map((_, index) => index) // All floors mode
+
+    return indicesToEdit.map((index) => {
+      const floor = factoryStore.currentFactory!.floors[index]
+      const itemOption = floor?.iconItem
+        ? {
+            // NOTE: value here is icon, not key like in utils
+            // TODO: change the logic around this so we can use normal keys here
+            value: floor.iconItem,
+            name: dataStore.getItemDisplayName(floor.iconItem),
+            icon: dataStore.getIcon(floor.iconItem),
+            type: 'item' as const,
+          }
+        : undefined
+
+      return {
+        index,
+        name: floor?.name,
+        item: itemOption,
+        originalName: floor?.name,
+        originalItem: itemOption,
+      }
+    })
+  }
+
+  const floorChanged = (form: FloorFormData) =>
+    form.name !== form.originalName || form.item?.value !== form.originalItem?.value
+
+  // Form change detection
+  const hasFloorFormChanges = (forms: FloorFormData[]) => {
+    return forms.some(floorChanged)
+  }
+
+  const updateFloorsFromForms = (floors: FloorFormData[]) => {
+    updateFloors(
+      floors.filter(floorChanged).map((floor) => ({
+        index: floor.index,
+        iconItem: floor.item?.value,
+        name: floor.name,
+      })),
+    )
+  }
+
   return {
+    showFloorEditor,
+    editFloorIndex,
+    openFloorEditor,
+    closeFloorEditor,
     getFloorDisplayName,
     currentFactoryFloors,
     getEligibleFloors,
@@ -82,5 +159,8 @@ export function useFloorManagement() {
     updateFloorIcon,
     updateFloors,
     moveRecipe,
+    getFloorFormsTemplate,
+    hasFloorFormChanges,
+    updateFloorsFromForms,
   }
 }
