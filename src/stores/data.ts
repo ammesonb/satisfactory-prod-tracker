@@ -34,15 +34,6 @@ export const useDataStore = defineStore('data', {
         state.recipes[recipeName]?.producedIn ?? [],
   },
   actions: {
-    addRecipe(recipe: Recipe) {
-      this.recipes[recipe.name] = recipe
-    },
-    addItem(item: Item) {
-      this.items[item.name] = item
-    },
-    addBuilding(building: Building) {
-      this.buildings[building.name] = building
-    },
     recipeIngredients(recipeName: string): RecipeIngredient[] {
       return getRecipeIngredients(this.recipes, recipeName)
     },

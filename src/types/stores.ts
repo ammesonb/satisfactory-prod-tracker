@@ -21,9 +21,6 @@ export interface IDataStore {
   getRecipeProductionBuildings: (recipeName: string) => string[]
 
   // Actions
-  addRecipe: (recipe: Recipe) => void
-  addItem: (item: Item) => void
-  addBuilding: (building: Building) => void
   recipeIngredients: (recipeName: string) => RecipeIngredient[]
   recipeProducts: (recipeName: string) => RecipeProduct[]
   getIcon: (objectName: string) => string
