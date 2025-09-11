@@ -1,13 +1,12 @@
 import { defineStore } from 'pinia'
 import type { Item, Recipe, Building, RecipeIngredient, RecipeProduct } from '@/types/data'
-import { formatDisplayName as formatItemName } from '@/utils/items'
-import { formatDisplayName as formatBuildingName } from '@/utils/buildings'
 import {
-  formatDisplayName as formatRecipeName,
-  getRecipeIngredients,
-  getRecipeProducts,
-} from '@/utils/recipes'
-import { resolveIcon } from '@/utils/icons'
+  formatItemDisplayName,
+  formatBuildingDisplayName,
+  formatRecipeDisplayName,
+} from '@/stores/transformers/display-names'
+import { getRecipeIngredients, getRecipeProducts } from '@/stores/transformers/recipe-data'
+import { resolveIcon } from '@/stores/transformers/icon-resolver'
 
 export const useDataStore = defineStore('data', {
   state: () => ({
@@ -20,15 +19,15 @@ export const useDataStore = defineStore('data', {
     getItemDisplayName:
       (state) =>
       (itemName: string): string =>
-        formatItemName(state.items, itemName),
+        formatItemDisplayName(state.items, itemName),
     getRecipeDisplayName:
       (state) =>
       (recipeName: string): string =>
-        formatRecipeName(state.recipes, recipeName),
+        formatRecipeDisplayName(state.recipes, recipeName),
     getBuildingDisplayName:
       (state) =>
       (buildingName: string): string =>
-        formatBuildingName(state.buildings, buildingName),
+        formatBuildingDisplayName(state.buildings, buildingName),
     getRecipeProductionBuildings:
       (state) =>
       (recipeName: string): string[] =>
