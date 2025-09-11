@@ -1,37 +1,26 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { getStores } from '@/composables/useStores'
-import { useFloorNavigation } from '@/composables/useFloorNavigation'
+import { ExpandRecipeState, useFloorNavigation } from '@/composables/useFloorNavigation'
+import { useRecipeStatus } from '@/composables/useRecipeStatus'
 
 const emit = defineEmits<{
   'edit-all-floors': []
 }>()
 
 const { factoryStore } = getStores()
-const { expandFloor, collapseFloor } = useFloorNavigation()
+const factoryHasFloors = computed(() => (factoryStore.currentFactory?.floors.length ?? 0) > 0)
+const { setRecipeExpansionFromCompletion } = useFloorNavigation()
+const { isRecipeComplete } = useRecipeStatus()
 
-const updateRecipeExpandedStates = (isComplete: boolean, expanded: boolean) => {
-  if (!factoryStore.currentFactory) return
-
-  for (const floor of factoryStore.currentFactory.floors) {
-    for (const recipe of floor.recipes) {
-      // only change state of the requested complete/incomplete recipes
-      if (factoryStore.recipeComplete(recipe) === isComplete) {
-        recipe.expanded = expanded
-      }
-    }
-
-    const anyExpanded = floor.recipes.some((r) => r.expanded)
-    // if expanding recipes and any are expanded on this floor, then make sure the floor is visible
-    if (expanded && anyExpanded) expandFloor(floor.recipes[0].batchNumber!)
-    // otherwise if hiding and no recipes are expanded, then collapse the whole floor
-    else if (!expanded && !anyExpanded) collapseFloor(floor.recipes[0].batchNumber!)
-  }
-}
-
-const showCompleteRecipes = () => updateRecipeExpandedStates(true, true)
-const hideCompleteRecipes = () => updateRecipeExpandedStates(true, false)
-const showIncompleteRecipes = () => updateRecipeExpandedStates(false, true)
-const hideIncompleteRecipes = () => updateRecipeExpandedStates(false, false)
+const showCompleteRecipes = () =>
+  setRecipeExpansionFromCompletion(ExpandRecipeState.Complete, true, isRecipeComplete)
+const hideCompleteRecipes = () =>
+  setRecipeExpansionFromCompletion(ExpandRecipeState.Complete, false, isRecipeComplete)
+const showIncompleteRecipes = () =>
+  setRecipeExpansionFromCompletion(ExpandRecipeState.Incomplete, true, isRecipeComplete)
+const hideIncompleteRecipes = () =>
+  setRecipeExpansionFromCompletion(ExpandRecipeState.Incomplete, false, isRecipeComplete)
 </script>
 
 <template>
@@ -47,9 +36,7 @@ const hideIncompleteRecipes = () => updateRecipeExpandedStates(false, false)
             color="success"
             prepend-icon="mdi-check-circle"
             v-bind="props"
-            :disabled="
-              !factoryStore.currentFactory || factoryStore.currentFactory.floors.length === 0
-            "
+            :disabled="!factoryHasFloors"
           >
             Complete
             <v-icon icon="mdi-menu-down" />
@@ -74,9 +61,7 @@ const hideIncompleteRecipes = () => updateRecipeExpandedStates(false, false)
             prepend-icon="mdi-alert-circle"
             v-bind="props"
             class="ml-2"
-            :disabled="
-              !factoryStore.currentFactory || factoryStore.currentFactory.floors.length === 0
-            "
+            :disabled="!factoryHasFloors"
           >
             Incomplete
             <v-icon icon="mdi-menu-down" />
@@ -98,7 +83,7 @@ const hideIncompleteRecipes = () => updateRecipeExpandedStates(false, false)
         prepend-icon="mdi-pencil-box-multiple"
         @click="emit('edit-all-floors')"
         class="ml-2"
-        :disabled="!factoryStore.currentFactory || factoryStore.currentFactory.floors.length === 0"
+        :disabled="!factoryHasFloors"
       >
         Edit Floors
       </v-btn>

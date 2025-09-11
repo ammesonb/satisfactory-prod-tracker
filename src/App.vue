@@ -3,6 +3,8 @@ import { onMounted, ref } from 'vue'
 import { useDataStore } from '@/stores/data'
 import { type RecipeProduct } from '@/types/data'
 import { useFactoryStore } from '@/stores/factory'
+import { useRecipeStatus } from '@/composables/useRecipeStatus'
+import { useFloorNavigation } from '@/composables/useFloorNavigation'
 
 const dataStore = useDataStore()
 const factoryStore = useFactoryStore()
@@ -28,6 +30,7 @@ onMounted(() => {
   }
 
   dataStore.loadData()
+  useFloorNavigation().initializeExpansion(useRecipeStatus().isRecipeComplete)
 })
 </script>
 

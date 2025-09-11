@@ -6,7 +6,6 @@ import { solveRecipeChain } from '@/logistics/graph-solver'
 import { useErrorStore } from '@/stores/errors'
 import { isUserFriendlyError } from '@/errors/type-guards'
 import { linkToString, type RecipeNode } from '@/logistics/graph-node'
-import { recipeComplete } from '@/utils/recipes'
 
 export const useFactoryStore = defineStore('factory', {
   state: () => ({
@@ -18,12 +17,6 @@ export const useFactoryStore = defineStore('factory', {
     currentFactory: (state) => state.factories[state.selected] || null,
     factoryList: (state) =>
       Object.values(state.factories || {}).sort((a, b) => a.name.localeCompare(b.name)),
-    recipeComplete:
-      (state) =>
-      (recipe: RecipeNode): boolean =>
-        state.selected !== '' &&
-        !!state.factories[state.selected] &&
-        recipeComplete(recipe, state.factories[state.selected].recipeLinks),
   },
   actions: {
     setSelectedFactory(factoryName: string) {

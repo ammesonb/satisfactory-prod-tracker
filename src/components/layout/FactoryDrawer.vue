@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { getStores } from '@/composables/useStores'
+import { useFloorNavigation } from '@/composables/useFloorNavigation'
+import { useRecipeStatus } from '@/composables/useRecipeStatus'
+import type { Factory } from '@/types/factory'
 
 const collapsed = ref(true)
 const { factoryStore } = getStores()
+const { initializeExpansion } = useFloorNavigation()
+const { isRecipeComplete } = useRecipeStatus()
 const searchQuery = ref('')
 
 const filteredFactories = computed(() => {
@@ -14,6 +19,11 @@ const filteredFactories = computed(() => {
   const query = searchQuery.value.toLowerCase()
   return factoryStore.factoryList.filter((factory) => factory.name.toLowerCase().includes(query))
 })
+
+const selectFactory = (factory: Factory) => {
+  factoryStore.setSelectedFactory(factory.name)
+  initializeExpansion(isRecipeComplete)
+}
 </script>
 
 <template>
@@ -40,7 +50,7 @@ const filteredFactories = computed(() => {
         :factory="factory"
         :rail="collapsed"
         :selected="factoryStore.selected === factory.name"
-        @select="factoryStore.setSelectedFactory(factory.name)"
+        @select="selectFactory(factory)"
         @delete="factoryStore.removeFactory"
       />
     </v-list>

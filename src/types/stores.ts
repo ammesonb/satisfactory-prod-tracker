@@ -43,7 +43,6 @@ export interface IFactoryStore {
   hasFactories: boolean
   currentFactory: Factory | null
   factoryList: Factory[]
-  recipeComplete: (recipe: RecipeNode) => boolean
 
   // Actions
   setSelectedFactory: (factoryName: string) => void

@@ -4,6 +4,7 @@ import { getStores } from '@/composables/useStores'
 import { useFloorManagement } from '@/composables/useFloorManagement'
 import { getIconURL } from '@/logistics/images'
 import { formatFloorId, formatRecipeId } from '@/composables/useFloorNavigation'
+import { useRecipeStatus } from '@/composables/useRecipeStatus'
 
 const emit = defineEmits<{
   close: []
@@ -12,6 +13,7 @@ const emit = defineEmits<{
 
 const { factoryStore, dataStore } = getStores()
 const { getFloorDisplayName } = useFloorManagement()
+const { isRecipeComplete } = useRecipeStatus()
 const searchQuery = ref('')
 const searchInput = ref()
 
@@ -138,7 +140,7 @@ onMounted(() => {
               </v-list-item-title>
 
               <template #append>
-                <v-icon v-if="factoryStore.recipeComplete(recipe)" size="16" color="success">
+                <v-icon v-if="isRecipeComplete(recipe)" size="16" color="success">
                   mdi-check-circle
                 </v-icon>
               </template>
