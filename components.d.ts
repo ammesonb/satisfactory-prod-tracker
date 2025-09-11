@@ -75,6 +75,7 @@ declare module 'vue' {
     VImg: typeof import('vuetify/components')['VImg']
     VList: typeof import('vuetify/components')['VList']
     VListItem: typeof import('vuetify/components')['VListItem']
+    VListItemSubtitle: typeof import('vuetify/components')['VListItemSubtitle']
     VListItemTitle: typeof import('vuetify/components')['VListItemTitle']
     VMain: typeof import('vuetify/components')['VMain']
     VMenu: typeof import('vuetify/components')['VMenu']
