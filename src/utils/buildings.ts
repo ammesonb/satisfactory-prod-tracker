@@ -1,14 +1,5 @@
-import type { Building, ItemOption } from '@/types/data'
+import type { ItemOption } from '@/types/data'
 import { memoize } from '@/utils/cache'
-
-export const formatDisplayName = (buildings: Record<string, Building>, buildingName: string) => {
-  const building = buildings[buildingName]
-  if (!building) {
-    throw new Error(`Building not found: ${buildingName}`)
-  }
-
-  return building.name
-}
 
 const buildingsToOptionsInternal = (
   buildings: Record<string, { name: string; icon?: string }>,

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 import { getStores } from '@/composables/useStores'
+import { useFloorManagement } from '@/composables/useFloorManagement'
 import { getIconURL } from '@/logistics/images'
 import { formatFloorId, formatRecipeId } from '@/composables/useFloorNavigation'
+import { useRecipeStatus } from '@/composables/useRecipeStatus'
 
 const emit = defineEmits<{
   close: []
@@ -10,6 +12,8 @@ const emit = defineEmits<{
 }>()
 
 const { factoryStore, dataStore } = getStores()
+const { getFloorDisplayName } = useFloorManagement()
+const { isRecipeComplete } = useRecipeStatus()
 const searchQuery = ref('')
 const searchInput = ref()
 
@@ -27,7 +31,7 @@ const filteredFloors = computed(() => {
 
   return currentFactory.value.floors
     .map((floor, floorIndex) => {
-      const floorName = factoryStore.getFloorDisplayName(floorIndex + 1, floor).toLowerCase()
+      const floorName = getFloorDisplayName(floorIndex + 1, floor).toLowerCase()
       const floorMatches = floorName.includes(query)
 
       // only filter recipes if the floor does not match
@@ -106,7 +110,7 @@ onMounted(() => {
             </template>
 
             <v-list-item-title class="font-weight-medium">
-              {{ factoryStore.getFloorDisplayName(floor.originalIndex + 1, floor) }}
+              {{ getFloorDisplayName(floor.originalIndex + 1, floor) }}
             </v-list-item-title>
 
             <template #append>
@@ -136,7 +140,7 @@ onMounted(() => {
               </v-list-item-title>
 
               <template #append>
-                <v-icon v-if="factoryStore.recipeComplete(recipe)" size="16" color="success">
+                <v-icon v-if="isRecipeComplete(recipe)" size="16" color="success">
                   mdi-check-circle
                 </v-icon>
               </template>

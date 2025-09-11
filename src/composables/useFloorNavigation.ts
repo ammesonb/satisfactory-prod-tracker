@@ -1,12 +1,18 @@
-import { ref, watch } from 'vue'
-import { useFactoryStore } from '@/stores/factory'
+import { ref } from 'vue'
+import { useFactoryStore } from '@/stores'
+import type { RecipeNode } from '@/logistics/graph-node'
 
 // Global singleton state
 const expandedFloors = ref<number[]>([])
-let initialized = false
 
 const floorPrefix = 'floor-'
 const recipePrefix = 'recipe-'
+
+export const ExpandRecipeState = {
+  Complete: true,
+  Incomplete: false,
+  All: null,
+}
 
 // Element ID formatters
 export const formatFloorId = (floorIndex: number): string => `${floorPrefix}${floorIndex}`
@@ -16,31 +22,17 @@ export const formatRecipeId = (floorIndex: number, recipeName: string): string =
 export function useFloorNavigation() {
   const factoryStore = useFactoryStore()
 
-  const initializeExpansion = () => {
+  const initializeExpansion = (isRecipeComplete: (recipe: RecipeNode) => boolean) => {
     if (factoryStore.currentFactory) {
       // only show floors with incomplete recipes by default
       expandedFloors.value = factoryStore.currentFactory.floors
         .map((floor, index) =>
-          floor.recipes.some((recipe) => !factoryStore.recipeComplete(recipe)) ? index : undefined,
+          floor.recipes.some((recipe) => !isRecipeComplete(recipe)) ? index : undefined,
         )
         .filter((index): index is number => index !== undefined)
     } else {
       expandedFloors.value = []
     }
-  }
-
-  // Only initialize watcher once
-  if (!initialized) {
-    initialized = true
-
-    // Watch for factory changes
-    watch(
-      () => [factoryStore.currentFactory],
-      () => {
-        initializeExpansion()
-      },
-      { immediate: true },
-    )
   }
 
   const expandFloor = (floorIndex: number) => {
@@ -53,6 +45,32 @@ export function useFloorNavigation() {
     const index = expandedFloors.value.indexOf(floorIndex)
     if (index > -1) {
       expandedFloors.value.splice(index, 1)
+    }
+  }
+
+  const setRecipeExpansionFromCompletion = (
+    affectsCompleted: boolean | null,
+    shouldExpand: boolean,
+    isRecipeComplete: (recipe: RecipeNode) => boolean,
+  ) => {
+    if (!factoryStore.currentFactory) return
+
+    for (const floor of factoryStore.currentFactory.floors) {
+      for (const recipe of floor.recipes) {
+        // only change state of the requested complete/incomplete recipes
+        if (
+          affectsCompleted === ExpandRecipeState.All ||
+          affectsCompleted === isRecipeComplete(recipe)
+        ) {
+          recipe.expanded = shouldExpand
+        }
+      }
+
+      const anyExpanded = floor.recipes.some((r) => r.expanded)
+      // if expanding recipes and any are expanded on this floor, then make sure the floor is visible
+      if (shouldExpand && anyExpanded) expandFloor(floor.recipes[0].batchNumber!)
+      // otherwise if collapsing and no recipes are expanded, then collapse the whole floor
+      else if (!shouldExpand && !anyExpanded) collapseFloor(floor.recipes[0].batchNumber!)
     }
   }
 
@@ -95,12 +113,19 @@ export function useFloorNavigation() {
     }
   }
 
+  const navigateToRecipe = (recipe: RecipeNode) => {
+    if (recipe.batchNumber === undefined) return
+    navigateToElement(formatRecipeId(recipe.batchNumber, recipe.recipe.name))
+  }
+
   return {
     expandedFloors,
     expandFloor,
     collapseFloor,
+    setRecipeExpansionFromCompletion,
     toggleFloor,
     navigateToElement,
     initializeExpansion,
+    navigateToRecipe,
   }
 }

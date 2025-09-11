@@ -22,5 +22,4 @@ const resolveIconInternal = (dataStore: IDataStore, objectName: string): string 
   }
 }
 
-// Memoized version - cache by objectName only since dataStore is stable
 export const resolveIcon = memoize(resolveIconInternal, (_dataStore, objectName) => objectName)

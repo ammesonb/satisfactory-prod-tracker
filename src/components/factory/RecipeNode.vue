@@ -1,58 +1,42 @@
 <script setup lang="ts">
-import { computed, type Ref } from 'vue'
+import { computed } from 'vue'
 import { type RecipeNode } from '@/logistics/graph-node'
 import { getStores } from '@/composables/useStores'
-import { type Material } from '@/types/factory'
-import { ZERO_THRESHOLD } from '@/logistics/constants'
+import { useFloorManagement } from '@/composables/useFloorManagement'
+import { formatRecipeId } from '@/composables/useFloorNavigation'
+import { useRecipeStatus } from '@/composables/useRecipeStatus'
 
 const props = defineProps<{
   recipe: RecipeNode
-  recipeId: string
-  completed: boolean
-  panelValue: string
-  currentFloorIndex: number
 }>()
 
-const { dataStore: data, themeStore, factoryStore } = getStores()
+const { dataStore: data, themeStore } = getStores()
+const { getEligibleFloors, moveRecipe } = useFloorManagement()
+const { isRecipeComplete, getRecipePanelValue, leftoverProductsAsLinks } = useRecipeStatus()
 
-const leftoverProducts: Ref<Material[]> = computed(() =>
-  props.recipe.availableProducts
-    .filter((p) => p.amount > ZERO_THRESHOLD)
-    .map((p) => ({
-      source: props.recipe.recipe.name,
-      sink: '',
-      material: p.item,
-      amount: p.amount,
-    })),
-)
+const completed = computed(() => isRecipeComplete(props.recipe))
 
 const panelBgClass = computed(
   () =>
-    (props.completed ? 'bg-blue-grey' : 'bg-grey') +
+    (completed.value ? 'bg-blue-grey' : 'bg-grey') +
     (themeStore.isDark ? '-darken-2' : '-lighten-1'),
 )
 
-const titleBgClass = computed(() => (props.completed ? 'bg-green-lighten-4' : 'bg-grey'))
+const titleBgClass = computed(() => (completed.value ? 'bg-green-lighten-4' : 'bg-grey'))
 
-const availableFloors = computed(() => {
-  if (!factoryStore.currentFactory) return []
+const availableFloors = computed(() => getEligibleFloors(props.recipe.batchNumber!))
 
-  return factoryStore.currentFactory.floors.map((floor, index) => ({
-    value: index,
-    title: factoryStore.getFloorDisplayName(index + 1, floor),
-    disabled: index === props.currentFloorIndex,
-  }))
-})
-
-const moveRecipe = (targetFloorIndex: number) => {
-  if (targetFloorIndex === props.currentFloorIndex) return
-
-  factoryStore.moveRecipe(props.recipe.recipe.name, props.currentFloorIndex, targetFloorIndex)
+const handleMoveRecipe = (targetFloorIndex: number) => {
+  moveRecipe(props.recipe.recipe.name, props.recipe.batchNumber!, targetFloorIndex)
 }
 </script>
 
 <template>
-  <v-expansion-panel :class="panelBgClass" :value="props.panelValue" :id="props.recipeId">
+  <v-expansion-panel
+    :class="panelBgClass"
+    :value="getRecipePanelValue(recipe)"
+    :id="formatRecipeId(props.recipe.batchNumber!, props.recipe.recipe.name)"
+  >
     <v-expansion-panel-title :class="titleBgClass">
       <div class="d-flex justify-space-between align-center w-100">
         <div class="d-flex align-center gap-2">
@@ -75,8 +59,8 @@ const moveRecipe = (targetFloorIndex: number) => {
         </div>
         <div class="d-flex align-center gap-2">
           <v-select
-            :model-value="props.currentFloorIndex"
-            @update:model-value="moveRecipe"
+            :model-value="props.recipe.batchNumber!"
+            @update:model-value="handleMoveRecipe"
             @click.stop
             :items="availableFloors"
             density="compact"
@@ -98,7 +82,7 @@ const moveRecipe = (targetFloorIndex: number) => {
         <RecipeInputs :links="props.recipe.inputs" :recipe="props.recipe" />
         <RecipeBuilding :recipe="props.recipe" />
         <RecipeOutputs
-          :links="[...props.recipe.outputs, ...leftoverProducts]"
+          :links="[...props.recipe.outputs, ...leftoverProductsAsLinks(props.recipe)]"
           :recipe="props.recipe"
         />
       </div>

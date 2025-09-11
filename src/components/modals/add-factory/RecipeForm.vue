@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { getStores } from '@/composables/useStores'
 import { type RecipeEntry } from '@/types/factory'
 import { useRecipeInputForm } from './composables/useRecipeInputForm'
 
@@ -13,17 +12,9 @@ const emit = defineEmits<{
   'update:modelValue': [value: RecipeEntry[]]
 }>()
 
-const { dataStore } = getStores()
-
 const form = useRecipeInputForm()
 
 const excludedRecipeKeys = computed(() => props.modelValue.map((entry) => entry.recipe))
-
-const availableBuildingKeys = computed<string[]>(() => {
-  return form.selectedRecipe.value?.value
-    ? dataStore.getRecipeProductionBuildings(form.selectedRecipe.value.value)
-    : []
-})
 
 const addRecipe = () => {
   if (!form.isValid) {
@@ -31,7 +22,7 @@ const addRecipe = () => {
   }
 
   try {
-    const updatedList = [...props.modelValue, form.toRecipeEntry(dataStore)]
+    const updatedList = [...props.modelValue, form.toRecipeEntry()]
     emit('update:modelValue', updatedList)
     form.reset()
   } catch (error) {
@@ -87,7 +78,7 @@ const removeRecipe = (index: number) => {
         <v-col cols="6">
           <BuildingSelector
             v-model="form.selectedBuilding.value"
-            :filter-keys="availableBuildingKeys"
+            :filter-keys="form.productionBuildings.value"
             :disabled="!form.selectedRecipe.value"
           />
         </v-col>

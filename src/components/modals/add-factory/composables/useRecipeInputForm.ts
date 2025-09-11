@@ -1,14 +1,15 @@
 import { ref, computed } from 'vue'
 import { type ItemOption } from '@/types/data'
 import { isPositiveNumber } from '@/utils/validation'
-import type { IDataStore } from '@/types/stores'
 import type { RecipeEntry } from '@/types/factory'
+import { useDataStore } from '@/stores'
 
 export function useRecipeInputForm() {
   const selectedRecipe = ref<ItemOption | undefined>()
   const buildingCount = ref<number>(1)
   const selectedBuilding = ref<ItemOption | undefined>()
   const errorMessage = ref<string>('')
+  const dataStore = useDataStore()
 
   const reset = () => {
     selectedRecipe.value = undefined
@@ -21,6 +22,12 @@ export function useRecipeInputForm() {
     selectedRecipe.value = recipe
     selectedBuilding.value = undefined
   }
+
+  const productionBuildings = computed(() => {
+    return selectedRecipe.value
+      ? dataStore.getRecipeProductionBuildings(selectedRecipe.value.value)
+      : []
+  })
 
   const validationError = computed((): string | null => {
     // Don't show validation errors until user starts interacting
@@ -48,7 +55,7 @@ export function useRecipeInputForm() {
 
   const isValid = computed(() => selectedRecipe.value !== undefined && !validationError.value)
 
-  const toRecipeEntry = (dataStore: IDataStore): RecipeEntry => {
+  const toRecipeEntry = (): RecipeEntry => {
     if (!isValid.value) {
       throw new Error(validationError.value ?? 'Form validation failed')
     }
@@ -64,6 +71,7 @@ export function useRecipeInputForm() {
   return {
     selectedRecipe,
     buildingCount,
+    productionBuildings,
     selectedBuilding,
     displayError,
     reset,

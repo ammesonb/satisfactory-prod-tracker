@@ -1,29 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { getStores } from '@/composables/useStores'
 import { useFloorNavigation } from '@/composables/useFloorNavigation'
 
 const { factoryStore } = getStores()
 const { expandedFloors } = useFloorNavigation()
-const showEditModal = ref(false)
-const editFloorIndices = ref<number[]>([])
-
-const openEditModal = (floorIndex: number) => {
-  editFloorIndices.value = [floorIndex]
-  showEditModal.value = true
-}
-
-const openMassEditModal = () => {
-  if (factoryStore.currentFactory) {
-    editFloorIndices.value = factoryStore.currentFactory.floors.map((_, index) => index)
-    showEditModal.value = true
-  }
-}
 </script>
 
 <template>
   <div v-if="factoryStore.currentFactory">
-    <FactoryFloorsToolbar @edit-all-floors="openMassEditModal" />
+    <FactoryFloorsToolbar />
 
     <v-expansion-panels v-model="expandedFloors" multiple variant="accordion">
       <FactoryFloor
@@ -31,15 +16,9 @@ const openMassEditModal = () => {
         :key="index"
         :floor="floor"
         :floorNumber="index + 1"
-        :expanded="expandedFloors.includes(index)"
-        @edit-floor="openEditModal"
       />
     </v-expansion-panels>
 
-    <FloorEditModal
-      v-model:show="showEditModal"
-      :factory-name="factoryStore.selected"
-      :floor-indices="editFloorIndices"
-    />
+    <FloorEditModal />
   </div>
 </template>

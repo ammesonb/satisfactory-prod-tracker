@@ -1,6 +1,6 @@
 import type { VNode } from 'vue'
 import type { Item, Recipe, Building, RecipeIngredient, RecipeProduct } from '@/types/data'
-import type { Factory, Floor } from '@/types/factory'
+import type { Factory } from '@/types/factory'
 import type { RecipeNode } from '@/logistics/graph-node'
 import type { ErrorBuilder } from '@/types/errors'
 
@@ -21,9 +21,6 @@ export interface IDataStore {
   getRecipeProductionBuildings: (recipeName: string) => string[]
 
   // Actions
-  addRecipe: (recipe: Recipe) => void
-  addItem: (item: Item) => void
-  addBuilding: (building: Building) => void
   recipeIngredients: (recipeName: string) => RecipeIngredient[]
   recipeProducts: (recipeName: string) => RecipeProduct[]
   getIcon: (objectName: string) => string
@@ -43,23 +40,13 @@ export interface IFactoryStore {
   hasFactories: boolean
   currentFactory: Factory | null
   factoryList: Factory[]
-  getFloorDisplayName: (floorIndex: number, floor: Floor) => string
-  recipeComplete: (recipe: RecipeNode) => boolean
 
   // Actions
   setSelectedFactory: (factoryName: string) => void
-  updateFloorName: (factoryName: string, floorIndex: number, name: string) => void
-  updateFloorIcon: (factoryName: string, floorIndex: number, icon: string) => void
-  updateFloors: (
-    factoryName: string,
-    updates: Array<{ index: number; name?: string; iconItem?: string }>,
-  ) => void
   addFactory: (name: string, icon: string, recipes: string, externalInputs: RecipeProduct[]) => void
   removeFactory: (name: string) => void
-  setRecipeBuilt: (name: string, built: boolean) => void
   setLinkBuiltState: (linkId: string, built: boolean) => void
   getRecipeByName: (recipeName: string) => RecipeNode | null
-  moveRecipe: (recipeName: string, fromFloorIndex: number, toFloorIndex: number) => void
   exportFactories: (factoryNames?: string[]) => Record<string, Factory>
   importFactories: (factories: Record<string, Factory>) => void
 }

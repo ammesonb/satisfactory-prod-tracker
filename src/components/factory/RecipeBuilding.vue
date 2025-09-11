@@ -1,21 +1,20 @@
 <script setup lang="ts">
-import type { RecipeNode } from '@/logistics/graph-node'
-import { getStores } from '@/composables/useStores'
 import { computed } from 'vue'
-import CachedIcon from '@/components/common/CachedIcon.vue'
+import type { RecipeNode } from '@/logistics/graph-node'
+import { useDataStore } from '@/stores'
+import { useRecipeStatus } from '@/composables/useRecipeStatus'
 
 const props = defineProps<{
   recipe: RecipeNode
 }>()
 
-const { dataStore: data, factoryStore } = getStores()
+const data = useDataStore()
 
-const buildingIcon = computed(() => data.buildings[props.recipe.recipe.building]?.icon)
+const buildingIcon = computed(() => data.getIcon(props.recipe.recipe.building))
+const { setRecipeBuilt } = useRecipeStatus()
 
 const updateBuiltState = (value: boolean) => {
-  if (factoryStore.currentFactory) {
-    factoryStore.setRecipeBuilt(props.recipe.recipe.name, value)
-  }
+  setRecipeBuilt(props.recipe.recipe.name, value)
 }
 </script>
 
