@@ -1,6 +1,7 @@
 import type { Recipe, RecipeIngredient, RecipeProduct } from '@/types/data'
 import { EXTERNAL_RECIPE } from '@/logistics/constants'
 import { memoize } from '@/utils/cache'
+import { linkToString, type RecipeNode } from '@/logistics/graph-node'
 
 const scaleAmount = (amount: number, time: number) => amount * (60 / time)
 
@@ -74,3 +75,10 @@ export const recipesToOptions = memoize(
   (recipes, _getRecipeDisplayName, excludeKeys) =>
     `${JSON.stringify(recipes)}-${excludeKeys?.join(',') || ''}`,
 )
+
+export const recipeComplete = (recipe: RecipeNode, links: Record<string, boolean>) => {
+  return (
+    recipe.built &&
+    [...recipe.inputs, ...recipe.outputs].every((link) => !!links[linkToString(link)])
+  )
+}

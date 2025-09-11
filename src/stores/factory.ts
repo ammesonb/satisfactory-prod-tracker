@@ -6,6 +6,7 @@ import { solveRecipeChain } from '@/logistics/graph-solver'
 import { useErrorStore } from '@/stores/errors'
 import { isUserFriendlyError } from '@/errors/type-guards'
 import { linkToString, type RecipeNode } from '@/logistics/graph-node'
+import { recipeComplete } from '@/utils/recipes'
 
 export const useFactoryStore = defineStore('factory', {
   state: () => ({
@@ -17,58 +18,16 @@ export const useFactoryStore = defineStore('factory', {
     currentFactory: (state) => state.factories[state.selected] || null,
     factoryList: (state) =>
       Object.values(state.factories || {}).sort((a, b) => a.name.localeCompare(b.name)),
-    getFloorDisplayName: () => (floorIndex: number, floor: Floor) => {
-      return `Floor ${floorIndex}` + (floor.name ? ` - ${floor.name}` : '')
-    },
     recipeComplete:
       (state) =>
-      (recipe: RecipeNode): boolean => {
-        if (state.selected === '' || !recipe.built) {
-          return false
-        }
-
-        const factory = state.factories[state.selected]
-        if (!factory) {
-          return false
-        }
-
-        return (
-          [...recipe.inputs, ...recipe.outputs]
-            .map(linkToString)
-            .every((link) => factory.recipeLinks[link]) ?? false
-        )
-      },
+      (recipe: RecipeNode): boolean =>
+        state.selected !== '' &&
+        !!state.factories[state.selected] &&
+        recipeComplete(recipe, state.factories[state.selected].recipeLinks),
   },
   actions: {
     setSelectedFactory(factoryName: string) {
       this.selected = factoryName
-    },
-    updateFloorName(factoryName: string, floorIndex: number, name: string) {
-      const factory = this.factories[factoryName]
-      if (factory && factory.floors[floorIndex]) {
-        factory.floors[floorIndex].name = name
-      }
-    },
-    updateFloorIcon(factoryName: string, floorIndex: number, icon: string) {
-      const factory = this.factories[factoryName]
-      if (factory && factory.floors[floorIndex]) {
-        factory.floors[floorIndex].iconItem = icon
-      }
-    },
-    updateFloors(
-      factoryName: string,
-      updates: Array<{ index: number; name?: string; iconItem?: string }>,
-    ) {
-      const factory = this.factories[factoryName]
-      if (!factory) return
-
-      for (const update of updates) {
-        const floor = factory.floors[update.index]
-        if (floor) {
-          if ('name' in update) floor.name = update.name
-          if ('iconItem' in update) floor.iconItem = update.iconItem
-        }
-      }
     },
     addFactory(name: string, icon: string, recipes: string, externalInputs: RecipeProduct[]) {
       const errorStore = useErrorStore()
@@ -148,26 +107,6 @@ export const useFactoryStore = defineStore('factory', {
         if (recipe) return recipe
       }
       return null
-    },
-    moveRecipe(recipeName: string, fromFloorIndex: number, toFloorIndex: number) {
-      if (!this.currentFactory || fromFloorIndex === toFloorIndex) return
-
-      const fromFloor = this.currentFactory.floors[fromFloorIndex]
-      const toFloor = this.currentFactory.floors[toFloorIndex]
-
-      if (!fromFloor || !toFloor) return
-
-      // Find and remove recipe from source floor
-      const recipeIndex = fromFloor.recipes.findIndex((r) => r.recipe.name === recipeName)
-      if (recipeIndex === -1) return
-
-      const recipe = fromFloor.recipes.splice(recipeIndex, 1)[0]
-
-      // Update recipe's batch number to match new floor
-      recipe.batchNumber = toFloorIndex
-
-      // Add recipe to target floor
-      toFloor.recipes.push(recipe)
     },
     exportFactories(factoryNames?: string[]) {
       const factoriesToExport: Record<string, Factory> = {}

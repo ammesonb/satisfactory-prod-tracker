@@ -3,7 +3,8 @@ import { computed } from 'vue'
 import type { Floor } from '@/types/factory'
 import { getIconURL } from '@/logistics/images'
 import { getStores } from '@/composables/useStores'
-import { formatFloorId, formatRecipeId } from '@/composables/useFloorNavigation'
+import { useFloorManagement } from '@/composables/useFloorManagement'
+import { formatFloorId } from '@/composables/useFloorNavigation'
 
 interface Props {
   floor: Floor
@@ -14,8 +15,9 @@ interface Props {
 const props = defineProps<Props>()
 
 const { dataStore, factoryStore } = getStores()
+const { getFloorDisplayName } = useFloorManagement()
 
-const floorName = computed(() => factoryStore.getFloorDisplayName(props.floorNumber, props.floor))
+const floorName = computed(() => getFloorDisplayName(props.floorNumber, props.floor))
 
 const expandedRecipes = computed({
   get: () => {
@@ -79,9 +81,7 @@ const emit = defineEmits<{
           v-for="recipe in props.floor.recipes"
           :key="recipe.recipe.name"
           :recipe="recipe"
-          :completed="factoryStore.recipeComplete(recipe)"
           :panel-value="`${props.floorNumber}-${recipe.recipe.name}`"
-          :recipe-id="formatRecipeId(props.floorNumber - 1, recipe.recipe.name)"
           :current-floor-index="props.floorNumber - 1"
           @update:built="(value: boolean) => (recipe.built = value)"
           @update:link-built="

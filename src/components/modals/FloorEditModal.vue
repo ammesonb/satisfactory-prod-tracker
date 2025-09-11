@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { getStores } from '@/composables/useStores'
+import { useFloorManagement } from '@/composables/useFloorManagement'
 import { type ItemOption } from '@/types/data'
 
 interface Props {
@@ -21,6 +22,7 @@ const props = defineProps<Props>()
 const emit = defineEmits(['update:show'])
 
 const { dataStore, factoryStore } = getStores()
+const { getFloorDisplayName, updateFloors } = useFloorManagement()
 
 const showDialog = computed({
   get: () => props.show,
@@ -87,7 +89,7 @@ const saveChanges = () => {
     }))
 
   if (updates.length > 0) {
-    factoryStore.updateFloors(props.factoryName, updates)
+    updateFloors(updates)
   }
 
   clear()
@@ -109,7 +111,7 @@ const saveChanges = () => {
           >
             <v-card-title class="text-subtitle-1 font-weight-medium pb-2">
               {{
-                factoryStore.getFloorDisplayName(form.index + 1, {
+                getFloorDisplayName(form.index + 1, {
                   name: form.originalName,
                   iconItem: form.originalItem?.value,
                   recipes: [],
