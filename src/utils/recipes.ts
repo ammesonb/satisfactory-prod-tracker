@@ -17,6 +17,6 @@ const recipesToOptionsInternal = (
 
 export const recipesToOptions = memoize(
   recipesToOptionsInternal,
-  (recipes, _getRecipeDisplayName, excludeKeys) =>
+  (recipes, _getRecipeDisplayName, excludeKeys = []) =>
     `${JSON.stringify(recipes)}-${excludeKeys?.join(',') || ''}`,
 )

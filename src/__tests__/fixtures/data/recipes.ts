@@ -51,6 +51,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
       { item: 'Desc_Fuel_C', amount: 30 },
     ],
     products: [{ item: 'Desc_Rubber_C', amount: 60 }],
+    time: 5,
+    producedIn: ['Desc_OilRefinery_C'],
   },
   Recipe_Fake_RecycledPlastic_C: {
     name: 'Recipe_RecycledPlastic_C',
@@ -59,6 +61,8 @@ export const recipeDatabase: Record<string, RecipeData> = {
       { item: 'Desc_Fuel_C', amount: 30 },
     ],
     products: [{ item: 'Desc_Plastic_C', amount: 60 }],
+    time: 5,
+    producedIn: ['Desc_OilRefinery_C'],
   },
   // real recipes start here
   Recipe_IronPlate_C: {

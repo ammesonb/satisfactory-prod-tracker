@@ -85,6 +85,7 @@ The project uses `@/` as an alias for the `src/` directory for cleaner imports.
 - `npm run format` - Format code with Prettier
 - `npm run lint` - Lint and auto-fix code issues
 - `npm run type-check` - Run TypeScript type checking
+- `ck --jsonl --sem <query>` - Search the codebase semantically
 
 ### Testing
 
