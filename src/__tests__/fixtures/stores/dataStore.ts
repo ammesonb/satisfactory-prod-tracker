@@ -21,13 +21,23 @@ export function createMockDataStore() {
     getItemDisplayName: vi.fn((itemKey: string) => {
       const item =
         itemDatabase[itemKey] ||
-        itemDatabase[Object.keys(itemDatabase).find((key) => itemDatabase[key].icon === itemKey)]
+        (() => {
+          const foundKey = Object.keys(itemDatabase).find(
+            (key) => itemDatabase[key].icon === itemKey,
+          )
+          return foundKey ? itemDatabase[foundKey] : undefined
+        })()
       return item?.name || itemKey
     }),
     getIcon: vi.fn((itemKey: string) => {
       const item =
         itemDatabase[itemKey] ||
-        itemDatabase[Object.keys(itemDatabase).find((key) => itemDatabase[key].icon === itemKey)]
+        (() => {
+          const foundKey = Object.keys(itemDatabase).find(
+            (key) => itemDatabase[key].icon === itemKey,
+          )
+          return foundKey ? itemDatabase[foundKey] : undefined
+        })()
       return item?.icon || itemKey
     }),
   }

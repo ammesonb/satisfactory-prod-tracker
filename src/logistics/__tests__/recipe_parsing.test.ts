@@ -1,4 +1,9 @@
 import { describe, it, expect } from 'vitest'
+
+// Vitest doesn't have fail globally, let's add it
+const fail = (message: string) => {
+  throw new Error(message)
+}
 import { parseRecipeString } from '@/logistics/recipe-parser'
 import { isNaturalResource } from '@/logistics/constants'
 import { RecipeFormatError, InvalidBuildingError, InvalidRecipeError } from '@/errors/recipe-errors'
@@ -101,7 +106,7 @@ describe('recipe parsing and source selection', () => {
           } catch (error) {
             expect(error).toBeInstanceOf(InvalidBuildingError)
             expect((error as InvalidBuildingError).buildingName).toBe('Desc_NonexistentBuilding_C')
-            expect(error.message).toContain('Desc_NonexistentBuilding_C')
+            expect((error as Error).message).toContain('Desc_NonexistentBuilding_C')
           }
         })
       })
@@ -120,7 +125,7 @@ describe('recipe parsing and source selection', () => {
           } catch (error) {
             expect(error).toBeInstanceOf(InvalidRecipeError)
             expect((error as InvalidRecipeError).recipeName).toBe('Recipe_NonexistentRecipe_C')
-            expect(error.message).toContain('Recipe_NonexistentRecipe_C')
+            expect((error as Error).message).toContain('Recipe_NonexistentRecipe_C')
           }
         })
       })

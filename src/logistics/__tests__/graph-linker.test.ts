@@ -123,7 +123,7 @@ describe('graph-linker unit tests', () => {
   describe('getRecipeLinks', () => {
     it('should return empty array when no ingredients', () => {
       const recipe = newRecipeNode(
-        { name: 'Recipe_Empty_C', count: 1 },
+        { name: 'Recipe_Empty_C', building: 'Desc_ConstructorMk1_C', count: 1 },
         [],
         [{ item: 'Desc_Output_C', amount: 1 }],
       )
@@ -136,14 +136,14 @@ describe('graph-linker unit tests', () => {
     it('should return empty array when ingredient sources are insufficient', () => {
       const ironPlate = recipeDatabase.Recipe_IronPlate_C
       const recipe = newRecipeNode(
-        { name: ironPlate.name, count: 1 },
+        { name: ironPlate.name, building: 'Desc_ConstructorMk1_C', count: 1 },
         ironPlate.ingredients,
         ironPlate.products,
       )
 
       const ironIngot = recipeDatabase.Recipe_IngotIron_C
       const sourceRecipe = newRecipeNode(
-        { name: ironIngot.name, count: 1 },
+        { name: ironIngot.name, building: 'Desc_SmelterMk1_C', count: 1 },
         ironIngot.ingredients,
         ironIngot.products,
       )
@@ -159,14 +159,14 @@ describe('graph-linker unit tests', () => {
     it('should create link when single source satisfies ingredient need', () => {
       const ironPlate = recipeDatabase.Recipe_IronPlate_C
       const recipe = newRecipeNode(
-        { name: ironPlate.name, count: 1 },
+        { name: ironPlate.name, building: 'Desc_ConstructorMk1_C', count: 1 },
         ironPlate.ingredients,
         ironPlate.products,
       )
 
       const ironIngot = recipeDatabase.Recipe_IngotIron_C
       const sourceRecipe = newRecipeNode(
-        { name: ironIngot.name, count: 1 },
+        { name: ironIngot.name, building: 'Desc_SmelterMk1_C', count: 1 },
         ironIngot.ingredients,
         ironIngot.products,
       )
@@ -189,7 +189,7 @@ describe('graph-linker unit tests', () => {
     it('should handle multiple ingredients from different sources', () => {
       const circuitBoard = recipeDatabase.Recipe_CircuitBoard_C
       const recipe = newRecipeNode(
-        { name: circuitBoard.name, count: 1 },
+        { name: circuitBoard.name, building: 'Desc_AssemblerMk1_C', count: 1 },
         circuitBoard.ingredients,
         circuitBoard.products,
       )
@@ -197,7 +197,7 @@ describe('graph-linker unit tests', () => {
       // Mock copper sheet recipe
       const copperSheet = recipeDatabase.Recipe_Alternate_SteamedCopperSheet_C
       const copperSheetRecipe = newRecipeNode(
-        { name: copperSheet.name, count: 1 },
+        { name: copperSheet.name, building: 'Desc_ConstructorMk1_C', count: 1 },
         [],
         copperSheet.products,
       )
@@ -208,7 +208,11 @@ describe('graph-linker unit tests', () => {
 
       // Mock plastic recipe
       const plastic = recipeDatabase.Recipe_Plastic_C
-      const plasticRecipe = newRecipeNode({ name: plastic.name, count: 1 }, [], plastic.products)
+      const plasticRecipe = newRecipeNode(
+        { name: plastic.name, building: 'Desc_OilRefinery_C', count: 1 },
+        [],
+        plastic.products,
+      )
       plasticRecipe.availableProducts = plastic.products.map((product) => ({
         ...product,
         amount: 40,
@@ -240,17 +244,25 @@ describe('graph-linker unit tests', () => {
     it('should handle multiple sources for single ingredient', () => {
       const cable = recipeDatabase.Recipe_Cable_C
       const recipe = newRecipeNode(
-        { name: cable.name, count: 1 },
+        { name: cable.name, building: 'Desc_ConstructorMk1_C', count: 1 },
         cable.ingredients,
         cable.products,
       )
 
       const wire = recipeDatabase.Recipe_Wire_C
       const prodName = wire.products[0].item
-      const wireRecipe1 = newRecipeNode({ name: wire.name, count: 1 }, [], wire.products)
+      const wireRecipe1 = newRecipeNode(
+        { name: wire.name, building: 'Desc_ConstructorMk1_C', count: 1 },
+        [],
+        wire.products,
+      )
       wireRecipe1.availableProducts = [{ item: prodName, amount: 20 }]
 
-      const wireRecipe2 = newRecipeNode({ name: wire.name + '2', count: 1 }, [], wire.products)
+      const wireRecipe2 = newRecipeNode(
+        { name: wire.name + '2', building: 'Desc_ConstructorMk1_C', count: 1 },
+        [],
+        wire.products,
+      )
       wireRecipe2.availableProducts = [{ item: prodName, amount: 50 }]
 
       const producedRecipes = {
@@ -278,14 +290,14 @@ describe('graph-linker unit tests', () => {
     it('should handle catalyst recipes with self-links', () => {
       const alumina = recipeDatabase.Recipe_Fake_AluminaSolution_C
       const recipe = newRecipeNode(
-        { name: alumina.name, count: 1 },
+        { name: alumina.name, building: 'Desc_Refinery_C', count: 1 },
         alumina.ingredients,
         alumina.products,
       )
 
       const aluminaRaw = recipeDatabase.Recipe_Fake_AluminaSolutionRaw_C
       const aluminaInput = newRecipeNode(
-        { name: aluminaRaw.name, count: 2 },
+        { name: aluminaRaw.name, building: 'Desc_Refinery_C', count: 2 },
         [],
         aluminaRaw.products,
       )
@@ -319,13 +331,17 @@ describe('graph-linker unit tests', () => {
     it('should handle recipes with count multiplier', () => {
       const ironPlate = recipeDatabase.Recipe_IronPlate_C
       const recipe = newRecipeNode(
-        { name: ironPlate.name, count: 3 },
+        { name: ironPlate.name, building: 'Desc_ConstructorMk1_C', count: 3 },
         ironPlate.ingredients,
         ironPlate.products,
       )
 
       const ironIngot = recipeDatabase.Recipe_IngotIron_C
-      const sourceRecipe = newRecipeNode({ name: ironIngot.name, count: 1 }, [], ironIngot.products)
+      const sourceRecipe = newRecipeNode(
+        { name: ironIngot.name, building: 'Desc_SmelterMk1_C', count: 1 },
+        [],
+        ironIngot.products,
+      )
       sourceRecipe.availableProducts = [{ item: ironIngot.products[0].item, amount: 90 }]
 
       const producedRecipes = { [ironIngot.name]: sourceRecipe }
@@ -345,13 +361,17 @@ describe('graph-linker unit tests', () => {
     it('should return empty array when any ingredient cannot be satisfied', () => {
       const reinforced = recipeDatabase.Recipe_Alternate_ReinforcedIronPlate_1_C
       const recipe = newRecipeNode(
-        { name: reinforced.name, count: 1 },
+        { name: reinforced.name, building: 'Desc_AssemblerMk1_C', count: 1 },
         reinforced.ingredients,
         reinforced.products,
       )
 
       const ironPlate = recipeDatabase.Recipe_IronPlate_C
-      const plateRecipe = newRecipeNode({ name: ironPlate.name, count: 1 }, [], ironPlate.products)
+      const plateRecipe = newRecipeNode(
+        { name: ironPlate.name, building: 'Desc_ConstructorMk1_C', count: 1 },
+        [],
+        ironPlate.products,
+      )
       plateRecipe.availableProducts = [{ item: ironPlate.products[0].item, amount: 8 }]
 
       // No screw recipe available
@@ -366,7 +386,7 @@ describe('graph-linker unit tests', () => {
 
     it('should handle catalyst producing more than it consumes', () => {
       const recipe = newRecipeNode(
-        { name: 'Recipe_SpecialCatalyst_C', count: 1 },
+        { name: 'Recipe_SpecialCatalyst_C', building: 'Desc_AssemblerMk1_C', count: 1 },
         [{ item: 'Desc_TestMaterial_C', amount: 100 }],
         [{ item: 'Desc_TestMaterial_C', amount: 150 }],
       )
@@ -388,17 +408,25 @@ describe('graph-linker unit tests', () => {
     it('should filter out sources with zero available products', () => {
       const cable = recipeDatabase.Recipe_Cable_C
       const recipe = newRecipeNode(
-        { name: cable.name, count: 1 },
+        { name: cable.name, building: 'Desc_ConstructorMk1_C', count: 1 },
         cable.ingredients,
         cable.products,
       )
 
       const wire = recipeDatabase.Recipe_Wire_C
       const wireItem = wire.products[0].item
-      const wireRecipe1 = newRecipeNode({ name: 'Recipe_Wire_C_1', count: 1 }, [], wire.products)
+      const wireRecipe1 = newRecipeNode(
+        { name: 'Recipe_Wire_C_1', building: 'Desc_ConstructorMk1_C', count: 1 },
+        [],
+        wire.products,
+      )
       wireRecipe1.availableProducts = [{ item: wireItem, amount: 0 }] // No available products
 
-      const wireRecipe2 = newRecipeNode({ name: 'Recipe_Wire_C_2', count: 2 }, [], wire.products)
+      const wireRecipe2 = newRecipeNode(
+        { name: 'Recipe_Wire_C_2', building: 'Desc_ConstructorMk1_C', count: 2 },
+        [],
+        wire.products,
+      )
       wireRecipe2.availableProducts = [{ item: wireItem, amount: 60 }]
 
       const producedRecipes = {

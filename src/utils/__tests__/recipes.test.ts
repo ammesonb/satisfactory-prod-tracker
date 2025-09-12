@@ -89,7 +89,7 @@ describe('recipes utilities', () => {
           [steelRecipe.className]: steelRecipe.displayName,
         })
 
-        const result = recipesToOptions(recipes, getDisplayName)
+        const result = recipesToOptions(recipes, getDisplayName, [])
 
         expect(result).toHaveLength(3)
         expect(getDisplayName).toHaveBeenCalledTimes(3)
@@ -129,7 +129,7 @@ describe('recipes utilities', () => {
           [betaRecipe.className]: betaRecipe.displayName,
         })
 
-        const result = recipesToOptions(recipes, getDisplayName)
+        const result = recipesToOptions(recipes, getDisplayName, [])
 
         expect(result).toHaveLength(3)
         expectValidRecipeOption(result[0], alphaRecipe.className, alphaRecipe.displayName)
@@ -141,7 +141,7 @@ describe('recipes utilities', () => {
         const recipes = {}
         const getDisplayName = createMockDisplayNameFn()
 
-        const result = recipesToOptions(recipes, getDisplayName)
+        const result = recipesToOptions(recipes, getDisplayName, [])
 
         expect(result).toEqual([])
         expect(Array.isArray(result)).toBe(true)
@@ -162,7 +162,7 @@ describe('recipes utilities', () => {
           [singleRecipe.className]: singleRecipe.displayName,
         })
 
-        const result = recipesToOptions(recipes, getDisplayName)
+        const result = recipesToOptions(recipes, getDisplayName, [])
 
         expect(result).toHaveLength(1)
         expectValidRecipeOption(result[0], singleRecipe.className, singleRecipe.displayName)
@@ -326,7 +326,7 @@ describe('recipes utilities', () => {
 
         const getDisplayName = createMockDisplayNameFn()
 
-        recipesToOptions(recipes, getDisplayName)
+        recipesToOptions(recipes, getDisplayName, [])
 
         expect(getDisplayName).toHaveBeenCalledTimes(expectedCallCount)
         expect(getDisplayName).toHaveBeenCalledWith(recipeA.className)
@@ -348,7 +348,7 @@ describe('recipes utilities', () => {
           [specialRecipe.className]: specialRecipe.displayName,
         })
 
-        const result = recipesToOptions(recipes, getDisplayName)
+        const result = recipesToOptions(recipes, getDisplayName, [])
 
         expect(result).toHaveLength(1)
         expectValidRecipeOption(result[0], specialRecipe.className, specialRecipe.displayName)
@@ -392,7 +392,7 @@ describe('recipes utilities', () => {
           [middleSortedRecipe.className]: middleSortedRecipe.displayName,
         })
 
-        const result = recipesToOptions(recipes, getDisplayName)
+        const result = recipesToOptions(recipes, getDisplayName, [])
 
         expect(result).toHaveLength(3)
         expectValidRecipeOption(
@@ -425,7 +425,7 @@ describe('recipes utilities', () => {
           [recipeB.className]: recipeB.displayName,
         })
 
-        const result = recipesToOptions(recipes, getDisplayName)
+        const result = recipesToOptions(recipes, getDisplayName, [])
 
         expect(result).toHaveLength(expectedLength)
         expect(result[0].title).toBe(recipeA.displayName)
@@ -455,7 +455,7 @@ describe('recipes utilities', () => {
           [mixedRecipe.className]: mixedRecipe.displayName,
         })
 
-        const result = recipesToOptions(recipes, getDisplayName)
+        const result = recipesToOptions(recipes, getDisplayName, [])
 
         expect(result).toHaveLength(3)
 
@@ -479,7 +479,7 @@ describe('recipes utilities', () => {
         }
 
         const getDisplayName = createMockDisplayNameFn(displayNames)
-        const result = recipesToOptions(recipes, getDisplayName)
+        const result = recipesToOptions(recipes, getDisplayName, [])
 
         expect(result).toHaveLength(recipeCount)
         expect(getDisplayName).toHaveBeenCalledTimes(recipeCount)
@@ -508,7 +508,7 @@ describe('recipes utilities', () => {
           [testRecipe.className]: testRecipe.displayName,
         })
 
-        const result = recipesToOptions(recipes, getDisplayName)
+        const result = recipesToOptions(recipes, getDisplayName, [])
 
         expect(Array.isArray(result)).toBe(true)
         expect(result).toHaveLength(expectedLength)

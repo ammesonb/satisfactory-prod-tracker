@@ -379,7 +379,7 @@ describe('items utilities', () => {
           ...Object.fromEntries(
             invalidItems.map((item) => [item.className, { name: item.name, icon: item.icon }]),
           ),
-        } as Record<string, { name: string; icon: unknown }>
+        } as Record<string, { name: string; icon?: string }>
 
         const result = itemsToOptions(items)
         const expectedValidCount = 1

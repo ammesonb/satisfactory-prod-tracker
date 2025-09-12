@@ -5,7 +5,8 @@ import {
   produceRecipe,
   decrementConsumedProducts,
 } from '../graph-node'
-import type { Recipe, RecipeIngredient, RecipeProduct } from '@/types/data'
+import type { Recipe } from '@/types/factory'
+import type { RecipeIngredient, RecipeProduct } from '@/types/data'
 import { SourceNodeNotFoundError, ProductNotFoundError } from '@/errors/processing-errors'
 import { expectErrorWithMessage } from './error-test-helpers'
 
@@ -14,6 +15,7 @@ describe('graph-node unit tests', () => {
     it('should create a new recipe node with correct initial state', () => {
       const mockRecipe: Recipe = {
         name: 'Recipe_IronIngot_C',
+        building: 'Desc_SmelterMk1_C',
         count: 1,
       }
 
@@ -36,6 +38,7 @@ describe('graph-node unit tests', () => {
     it('should handle empty ingredients and products', () => {
       const mockRecipe: Recipe = {
         name: 'Recipe_Empty_C',
+        building: 'Desc_ConstructorMk1_C',
         count: 1,
       }
 
@@ -53,6 +56,7 @@ describe('graph-node unit tests', () => {
     it('should handle multiple ingredients and products', () => {
       const mockRecipe: Recipe = {
         name: 'Recipe_Cable_C',
+        building: 'Desc_ConstructorMk1_C',
         count: 2,
       }
 
@@ -77,7 +81,7 @@ describe('graph-node unit tests', () => {
       }
 
       const mockRecipe = newRecipeNode(
-        { name: 'Recipe_AluminaSolution_C', count: 1 },
+        { name: 'Recipe_AluminaSolution_C', building: 'Desc_Refinery_C', count: 1 },
         [mockIngredient],
         [
           { item: 'Desc_AluminaSolution_C', amount: 60 },
@@ -97,7 +101,7 @@ describe('graph-node unit tests', () => {
       }
 
       const mockRecipe = newRecipeNode(
-        { name: 'Recipe_IronIngot_C', count: 1 },
+        { name: 'Recipe_IronIngot_C', building: 'Desc_SmelterMk1_C', count: 1 },
         [mockIngredient],
         [{ item: 'Desc_IronIngot_C', amount: 1 }],
       )
@@ -113,7 +117,11 @@ describe('graph-node unit tests', () => {
         amount: 100,
       }
 
-      const mockRecipe = newRecipeNode({ name: 'Recipe_Empty_C', count: 1 }, [mockIngredient], [])
+      const mockRecipe = newRecipeNode(
+        { name: 'Recipe_Empty_C', building: 'Desc_ConstructorMk1_C', count: 1 },
+        [mockIngredient],
+        [],
+      )
 
       const catalystQuantity = getCatalystQuantity(mockIngredient, mockRecipe)
 
@@ -127,7 +135,7 @@ describe('graph-node unit tests', () => {
       }
 
       const mockRecipe = newRecipeNode(
-        { name: 'Recipe_DuplicateProducts_C', count: 1 },
+        { name: 'Recipe_DuplicateProducts_C', building: 'Desc_Refinery_C', count: 1 },
         [mockIngredient],
         [
           { item: 'Desc_TestItem_C', amount: 25 },
@@ -144,7 +152,7 @@ describe('graph-node unit tests', () => {
   describe('produceRecipe', () => {
     it('should set availableProducts as copy of products', () => {
       const mockRecipe = newRecipeNode(
-        { name: 'Recipe_Test_C', count: 1 },
+        { name: 'Recipe_Test_C', building: 'Desc_ManufacturerMk1_C', count: 1 },
         [{ item: 'Desc_Input_C', amount: 1 }],
         [
           { item: 'Desc_Output1_C', amount: 2 },
@@ -169,7 +177,11 @@ describe('graph-node unit tests', () => {
     })
 
     it('should set batch number', () => {
-      const mockRecipe = newRecipeNode({ name: 'Recipe_Test_C', count: 1 }, [], [])
+      const mockRecipe = newRecipeNode(
+        { name: 'Recipe_Test_C', building: 'Desc_ConstructorMk1_C', count: 1 },
+        [],
+        [],
+      )
 
       produceRecipe(mockRecipe, 7, [])
 
@@ -177,7 +189,11 @@ describe('graph-node unit tests', () => {
     })
 
     it('should assign inputs by reference', () => {
-      const mockRecipe = newRecipeNode({ name: 'Recipe_Test_C', count: 1 }, [], [])
+      const mockRecipe = newRecipeNode(
+        { name: 'Recipe_Test_C', building: 'Desc_ConstructorMk1_C', count: 1 },
+        [],
+        [],
+      )
 
       const mockInputs = [
         { source: 'Recipe_Source_C', sink: 'Recipe_Test_C', material: 'Desc_Input_C', amount: 1 },
@@ -190,7 +206,11 @@ describe('graph-node unit tests', () => {
     })
 
     it('should handle empty products and inputs', () => {
-      const mockRecipe = newRecipeNode({ name: 'Recipe_Empty_C', count: 1 }, [], [])
+      const mockRecipe = newRecipeNode(
+        { name: 'Recipe_Empty_C', building: 'Desc_ConstructorMk1_C', count: 1 },
+        [],
+        [],
+      )
 
       produceRecipe(mockRecipe, 3, [])
 
@@ -203,14 +223,14 @@ describe('graph-node unit tests', () => {
   describe('decrementConsumedProducts', () => {
     it('should decrement available products and add output links', () => {
       const sourceRecipe = newRecipeNode(
-        { name: 'Recipe_Source_C', count: 1 },
+        { name: 'Recipe_Source_C', building: 'Desc_ConstructorMk1_C', count: 1 },
         [],
         [{ item: 'Desc_Material_C', amount: 10 }],
       )
       sourceRecipe.availableProducts = [{ item: 'Desc_Material_C', amount: 10 }]
 
       const sinkRecipe = newRecipeNode(
-        { name: 'Recipe_Sink_C', count: 1 },
+        { name: 'Recipe_Sink_C', building: 'Desc_ConstructorMk1_C', count: 1 },
         [{ item: 'Desc_Material_C', amount: 5 }],
         [],
       )
@@ -239,7 +259,7 @@ describe('graph-node unit tests', () => {
 
     it('should mark recipe as fully consumed when all products are consumed', () => {
       const sourceRecipe = newRecipeNode(
-        { name: 'Recipe_Source_C', count: 1 },
+        { name: 'Recipe_Source_C', building: 'Desc_ConstructorMk1_C', count: 1 },
         [],
         [
           { item: 'Desc_Material1_C', amount: 5 },
@@ -278,7 +298,7 @@ describe('graph-node unit tests', () => {
 
     it('should not mark as fully consumed when products remain above threshold', () => {
       const sourceRecipe = newRecipeNode(
-        { name: 'Recipe_Source_C', count: 1 },
+        { name: 'Recipe_Source_C', building: 'Desc_ConstructorMk1_C', count: 1 },
         [],
         [{ item: 'Desc_Material_C', amount: 10 }],
       )
@@ -303,7 +323,7 @@ describe('graph-node unit tests', () => {
 
     it('should handle multiple links from the same source', () => {
       const sourceRecipe = newRecipeNode(
-        { name: 'Recipe_Source_C', count: 1 },
+        { name: 'Recipe_Source_C', building: 'Desc_ConstructorMk1_C', count: 1 },
         [],
         [{ item: 'Desc_Material_C', amount: 20 }],
       )
@@ -341,7 +361,7 @@ describe('graph-node unit tests', () => {
 
     it('should throw ProductNotFoundError when trying to consume non-existent product', () => {
       const sourceRecipe = newRecipeNode(
-        { name: 'Recipe_Source_C', count: 1 },
+        { name: 'Recipe_Source_C', building: 'Desc_ConstructorMk1_C', count: 1 },
         [],
         [{ item: 'Desc_Material1_C', amount: 10 }],
       )
@@ -398,7 +418,7 @@ describe('graph-node unit tests', () => {
 
     it('should skip natural resource sources without error', () => {
       const sinkRecipe = newRecipeNode(
-        { name: 'Recipe_Sink_C', count: 1 },
+        { name: 'Recipe_Sink_C', building: 'Desc_ConstructorMk1_C', count: 1 },
         [{ item: 'Desc_OreIron_C', amount: 1 }],
         [],
       )
@@ -422,7 +442,7 @@ describe('graph-node unit tests', () => {
 
     it('should mark as fully consumed when products are within zero threshold', () => {
       const sourceRecipe = newRecipeNode(
-        { name: 'Recipe_Source_C', count: 1 },
+        { name: 'Recipe_Source_C', building: 'Desc_ConstructorMk1_C', count: 1 },
         [],
         [{ item: 'Desc_Material_C', amount: 5 }],
       )
@@ -454,7 +474,11 @@ describe('graph-node unit tests', () => {
         { item: 'Desc_Water_C', amount: 120 },
       ]
 
-      const catalystRecipe = newRecipeNode(recipe, ingredients, products)
+      const catalystRecipe = newRecipeNode(
+        { ...recipe, building: 'Desc_Refinery_C' },
+        ingredients,
+        products,
+      )
       catalystRecipe.availableProducts = [...products]
 
       const recipesByName = {

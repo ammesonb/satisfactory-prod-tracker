@@ -178,7 +178,7 @@ const expectRecipeLinksToMatch = (actual: Material[], expected: Material[]) => {
 const expectRecipeBatchesToMatch = (actual: RecipeNode[], expectedBatches: string[][]) => {
   console.log(`Expected ${expectedBatches.length} batches`)
 
-  const nodesByBatch = {}
+  const nodesByBatch: Record<string, RecipeNode[]> = {}
   for (const node of actual) {
     nodesByBatch[node.batchNumber!] = nodesByBatch[node.batchNumber!] || []
     nodesByBatch[node.batchNumber!].push(node)
@@ -198,7 +198,8 @@ const expectRecipeBatchesToMatch = (actual: RecipeNode[], expectedBatches: strin
         console.error(
           `All batches:`,
           Object.keys(nodesByBatch).map(
-            (b) => `Batch ${b}: [${nodesByBatch[b].map((n) => n.recipe.name).join(', ')}]`,
+            (b: string) =>
+              `Batch ${b}: [${nodesByBatch[b].map((n: RecipeNode) => n.recipe.name).join(', ')}]`,
           ),
         )
       }

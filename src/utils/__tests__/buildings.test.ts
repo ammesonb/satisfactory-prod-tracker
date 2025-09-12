@@ -210,7 +210,7 @@ describe('buildings utilities', () => {
               { name: building.name, icon: building.icon },
             ]),
           ),
-        } as Record<string, { name: string; icon: unknown }>
+        } as Record<string, { name: string; icon?: string }>
 
         const result = buildingsToOptions(buildings)
 
@@ -327,7 +327,7 @@ describe('buildings utilities', () => {
       it('should handle large number of buildings efficiently', () => {
         const buildingCount = 1000
         const expectedType = 'building'
-        const buildings: Record<string, { name: string; icon: string }> = {}
+        const buildings: Record<string, { name: string; icon?: string }> = {}
 
         // Create a large dataset
         for (let i = 0; i < buildingCount; i++) {

@@ -3,14 +3,16 @@ import { isPositiveNumber } from '../validation'
 
 describe('validation utilities', () => {
   // Helper to test multiple cases efficiently
-  const expectPositiveNumber = (value: unknown, expected: boolean, description: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const expectPositiveNumber = (value: any, expected: boolean, description: string) => {
     it(`should return ${expected} for ${description}`, () => {
       expect(isPositiveNumber(value)).toBe(expected)
     })
   }
 
   // Helper to test edge cases that should be false
-  const expectNotPositiveNumber = (value: unknown, description: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const expectNotPositiveNumber = (value: any, description: string) => {
     expectPositiveNumber(value, false, description)
   }
 
@@ -78,7 +80,7 @@ describe('validation utilities', () => {
     describe('comprehensive validation', () => {
       it('should validate type, NaN, and positivity in correct order', () => {
         // Test the complete validation logic
-        const testCases: Array<[unknown, boolean, string]> = [
+        const testCases: Array<[number | string | null, boolean, string]> = [
           // Valid cases
           [1, true, 'basic positive integer'],
           [0.001, true, 'very small positive decimal'],
@@ -98,7 +100,7 @@ describe('validation utilities', () => {
         ]
 
         testCases.forEach(([value, expected]) => {
-          expect(isPositiveNumber(value)).toBe(expected)
+          expect(isPositiveNumber(value as number)).toBe(expected)
         })
       })
 
