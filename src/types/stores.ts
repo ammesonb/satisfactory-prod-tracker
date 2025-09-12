@@ -1,4 +1,4 @@
-import type { VNode } from 'vue'
+import type { VNode, Ref } from 'vue'
 import type { Item, Recipe, Building, RecipeIngredient, RecipeProduct } from '@/types/data'
 import type { Factory } from '@/types/factory'
 import type { RecipeNode } from '@/logistics/graph-node'
@@ -56,8 +56,8 @@ export interface IFactoryStore {
  * Manages application theme state
  */
 export interface IThemeStore {
-  // State - Pinia exposes this as a computed value, not a Ref
-  isDark: boolean
+  // State - Pinia with persistence can expose this as boolean or Ref depending on context
+  isDark: boolean | Ref<boolean>
 
   // Actions
   toggleTheme: () => void

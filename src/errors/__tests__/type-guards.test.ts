@@ -1,7 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { isUserFriendlyError } from '@/errors/type-guards'
 import { RecipeFormatError, InvalidBuildingError } from '@/errors/recipe-errors'
 import { RecipeChainError, SourceNodeNotFoundError } from '@/errors/processing-errors'
+import type { ErrorBuilder } from '@/types/errors'
 import type { UserFriendlyError } from '@/types/errors'
 
 describe('type-guards', () => {
@@ -45,7 +46,8 @@ describe('type-guards', () => {
     it('should return false for Error instances with wrong showError signature', () => {
       const errorWithWrongMethod = new Error('test')
       // Add a showError property that's not a function
-      ;(errorWithWrongMethod as unknown as UserFriendlyError).showError = 'not a function'
+      ;(errorWithWrongMethod as unknown as UserFriendlyError).showError =
+        'not a function' as unknown as (errorStore: { error(): ErrorBuilder }) => void
 
       const errorWithWrongFunction = new Error('test')
       // Add a showError function with correct signature
@@ -69,10 +71,15 @@ describe('type-guards', () => {
 
     it('should provide proper type narrowing', () => {
       const error: unknown = new RecipeFormatError('test')
+      const mockErrorBuilder: ErrorBuilder = {
+        _title: '',
+        _bodyContent: null,
+        title: vi.fn().mockReturnThis(),
+        body: vi.fn().mockReturnThis(),
+        show: vi.fn(),
+      }
       const mockErrorStore = {
-        error: () => ({
-          title: () => ({ body: () => ({ show: () => {} }) }),
-        }),
+        error: () => mockErrorBuilder,
       }
 
       if (isUserFriendlyError(error)) {

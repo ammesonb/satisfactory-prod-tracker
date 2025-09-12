@@ -7,7 +7,8 @@ import type { UserFriendlyError } from '@/types/errors'
  */
 export const expectErrorWithMessage = <T extends UserFriendlyError>(
   fn: () => void,
-  ErrorClass: new (...args: unknown[]) => T,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ErrorClass: new (...args: any[]) => T,
   expectedProps: Partial<T>,
   expectedSummary?: string,
 ) => {
@@ -23,7 +24,7 @@ export const expectErrorWithMessage = <T extends UserFriendlyError>(
 
     // Check all expected properties
     Object.entries(expectedProps).forEach(([key, value]) => {
-      expect((error as unknown as T)[key]).toEqual(value)
+      expect((error as unknown as Record<string, unknown>)[key]).toEqual(value)
     })
 
     // Check that showError method exists and is callable
@@ -33,6 +34,8 @@ export const expectErrorWithMessage = <T extends UserFriendlyError>(
       // Create a mock error store to test the showError method
       const mockErrorStore = {
         error: vi.fn(() => ({
+          _title: '',
+          _bodyContent: null,
           title: vi.fn().mockReturnThis(),
           body: vi.fn().mockReturnThis(),
           show: vi.fn(),
@@ -56,7 +59,8 @@ export const expectErrorWithMessage = <T extends UserFriendlyError>(
  */
 export const expectErrorOfType = <T extends Error>(
   fn: () => void,
-  ErrorClass: new (...args: unknown[]) => T,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ErrorClass: new (...args: any[]) => T,
 ): T => {
   expect(fn).toThrow(ErrorClass)
 
