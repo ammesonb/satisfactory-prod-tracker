@@ -1,9 +1,19 @@
 import { fileURLToPath } from 'url'
 import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
+import Components from 'unplugin-vue-components/vite'
+import { Vuetify3Resolver } from 'unplugin-vue-components/resolvers'
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    Components({
+      dirs: ['src'],
+      extensions: ['vue'],
+      dts: true,
+      resolvers: [Vuetify3Resolver()],
+    })
+  ],
   test: {
     environment: 'happy-dom',
     globals: true,
