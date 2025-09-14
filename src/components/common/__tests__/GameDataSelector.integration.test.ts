@@ -174,7 +174,7 @@ describe('GameDataSelector Integration', () => {
     await autocomplete.vm.$emit('update:modelValue', mockItems[0])
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
-    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([mockItems[0]])
+    expect(wrapper.emitted('update:modelValue')![0]).toEqual([mockItems[0]])
   })
 
   it('emits undefined when selection is cleared', async () => {
@@ -184,7 +184,7 @@ describe('GameDataSelector Integration', () => {
     await autocomplete.vm.$emit('update:modelValue', undefined)
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
-    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([undefined])
+    expect(wrapper.emitted('update:modelValue')![0]).toEqual([undefined])
   })
 
   it('calls updateSearch when search input changes', async () => {
@@ -336,13 +336,13 @@ describe('GameDataSelector Integration', () => {
     const wrapper = createWrapper({ displayConfig })
 
     // The chips would be in the item template, but testing the config
-    expect(wrapper.vm.displayConfig?.showType).toBe(true)
+    expect(wrapper.vm.displayConfig!.showType).toBe(true)
   })
 
   it('does not display item type chips by default', () => {
     const wrapper = createWrapper()
 
-    expect(wrapper.vm.displayConfig?.showType).toBe(false)
+    expect(wrapper.vm.displayConfig!.showType).toBe(false)
   })
 
   it('merges icon config with defaults', () => {

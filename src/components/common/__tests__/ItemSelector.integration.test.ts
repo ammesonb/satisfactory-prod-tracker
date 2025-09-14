@@ -204,14 +204,14 @@ describe('ItemSelector Integration', () => {
     const wrapper = createWrapper({ includeBuildings: false })
     const gameDataSelector = wrapper.findComponent(GameDataSelector)
 
-    expect(gameDataSelector.props('displayConfig')?.showType).toBe(false)
+    expect(gameDataSelector.props('displayConfig')!.showType).toBe(false)
   })
 
   it('sets showType to true when includeBuildings is true', () => {
     const wrapper = createWrapper({ includeBuildings: true })
     const gameDataSelector = wrapper.findComponent(GameDataSelector)
 
-    expect(gameDataSelector.props('displayConfig')?.showType).toBe(true)
+    expect(gameDataSelector.props('displayConfig')!.showType).toBe(true)
   })
 
   it('overrides custom showType with includeBuildings value', () => {
@@ -226,7 +226,7 @@ describe('ItemSelector Integration', () => {
     const gameDataSelector = wrapper.findComponent(GameDataSelector)
 
     // includeBuildings should override custom showType
-    expect(gameDataSelector.props('displayConfig')?.showType).toBe(true)
+    expect(gameDataSelector.props('displayConfig')!.showType).toBe(true)
   })
 
   it('emits update:modelValue when GameDataSelector emits update:modelValue', async () => {
@@ -236,7 +236,7 @@ describe('ItemSelector Integration', () => {
     await gameDataSelector.vm.$emit('update:modelValue', mockSelectedItem)
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
-    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([mockSelectedItem])
+    expect(wrapper.emitted('update:modelValue')![0]).toEqual([mockSelectedItem])
   })
 
   it('emits undefined when selection is cleared', async () => {
@@ -246,7 +246,7 @@ describe('ItemSelector Integration', () => {
     await gameDataSelector.vm.$emit('update:modelValue', undefined)
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
-    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([undefined])
+    expect(wrapper.emitted('update:modelValue')![0]).toEqual([undefined])
   })
 
   it('handles v-model binding correctly', async () => {
