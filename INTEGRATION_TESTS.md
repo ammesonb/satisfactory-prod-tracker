@@ -154,7 +154,7 @@ describe('ComponentWithComposable', () => {
 
 ### Component Testing Philosophy
 
-Always run the full CI suite (format, lint, test) after making changes to ensure no regressions.
+Always run the full CI suite and type checks (format, lint, type-check:test, test) after making changes to ensure no regressions.
 Prefer using test data structures or constants over string literals, e.g.:
 
 ```
@@ -358,6 +358,7 @@ it('calls composable when status changes', async () => {
 ## Running Tests
 
 - `npm run ci` - Run full CI-style formatting and linting checks plus tests
+- `npm run type-check:test` - TypeScript type checking for tests
 - `npm test` - Watch mode for development
 - `npm run test:ui` - Visual test interface
 - `npm run test:run` - Single run (CI mode)
