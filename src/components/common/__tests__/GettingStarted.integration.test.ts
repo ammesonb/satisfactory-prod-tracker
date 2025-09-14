@@ -1,13 +1,13 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import GettingStarted from '@/components/common/GettingStarted.vue'
-import type { FactoryStore } from '@/stores/factory'
+import type { IFactoryStore } from '@/types/stores'
 
 // Mock the useStores composable
 const mockFactoryStore = {
   addFactory: vi.fn(),
   setSelectedFactory: vi.fn(),
-} as Partial<FactoryStore>
+} as Partial<IFactoryStore>
 
 vi.mock('@/composables/useStores', () => ({
   getStores: vi.fn(() => ({
@@ -166,7 +166,7 @@ describe('GettingStarted Integration', () => {
 
     await sampleButton.trigger('click')
 
-    const addFactoryCall = vi.mocked(mockFactoryStore.addFactory).mock.calls[0]
+    const addFactoryCall = vi.mocked(mockFactoryStore.addFactory!).mock.calls[0]
     const sampleRecipes = addFactoryCall[2]
 
     // Verify sample recipes contain expected recipe patterns
@@ -184,7 +184,7 @@ describe('GettingStarted Integration', () => {
   it('handles addFactory errors gracefully', async () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const mockError = new Error('Failed to add factory')
-    vi.mocked(mockFactoryStore.addFactory).mockImplementation(() => {
+    vi.mocked(mockFactoryStore.addFactory!).mockImplementation(() => {
       throw mockError
     })
 

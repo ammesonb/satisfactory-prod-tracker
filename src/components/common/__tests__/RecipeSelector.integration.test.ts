@@ -3,8 +3,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ref } from 'vue'
 import RecipeSelector from '@/components/common/RecipeSelector.vue'
 import GameDataSelector from '@/components/common/GameDataSelector.vue'
-import type { ItemOption, DisplayConfig, IconConfig } from '@/types'
-import type { DataStore } from '@/stores/data'
+import type { DisplayConfig, IconConfig } from '@/types/ui'
+import type { ItemOption } from '@/types/data'
+import type { IDataStore } from '@/types/stores'
 
 // Test constants
 const RECIPE_KEYS = {
@@ -56,7 +57,7 @@ const mockDataStore = {
     return recipeMap[key as keyof typeof recipeMap] || key
   }),
   getIcon: vi.fn((value: string) => `icon-${value}`),
-} as Partial<DataStore>
+} as unknown as Partial<IDataStore>
 
 vi.mock('@/composables/useStores', () => ({
   getStores: vi.fn(() => ({
@@ -243,7 +244,7 @@ describe('RecipeSelector Integration', () => {
     await gameDataSelector.vm.$emit('update:modelValue', mockSelectedRecipe)
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
-    expect(wrapper.emitted('update:modelValue')[0]).toEqual([mockSelectedRecipe])
+    expect(wrapper.emitted('update:modelValue')![0]).toEqual([mockSelectedRecipe])
   })
 
   it('emits undefined when selection is cleared', async () => {
@@ -253,7 +254,7 @@ describe('RecipeSelector Integration', () => {
     await gameDataSelector.vm.$emit('update:modelValue', undefined)
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
-    expect(wrapper.emitted('update:modelValue')[0]).toEqual([undefined])
+    expect(wrapper.emitted('update:modelValue')![0]).toEqual([undefined])
   })
 
   it('handles v-model binding correctly', async () => {

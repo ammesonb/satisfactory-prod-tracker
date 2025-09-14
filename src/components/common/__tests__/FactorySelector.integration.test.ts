@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import FactorySelector from '@/components/common/FactorySelector.vue'
 import type { Factory } from '@/types/factory'
 import type { MockUseSelection } from '@/__tests__/fixtures/types/composables'
@@ -164,8 +164,10 @@ describe('FactorySelector Integration', () => {
   })
 
   it('shows indeterminate state when some factories are selected', () => {
-    mockUseSelection.someSelected.value = true
-    mockUseSelection.allSelected.value = false
+    const mockSomeSelected = ref(true)
+    const mockAllSelected = ref(false)
+    mockUseSelection.someSelected = computed(() => mockSomeSelected.value)
+    mockUseSelection.allSelected = computed(() => mockAllSelected.value)
 
     const wrapper = createWrapper()
 
@@ -174,8 +176,10 @@ describe('FactorySelector Integration', () => {
   })
 
   it('shows checked state when all factories are selected', () => {
-    mockUseSelection.allSelected.value = true
-    mockUseSelection.someSelected.value = true
+    const mockAllSelected = ref(true)
+    const mockSomeSelected = ref(true)
+    mockUseSelection.allSelected = computed(() => mockAllSelected.value)
+    mockUseSelection.someSelected = computed(() => mockSomeSelected.value)
 
     const wrapper = createWrapper()
 
@@ -196,7 +200,7 @@ describe('FactorySelector Integration', () => {
   })
 
   it('updates v-model when selectedFactories changes', async () => {
-    const selectedFactories = ref([FACTORY_NAMES.IRON])
+    const selectedFactories = ref<string[]>([FACTORY_NAMES.IRON])
     const wrapper = mount(FactorySelector, {
       props: {
         factories: mockFactories,

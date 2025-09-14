@@ -3,8 +3,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ref } from 'vue'
 import ItemSelector from '@/components/common/ItemSelector.vue'
 import GameDataSelector from '@/components/common/GameDataSelector.vue'
-import type { ItemOption, DisplayConfig, IconConfig, Item, Building } from '@/types'
-import type { DataStore } from '@/stores/data'
+import type { DisplayConfig, IconConfig } from '@/types/ui'
+import type { ItemOption, Item, Building } from '@/types/data'
+import type { IDataStore } from '@/types/stores'
 
 // Mock the useStores composable
 const mockDataStore = {
@@ -37,7 +38,7 @@ const mockDataStore = {
       type: 'building',
     },
   ],
-} as Partial<DataStore>
+} as unknown as Partial<IDataStore>
 
 vi.mock('@/composables/useStores', () => ({
   getStores: vi.fn(() => ({
@@ -47,24 +48,28 @@ vi.mock('@/composables/useStores', () => ({
 
 // Mock the utility functions
 vi.mock('@/utils/items', () => ({
-  itemsToOptions: vi.fn((items) =>
-    items.map((item: Item) => ({
-      value: item.name.toLowerCase().replace(/\s+/g, '-'),
-      name: item.name,
-      icon: item.icon,
-      type: 'item',
-    })),
+  itemsToOptions: vi.fn((items: Record<string, Item>) =>
+    Object.entries(items)
+      .filter(([, item]) => item.icon)
+      .map(([key, item]) => ({
+        value: key,
+        name: item.name,
+        icon: item.icon!,
+        type: 'item' as const,
+      })),
   ),
 }))
 
 vi.mock('@/utils/buildings', () => ({
-  buildingsToOptions: vi.fn((buildings) =>
-    buildings.map((building: Building) => ({
-      value: building.name.toLowerCase().replace(/\s+/g, '-'),
-      name: building.name,
-      icon: building.icon,
-      type: 'building',
-    })),
+  buildingsToOptions: vi.fn((buildings: Record<string, Building>) =>
+    Object.entries(buildings)
+      .filter(([, building]) => building.icon)
+      .map(([key, building]) => ({
+        value: key,
+        name: building.name,
+        icon: building.icon!,
+        type: 'building' as const,
+      })),
   ),
 }))
 
@@ -199,14 +204,14 @@ describe('ItemSelector Integration', () => {
     const wrapper = createWrapper({ includeBuildings: false })
     const gameDataSelector = wrapper.findComponent(GameDataSelector)
 
-    expect(gameDataSelector.props('displayConfig').showType).toBe(false)
+    expect(gameDataSelector.props('displayConfig')?.showType).toBe(false)
   })
 
   it('sets showType to true when includeBuildings is true', () => {
     const wrapper = createWrapper({ includeBuildings: true })
     const gameDataSelector = wrapper.findComponent(GameDataSelector)
 
-    expect(gameDataSelector.props('displayConfig').showType).toBe(true)
+    expect(gameDataSelector.props('displayConfig')?.showType).toBe(true)
   })
 
   it('overrides custom showType with includeBuildings value', () => {
@@ -221,7 +226,7 @@ describe('ItemSelector Integration', () => {
     const gameDataSelector = wrapper.findComponent(GameDataSelector)
 
     // includeBuildings should override custom showType
-    expect(gameDataSelector.props('displayConfig').showType).toBe(true)
+    expect(gameDataSelector.props('displayConfig')?.showType).toBe(true)
   })
 
   it('emits update:modelValue when GameDataSelector emits update:modelValue', async () => {
@@ -231,7 +236,7 @@ describe('ItemSelector Integration', () => {
     await gameDataSelector.vm.$emit('update:modelValue', mockSelectedItem)
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
-    expect(wrapper.emitted('update:modelValue')[0]).toEqual([mockSelectedItem])
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([mockSelectedItem])
   })
 
   it('emits undefined when selection is cleared', async () => {
@@ -241,7 +246,7 @@ describe('ItemSelector Integration', () => {
     await gameDataSelector.vm.$emit('update:modelValue', undefined)
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
-    expect(wrapper.emitted('update:modelValue')[0]).toEqual([undefined])
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([undefined])
   })
 
   it('handles v-model binding correctly', async () => {
@@ -313,8 +318,8 @@ describe('ItemSelector Integration', () => {
   })
 
   it('handles empty items and buildings arrays', () => {
-    vi.mocked(mockDataStore).items = []
-    vi.mocked(mockDataStore).buildings = []
+    vi.mocked(mockDataStore).items = {}
+    vi.mocked(mockDataStore).buildings = {}
 
     const wrapper = createWrapper()
     const gameDataSelector = wrapper.findComponent(GameDataSelector)

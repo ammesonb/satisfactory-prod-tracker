@@ -1,13 +1,14 @@
 import { vi } from 'vitest'
-import { ref } from 'vue'
+import { ref, computed, type Ref, type ComputedRef } from 'vue'
 import type { ItemOption } from '@/types/data'
 
 /**
  * Mock type for useSelection composable return value
  */
 export type MockUseSelection = {
-  allSelected: { value: boolean }
-  someSelected: { value: boolean }
+  selectedSet: ComputedRef<Set<string>>
+  allSelected: ComputedRef<boolean>
+  someSelected: ComputedRef<boolean>
   toggleAll: ReturnType<typeof vi.fn>
   toggleItem: ReturnType<typeof vi.fn>
   isSelected: ReturnType<typeof vi.fn>
@@ -17,8 +18,9 @@ export type MockUseSelection = {
  * Creates a default mock for useSelection composable
  */
 export const createMockUseSelection = (): MockUseSelection => ({
-  allSelected: ref(false),
-  someSelected: ref(false),
+  selectedSet: computed(() => new Set<string>()),
+  allSelected: computed(() => false),
+  someSelected: computed(() => false),
   toggleAll: vi.fn(),
   toggleItem: vi.fn(),
   isSelected: vi.fn(() => false),
@@ -28,8 +30,8 @@ export const createMockUseSelection = (): MockUseSelection => ({
  * Mock type for useDataSearch composable return value
  */
 export type MockUseDataSearch = {
-  searchInput: { value: string }
-  filteredItems: { value: ItemOption[] }
+  searchInput: Ref<string>
+  filteredItems: ComputedRef<ItemOption[]>
   updateSearch: ReturnType<typeof vi.fn>
 }
 
@@ -38,6 +40,6 @@ export type MockUseDataSearch = {
  */
 export const createMockUseDataSearch = (items: ItemOption[] = []): MockUseDataSearch => ({
   searchInput: ref(''),
-  filteredItems: ref(items),
+  filteredItems: computed(() => items),
   updateSearch: vi.fn(),
 })

@@ -2,7 +2,8 @@ import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ref, nextTick } from 'vue'
 import GameDataSelector from '@/components/common/GameDataSelector.vue'
-import type { ItemOption, SearchOptions, IconConfig, DisplayConfig } from '@/types'
+import type { SearchOptions, IconConfig, DisplayConfig } from '@/types/ui'
+import type { ItemOption } from '@/types/data'
 import type { MockUseDataSearch } from '@/__tests__/fixtures/types/composables'
 import { createMockUseDataSearch } from '@/__tests__/fixtures/types/composables'
 
@@ -173,7 +174,7 @@ describe('GameDataSelector Integration', () => {
     await autocomplete.vm.$emit('update:modelValue', mockItems[0])
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
-    expect(wrapper.emitted('update:modelValue')[0]).toEqual([mockItems[0]])
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([mockItems[0]])
   })
 
   it('emits undefined when selection is cleared', async () => {
@@ -183,7 +184,7 @@ describe('GameDataSelector Integration', () => {
     await autocomplete.vm.$emit('update:modelValue', undefined)
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
-    expect(wrapper.emitted('update:modelValue')[0]).toEqual([undefined])
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([undefined])
   })
 
   it('calls updateSearch when search input changes', async () => {
@@ -254,8 +255,11 @@ describe('GameDataSelector Integration', () => {
     })
   })
 
-  it('handles empty filtered results from composable', () => {
-    mockUseDataSearch.filteredItems.value = []
+  it('handles empty filtered results from composable', async () => {
+    // Mock the filtered items to return empty array
+    const { useDataSearch } = await import('@/composables/useDataSearch')
+    const mockEmpty = createMockUseDataSearch([])
+    vi.mocked(useDataSearch).mockReturnValue(mockEmpty)
     const wrapper = createWrapper()
     const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
 
@@ -296,9 +300,12 @@ describe('GameDataSelector Integration', () => {
     expect(modelValue.value).toBeUndefined()
   })
 
-  it('uses filtered items from composable', () => {
+  it('uses filtered items from composable', async () => {
     const filteredItems = [mockItems[0], mockItems[2]]
-    mockUseDataSearch.filteredItems.value = filteredItems
+    // Mock the filtered items to return specific items
+    const { useDataSearch } = await import('@/composables/useDataSearch')
+    const mockFiltered = createMockUseDataSearch(filteredItems)
+    vi.mocked(useDataSearch).mockReturnValue(mockFiltered)
 
     const wrapper = createWrapper()
     const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
@@ -316,23 +323,26 @@ describe('GameDataSelector Integration', () => {
     expect(autocomplete.props('search')).toBe(SEARCH_VALUE)
   })
 
-  it('displays item type chips when showType is enabled', () => {
+  it('displays item type chips when showType is enabled', async () => {
     const displayConfig: DisplayConfig = {
       showType: true,
     }
 
     // Simulate dropdown open state by mounting with items visible
-    mockUseDataSearch.filteredItems.value = mockItems
+    // Mock the filtered items to return all mock items
+    const { useDataSearch } = await import('@/composables/useDataSearch')
+    const mockAll = createMockUseDataSearch(mockItems)
+    vi.mocked(useDataSearch).mockReturnValue(mockAll)
     const wrapper = createWrapper({ displayConfig })
 
     // The chips would be in the item template, but testing the config
-    expect(wrapper.vm.displayConfig.showType).toBe(true)
+    expect(wrapper.vm.displayConfig?.showType).toBe(true)
   })
 
   it('does not display item type chips by default', () => {
     const wrapper = createWrapper()
 
-    expect(wrapper.vm.displayConfig.showType).toBe(false)
+    expect(wrapper.vm.displayConfig?.showType).toBe(false)
   })
 
   it('merges icon config with defaults', () => {
