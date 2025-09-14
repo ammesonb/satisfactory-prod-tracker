@@ -25,22 +25,44 @@ vi.mock('@/logistics/images', () => ({
 }))
 
 describe('FactorySelector Integration', () => {
+  // Test constants
+  const FACTORY_NAMES = {
+    IRON: 'Iron Factory',
+    STEEL: 'Steel Factory',
+    CONCRETE: 'Concrete Factory',
+  } as const
+
+  const FACTORY_ICONS = {
+    IRON: 'iron-ingot',
+    STEEL: 'steel-ingot',
+    CONCRETE: 'concrete',
+  } as const
+
+  const UI_TEXT = {
+    SELECT_ALL: 'Select All',
+    SELECT_FACTORIES: 'Select Factories',
+    CHOOSE_YOUR_FACTORIES: 'Choose Your Factories',
+  } as const
+
+  const ICON_SIZE = 24
+  const EXPECTED_FACTORY_COUNT = 3
+
   const mockFactories: Factory[] = [
     {
-      name: 'Iron Factory',
-      icon: 'iron-ingot',
+      name: FACTORY_NAMES.IRON,
+      icon: FACTORY_ICONS.IRON,
       floors: [],
       recipeLinks: {},
     },
     {
-      name: 'Steel Factory',
-      icon: 'steel-ingot',
+      name: FACTORY_NAMES.STEEL,
+      icon: FACTORY_ICONS.STEEL,
       floors: [],
       recipeLinks: {},
     },
     {
-      name: 'Concrete Factory',
-      icon: 'concrete',
+      name: FACTORY_NAMES.CONCRETE,
+      icon: FACTORY_ICONS.CONCRETE,
       floors: [],
       recipeLinks: {},
     },
@@ -58,7 +80,7 @@ describe('FactorySelector Integration', () => {
     return mount(FactorySelector, {
       props: {
         factories: mockFactories,
-        title: 'Select Factories',
+        title: UI_TEXT.SELECT_FACTORIES,
         ...props,
       },
     })
@@ -68,37 +90,37 @@ describe('FactorySelector Integration', () => {
     const wrapper = createWrapper()
 
     expect(wrapper.find('input[type="checkbox"]').exists()).toBe(true)
-    expect(wrapper.text()).toContain('Select All')
-    expect(wrapper.findAll('.v-list-item')).toHaveLength(3)
+    expect(wrapper.text()).toContain(UI_TEXT.SELECT_ALL)
+    expect(wrapper.findAll('.v-list-item')).toHaveLength(EXPECTED_FACTORY_COUNT)
   })
 
   it('renders custom title when provided', () => {
-    const wrapper = createWrapper({ title: 'Choose Your Factories' })
+    const wrapper = createWrapper({ title: UI_TEXT.CHOOSE_YOUR_FACTORIES })
 
     // Title prop is not displayed in template, but component should accept it
-    expect(wrapper.props('title')).toBe('Choose Your Factories')
+    expect(wrapper.props('title')).toBe(UI_TEXT.CHOOSE_YOUR_FACTORIES)
   })
 
   it('displays all factories in the list', () => {
     const wrapper = createWrapper()
 
-    expect(wrapper.text()).toContain('Iron Factory')
-    expect(wrapper.text()).toContain('Steel Factory')
-    expect(wrapper.text()).toContain('Concrete Factory')
+    expect(wrapper.text()).toContain(FACTORY_NAMES.IRON)
+    expect(wrapper.text()).toContain(FACTORY_NAMES.STEEL)
+    expect(wrapper.text()).toContain(FACTORY_NAMES.CONCRETE)
   })
 
   it('renders factory icons using CachedIcon component', () => {
     const wrapper = createWrapper()
 
     const cachedIcons = wrapper.findAllComponents({ name: 'CachedIcon' })
-    expect(cachedIcons).toHaveLength(3)
+    expect(cachedIcons).toHaveLength(EXPECTED_FACTORY_COUNT)
 
-    expect(cachedIcons[0].props('icon')).toBe('iron-ingot')
-    expect(cachedIcons[1].props('icon')).toBe('steel-ingot')
-    expect(cachedIcons[2].props('icon')).toBe('concrete')
+    expect(cachedIcons[0].props('icon')).toBe(FACTORY_ICONS.IRON)
+    expect(cachedIcons[1].props('icon')).toBe(FACTORY_ICONS.STEEL)
+    expect(cachedIcons[2].props('icon')).toBe(FACTORY_ICONS.CONCRETE)
 
     cachedIcons.forEach((icon) => {
-      expect(icon.props('size')).toBe(24)
+      expect(icon.props('size')).toBe(ICON_SIZE)
     })
   })
 
@@ -117,7 +139,7 @@ describe('FactorySelector Integration', () => {
     const firstFactoryItem = wrapper.find('.v-list-item')
     await firstFactoryItem.trigger('click')
 
-    expect(mockUseSelection.toggleItem).toHaveBeenCalledWith('Iron Factory')
+    expect(mockUseSelection.toggleItem).toHaveBeenCalledWith(FACTORY_NAMES.IRON)
   })
 
   it('calls toggleItem when individual factory checkbox is clicked', async () => {
@@ -126,7 +148,7 @@ describe('FactorySelector Integration', () => {
     const factoryCheckboxes = wrapper.findAll('.v-list-item input[type="checkbox"]')
     await factoryCheckboxes[1].trigger('click')
 
-    expect(mockUseSelection.toggleItem).toHaveBeenCalledWith('Steel Factory')
+    expect(mockUseSelection.toggleItem).toHaveBeenCalledWith(FACTORY_NAMES.STEEL)
   })
 
   it('prevents event propagation when clicking factory checkbox directly', async () => {
@@ -138,7 +160,7 @@ describe('FactorySelector Integration', () => {
     await factoryCheckbox.trigger('click')
 
     // Verify that toggleItem was called (checkbox handler)
-    expect(mockUseSelection.toggleItem).toHaveBeenCalledWith('Iron Factory')
+    expect(mockUseSelection.toggleItem).toHaveBeenCalledWith(FACTORY_NAMES.IRON)
   })
 
   it('shows indeterminate state when some factories are selected', () => {
@@ -163,7 +185,7 @@ describe('FactorySelector Integration', () => {
   })
 
   it('shows individual factory as selected when isSelected returns true', () => {
-    mockUseSelection.isSelected.mockImplementation((name: string) => name === 'Steel Factory')
+    mockUseSelection.isSelected.mockImplementation((name: string) => name === FACTORY_NAMES.STEEL)
 
     const wrapper = createWrapper()
 
@@ -174,7 +196,7 @@ describe('FactorySelector Integration', () => {
   })
 
   it('updates v-model when selectedFactories changes', async () => {
-    const selectedFactories = ref(['Iron Factory'])
+    const selectedFactories = ref([FACTORY_NAMES.IRON])
     const wrapper = mount(FactorySelector, {
       props: {
         factories: mockFactories,
@@ -185,11 +207,11 @@ describe('FactorySelector Integration', () => {
       },
     })
 
-    expect(wrapper.props('modelValue')).toEqual(['Iron Factory'])
+    expect(wrapper.props('modelValue')).toEqual([FACTORY_NAMES.IRON])
 
-    await wrapper.setProps({ modelValue: ['Iron Factory', 'Steel Factory'] })
+    await wrapper.setProps({ modelValue: [FACTORY_NAMES.IRON, FACTORY_NAMES.STEEL] })
 
-    expect(wrapper.props('modelValue')).toEqual(['Iron Factory', 'Steel Factory'])
+    expect(wrapper.props('modelValue')).toEqual([FACTORY_NAMES.IRON, FACTORY_NAMES.STEEL])
   })
 
   it('handles empty factories list gracefully', () => {
@@ -213,7 +235,7 @@ describe('FactorySelector Integration', () => {
     // Test the getKey function
     const call = vi.mocked(useSelection).mock.calls[0]
     const getKey = call[0].getKey
-    expect(getKey(mockFactories[0])).toBe('Iron Factory')
+    expect(getKey(mockFactories[0])).toBe(FACTORY_NAMES.IRON)
   })
 
   it('has proper accessibility attributes', () => {

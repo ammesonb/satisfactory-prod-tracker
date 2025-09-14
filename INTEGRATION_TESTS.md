@@ -155,6 +155,21 @@ describe('ComponentWithComposable', () => {
 ### Component Testing Philosophy
 
 Always run the full CI suite (format, lint, test) after making changes to ensure no regressions.
+Prefer using test data structures or constants over string literals, e.g.:
+
+```
+const mockFactory = {
+  name: 'Test Factory',
+  id: 'test-factory',
+}
+
+// Use values from test fixtures or define constants where possible
+setFactory(mockFactory.id)
+
+// Avoid string literals, especially when repeated multiple times in the same file
+setFactory('test-factory')
+```
+
 **DO Test:**
 
 - ✅ Component renders without errors
