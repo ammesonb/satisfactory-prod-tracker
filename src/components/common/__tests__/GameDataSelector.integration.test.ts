@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ref, nextTick } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import GameDataSelector from '@/components/common/GameDataSelector.vue'
 import type { SearchOptions, IconConfig, DisplayConfig } from '@/types/ui'
 import type { ItemOption } from '@/types/data'
@@ -255,11 +255,9 @@ describe('GameDataSelector Integration', () => {
     })
   })
 
-  it('handles empty filtered results from composable', async () => {
+  it('handles empty filtered results from composable', () => {
     // Mock the filtered items to return empty array
-    const { useDataSearch } = await import('@/composables/useDataSearch')
-    const mockEmpty = createMockUseDataSearch([])
-    vi.mocked(useDataSearch).mockReturnValue(mockEmpty)
+    mockUseDataSearch.filteredItems = computed(() => [])
     const wrapper = createWrapper()
     const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
 
@@ -300,12 +298,10 @@ describe('GameDataSelector Integration', () => {
     expect(modelValue.value).toBeUndefined()
   })
 
-  it('uses filtered items from composable', async () => {
+  it('uses filtered items from composable', () => {
     const filteredItems = [mockItems[0], mockItems[2]]
     // Mock the filtered items to return specific items
-    const { useDataSearch } = await import('@/composables/useDataSearch')
-    const mockFiltered = createMockUseDataSearch(filteredItems)
-    vi.mocked(useDataSearch).mockReturnValue(mockFiltered)
+    mockUseDataSearch.filteredItems = computed(() => filteredItems)
 
     const wrapper = createWrapper()
     const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
@@ -323,16 +319,14 @@ describe('GameDataSelector Integration', () => {
     expect(autocomplete.props('search')).toBe(SEARCH_VALUE)
   })
 
-  it('displays item type chips when showType is enabled', async () => {
+  it('displays item type chips when showType is enabled', () => {
     const displayConfig: DisplayConfig = {
       showType: true,
     }
 
     // Simulate dropdown open state by mounting with items visible
     // Mock the filtered items to return all mock items
-    const { useDataSearch } = await import('@/composables/useDataSearch')
-    const mockAll = createMockUseDataSearch(mockItems)
-    vi.mocked(useDataSearch).mockReturnValue(mockAll)
+    mockUseDataSearch.filteredItems = computed(() => mockItems)
     const wrapper = createWrapper({ displayConfig })
 
     // The chips would be in the item template, but testing the config

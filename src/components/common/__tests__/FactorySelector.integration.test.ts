@@ -164,10 +164,8 @@ describe('FactorySelector Integration', () => {
   })
 
   it('shows indeterminate state when some factories are selected', () => {
-    const mockSomeSelected = ref(true)
-    const mockAllSelected = ref(false)
-    mockUseSelection.someSelected = computed(() => mockSomeSelected.value)
-    mockUseSelection.allSelected = computed(() => mockAllSelected.value)
+    mockUseSelection.someSelected = computed(() => true)
+    mockUseSelection.allSelected = computed(() => false)
 
     const wrapper = createWrapper()
 
@@ -176,10 +174,8 @@ describe('FactorySelector Integration', () => {
   })
 
   it('shows checked state when all factories are selected', () => {
-    const mockAllSelected = ref(true)
-    const mockSomeSelected = ref(true)
-    mockUseSelection.allSelected = computed(() => mockAllSelected.value)
-    mockUseSelection.someSelected = computed(() => mockSomeSelected.value)
+    mockUseSelection.allSelected = computed(() => true)
+    mockUseSelection.someSelected = computed(() => true)
 
     const wrapper = createWrapper()
 
