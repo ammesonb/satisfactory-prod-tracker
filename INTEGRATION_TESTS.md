@@ -7,6 +7,7 @@ This project uses Vitest with Vue Test Utils for component integration testing. 
 ## Test Configuration
 
 ### Vitest Setup (`vitest.config.ts`)
+
 - **Environment**: `happy-dom` for DOM simulation
 - **Globals**: Enabled for direct `describe`/`it` usage
 - **Component Auto-Import**: Via `unplugin-vue-components` with Vuetify3Resolver
@@ -17,23 +18,26 @@ This project uses Vitest with Vue Test Utils for component integration testing. 
 ### Component Test Setup (`src/components/__tests__/component-setup.ts`)
 
 **Key Features:**
+
 - **Vuetify Integration**: Full Vuetify instance with all components available
 - **Global Provides**: Mock stores injected via provide/inject pattern
 - **Pinia Reset**: Fresh Pinia instance before each test
 - **Auto-Imports**: Components auto-imported, no manual imports needed
 
 **Available Mock Stores:**
+
 ```typescript
 // Provided via injection keys from @/composables/useStores
-const mockDataStore = createMockDataStore()     // Full fixture data
-const mockFactoryStore = {}                     // Empty object - extend as needed
-const mockThemeStore = {}                       // Empty object - extend as needed  
-const mockErrorStore = {}                       // Empty object - extend as needed
+const mockDataStore = createMockDataStore() // Full fixture data
+const mockFactoryStore = {} // Empty object - extend as needed
+const mockThemeStore = {} // Empty object - extend as needed
+const mockErrorStore = {} // Empty object - extend as needed
 ```
 
 ### Logistics Test Setup (`src/logistics/__tests__/test-setup.ts`)
 
 **Purpose**: Mocks stores at import time for pure logic testing
+
 - Mocks `@/stores/data` and `@/stores/errors`
 - Uses `createMockDataStore()` fixture with full game data
 
@@ -42,6 +46,7 @@ const mockErrorStore = {}                       // Empty object - extend as need
 ### Mount Function Strategy
 
 **DO**: Create mount helper once per describe block
+
 ```typescript
 describe('ComponentName', () => {
   const createWrapper = (props = {}) => {
@@ -70,6 +75,7 @@ describe('ComponentName', () => {
 ### Store Mocking Strategy
 
 **Extend Mock Stores When Needed:**
+
 ```typescript
 describe('ComponentWithFactory', () => {
   beforeEach(() => {
@@ -89,12 +95,13 @@ describe('ComponentWithFactory', () => {
 
 **Reusable Mock Store Definitions:**
 Create these as needed in test files:
+
 ```typescript
 // Reusable mock factory store
 const createMockFactoryStore = () => ({
   floors: [
     { id: '1', name: 'Ground Floor', recipes: [] },
-    { id: '2', name: 'Second Floor', recipes: [] }
+    { id: '2', name: 'Second Floor', recipes: [] },
   ],
   currentFloorId: '1',
   addFloor: vi.fn(),
@@ -102,7 +109,7 @@ const createMockFactoryStore = () => ({
   setCurrentFloor: vi.fn(),
 })
 
-// Reusable mock error store  
+// Reusable mock error store
 const createMockErrorStore = () => ({
   errors: [],
   addError: vi.fn(),
@@ -124,12 +131,12 @@ vi.mock('@/composables/useFloorManagement', () => ({
     addFloor: vi.fn(),
     removeFloor: vi.fn(),
     updateFloor: vi.fn(),
-  }))
+  })),
 }))
 
 describe('ComponentWithComposable', () => {
   let mockAddFloor: ReturnType<typeof vi.fn>
-  
+
   beforeEach(() => {
     const { useFloorManagement } = await import('@/composables/useFloorManagement')
     mockAddFloor = vi.mocked(useFloorManagement).mock.results[0].value.addFloor
@@ -137,9 +144,9 @@ describe('ComponentWithComposable', () => {
 
   it('calls composable function when button clicked', async () => {
     const wrapper = createWrapper()
-    
+
     await wrapper.find('[data-testid="add-floor-btn"]').trigger('click')
-    
+
     expect(mockAddFloor).toHaveBeenCalledWith(expectedParams)
   })
 })
@@ -147,7 +154,9 @@ describe('ComponentWithComposable', () => {
 
 ### Component Testing Philosophy
 
+Always run the full CI suite (format, lint, test) after making changes to ensure no regressions.
 **DO Test:**
+
 - ✅ Component renders without errors
 - ✅ Props affect rendered output correctly
 - ✅ User interactions trigger expected behavior
@@ -157,6 +166,7 @@ describe('ComponentWithComposable', () => {
 - ✅ **Composable function calls with correct parameters**
 
 **DON'T Test:**
+
 - ❌ Internal component methods directly
 - ❌ Implementation details (variable names, function calls)
 - ❌ Third-party library internals (Vuetify component behavior)
@@ -164,11 +174,13 @@ describe('ComponentWithComposable', () => {
 - ❌ Composable internal logic (test composables separately)
 
 **Optional/Secondary:**
+
 - 🔍 Accessibility attributes (not required, but can be included if relevant)
 
 ### Testing Component Functionality
 
 **Example Integration Test Structure:**
+
 ```typescript
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
@@ -179,7 +191,7 @@ vi.mock('@/composables/useComposableName', () => ({
   useComposableName: vi.fn(() => ({
     actionFunction: vi.fn(),
     data: ref('mock-data'),
-  }))
+  })),
 }))
 
 describe('ComponentName Integration', () => {
@@ -194,7 +206,7 @@ describe('ComponentName Integration', () => {
 
   it('renders with default props', () => {
     const wrapper = createWrapper()
-    
+
     expect(wrapper.find('[data-testid="main-element"]').exists()).toBe(true)
     expect(wrapper.text()).toContain('Expected Text')
   })
@@ -202,28 +214,28 @@ describe('ComponentName Integration', () => {
   it('calls composable action on user interaction', async () => {
     const { useComposableName } = await import('@/composables/useComposableName')
     const mockAction = vi.mocked(useComposableName).mock.results[0].value.actionFunction
-    
+
     const wrapper = createWrapper()
-    
+
     await wrapper.find('button').trigger('click')
-    
+
     expect(mockAction).toHaveBeenCalledWith('expected-params')
   })
 
   it('emits events correctly', async () => {
     const wrapper = createWrapper()
-    
+
     await wrapper.find('button').trigger('click')
-    
+
     expect(wrapper.emitted('action')).toBeTruthy()
     expect(wrapper.emitted('action')[0]).toEqual(['expected-payload'])
   })
 
   it('updates display when props change', async () => {
     const wrapper = createWrapper({ title: 'Initial' })
-    
+
     await wrapper.setProps({ title: 'Updated' })
-    
+
     expect(wrapper.text()).toContain('Updated')
   })
 })
@@ -232,22 +244,26 @@ describe('ComponentName Integration', () => {
 ## Key Integration Testing Principles
 
 ### No Component Stubbing
+
 - All components should render their real implementations
 - This tests the actual component integration
 - Use the auto-import system - components are available globally
 
 ### Strategic Mocking
+
 - **Mock composables** that components call - test the calls, not the logic
 - **Mock external services** and stores with the provided setup
 - **Don't mock** child components - let them render fully
 - Use the provided mock store setup and extend as needed
 
 ### Test Data Strategy
+
 - Use `createMockDataStore()` for realistic game data
 - Create focused mock data for specific test scenarios
 - Prefer fixture data over inline test data
 
 ### Async Testing
+
 - Always `await` user interactions: `await wrapper.find('button').trigger('click')`
 - Use `await wrapper.vm.$nextTick()` when needed for reactivity
 - Test async operations with proper awaiting
@@ -255,14 +271,15 @@ describe('ComponentName Integration', () => {
 ## Common Patterns
 
 ### Testing Vuetify Components
+
 ```typescript
 // Vuetify components are available globally
 it('works with vuetify select', async () => {
   const wrapper = createWrapper()
-  
+
   const select = wrapper.findComponent({ name: 'VSelect' })
   expect(select.exists()).toBe(true)
-  
+
   // Test select functionality
   await select.vm.$emit('update:modelValue', 'new-value')
   expect(wrapper.emitted('change')).toBeTruthy()
@@ -270,27 +287,30 @@ it('works with vuetify select', async () => {
 ```
 
 ### Testing Store Integration
+
 ```typescript
 it('integrates with factory store', () => {
   // Mock store is automatically provided
   const wrapper = createWrapper()
-  
+
   // Test that component uses store data correctly
   expect(wrapper.text()).toContain('Ground Floor') // from mock data
 })
 ```
 
 ### Testing Error Handling
+
 ```typescript
 it('handles errors gracefully', async () => {
   // Simulate error condition
   const wrapper = createWrapper({ data: null })
-  
+
   expect(wrapper.find('[data-testid="error-message"]').exists()).toBe(true)
 })
 ```
 
 ### Testing Composable Integration
+
 ```typescript
 import { vi } from 'vitest'
 
@@ -298,17 +318,17 @@ vi.mock('@/composables/useRecipeStatus', () => ({
   useRecipeStatus: vi.fn(() => ({
     updateStatus: vi.fn(),
     status: ref('active'),
-  }))
+  })),
 }))
 
 it('calls composable when status changes', async () => {
   const { useRecipeStatus } = await import('@/composables/useRecipeStatus')
   const mockUpdateStatus = vi.mocked(useRecipeStatus).mock.results[0].value.updateStatus
-  
+
   const wrapper = createWrapper({ recipeId: '123' })
-  
+
   await wrapper.find('[data-testid="status-toggle"]').trigger('click')
-  
+
   expect(mockUpdateStatus).toHaveBeenCalledWith('123', 'inactive')
 })
 ```
@@ -316,12 +336,13 @@ it('calls composable when status changes', async () => {
 ## File Organization
 
 - Integration tests should be in `__tests__` folders alongside components
-- Name test files `ComponentName.integration.test.ts`  
+- Name test files `ComponentName.integration.test.ts`
 - Use descriptive describe blocks: `describe('ComponentName Integration', ...)`
 - Group related tests with nested describe blocks when needed
 
 ## Running Tests
 
+- `npm run ci` - Run full CI-style formatting and linting checks plus tests
 - `npm test` - Watch mode for development
 - `npm run test:ui` - Visual test interface
 - `npm run test:run` - Single run (CI mode)
