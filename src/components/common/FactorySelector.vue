@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { toRefs } from 'vue'
 import type { Factory } from '@/types/factory'
+import { useSelection } from '@/composables/useSelection'
 
 interface Props {
   factories: Factory[]
@@ -13,29 +14,15 @@ const props = withDefaults(defineProps<Props>(), {
 
 const selectedFactories = defineModel<string[]>({ default: [] })
 
-const selectedSet = computed(() => new Set(selectedFactories.value))
+const { factories } = toRefs(props)
 
-const allSelected = computed(
-  () => selectedSet.value.size === props.factories.length && props.factories.length > 0,
-)
+const { allSelected, someSelected, toggleAll, toggleItem, isSelected } = useSelection({
+  items: factories,
+  selected: selectedFactories,
+  getKey: (factory) => factory.name,
+})
 
-const someSelected = computed(() => selectedSet.value.size > 0)
-
-const toggleAll = () => {
-  if (allSelected.value) {
-    selectedFactories.value = []
-  } else {
-    selectedFactories.value = props.factories.map((f) => f.name)
-  }
-}
-
-const toggleFactory = (factoryName: string) => {
-  if (selectedSet.value.has(factoryName)) {
-    selectedFactories.value = selectedFactories.value.filter((name) => name !== factoryName)
-  } else {
-    selectedFactories.value = [...selectedFactories.value, factoryName]
-  }
-}
+const toggleFactory = (factoryName: string) => toggleItem(factoryName)
 </script>
 
 <template>
@@ -60,7 +47,7 @@ const toggleFactory = (factoryName: string) => {
           <template v-slot:prepend>
             <div class="d-flex align-center">
               <v-checkbox
-                :model-value="selectedSet.has(factory.name)"
+                :model-value="isSelected(factory.name)"
                 @click.stop="toggleFactory(factory.name)"
                 :hide-details="true"
               />
