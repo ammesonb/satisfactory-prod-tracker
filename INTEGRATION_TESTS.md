@@ -6,15 +6,13 @@ This project uses Vitest with Vue Test Utils for component integration testing. 
 
 ## Test Writing Process
 
-When writing tests, you MUST follow these steps:
+When writing tests, follow these steps:
 
-1. Examine the component you are writing tests for
-2. Read the testing infrastructure, setup, and mocks to see what already exists.
-3. Write tests, adhering to best practices and general coding principles such as DRY, KISS, and so on.
-4. Run the tests via `npm run test` first and iterate until they pass.
-5. Run the CI command to ensure formatting and linting are correct.
-6. Run type-check:test to verify typescript compliance and fix issues.
-7. Double-check **ALL UNCOMMITTED CHANGES** for best practices, accuracy, and thoroughness!
+1. **Examine the component** - Understand its props, composable usage, and user interactions
+2. **Write tests with DRY principles** - Create reusable helper functions for repeated logic
+3. **Run tests and iterate** - `npm run test` until all pass
+4. **Run full CI** - `npm run ci` to ensure formatting, linting, and type compliance
+5. **Review all changes** - Check uncommitted files for accuracy and best practices
 
 The following sections provide technical details and guidance on writing integration tests for these components.
 
@@ -84,173 +82,106 @@ src/__tests__/fixtures/
 
 ## Integration Testing Patterns
 
-### Mount Function Strategy
+### Essential Patterns
 
-**DO**: Create mount helper once per describe block
-
+**Mount Helper Function:**
 ```typescript
-describe('ComponentName', () => {
-  const createWrapper = (props = {}) => {
-    return mount(ComponentName, {
-      props: {
-        // default props
-        ...props,
-      },
-    })
-  }
-
-  it('should render correctly', () => {
-    const wrapper = createWrapper()
-    // test logic
-  })
-
-  it('should handle prop changes', () => {
-    const wrapper = createWrapper({ customProp: 'value' })
-    // test logic
-  })
-})
+const createWrapper = (props = {}) => mount(ComponentName, { props: { ...defaultProps, ...props } })
 ```
 
-**DON'T**: Repeat mount setup in every test
-
-### Store Mocking Strategy
-
-**Extend Mock Stores When Needed:**
-
+**DRY Helper Functions:**
 ```typescript
-describe('ComponentWithFactory', () => {
-  beforeEach(() => {
-    // Extend the empty mock with needed functionality
-    Object.assign(config.global.provide[FACTORY_STORE_KEY], {
-      floors: [{ id: '1', name: 'Floor 1' }],
-      addFloor: vi.fn(),
-      removeFloor: vi.fn(),
-    })
-  })
+const expectElementState = (wrapper, selector, prop, value) => {
+  wrapper.findAllComponents({ name: selector }).forEach(el =>
+    expect(el.props(prop)).toBe(value)
+  )
+}
 
-  const createWrapper = () => {
-    return mount(ComponentWithFactory)
-  }
-})
+const testAction = async (actionName, expectedParams) => {
+  // Setup, call action, verify composable calls with expectedParams
+}
 ```
 
-**Reusable Mock Store Definitions:**
-Create these as needed in test files, following the interfaces in `@/types/stores.ts`:
-
+**Use Constants Over Magic Strings:**
 ```typescript
-// Reusable mock factory store (implements IFactoryStore)
-// Only include pieces you need, unless creating a generic/reusable function for the store across multiple tests
-const createMockFactoryStore = (): Partial<IFactoryStore> => ({
-  selected: 'test-factory',
-  factories: { 'test-factory': { name: 'Test Factory', icon: 'factory', floors: [] } },
-  hasFactories: true,
-  currentFactory: { name: 'Test Factory', icon: 'factory', floors: [] },
-  factoryList: [{ name: 'Test Factory', icon: 'factory', floors: [] }],
-  setSelectedFactory: vi.fn(),
-  addFactory: vi.fn(),
-  removeFactory: vi.fn(),
-  setLinkBuiltState: vi.fn(),
-  getRecipeByName: vi.fn(),
-  exportFactories: vi.fn(),
-  importFactories: vi.fn(),
-})
-
-// Reusable mock theme store (implements IThemeStore)
-const createMockThemeStore = (): Partial<IThemeStore> => ({
-  isDark: false,
-  toggleTheme: vi.fn(),
-  setTheme: vi.fn(),
-})
-
-// Reusable mock error store (implements IErrorStore)
-const createMockErrorStore = (): Partial<IErrorStore> => ({
-  show: false,
-  level: 'info',
-  summary: '',
-  bodyContent: null,
-  createBuilder: vi.fn(),
-  error: vi.fn(),
-  warning: vi.fn(),
-  info: vi.fn(),
-  hide: vi.fn(),
-})
-```
-
-### Composable Mocking Strategy
-
-**DO Mock Composable Actions:**
-Components that call composable functions should mock those composables and test the calls:
-
-```typescript
-import { vi } from 'vitest'
-
-// Mock the composable
-vi.mock('@/composables/useFloorManagement', () => ({
-  useFloorManagement: vi.fn(() => ({
-    addFloor: vi.fn(),
-    removeFloor: vi.fn(),
-    updateFloor: vi.fn(),
-  })),
-}))
-
-describe('ComponentWithComposable', () => {
-  let mockAddFloor: ReturnType<typeof vi.fn>
-
-  beforeEach(() => {
-    const { useFloorManagement } = await import('@/composables/useFloorManagement')
-    mockAddFloor = vi.mocked(useFloorManagement).mock.results[0].value.addFloor
-  })
-
-  it('calls composable function when button clicked', async () => {
-    const wrapper = createWrapper()
-
-    await wrapper.find('[data-testid="add-floor-btn"]').trigger('click')
-
-    expect(mockAddFloor).toHaveBeenCalledWith(expectedParams)
-  })
-})
-```
-
-### Component Testing Philosophy
-
-Always run the full CI suite and type checks (format, lint, type-check:test, test) after making changes to ensure no regressions.
-Prefer using test data structures or constants over string literals, e.g.:
-
-```
-const mockFactory = {
+const TEST_FACTORY = {
   name: 'Test Factory',
   id: 'test-factory',
 }
 
-// Use values from test fixtures or define constants where possible
-setFactory(mockFactory.id)
+// Good - use constants
+setFactory(TEST_FACTORY.id)
 
-// Avoid string literals, especially when repeated multiple times in the same file
+// Avoid - magic strings repeated throughout tests
 setFactory('test-factory')
 ```
 
-**DO Test:**
+### Store Mocking Strategy
 
-- ✅ Component renders without errors
-- ✅ Props affect rendered output correctly
-- ✅ User interactions trigger expected behavior
-- ✅ Events are emitted with correct payloads
-- ✅ Conditional rendering based on props/state
-- ✅ Integration with Vuetify components works
-- ✅ **Composable function calls with correct parameters**
+**Mock at Module Level:**
+```typescript
+vi.mock('@/composables/useStores', () => ({
+  getStores: vi.fn(() => ({
+    factoryStore: { currentFactory: null },
+    // Add other stores as needed
+  })),
+}))
+```
 
-**DON'T Test:**
+**Update in Tests:**
+```typescript
+let mockFactoryStore: Partial<IFactoryStore>
 
-- ❌ Internal component methods directly
-- ❌ Implementation details (variable names, function calls)
-- ❌ Third-party library internals (Vuetify component behavior)
-- ❌ Styling details, class names, static props unless non-trivial configuration
-- ❌ Styling or behavior of Vuetify components - we can trust that they work properly
-- ❌ Composable internal logic (test composables separately)
+beforeEach(async () => {
+  mockFactoryStore = { currentFactory: null }
+  const { getStores } = vi.mocked(await import('@/composables/useStores'))
+  getStores.mockReturnValue({
+    factoryStore: mockFactoryStore as IFactoryStore,
+    // Other required stores...
+  })
+})
 
-**Optional/Secondary:**
+const setFactoryWithFloors = () => {
+  mockFactoryStore.currentFactory = TEST_FACTORY
+}
+```
 
-- 🔍 Accessibility attributes (not required, but can be included if relevant)
+### Composable Mocking Strategy
+
+**Mock and Test Composable Calls:**
+```typescript
+vi.mock('@/composables/useFloorManagement', () => ({
+  useFloorManagement: vi.fn(() => ({
+    openFloorEditor: vi.fn(),
+  })),
+}))
+
+it('calls composable when button clicked', async () => {
+  const { useFloorManagement } = await import('@/composables/useFloorManagement')
+
+  const wrapper = createWrapper()
+  await wrapper.find('[data-testid="edit-btn"]').trigger('click')
+
+  const mockFn = vi.mocked(useFloorManagement).mock.results[0]?.value?.openFloorEditor
+  expect(mockFn).toHaveBeenCalledWith()
+})
+```
+
+### What to Test
+
+**✅ DO Test:**
+- Component renders without errors
+- User interactions trigger expected behavior
+- Composable function calls with correct parameters
+- Element states based on props/store state
+- Conditional rendering
+- Events emitted with correct payloads
+
+**❌ DON'T Test:**
+- Vuetify component internals
+- Implementation details (method names, variables)
+- Styling or CSS classes
+- Composable internal logic (test separately)
 
 ### Testing Component Functionality
 
@@ -541,11 +472,6 @@ import type { IDataStore, IFactoryStore, IThemeStore, IErrorStore } from '@/type
 ```typescript
 // Component setup
 const createWrapper = (props = {}) => mount(ComponentName, { props: { ...defaultProps, ...props } })
-
-// Store extension
-beforeEach(() => {
-  Object.assign(config.global.provide[THEME_STORE_KEY], { isDark: false, toggleTheme: vi.fn() })
-})
 
 // Using fixture data
 const IRON_ORE = 'Desc_OreIron_C'
