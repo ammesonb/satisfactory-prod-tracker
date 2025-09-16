@@ -6,13 +6,15 @@ This project uses Vitest with Vue Test Utils for component integration testing. 
 
 ## Test Writing Process
 
-When writing tests, follow these steps:
+When writing tests, follow these steps.
+**DO NOT SKIP THE REVIEW STEP AT THE END.**
 
 1. **Examine the component** - Understand its props, composable usage, and user interactions
 2. **Write tests with DRY principles** - Create reusable helper functions for repeated logic
 3. **Run tests and iterate** - `npm run test` until all pass
 4. **Run full CI** - `npm run ci` to ensure formatting, linting, and type compliance
-5. **Review all changes** - Check uncommitted files for accuracy and best practices
+5. **Run type checking on the test files** - `npm run type-check:test` to ensure type safety
+6. **Review all changes - MANDATORY**: Use git status and git diff to examine ALL uncommitted files. Explicitly state what you reviewed and confirm each file follows best practices. Do not proceed without completing this step.
 
 The following sections provide technical details and guidance on writing integration tests for these components.
 
@@ -85,16 +87,16 @@ src/__tests__/fixtures/
 ### Essential Patterns
 
 **Mount Helper Function:**
+
 ```typescript
 const createWrapper = (props = {}) => mount(ComponentName, { props: { ...defaultProps, ...props } })
 ```
 
 **DRY Helper Functions:**
+
 ```typescript
 const expectElementState = (wrapper, selector, prop, value) => {
-  wrapper.findAllComponents({ name: selector }).forEach(el =>
-    expect(el.props(prop)).toBe(value)
-  )
+  wrapper.findAllComponents({ name: selector }).forEach((el) => expect(el.props(prop)).toBe(value))
 }
 
 const testAction = async (actionName, expectedParams) => {
@@ -103,6 +105,7 @@ const testAction = async (actionName, expectedParams) => {
 ```
 
 **Use Constants Over Magic Strings:**
+
 ```typescript
 const TEST_FACTORY = {
   name: 'Test Factory',
@@ -119,6 +122,7 @@ setFactory('test-factory')
 ### Store Mocking Strategy
 
 **Mock at Module Level:**
+
 ```typescript
 vi.mock('@/composables/useStores', () => ({
   getStores: vi.fn(() => ({
@@ -129,6 +133,7 @@ vi.mock('@/composables/useStores', () => ({
 ```
 
 **Update in Tests:**
+
 ```typescript
 let mockFactoryStore: Partial<IFactoryStore>
 
@@ -149,6 +154,7 @@ const setFactoryWithFloors = () => {
 ### Composable Mocking Strategy
 
 **Mock and Test Composable Calls:**
+
 ```typescript
 vi.mock('@/composables/useFloorManagement', () => ({
   useFloorManagement: vi.fn(() => ({
@@ -170,6 +176,7 @@ it('calls composable when button clicked', async () => {
 ### What to Test
 
 **✅ DO Test:**
+
 - Component renders without errors
 - User interactions trigger expected behavior
 - Composable function calls with correct parameters
@@ -178,6 +185,7 @@ it('calls composable when button clicked', async () => {
 - Events emitted with correct payloads
 
 **❌ DON'T Test:**
+
 - Vuetify component internals
 - Implementation details (method names, variables)
 - Styling or CSS classes
