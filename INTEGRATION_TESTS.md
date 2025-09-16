@@ -4,6 +4,20 @@
 
 This project uses Vitest with Vue Test Utils for component integration testing. The setup emphasizes **integration over isolation** - components should be tested with their real dependencies rather than heavily mocked.
 
+## Test Writing Process
+
+When writing tests, you MUST follow these steps:
+
+1. Examine the component you are writing tests for
+2. Read the testing infrastructure, setup, and mocks to see what already exists.
+3. Write tests, adhering to best practices and general coding principles such as DRY, KISS, and so on.
+4. Run the tests via `npm run test` first and iterate until they pass.
+5. Run the CI command to ensure formatting and linting are correct.
+6. Run type-check:test to verify typescript compliance and fix issues.
+7. Double-check **ALL UNCOMMITTED CHANGES** for best practices, accuracy, and thoroughness!
+
+The following sections provide technical details and guidance on writing integration tests for these components.
+
 ## Test Configuration
 
 ### Vitest Setup (`vitest.config.ts`)
@@ -11,7 +25,7 @@ This project uses Vitest with Vue Test Utils for component integration testing. 
 - **Environment**: `happy-dom` for DOM simulation
 - **Globals**: Enabled for direct `describe`/`it` usage
 - **Component Auto-Import**: Via `unplugin-vue-components` with Vuetify3Resolver
-- **Setup Files**: Two-tier setup for different test types
+- **Setup Files**: Two-tier setup for different test types from `vitest.config.ts`
   - `./src/logistics/__tests__/test-setup.ts` - Store mocking for logic tests
   - `./src/components/__tests__/component-setup.ts` - Full component setup
 
@@ -28,10 +42,37 @@ This project uses Vitest with Vue Test Utils for component integration testing. 
 
 ```typescript
 // Provided via injection keys from @/composables/useStores
-const mockDataStore = createMockDataStore() // Full fixture data
-const mockFactoryStore = {} // Empty object - extend as needed
-const mockThemeStore = {} // Empty object - extend as needed
-const mockErrorStore = {} // Empty object - extend as needed
+const mockDataStore = createMockDataStore() // Full fixture data from @/__tests__/fixtures/stores/dataStore.ts
+const mockFactoryStore = {} // Empty object - extend as needed per IFactoryStore interface
+const mockThemeStore = {} // Empty object - extend as needed per IThemeStore interface
+const mockErrorStore = {} // Empty object - extend as needed per IErrorStore interface
+```
+
+**Store Interface References:**
+
+All store interfaces are defined in `@/types/stores.ts`:
+
+- `IDataStore` - Game data management with items, recipes, buildings
+- `IFactoryStore` - Factory and floor management
+- `IThemeStore` - Theme switching functionality
+- `IErrorStore` - Error handling and modal display
+
+**Test Fixture Infrastructure:**
+
+The project provides comprehensive test fixtures in `src/__tests__/fixtures/`:
+
+```
+src/__tests__/fixtures/
+├── data/
+│   ├── index.ts          # Barrel exports for all game data
+│   ├── items.ts          # itemDatabase with 100+ Satisfactory items
+│   ├── recipes.ts        # recipeDatabase with production recipes
+│   └── buildings.ts      # buildingDatabase with production buildings
+├── stores/
+│   └── dataStore.ts      # createMockDataStore() with realistic data
+└── types/
+    ├── composables.ts    # Mock types for composables (useSelection, useDataSearch)
+    └── dataStore.ts      # Type definitions for fixture data
 ```
 
 ### Logistics Test Setup (`src/logistics/__tests__/test-setup.ts`)
@@ -94,26 +135,44 @@ describe('ComponentWithFactory', () => {
 ```
 
 **Reusable Mock Store Definitions:**
-Create these as needed in test files:
+Create these as needed in test files, following the interfaces in `@/types/stores.ts`:
 
 ```typescript
-// Reusable mock factory store
-const createMockFactoryStore = () => ({
-  floors: [
-    { id: '1', name: 'Ground Floor', recipes: [] },
-    { id: '2', name: 'Second Floor', recipes: [] },
-  ],
-  currentFloorId: '1',
-  addFloor: vi.fn(),
-  removeFloor: vi.fn(),
-  setCurrentFloor: vi.fn(),
+// Reusable mock factory store (implements IFactoryStore)
+// Only include pieces you need, unless creating a generic/reusable function for the store across multiple tests
+const createMockFactoryStore = (): Partial<IFactoryStore> => ({
+  selected: 'test-factory',
+  factories: { 'test-factory': { name: 'Test Factory', icon: 'factory', floors: [] } },
+  hasFactories: true,
+  currentFactory: { name: 'Test Factory', icon: 'factory', floors: [] },
+  factoryList: [{ name: 'Test Factory', icon: 'factory', floors: [] }],
+  setSelectedFactory: vi.fn(),
+  addFactory: vi.fn(),
+  removeFactory: vi.fn(),
+  setLinkBuiltState: vi.fn(),
+  getRecipeByName: vi.fn(),
+  exportFactories: vi.fn(),
+  importFactories: vi.fn(),
 })
 
-// Reusable mock error store
-const createMockErrorStore = () => ({
-  errors: [],
-  addError: vi.fn(),
-  clearErrors: vi.fn(),
+// Reusable mock theme store (implements IThemeStore)
+const createMockThemeStore = (): Partial<IThemeStore> => ({
+  isDark: false,
+  toggleTheme: vi.fn(),
+  setTheme: vi.fn(),
+})
+
+// Reusable mock error store (implements IErrorStore)
+const createMockErrorStore = (): Partial<IErrorStore> => ({
+  show: false,
+  level: 'info',
+  summary: '',
+  bodyContent: null,
+  createBuilder: vi.fn(),
+  error: vi.fn(),
+  warning: vi.fn(),
+  info: vi.fn(),
+  hide: vi.fn(),
 })
 ```
 
@@ -185,7 +244,8 @@ setFactory('test-factory')
 - ❌ Internal component methods directly
 - ❌ Implementation details (variable names, function calls)
 - ❌ Third-party library internals (Vuetify component behavior)
-- ❌ Styling details (use visual testing tools instead)
+- ❌ Styling details, class names, static props unless non-trivial configuration
+- ❌ Styling or behavior of Vuetify components - we can trust that they work properly
 - ❌ Composable internal logic (test composables separately)
 
 **Optional/Secondary:**
@@ -277,6 +337,75 @@ describe('ComponentName Integration', () => {
 - Create focused mock data for specific test scenarios
 - Prefer fixture data over inline test data
 
+**Using Test Fixtures Effectively:**
+
+```typescript
+import { itemDatabase, recipeDatabase, buildingDatabase } from '@/__tests__/fixtures/data'
+import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
+import type { MockUseDataSearch, MockUseSelection } from '@/__tests__/fixtures/types/composables'
+import {
+  createMockUseDataSearch,
+  createMockUseSelection,
+} from '@/__tests__/fixtures/types/composables'
+
+// Use fixture constants instead of magic strings
+const IRON_ORE_KEY = 'Desc_OreIron_C'
+const IRON_INGOT_RECIPE = 'Recipe_IngotIron_C'
+const CONSTRUCTOR_BUILDING = 'Build_ConstructorMk1_C'
+
+// Access real fixture data
+const ironOreItem = itemDatabase[IRON_ORE_KEY]
+const ironIngotRecipe = recipeDatabase[IRON_INGOT_RECIPE]
+const constructorBuilding = buildingDatabase[CONSTRUCTOR_BUILDING]
+
+// Mock composables with fixture types
+vi.mock('@/composables/useDataSearch', () => ({
+  useDataSearch: vi.fn(() => createMockUseDataSearch([ironOreItem, ironIngotItem])),
+}))
+```
+
+**Test Constant Patterns:**
+
+Define test constants to avoid magic strings and improve maintainability:
+
+```typescript
+describe('ComponentName Integration', () => {
+  // Test constants from fixtures
+  const TEST_ITEMS = {
+    IRON_ORE: 'Desc_OreIron_C',
+    COPPER_ORE: 'Desc_OreCopper_C',
+    IRON_INGOT: 'Desc_IronIngot_C',
+  } as const
+
+  const TEST_RECIPES = {
+    IRON_INGOT: 'Recipe_IngotIron_C',
+    COPPER_INGOT: 'Recipe_IngotCopper_C',
+  } as const
+
+  const TEST_BUILDINGS = {
+    SMELTER: 'Build_SmelterMk1_C',
+    CONSTRUCTOR: 'Build_ConstructorMk1_C',
+  } as const
+
+  const createWrapper = (props = {}) => {
+    return mount(ComponentName, {
+      props: {
+        item: TEST_ITEMS.IRON_ORE,
+        recipe: TEST_RECIPES.IRON_INGOT,
+        ...props,
+      },
+    })
+  }
+
+  it('displays item from fixture data', () => {
+    const wrapper = createWrapper()
+    const ironOreItem = itemDatabase[TEST_ITEMS.IRON_ORE]
+
+    expect(wrapper.text()).toContain(ironOreItem.name) // "Iron Ore"
+  })
+}
+```
+
 ### Async Testing
 
 - Always `await` user interactions: `await wrapper.find('button').trigger('click')`
@@ -363,3 +492,65 @@ it('calls composable when status changes', async () => {
 - `npm run test:ui` - Visual test interface
 - `npm run test:run` - Single run (CI mode)
 - `npm run test:coverage` - Coverage reports
+
+## Quick Reference
+
+### Key Infrastructure Files
+
+**Configuration:**
+
+- `vitest.config.ts` - Main test configuration with component auto-import
+- `src/components/__tests__/component-setup.ts` - Component test setup with mock stores
+
+**Type Definitions:**
+
+- `src/types/stores.ts` - Store interface definitions (IDataStore, IFactoryStore, etc.)
+- `src/__tests__/fixtures/types/` - Mock type definitions for composables
+
+**Test Data:**
+
+- `src/__tests__/fixtures/data/` - Real Satisfactory game data (items, recipes, buildings)
+- `src/__tests__/fixtures/stores/dataStore.ts` - `createMockDataStore()` factory function
+
+**Store Integration:**
+
+- `src/composables/useStores.ts` - Injection keys and store getters
+
+### Essential Imports
+
+This is a fairly decent example of things you MAY need in a test.
+Do not assume you will need all of these, as you can see many of the store keys are not actually used in the "Common Test Pattern" example that follows.
+
+```typescript
+import { mount } from '@vue/test-utils'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { config } from '@vue/test-utils'
+import { itemDatabase, recipeDatabase, buildingDatabase } from '@/__tests__/fixtures/data'
+import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
+import {
+  DATA_STORE_KEY,
+  FACTORY_STORE_KEY,
+  THEME_STORE_KEY,
+  ERROR_STORE_KEY,
+} from '@/composables/useStores'
+import type { IDataStore, IFactoryStore, IThemeStore, IErrorStore } from '@/types/stores'
+```
+
+### Common Test Patterns
+
+```typescript
+// Component setup
+const createWrapper = (props = {}) => mount(ComponentName, { props: { ...defaultProps, ...props } })
+
+// Store extension
+beforeEach(() => {
+  Object.assign(config.global.provide[THEME_STORE_KEY], { isDark: false, toggleTheme: vi.fn() })
+})
+
+// Using fixture data
+const IRON_ORE = 'Desc_OreIron_C'
+const ironOreData = itemDatabase[IRON_ORE] // Real game data
+
+// Async testing
+await wrapper.find('[data-testid="button"]').trigger('click')
+```
