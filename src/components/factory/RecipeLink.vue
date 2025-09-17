@@ -24,20 +24,19 @@ const updateBuiltState = (value: boolean) => {
   setLinkBuilt(props.link, value)
 }
 
+const cardStyles = computed(() => {
+  return {
+    'elevation-2': true,
+    'bg-green-lighten-4': built,
+    'bg-surface': !built.value,
+  }
+})
+
 const isTransportHovered = ref(false)
 </script>
 
 <template>
-  <v-card
-    class="recipe-link mb-1"
-    hover
-    @click="updateBuiltState(!built)"
-    :class="{
-      'elevation-2': true,
-      'bg-green-lighten-4': built,
-      'bg-surface': !built,
-    }"
-  >
+  <v-card class="recipe-link mb-1" hover @click="updateBuiltState(!built)" :class="cardStyles">
     <v-card-text class="pa-2">
       <!-- Row 1: Icon + Material Name with Amount -->
       <v-row no-gutters class="mb-1">
