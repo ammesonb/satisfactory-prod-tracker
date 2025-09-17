@@ -1,0 +1,139 @@
+import { mount } from '@vue/test-utils'
+import { describe, it, expect, vi } from 'vitest'
+import RecipeInputs from '@/components/factory/RecipeInputs.vue'
+import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
+import { recipeDatabase } from '@/__tests__/fixtures/data'
+import type { Material } from '@/types/factory'
+
+// Mock the RecipeLink component since it's auto-imported
+vi.mock('@/components/factory/RecipeLink.vue', () => ({
+  default: {
+    name: 'RecipeLink',
+    props: ['link', 'recipe', 'type'],
+    template: '<div data-testid="recipe-link">Link: {{ link.material }} ({{ link.amount }})</div>',
+  },
+}))
+
+// Mock the linkToString utility
+vi.mock('@/logistics/graph-node', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/logistics/graph-node')>()
+  return {
+    ...actual,
+    linkToString: vi.fn((link: Material) => `${link.source}-${link.sink}-${link.material}`),
+  }
+})
+
+describe('RecipeInputs Integration', () => {
+  // Test constants from fixtures
+  const TEST_RECIPES = {
+    IRON_INGOT: 'Recipe_Fake_IronIngot_C',
+    COPPER_INGOT: 'Recipe_Fake_CopperIngot_C',
+  } as const
+
+  const TEST_ITEMS = {
+    IRON_ORE: 'Desc_OreIron_C',
+    COPPER_ORE: 'Desc_OreCopper_C',
+    WATER: 'Desc_Water_C',
+  } as const
+
+  const createRecipeNode = (recipeName: string): RecipeNode => {
+    const recipe = recipeDatabase[recipeName]
+    if (!recipe) {
+      throw new Error(`Recipe ${recipeName} not found in fixtures`)
+    }
+
+    return newRecipeNode(
+      { name: recipe.name, building: recipe.producedIn[0] || 'Unknown', count: 1 },
+      recipe.ingredients,
+      recipe.products,
+    )
+  }
+
+  const createMaterialLink = (
+    source: string,
+    sink: string,
+    material: string,
+    amount: number,
+  ): Material => ({
+    source,
+    sink,
+    material,
+    amount,
+  })
+
+  const createWrapper = (links: Material[], recipe: RecipeNode) => {
+    return mount(RecipeInputs, {
+      props: {
+        links,
+        recipe,
+      },
+    })
+  }
+
+  it('renders without errors and displays "None" when no links provided', () => {
+    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const wrapper = createWrapper([], recipe)
+
+    expect(wrapper.find('.recipe-inputs').exists()).toBe(true)
+    expect(wrapper.text()).toContain('None')
+    expect(wrapper.findAll('[data-testid="recipe-link"]')).toHaveLength(0)
+  })
+
+  it('renders RecipeLink components and does not show "None" when links provided', () => {
+    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const links = [
+      createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30),
+      createMaterialLink('Storage', 'Smelting', TEST_ITEMS.IRON_ORE, 15),
+    ]
+
+    const wrapper = createWrapper(links, recipe)
+
+    const recipeLinkComponents = wrapper.findAll('[data-testid="recipe-link"]')
+    expect(recipeLinkComponents).toHaveLength(2)
+    expect(wrapper.text()).not.toContain('None')
+  })
+
+  it('passes correct props to RecipeLink components', () => {
+    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
+    const links = [link]
+
+    const wrapper = createWrapper(links, recipe)
+
+    const recipeLinkComponent = wrapper.findComponent({ name: 'RecipeLink' })
+    expect(recipeLinkComponent.props('link')).toEqual(link)
+    expect(recipeLinkComponent.props('recipe')).toEqual(recipe)
+    expect(recipeLinkComponent.props('type')).toBe('input')
+  })
+
+  it('uses linkToString for component keys', async () => {
+    const { linkToString } = await import('@/logistics/graph-node')
+    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
+    const links = [link]
+
+    createWrapper(links, recipe)
+
+    expect(vi.mocked(linkToString)).toHaveBeenCalledWith(link)
+  })
+
+  it('handles multiple links with different materials', () => {
+    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const links = [
+      createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30),
+      createMaterialLink('Water_Pump', 'Smelting', TEST_ITEMS.WATER, 45),
+      createMaterialLink('Storage', 'Smelting', TEST_ITEMS.COPPER_ORE, 15),
+    ]
+
+    const wrapper = createWrapper(links, recipe)
+
+    expect(wrapper.findAll('[data-testid="recipe-link"]')).toHaveLength(3)
+
+    // Verify all RecipeLink components get the correct type and recipe
+    const recipeLinkComponents = wrapper.findAllComponents({ name: 'RecipeLink' })
+    recipeLinkComponents.forEach((component) => {
+      expect(component.props('type')).toBe('input')
+      expect(component.props('recipe')).toEqual(recipe)
+    })
+  })
+})
