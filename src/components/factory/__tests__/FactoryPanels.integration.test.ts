@@ -4,43 +4,17 @@ import FactoryPanels from '@/components/factory/FactoryPanels.vue'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
 import { newRecipeNode } from '@/logistics/graph-node'
 import type { Factory, Floor } from '@/types/factory'
-import type { IFactoryStore, IDataStore, IThemeStore, IErrorStore } from '@/types/stores'
 
-// Mock the composables
-vi.mock('@/composables/useStores', () => ({
-  getStores: vi.fn(() => ({
-    factoryStore: {} as IFactoryStore,
-  })),
-}))
+// Use centralized fixtures for mocking composables
+vi.mock('@/composables/useStores', async () => {
+  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
+  return { getStores: mockGetStores }
+})
 
-vi.mock('@/composables/useFloorNavigation', () => ({
-  useFloorNavigation: vi.fn(() => ({
-    expandedFloors: { value: [0, 1] },
-  })),
-}))
-
-// Mock child components since they're auto-imported
-vi.mock('@/components/factory/FactoryFloorsToolbar.vue', () => ({
-  default: {
-    name: 'FactoryFloorsToolbar',
-    template: '<div data-testid="factory-floors-toolbar">Factory Floors Toolbar</div>',
-  },
-}))
-
-vi.mock('@/components/factory/FactoryFloor.vue', () => ({
-  default: {
-    name: 'FactoryFloor',
-    props: ['floor', 'floorNumber'],
-    template: '<div data-testid="factory-floor">Floor {{ floorNumber }}: {{ floor.name }}</div>',
-  },
-}))
-
-vi.mock('@/components/modals/FloorEditModal.vue', () => ({
-  default: {
-    name: 'FloorEditModal',
-    template: '<div data-testid="floor-edit-modal">Floor Edit Modal</div>',
-  },
-}))
+vi.mock('@/composables/useFloorNavigation', async () => {
+  const { mockUseFloorNavigation } = await import('@/__tests__/fixtures/composables')
+  return { useFloorNavigation: mockUseFloorNavigation }
+})
 
 describe('FactoryPanels Integration', () => {
   // Test constants from fixtures
@@ -59,8 +33,6 @@ describe('FactoryPanels Integration', () => {
     SMELTER: 'Build_SmelterMk1_C',
     CONSTRUCTOR: 'Build_ConstructorMk1_C',
   } as const
-
-  let mockFactoryStore: Partial<IFactoryStore>
 
   // Helper to create mock floor data
   const createMockFloor = (customProps: Partial<Floor> = {}): Floor => {
@@ -102,27 +74,24 @@ describe('FactoryPanels Integration', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks()
-    mockFactoryStore = { currentFactory: null }
 
-    const { getStores } = vi.mocked(await import('@/composables/useStores'))
-    getStores.mockReturnValue({
-      dataStore: {} as IDataStore,
-      factoryStore: mockFactoryStore as IFactoryStore,
-      themeStore: {} as IThemeStore,
-      errorStore: {} as IErrorStore,
-    })
+    // Reset the centralized factory store mock
+    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/stores')
+    mockCurrentFactory.value = null
   })
 
   const createWrapper = () => {
     return mount(FactoryPanels)
   }
 
-  const setFactoryWithFloors = () => {
-    mockFactoryStore.currentFactory = createMockFactory()
+  const setFactoryWithFloors = async () => {
+    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/stores')
+    mockCurrentFactory.value = createMockFactory()
   }
 
-  const setFactoryWithCustomFloors = (floors: Floor[]) => {
-    mockFactoryStore.currentFactory = createMockFactory({ floors })
+  const setFactoryWithCustomFloors = async (floors: Floor[]) => {
+    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/stores')
+    mockCurrentFactory.value = createMockFactory({ floors })
   }
 
   it('renders nothing when no current factory is set', () => {
@@ -133,25 +102,25 @@ describe('FactoryPanels Integration', () => {
     expect(wrapper.find('[data-testid="factory-floor"]').exists()).toBe(false)
   })
 
-  it('renders factory components when current factory exists', () => {
-    setFactoryWithFloors()
+  it('renders factory components when current factory exists', async () => {
+    await setFactoryWithFloors()
     const wrapper = createWrapper()
 
-    expect(wrapper.find('[data-testid="factory-floors-toolbar"]').exists()).toBe(true)
+    expect(wrapper.findComponent({ name: 'FactoryFloorsToolbar' }).exists()).toBe(true)
     expect(wrapper.findComponent({ name: 'VExpansionPanels' }).exists()).toBe(true)
-    expect(wrapper.find('[data-testid="floor-edit-modal"]').exists()).toBe(true)
+    expect(wrapper.findComponent({ name: 'FloorEditModal' }).exists()).toBe(true)
   })
 
-  it('renders correct number of factory floors', () => {
-    setFactoryWithFloors()
+  it('renders correct number of factory floors', async () => {
+    await setFactoryWithFloors()
     const wrapper = createWrapper()
 
-    const floors = wrapper.findAll('[data-testid="factory-floor"]')
-    expect(floors).toHaveLength(2)
+    const floorComponents = wrapper.findAllComponents({ name: 'FactoryFloor' })
+    expect(floorComponents).toHaveLength(2)
   })
 
-  it('passes correct props to FactoryFloor components', () => {
-    setFactoryWithFloors()
+  it('passes correct props to FactoryFloor components', async () => {
+    await setFactoryWithFloors()
     const wrapper = createWrapper()
 
     const floorComponents = wrapper.findAllComponents({ name: 'FactoryFloor' })
@@ -170,39 +139,38 @@ describe('FactoryPanels Integration', () => {
     expect(floorComponents[1].props('floorNumber')).toBe(2)
   })
 
-  it('handles factory with no floors', () => {
-    setFactoryWithCustomFloors([])
+  it('handles factory with no floors', async () => {
+    await setFactoryWithCustomFloors([])
     const wrapper = createWrapper()
 
-    expect(wrapper.find('[data-testid="factory-floors-toolbar"]').exists()).toBe(true)
+    expect(wrapper.findComponent({ name: 'FactoryFloorsToolbar' }).exists()).toBe(true)
     expect(wrapper.findComponent({ name: 'VExpansionPanels' }).exists()).toBe(true)
-    expect(wrapper.findAll('[data-testid="factory-floor"]')).toHaveLength(0)
+    expect(wrapper.findAllComponents({ name: 'FactoryFloor' })).toHaveLength(0)
   })
 
-  it('handles factory with single floor', () => {
+  it('handles factory with single floor', async () => {
     const singleFloor = createMockFloor({ name: 'Only Floor' })
-    setFactoryWithCustomFloors([singleFloor])
+    await setFactoryWithCustomFloors([singleFloor])
     const wrapper = createWrapper()
 
-    const floors = wrapper.findAll('[data-testid="factory-floor"]')
-    expect(floors).toHaveLength(1)
+    const floorComponents = wrapper.findAllComponents({ name: 'FactoryFloor' })
+    expect(floorComponents).toHaveLength(1)
 
     const floorComponent = wrapper.findComponent({ name: 'FactoryFloor' })
     expect(floorComponent.props('floor')).toEqual(expect.objectContaining({ name: 'Only Floor' }))
     expect(floorComponent.props('floorNumber')).toBe(1)
   })
 
-  it('handles factory with many floors', () => {
+  it('handles factory with many floors', async () => {
     const manyFloors = Array.from({ length: 5 }, (_, index) =>
       createMockFloor({ name: `Floor ${index + 1}` }),
     )
-    setFactoryWithCustomFloors(manyFloors)
+    await setFactoryWithCustomFloors(manyFloors)
     const wrapper = createWrapper()
 
-    const floors = wrapper.findAll('[data-testid="factory-floor"]')
-    expect(floors).toHaveLength(5)
-
     const floorComponents = wrapper.findAllComponents({ name: 'FactoryFloor' })
+    expect(floorComponents).toHaveLength(5)
+
     floorComponents.forEach((floorComponent, index) => {
       expect(floorComponent.props('floorNumber')).toBe(index + 1)
       expect(floorComponent.props('floor')).toEqual(
@@ -212,33 +180,31 @@ describe('FactoryPanels Integration', () => {
   })
 
   it('binds expandedFloors to expansion panels model', async () => {
-    const { useFloorNavigation } = await import('@/composables/useFloorNavigation')
-
-    setFactoryWithFloors()
+    await setFactoryWithFloors()
     const wrapper = createWrapper()
 
-    // Verify that useFloorNavigation was called and returns expandedFloors
-    expect(vi.mocked(useFloorNavigation)).toHaveBeenCalled()
-    const mockResult = vi.mocked(useFloorNavigation).mock.results[0]?.value
+    // Access mock to verify specific calls
+    const { mockUseFloorNavigation } = await import('@/__tests__/fixtures/composables')
+    expect(mockUseFloorNavigation).toHaveBeenCalled()
+    const mockResult = mockUseFloorNavigation.mock.results[0]?.value
     expect(mockResult).toHaveProperty('expandedFloors')
 
-    // Verify the expansion panels uses the expandedFloors model
+    // Verify the expansion panels exists
     const expansionPanels = wrapper.findComponent({ name: 'VExpansionPanels' })
     expect(expansionPanels.exists()).toBe(true)
   })
 
-  it('maintains reactive connection to factory store', () => {
+  it('maintains reactive connection to factory store', async () => {
     const wrapper = createWrapper()
 
     // Initially no factory
     expect(wrapper.html()).toBe('<!--v-if-->')
 
     // Set factory
-    setFactoryWithFloors()
+    await setFactoryWithFloors()
 
-    // Component should react to store changes
-    // Note: In a real component test with real reactivity, this would work
-    // For this mock test, we're verifying the conditional rendering logic
-    expect(mockFactoryStore.currentFactory).toBeTruthy()
+    // Verify factory was set in centralized mock
+    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/stores')
+    expect(mockCurrentFactory.value).toBeTruthy()
   })
 })

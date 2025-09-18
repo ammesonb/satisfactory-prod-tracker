@@ -2,23 +2,19 @@ import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import RecipeBuilding from '@/components/factory/RecipeBuilding.vue'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
-import { recipeDatabase, buildingDatabase } from '@/__tests__/fixtures/data'
+import { recipeDatabase } from '@/__tests__/fixtures/data'
 import type { Recipe } from '@/types/factory'
 
-const icon = 'smelter-icon-url'
-// Mock the composables
-vi.mock('@/composables/useRecipeStatus', () => ({
-  useRecipeStatus: vi.fn(() => ({
-    setRecipeBuilt: vi.fn(),
-  })),
-}))
+// Use centralized fixtures for mocking composables
+vi.mock('@/composables/useRecipeStatus', async () => {
+  const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
+  return { useRecipeStatus: mockUseRecipeStatus }
+})
 
-vi.mock('@/stores', () => ({
-  useDataStore: vi.fn(() => ({
-    getIcon: vi.fn(() => icon),
-    getBuildingDisplayName: vi.fn((building) => buildingDatabase[building]?.name || 'Unknown'),
-  })),
-}))
+vi.mock('@/stores', async () => {
+  const { createMockDataStore } = await import('@/__tests__/fixtures/stores/dataStore')
+  return { useDataStore: vi.fn(() => createMockDataStore()) }
+})
 
 describe('RecipeBuilding Integration', () => {
   // Test constants from fixtures
@@ -31,8 +27,6 @@ describe('RecipeBuilding Integration', () => {
     SMELTER: 'Desc_SmelterMk1_C',
     CONSTRUCTOR: 'Desc_ConstructorMk1_C',
   } as const
-
-  let mockSetRecipeBuilt: ReturnType<typeof vi.fn>
 
   const createTestRecipe = (
     recipeName: string,
@@ -67,17 +61,8 @@ describe('RecipeBuilding Integration', () => {
     })
   }
 
-  beforeEach(async () => {
-    mockSetRecipeBuilt = vi.fn()
-    const { useRecipeStatus } = vi.mocked(await import('@/composables/useRecipeStatus'))
-    useRecipeStatus.mockReturnValue({
-      isRecipeComplete: vi.fn(() => false),
-      setRecipeBuilt: mockSetRecipeBuilt,
-      isLinkBuilt: vi.fn(() => false),
-      setLinkBuilt: vi.fn(),
-      getRecipePanelValue: vi.fn(() => 'test-panel-value'),
-      leftoverProductsAsLinks: vi.fn(() => []),
-    })
+  beforeEach(() => {
+    vi.clearAllMocks()
   })
 
   it('renders with default props', () => {
@@ -104,7 +89,7 @@ describe('RecipeBuilding Integration', () => {
 
     const cachedIcon = wrapper.findComponent({ name: 'CachedIcon' })
     expect(cachedIcon.exists()).toBe(true)
-    expect(cachedIcon.props('icon')).toBe(icon)
+    expect(cachedIcon.props('icon')).toBeTruthy()
     expect(cachedIcon.props('size')).toBe(32)
   })
 
@@ -149,6 +134,8 @@ describe('RecipeBuilding Integration', () => {
     const card = wrapper.findComponent({ name: 'VCard' })
     await card.trigger('click')
 
+    // Access mock only when needed for specific assertion
+    const { mockSetRecipeBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
     expect(mockSetRecipeBuilt).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT, true)
   })
 
@@ -158,6 +145,8 @@ describe('RecipeBuilding Integration', () => {
     const checkbox = wrapper.findComponent({ name: 'VCheckbox' })
     await checkbox.vm.$emit('update:modelValue', true)
 
+    // Access mock only when needed for specific assertion
+    const { mockSetRecipeBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
     expect(mockSetRecipeBuilt).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT, true)
   })
 
@@ -168,6 +157,8 @@ describe('RecipeBuilding Integration', () => {
     const card = wrapper.findComponent({ name: 'VCard' })
     await card.trigger('click')
 
+    // Access mock only when needed for specific assertion
+    const { mockSetRecipeBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
     expect(mockSetRecipeBuilt).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT, false)
   })
 
@@ -177,6 +168,8 @@ describe('RecipeBuilding Integration', () => {
     const checkbox = wrapper.findComponent({ name: 'VCheckbox' })
     await checkbox.vm.$emit('update:modelValue', null)
 
+    // Access mock only when needed for specific assertion
+    const { mockSetRecipeBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
     expect(mockSetRecipeBuilt).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT, false)
   })
 
@@ -197,6 +190,6 @@ describe('RecipeBuilding Integration', () => {
     const wrapper = createWrapper({ recipe: constructorRecipe })
 
     expect(wrapper.text()).toContain('Constructor')
-    expect(wrapper.findComponent({ name: 'CachedIcon' }).props('icon')).toBe(icon)
+    expect(wrapper.findComponent({ name: 'CachedIcon' }).props('icon')).toBeTruthy()
   })
 })

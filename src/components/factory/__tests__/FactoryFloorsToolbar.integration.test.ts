@@ -47,13 +47,13 @@ describe('FactoryFloorsToolbar Integration', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
     // Reset the reactive refs to default state
-    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables')
+    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/stores')
     mockCurrentFactory.value = null
   })
 
   const createWrapper = async (factoryOverride?: Partial<Factory> | null) => {
     // Set the factory before mounting using the reactive ref
-    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables')
+    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/stores')
 
     if (factoryOverride === null) {
       mockCurrentFactory.value = null
