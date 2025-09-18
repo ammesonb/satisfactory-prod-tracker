@@ -188,7 +188,6 @@ describe('FactoryFloor Integration', () => {
 
     await editButton.trigger('click')
 
-    // Verify the openFloorEditor function was called with correct params (floorNumber - 1)
     const mockOpenFloorEditor = (await getMockFloorManagement()).openFloorEditor
     expect(mockOpenFloorEditor).toHaveBeenCalledWith(1)
   })
@@ -203,55 +202,34 @@ describe('FactoryFloor Integration', () => {
   it('sets correct expansion panel id using formatFloorId', () => {
     const wrapper = createWrapper({ floorNumber: 4 })
 
-    // Verify that the expansion panel has the correct ID (floor-3 for floorNumber 4)
     const expansionPanel = wrapper.findComponent({ name: 'VExpansionPanel' })
-    expect(expansionPanel.attributes('id')).toBe('floor-3') // formatFloorId(floorNumber - 1)
+    expect(expansionPanel.attributes('id')).toBe('floor-3')
   })
 
   it('manages recipe expansion state using getRecipePanelValue', async () => {
     // Create floor with both expanded and collapsed recipes
     const floor = createMockFloor()
     // Ensure we have both expanded and non-expanded recipes
-    floor.recipes[0].expanded = true // First recipe expanded
-    floor.recipes[1].expanded = false // Second recipe collapsed
+    floor.recipes[0].expanded = true
+    floor.recipes[1].expanded = false
 
     const wrapper = createWrapper({ floor, floorNumber: 1 })
 
-    // Access the component's computed properties to trigger the flow
     await wrapper.vm.$nextTick()
 
-    // Verify the composable was called
     expect(mockUseRecipeStatus).toHaveBeenCalled()
 
-    // Find the inner expansion panels (the one with multiple prop)
     const allExpansionPanels = wrapper.findAllComponents({ name: 'VExpansionPanels' })
     const innerExpansionPanels = allExpansionPanels.find((panel) => panel.props('multiple'))
 
     expect(innerExpansionPanels).toBeTruthy()
 
-    // The v-model should contain panel values for expanded recipes
-    // Based on our mock implementation, getRecipePanelValue returns `${batchNumber}-${recipeName}`
     const expectedExpandedValues = ['0-Recipe_IngotIron_C'] // Only first recipe is expanded
     expect(innerExpansionPanels!.props('modelValue')).toEqual(expectedExpandedValues)
 
     // Should render all RecipeNode components regardless of expansion state
     const recipeNodes = wrapper.findAllComponents({ name: 'RecipeNode' })
     expect(recipeNodes).toHaveLength(2)
-  })
-
-  it('renders expansion panels structure correctly', () => {
-    const wrapper = createWrapper()
-
-    // Check basic structure
-    const outerExpansionPanels = wrapper.findComponent({ name: 'VExpansionPanels' })
-    expect(outerExpansionPanels.exists()).toBe(true)
-
-    const expansionPanel = wrapper.findComponent({ name: 'VExpansionPanel' })
-    expect(expansionPanel.exists()).toBe(true)
-
-    // Check that it has the expected structure for recipe content
-    const innerExpansionPanels = wrapper.findAllComponents({ name: 'VExpansionPanels' })
-    expect(innerExpansionPanels.length).toBeGreaterThan(0)
   })
 
   it('handles different floor configurations', () => {
@@ -291,12 +269,9 @@ describe('FactoryFloor Integration', () => {
     const floor = createMockFloor({ name: 'Custom Floor' })
     const wrapper = createWrapper({ floor, floorNumber: 3 })
 
-    // Verify that getFloorDisplayName was called with correct parameters
     const mockGetFloorDisplayName = (await getMockFloorManagement()).getFloorDisplayName
     expect(mockGetFloorDisplayName).toHaveBeenCalledWith(3, floor)
 
-    // Verify the result is displayed in the component
-    // The mock returns "Floor 3 - Custom Floor" based on the implementation
     expect(wrapper.text()).toContain('Floor 3 - Custom Floor')
   })
 })

@@ -4,6 +4,11 @@ import FactoryFloorsToolbar from '@/components/factory/FactoryFloorsToolbar.vue'
 import { ExpandRecipeState } from '@/utils/floors'
 import type { VueWrapper } from '@vue/test-utils'
 import type { Factory } from '@/types/factory'
+import {
+  getMockFloorManagement,
+  getMockFloorNavigation,
+} from '@/__tests__/fixtures/composables/testUtils'
+import { getMockRecipeStatus } from '@/__tests__/fixtures/composables/testUtils'
 
 vi.mock('@/composables/useStores', async () => {
   const { mockGetStores } = await import('@/__tests__/fixtures/composables')
@@ -46,13 +51,11 @@ describe('FactoryFloorsToolbar Integration', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks()
-    // Reset the reactive refs to default state
     const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/stores')
     mockCurrentFactory.value = null
   })
 
   const createWrapper = async (factoryOverride?: Partial<Factory> | null) => {
-    // Set the factory before mounting using the reactive ref
     const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/stores')
 
     if (factoryOverride === null) {
@@ -60,7 +63,6 @@ describe('FactoryFloorsToolbar Integration', () => {
     } else if (factoryOverride) {
       mockCurrentFactory.value = { ...TEST_FACTORY, ...factoryOverride }
     } else {
-      // Default case - use TEST_FACTORY which has floors
       mockCurrentFactory.value = TEST_FACTORY
     }
 
@@ -134,13 +136,8 @@ describe('FactoryFloorsToolbar Integration', () => {
   ) => {
     const wrapper = await createWrapper()
 
-    // Get the mocked composables from fixtures
-    const { mockUseFloorNavigation, mockUseRecipeStatus } = await import(
-      '@/__tests__/fixtures/composables'
-    )
-    const mockSetRecipeExpansion =
-      mockUseFloorNavigation.mock.results[0]?.value?.setRecipeExpansionFromCompletion
-    const mockIsRecipeComplete = mockUseRecipeStatus.mock.results[0]?.value?.isRecipeComplete
+    const mockSetRecipeExpansion = (await getMockFloorNavigation()).setRecipeExpansionFromCompletion
+    const mockIsRecipeComplete = (await getMockRecipeStatus()).isRecipeComplete
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const menuActions = (wrapper.vm as any).menuActions
@@ -174,9 +171,7 @@ describe('FactoryFloorsToolbar Integration', () => {
     const editButton = wrapper.findAllComponents({ name: 'VBtn' })[2]
     await editButton.trigger('click')
 
-    // Get the mocked composables from fixtures
-    const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
-    const mockOpenFloorEditor = mockUseFloorManagement.mock.results[0]?.value?.openFloorEditor
+    const mockOpenFloorEditor = (await getMockFloorManagement()).openFloorEditor
     expect(mockOpenFloorEditor).toHaveBeenCalledWith()
   })
 })
