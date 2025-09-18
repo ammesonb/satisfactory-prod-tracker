@@ -4,6 +4,8 @@ import FactoryFloor from '@/components/factory/FactoryFloor.vue'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
 import { newRecipeNode } from '@/logistics/graph-node'
 import type { Floor } from '@/types/factory'
+import { getMockFloorManagement } from '@/__tests__/fixtures/composables/testUtils'
+import { mockUseRecipeStatus } from '@/__tests__/fixtures/composables'
 
 vi.mock('@/composables/useStores', async () => {
   const { mockGetStores } = await import('@/__tests__/fixtures/composables')
@@ -186,10 +188,8 @@ describe('FactoryFloor Integration', () => {
 
     await editButton.trigger('click')
 
-    // Get the mocked composables from fixtures (async due to hoisting)
-    const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
     // Verify the openFloorEditor function was called with correct params (floorNumber - 1)
-    const mockOpenFloorEditor = mockUseFloorManagement.mock.results[0]?.value?.openFloorEditor
+    const mockOpenFloorEditor = (await getMockFloorManagement()).openFloorEditor
     expect(mockOpenFloorEditor).toHaveBeenCalledWith(1)
   })
 
@@ -216,9 +216,6 @@ describe('FactoryFloor Integration', () => {
     floor.recipes[1].expanded = false // Second recipe collapsed
 
     const wrapper = createWrapper({ floor, floorNumber: 1 })
-
-    // Get the mocked composables from fixtures (async due to hoisting)
-    const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
 
     // Access the component's computed properties to trigger the flow
     await wrapper.vm.$nextTick()
@@ -294,12 +291,8 @@ describe('FactoryFloor Integration', () => {
     const floor = createMockFloor({ name: 'Custom Floor' })
     const wrapper = createWrapper({ floor, floorNumber: 3 })
 
-    // Get the mocked composables from fixtures (async due to hoisting)
-    const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
-
     // Verify that getFloorDisplayName was called with correct parameters
-    const mockGetFloorDisplayName =
-      mockUseFloorManagement.mock.results[0]?.value?.getFloorDisplayName
+    const mockGetFloorDisplayName = (await getMockFloorManagement()).getFloorDisplayName
     expect(mockGetFloorDisplayName).toHaveBeenCalledWith(3, floor)
 
     // Verify the result is displayed in the component

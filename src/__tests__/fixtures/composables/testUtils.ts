@@ -1,3 +1,4 @@
+import type { UseFloorManagement, UseRecipeStatus, UseFloorNavigation } from '@/types/composables'
 import type { IDataStore, IFactoryStore, IThemeStore, IErrorStore } from '@/types/stores'
 
 /**
@@ -40,20 +41,20 @@ export const getMockStores = async () => {
 /**
  * Utility to get floor management mock results
  */
-export const getMockFloorManagement = async () => {
+export const getMockFloorManagement = async (): Promise<UseFloorManagement> => {
   return getMockResult('mockUseFloorManagement')
 }
 
 /**
  * Utility to get recipe status mock results
  */
-export const getMockRecipeStatus = async () => {
+export const getMockRecipeStatus = async (): Promise<UseRecipeStatus> => {
   return getMockResult('mockUseRecipeStatus')
 }
 
 /**
  * Utility to get floor navigation mock results
  */
-export const getMockFloorNavigation = async () => {
+export const getMockFloorNavigation = async (): Promise<UseFloorNavigation> => {
   return getMockResult('mockUseFloorNavigation')
 }
