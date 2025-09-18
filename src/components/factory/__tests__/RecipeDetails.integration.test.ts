@@ -3,15 +3,14 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import RecipeDetails from '@/components/factory/RecipeDetails.vue'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
-import { createMockDataStore, createTestRecipe } from '@/__tests__/fixtures/stores/dataStore'
-import type { IDataStore, IFactoryStore, IThemeStore, IErrorStore } from '@/types/stores'
+import { createTestRecipe } from '@/__tests__/fixtures/stores/dataStore'
+import { getMockStores } from '@/__tests__/fixtures/composables/testUtils'
 
-// Mock the stores composable
-vi.mock('@/composables/useStores', () => ({
-  getStores: vi.fn(() => ({
-    dataStore: createMockDataStore(),
-  })),
-}))
+// Use centralized fixtures for mocking composables
+vi.mock('@/composables/useStores', async () => {
+  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
+  return { getStores: mockGetStores }
+})
 
 // Mock the image utility
 vi.mock('@/logistics/images', () => ({
@@ -41,29 +40,30 @@ describe('RecipeDetails Integration', () => {
     CONSTRUCTOR: 'Desc_ConstructorMk1_C',
   } as const
 
-  let mockDataStore: ReturnType<typeof createMockDataStore>
-
   beforeEach(async () => {
-    mockDataStore = createMockDataStore()
-    // Add missing methods to match IDataStore interface
-    const enhancedDataStore = {
-      ...mockDataStore,
-      getRecipeDisplayName: vi.fn((recipeName: string) => recipeName),
-      getBuildingDisplayName: vi.fn((buildingName: string) => buildingName),
-      getRecipeProductionBuildings: vi.fn(() => ['Desc_SmelterMk1_C']),
-      loadData: vi.fn(),
-    }
+    vi.clearAllMocks()
 
-    const { getStores } = vi.mocked(await import('@/composables/useStores'))
-    getStores.mockReturnValue({
-      dataStore: enhancedDataStore as unknown as IDataStore,
-      factoryStore: {} as IFactoryStore,
-      themeStore: {} as IThemeStore,
-      errorStore: {} as IErrorStore,
+    // Initialize mock stores and add test recipes
+    const testWrapper = createWrapper(createRecipeNode(TEST_RECIPES.IRON_INGOT))
+    const dataStore = (await getMockStores()).dataStore
+
+    // Add test recipes for empty ingredient/product tests
+    dataStore.recipes['NoIngredientsRecipe'] = createTestRecipe({
+      name: 'NoIngredientsRecipe',
+      ingredients: [],
+      products: [{ item: TEST_ITEMS.IRON_INGOT, amount: 1 }],
+      time: 10,
+      producedIn: [TEST_BUILDINGS.SMELTER],
+    })
+    dataStore.recipes['NoProductsRecipe'] = createTestRecipe({
+      name: 'NoProductsRecipe',
+      ingredients: [{ item: TEST_ITEMS.IRON_ORE, amount: 1 }],
+      products: [],
+      time: 8,
+      producedIn: [TEST_BUILDINGS.SMELTER],
     })
 
-    // Update reference to enhanced store
-    mockDataStore = enhancedDataStore
+    testWrapper.unmount()
   })
 
   const createRecipeNode = (recipeName: string): RecipeNode => {
@@ -102,18 +102,20 @@ describe('RecipeDetails Integration', () => {
     expect(wrapper.text()).toContain('5.0s') // Iron ingot recipe takes 5 seconds
   })
 
-  it('calls data store methods for recipe ingredients', () => {
+  it('calls data store methods for recipe ingredients', async () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     createWrapper(recipeNode)
 
-    expect(mockDataStore.recipeIngredients).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT)
+    const dataStore = (await getMockStores()).dataStore
+    expect(dataStore.recipeIngredients).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT)
   })
 
-  it('calls data store methods for recipe products', () => {
+  it('calls data store methods for recipe products', async () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     createWrapper(recipeNode)
 
-    expect(mockDataStore.recipeProducts).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT)
+    const dataStore = (await getMockStores()).dataStore
+    expect(dataStore.recipeProducts).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT)
   })
 
   it('displays ingredients section when ingredients exist', () => {
@@ -141,22 +143,22 @@ describe('RecipeDetails Integration', () => {
     expect(wrapper.text()).toContain('2.0/min') // Both ingredients have amount 2
   })
 
-  it('calls getIcon and getItemDisplayName for each ingredient', () => {
+  it('calls getIcon and getItemDisplayName for each ingredient', async () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     createWrapper(recipeNode)
 
-    // Should call for iron ore (ingredient)
-    expect(mockDataStore.getIcon).toHaveBeenCalledWith(TEST_ITEMS.IRON_ORE)
-    expect(mockDataStore.getItemDisplayName).toHaveBeenCalledWith(TEST_ITEMS.IRON_ORE)
+    const dataStore = (await getMockStores()).dataStore
+    expect(dataStore.getIcon).toHaveBeenCalledWith(TEST_ITEMS.IRON_ORE)
+    expect(dataStore.getItemDisplayName).toHaveBeenCalledWith(TEST_ITEMS.IRON_ORE)
   })
 
-  it('calls getIcon and getItemDisplayName for each product', () => {
+  it('calls getIcon and getItemDisplayName for each product', async () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     createWrapper(recipeNode)
 
-    // Should call for iron ingot (product)
-    expect(mockDataStore.getIcon).toHaveBeenCalledWith(TEST_ITEMS.IRON_INGOT)
-    expect(mockDataStore.getItemDisplayName).toHaveBeenCalledWith(TEST_ITEMS.IRON_INGOT)
+    const dataStore = (await getMockStores()).dataStore
+    expect(dataStore.getIcon).toHaveBeenCalledWith(TEST_ITEMS.IRON_INGOT)
+    expect(dataStore.getItemDisplayName).toHaveBeenCalledWith(TEST_ITEMS.IRON_INGOT)
   })
 
   it('uses getIconURL for ingredient icons', async () => {
@@ -182,24 +184,19 @@ describe('RecipeDetails Integration', () => {
     expect(wrapper.text()).toContain('1.0/min') // Iron ingot amount from fixture
   })
 
-  it('handles empty ingredients gracefully', () => {
-    // Create a mock recipe with no ingredients
+  it('handles empty ingredients gracefully', async () => {
+    // Create a mock recipe with no ingredients (recipe already set up in beforeEach)
     const emptyRecipeNode = newRecipeNode(
       { name: 'NoIngredientsRecipe', building: TEST_BUILDINGS.SMELTER, count: 1 },
       [],
       [{ item: TEST_ITEMS.IRON_INGOT, amount: 1 }],
     )
 
-    // Add the mock recipe to the recipes database for craft time access
-    mockDataStore.recipes['NoIngredientsRecipe'] = createTestRecipe({
-      name: 'NoIngredientsRecipe',
-      ingredients: [],
-      products: [{ item: TEST_ITEMS.IRON_INGOT, amount: 1 }],
-      time: 10,
-      producedIn: [TEST_BUILDINGS.SMELTER],
-    })
-    mockDataStore.recipeIngredients.mockReturnValue([])
-    mockDataStore.recipeProducts.mockReturnValue([{ item: TEST_ITEMS.IRON_INGOT, amount: 1 }])
+    const dataStore = (await getMockStores()).dataStore
+    vi.mocked(dataStore.recipeIngredients).mockReturnValue([])
+    vi.mocked(dataStore.recipeProducts).mockReturnValue([
+      { item: TEST_ITEMS.IRON_INGOT, amount: 1 },
+    ])
 
     const wrapper = createWrapper(emptyRecipeNode)
 
@@ -209,24 +206,19 @@ describe('RecipeDetails Integration', () => {
     expect(wrapper.text()).toContain('Products')
   })
 
-  it('handles empty products gracefully', () => {
-    // Create a mock recipe with no products
+  it('handles empty products gracefully', async () => {
+    // Create a mock recipe with no products (recipe already set up in beforeEach)
     const emptyRecipeNode = newRecipeNode(
       { name: 'NoProductsRecipe', building: TEST_BUILDINGS.SMELTER, count: 1 },
       [{ item: TEST_ITEMS.IRON_ORE, amount: 1 }],
       [],
     )
 
-    // Add the mock recipe to the recipes database for craft time access
-    mockDataStore.recipes['NoProductsRecipe'] = createTestRecipe({
-      name: 'NoProductsRecipe',
-      ingredients: [{ item: TEST_ITEMS.IRON_ORE, amount: 1 }],
-      products: [],
-      time: 8,
-      producedIn: [TEST_BUILDINGS.SMELTER],
-    })
-    mockDataStore.recipeIngredients.mockReturnValue([{ item: TEST_ITEMS.IRON_ORE, amount: 1 }])
-    mockDataStore.recipeProducts.mockReturnValue([])
+    const dataStore = (await getMockStores()).dataStore
+    vi.mocked(dataStore.recipeIngredients).mockReturnValue([
+      { item: TEST_ITEMS.IRON_ORE, amount: 1 },
+    ])
+    vi.mocked(dataStore.recipeProducts).mockReturnValue([])
 
     const wrapper = createWrapper(emptyRecipeNode)
 
