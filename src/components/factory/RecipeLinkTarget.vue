@@ -31,15 +31,19 @@ const textColorClass = computed(() =>
   isLinkBuilt(props.link) ? 'text-black' : 'text-medium-emphasis',
 )
 
-const navigateStyle = computed(() => ({
-  backgroundColor: isHovered.value ? 'rgba(var(--v-theme-on-surface), 0.1)' : 'transparent',
-}))
-
 const handleNavigation = () => {
   if (targetRecipe.value) {
     navigateToRecipe(targetRecipe.value)
   }
 }
+
+const navigateClass = computed(() => {
+  return {
+    'navigate-name': !isHovered.value,
+    'navigate-name-hover': isHovered.value,
+    'navigate-link text-decoration-underline px-1 py-1': true,
+  }
+})
 </script>
 
 <template>
@@ -52,8 +56,7 @@ const handleNavigation = () => {
       @click.prevent.stop="handleNavigation"
       @mouseenter="isHovered = true"
       @mouseleave="isHovered = false"
-      class="navigate-name text-decoration-underline px-1 py-1"
-      :style="navigateStyle"
+      :class="navigateClass"
     >
       {{ displayName }}
     </span>
@@ -66,9 +69,17 @@ const handleNavigation = () => {
 </template>
 
 <style lang="css" scoped>
-.navigate-name {
+.navigate-link {
   cursor: pointer;
   margin: -4px;
   border-radius: 4px;
+}
+
+.navigate-name {
+  background: transparent;
+}
+
+.navigate-name-hover {
+  background-color: rgba(var(--v-theme-on-surface), 0.1);
 }
 </style>

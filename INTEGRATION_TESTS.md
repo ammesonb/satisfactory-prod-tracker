@@ -15,9 +15,10 @@ When writing tests, follow these steps.
 4. **Run full CI** - `npm run ci` to ensure formatting, linting, and type compliance
 5. **Run type checking on the test files** - `npm run type-check:test` to ensure type safety
 6. **Repeat steps 4 and 5, fixing issues until all commands pass successfully**
-7. **Review all changes - MANDATORY**: Use git status and git diff to examine ALL uncommitted files. Explicitly state what you reviewed and confirm each file follows best practices. Think about this and actually look at the content critically -- it is not a self-congratulatory exercise. Do not proceed without completing this step.
-
-The following sections provide technical details and guidance on writing integration tests for these components.
+7. **Review all changes - AFTER running ALL lints, tests, and type-checks - ALL OF WHICH ARE MANDATORY, INCLUDING THIS STEP**:
+   - Think about this and actually look at the content critically -- it is not a self-congratulatory exercise; do not proceed without completing this step.
+   - Use git status and git diff to examine ALL uncommitted files.
+   - Explicitly state what you reviewed and confirm each file follows best practices.
 
 ## Test Configuration
 
