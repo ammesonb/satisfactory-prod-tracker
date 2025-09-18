@@ -70,6 +70,8 @@ src/__tests__/fixtures/
 │   ├── items.ts          # itemDatabase with 100+ Satisfactory items
 │   ├── recipes.ts        # recipeDatabase with production recipes
 │   └── buildings.ts      # buildingDatabase with production buildings
+├── composables/
+│   └── index.ts          # Barrel exports for all mocked composables
 ├── stores/
 │   └── dataStore.ts      # createMockDataStore() with realistic data
 └── types/
@@ -121,57 +123,54 @@ setFactory(TEST_FACTORY.id)
 setFactory('test-factory')
 ```
 
-### Store Mocking Strategy
-
-**Mock at Module Level:**
-
-```typescript
-vi.mock('@/composables/useStores', () => ({
-  getStores: vi.fn(() => ({
-    factoryStore: { currentFactory: null },
-    // Add other stores as needed
-  })),
-}))
-```
-
-**Update in Tests:**
-
-```typescript
-let mockFactoryStore: Partial<IFactoryStore>
-
-beforeEach(async () => {
-  mockFactoryStore = { currentFactory: null }
-  const { getStores } = vi.mocked(await import('@/composables/useStores'))
-  getStores.mockReturnValue({
-    factoryStore: mockFactoryStore as IFactoryStore,
-    // Other required stores...
-  })
-})
-
-const setFactoryWithFloors = () => {
-  mockFactoryStore.currentFactory = TEST_FACTORY
-}
-```
-
 ### Composable Mocking Strategy
 
-**Mock and Test Composable Calls:**
+**Use Centralized Mock Fixtures:**
 
 ```typescript
-vi.mock('@/composables/useFloorManagement', () => ({
-  useFloorManagement: vi.fn(() => ({
-    openFloorEditor: vi.fn(),
-  })),
-}))
+// Import from centralized fixtures
+vi.mock('@/composables/useStores', async () => {
+  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
+  return { getStores: mockGetStores }
+})
 
-it('calls composable when button clicked', async () => {
-  const { useFloorManagement } = await import('@/composables/useFloorManagement')
+vi.mock('@/composables/useFloorManagement', async () => {
+  const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
+  return { useFloorManagement: mockUseFloorManagement }
+})
+```
 
+**Test Results, Not Calls:**
+
+```typescript
+it('manages expansion state correctly', async () => {
+  // Set up test data with expected expanded state
+  const floor = createMockFloor()
+  floor.recipes[0].expanded = true
+  floor.recipes[1].expanded = false
+
+  const wrapper = createWrapper({ floor })
+
+  // Test the actual behavior/results
+  const allExpansionPanels = wrapper.findAllComponents({ name: 'VExpansionPanels' })
+  const innerPanels = allExpansionPanels.find((panel) => panel.props('multiple'))
+
+  // Verify computed values are used correctly
+  expect(innerPanels!.props('modelValue')).toEqual(['0-Recipe_IngotIron_C'])
+})
+```
+
+**Access Mocks for Specific Assertions:**
+
+```typescript
+it('calls openFloorEditor when button clicked', async () => {
   const wrapper = createWrapper()
-  await wrapper.find('[data-testid="edit-btn"]').trigger('click')
+  await wrapper.find('button').trigger('click')
 
-  const mockFn = vi.mocked(useFloorManagement).mock.results[0]?.value?.openFloorEditor
-  expect(mockFn).toHaveBeenCalledWith()
+  // Access mocks only when needed to verify specific calls
+  const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
+  const mockFn = mockUseFloorManagement.mock.results[0]?.value?.openFloorEditor
+  expect(mockFn).toHaveBeenCalledWith(expectedParams)
 })
 ```
 
@@ -202,13 +201,16 @@ import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import ComponentName from '@/components/path/ComponentName.vue'
 
-// Mock composable if component uses one
-vi.mock('@/composables/useComposableName', () => ({
-  useComposableName: vi.fn(() => ({
-    actionFunction: vi.fn(),
-    data: ref('mock-data'),
-  })),
-}))
+// Use centralized fixtures for mocking
+vi.mock('@/composables/useStores', async () => {
+  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
+  return { getStores: mockGetStores }
+})
+
+vi.mock('@/composables/useComposableName', async () => {
+  const { mockUseComposableName } = await import('@/__tests__/fixtures/composables')
+  return { useComposableName: mockUseComposableName }
+})
 
 describe('ComponentName Integration', () => {
   const createWrapper = (props = {}) => {
@@ -227,32 +229,24 @@ describe('ComponentName Integration', () => {
     expect(wrapper.text()).toContain('Expected Text')
   })
 
-  it('calls composable action on user interaction', async () => {
-    const { useComposableName } = await import('@/composables/useComposableName')
-    const mockAction = vi.mocked(useComposableName).mock.results[0].value.actionFunction
-
+  it('triggers composable action and tests results', async () => {
     const wrapper = createWrapper()
-
     await wrapper.find('button').trigger('click')
 
+    // Access mock only when needed for specific assertion
+    const { mockUseComposableName } = await import('@/__tests__/fixtures/composables')
+    const mockAction = mockUseComposableName.mock.results[0].value.actionFunction
     expect(mockAction).toHaveBeenCalledWith('expected-params')
   })
 
-  it('emits events correctly', async () => {
-    const wrapper = createWrapper()
+  it('integrates composable results correctly', async () => {
+    // Set up test data to produce expected results
+    const testData = { expanded: true, value: 'test' }
+    const wrapper = createWrapper({ data: testData })
 
-    await wrapper.find('button').trigger('click')
-
-    expect(wrapper.emitted('action')).toBeTruthy()
-    expect(wrapper.emitted('action')[0]).toEqual(['expected-payload'])
-  })
-
-  it('updates display when props change', async () => {
-    const wrapper = createWrapper({ title: 'Initial' })
-
-    await wrapper.setProps({ title: 'Updated' })
-
-    expect(wrapper.text()).toContain('Updated')
+    // Test the complete flow: data → composable → DOM
+    const resultElement = wrapper.find('[data-testid="result"]')
+    expect(resultElement.text()).toContain('processed-test') // Composable result
   })
 })
 ```

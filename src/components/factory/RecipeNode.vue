@@ -3,8 +3,8 @@ import { computed } from 'vue'
 import { type RecipeNode } from '@/logistics/graph-node'
 import { getStores } from '@/composables/useStores'
 import { useFloorManagement } from '@/composables/useFloorManagement'
-import { formatRecipeId } from '@/composables/useFloorNavigation'
 import { useRecipeStatus } from '@/composables/useRecipeStatus'
+import { formatRecipeId } from '@/utils/floors'
 
 const props = defineProps<{
   recipe: RecipeNode
@@ -29,6 +29,8 @@ const availableFloors = computed(() => getEligibleFloors(props.recipe.batchNumbe
 const handleMoveRecipe = (targetFloorIndex: number) => {
   moveRecipe(props.recipe.recipe.name, props.recipe.batchNumber!, targetFloorIndex)
 }
+
+const outputs = computed(() => [...props.recipe.outputs, ...leftoverProductsAsLinks(props.recipe)])
 </script>
 
 <template>
@@ -81,10 +83,7 @@ const handleMoveRecipe = (targetFloorIndex: number) => {
       <div class="d-flex justify-space-between align-start gap-4">
         <RecipeInputs :links="props.recipe.inputs" :recipe="props.recipe" />
         <RecipeBuilding :recipe="props.recipe" />
-        <RecipeOutputs
-          :links="[...props.recipe.outputs, ...leftoverProductsAsLinks(props.recipe)]"
-          :recipe="props.recipe"
-        />
+        <RecipeOutputs :links="outputs" :recipe="props.recipe" />
       </div>
     </v-expansion-panel-text>
   </v-expansion-panel>

@@ -1,43 +1,32 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import FactoryFloorsToolbar from '@/components/factory/FactoryFloorsToolbar.vue'
-import { ExpandRecipeState } from '@/composables/useFloorNavigation'
-import type { IFactoryStore, IDataStore, IThemeStore, IErrorStore } from '@/types/stores'
+import { ExpandRecipeState } from '@/utils/floors'
 import type { VueWrapper } from '@vue/test-utils'
 import type { Factory } from '@/types/factory'
 
-// Mock the composables
-vi.mock('@/composables/useFloorNavigation', () => ({
-  ExpandRecipeState: {
-    Complete: 'complete',
-    Incomplete: 'incomplete',
-  },
-  useFloorNavigation: vi.fn(() => ({
-    setRecipeExpansionFromCompletion: vi.fn(),
-  })),
-}))
+vi.mock('@/composables/useStores', async () => {
+  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
+  return { getStores: mockGetStores }
+})
 
-vi.mock('@/composables/useRecipeStatus', () => ({
-  useRecipeStatus: vi.fn(() => ({
-    isRecipeComplete: vi.fn(),
-  })),
-}))
+vi.mock('@/composables/useFloorManagement', async () => {
+  const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
+  return { useFloorManagement: mockUseFloorManagement }
+})
 
-vi.mock('@/composables/useFloorManagement', () => ({
-  useFloorManagement: vi.fn(() => ({
-    openFloorEditor: vi.fn(),
-  })),
-}))
+vi.mock('@/composables/useFloorNavigation', async () => {
+  const { mockUseFloorNavigation } = await import('@/__tests__/fixtures/composables')
+  return { useFloorNavigation: mockUseFloorNavigation }
+})
 
-vi.mock('@/composables/useStores', () => ({
-  getStores: vi.fn(() => ({
-    factoryStore: {
-      currentFactory: null,
-    },
-  })),
-}))
+vi.mock('@/composables/useRecipeStatus', async () => {
+  const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
+  return { useRecipeStatus: mockUseRecipeStatus }
+})
 
 describe('FactoryFloorsToolbar Integration', () => {
+  // Test constants from fixtures
   const TEST_FACTORY: Factory = {
     name: 'Test Factory',
     icon: 'factory',
@@ -55,34 +44,27 @@ describe('FactoryFloorsToolbar Integration', () => {
     recipeLinks: {},
   }
 
-  let mockFactoryStore: Partial<IFactoryStore>
-
   beforeEach(async () => {
     vi.clearAllMocks()
-
-    mockFactoryStore = {
-      currentFactory: null,
-    }
-
-    const { getStores } = vi.mocked(await import('@/composables/useStores'))
-    getStores.mockReturnValue({
-      dataStore: {} as IDataStore,
-      factoryStore: mockFactoryStore as IFactoryStore,
-      themeStore: {} as IThemeStore,
-      errorStore: {} as IErrorStore,
-    })
+    // Reset the reactive refs to default state
+    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables')
+    mockCurrentFactory.value = null
   })
 
-  const createWrapper = () => {
+  const createWrapper = async (factoryOverride?: Partial<Factory> | null) => {
+    // Set the factory before mounting using the reactive ref
+    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables')
+
+    if (factoryOverride === null) {
+      mockCurrentFactory.value = null
+    } else if (factoryOverride) {
+      mockCurrentFactory.value = { ...TEST_FACTORY, ...factoryOverride }
+    } else {
+      // Default case - use TEST_FACTORY which has floors
+      mockCurrentFactory.value = TEST_FACTORY
+    }
+
     return mount(FactoryFloorsToolbar)
-  }
-
-  const setFactoryWithFloors = () => {
-    mockFactoryStore.currentFactory = TEST_FACTORY
-  }
-
-  const setFactoryWithoutFloors = () => {
-    mockFactoryStore.currentFactory = EMPTY_FACTORY
   }
 
   const expectAllButtonsDisabled = (wrapper: VueWrapper) => {
@@ -99,34 +81,31 @@ describe('FactoryFloorsToolbar Integration', () => {
     })
   }
 
-  it('renders correctly', () => {
-    const wrapper = createWrapper()
+  it('renders correctly', async () => {
+    const wrapper = await createWrapper()
 
     expect(wrapper.text()).toContain('Complete')
     expect(wrapper.text()).toContain('Incomplete')
     expect(wrapper.text()).toContain('Edit Floors')
   })
 
-  it('disables all buttons when factory has no floors', () => {
-    setFactoryWithoutFloors()
-    const wrapper = createWrapper()
+  it('disables all buttons when factory has no floors', async () => {
+    const wrapper = await createWrapper(EMPTY_FACTORY)
     expectAllButtonsDisabled(wrapper)
   })
 
-  it('disables all buttons when factory is null', () => {
-    const wrapper = createWrapper()
+  it('disables all buttons when factory is null', async () => {
+    const wrapper = await createWrapper(null)
     expectAllButtonsDisabled(wrapper)
   })
 
-  it('enables all buttons when factory has floors', () => {
-    setFactoryWithFloors()
-    const wrapper = createWrapper()
+  it('enables all buttons when factory has floors', async () => {
+    const wrapper = await createWrapper()
     expectAllButtonsEnabled(wrapper)
   })
 
-  it('renders menus with correct structure', () => {
-    setFactoryWithFloors()
-    const wrapper = createWrapper()
+  it('renders menus with correct structure', async () => {
+    const wrapper = await createWrapper()
 
     const menus = wrapper.findAllComponents({ name: 'VMenu' })
     expect(menus).toHaveLength(2)
@@ -137,8 +116,8 @@ describe('FactoryFloorsToolbar Integration', () => {
     })
   })
 
-  it('renders menu buttons with correct text and icons', () => {
-    const wrapper = createWrapper()
+  it('renders menu buttons with correct text and icons', async () => {
+    const wrapper = await createWrapper()
 
     expect(wrapper.text()).toContain('Complete')
     expect(wrapper.text()).toContain('Incomplete')
@@ -153,16 +132,15 @@ describe('FactoryFloorsToolbar Integration', () => {
     expectedState: typeof ExpandRecipeState.Complete | typeof ExpandRecipeState.Incomplete,
     expectedExpanded: boolean,
   ) => {
-    setFactoryWithFloors()
+    const wrapper = await createWrapper()
 
-    const { useFloorNavigation } = await import('@/composables/useFloorNavigation')
-    const { useRecipeStatus } = await import('@/composables/useRecipeStatus')
-
-    const wrapper = createWrapper()
-
+    // Get the mocked composables from fixtures
+    const { mockUseFloorNavigation, mockUseRecipeStatus } = await import(
+      '@/__tests__/fixtures/composables'
+    )
     const mockSetRecipeExpansion =
-      vi.mocked(useFloorNavigation).mock.results[0]?.value?.setRecipeExpansionFromCompletion
-    const mockIsRecipeComplete = vi.mocked(useRecipeStatus).mock.results[0]?.value?.isRecipeComplete
+      mockUseFloorNavigation.mock.results[0]?.value?.setRecipeExpansionFromCompletion
+    const mockIsRecipeComplete = mockUseRecipeStatus.mock.results[0]?.value?.isRecipeComplete
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const menuActions = (wrapper.vm as any).menuActions
@@ -192,16 +170,13 @@ describe('FactoryFloorsToolbar Integration', () => {
   })
 
   it('calls openFloorEditor when Edit Floors button is clicked', async () => {
-    setFactoryWithFloors()
-
-    const { useFloorManagement } = await import('@/composables/useFloorManagement')
-
-    const wrapper = createWrapper()
+    const wrapper = await createWrapper()
     const editButton = wrapper.findAllComponents({ name: 'VBtn' })[2]
     await editButton.trigger('click')
 
-    const mockOpenFloorEditor =
-      vi.mocked(useFloorManagement).mock.results[0]?.value?.openFloorEditor
+    // Get the mocked composables from fixtures
+    const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
+    const mockOpenFloorEditor = mockUseFloorManagement.mock.results[0]?.value?.openFloorEditor
     expect(mockOpenFloorEditor).toHaveBeenCalledWith()
   })
 })

@@ -5,26 +5,20 @@ import { recipeDatabase } from '@/__tests__/fixtures/data'
 import { newRecipeNode } from '@/logistics/graph-node'
 import type { Floor } from '@/types/factory'
 
-// Mock the composables
-vi.mock('@/composables/useFloorManagement', () => ({
-  useFloorManagement: vi.fn(() => ({
-    getFloorDisplayName: vi.fn(
-      (floorNumber: number, floor: Floor) =>
-        `Floor ${floorNumber}` + (floor.name ? ` - ${floor.name}` : ''),
-    ),
-    openFloorEditor: vi.fn(),
-  })),
-}))
+vi.mock('@/composables/useStores', async () => {
+  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
+  return { getStores: mockGetStores }
+})
 
-vi.mock('@/composables/useRecipeStatus', () => ({
-  useRecipeStatus: vi.fn(() => ({
-    getRecipePanelValue: vi.fn((recipe) => `${recipe.batchNumber || 0}-${recipe.recipe.name}`),
-  })),
-}))
+vi.mock('@/composables/useFloorManagement', async () => {
+  const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
+  return { useFloorManagement: mockUseFloorManagement }
+})
 
-vi.mock('@/composables/useFloorNavigation', () => ({
-  formatFloorId: vi.fn((index: number) => `floor-${index}`),
-}))
+vi.mock('@/composables/useRecipeStatus', async () => {
+  const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
+  return { useRecipeStatus: mockUseRecipeStatus }
+})
 
 vi.mock('@/logistics/images', () => ({
   getIconURL: vi.fn((icon: string, size: number) => `https://example.com/icon/${icon}/${size}`),
@@ -104,13 +98,16 @@ describe('FactoryFloor Integration', () => {
 
     return mount({
       template: `
-        <v-expansion-panels>
+        <v-expansion-panels v-model="expandedPanels">
           <FactoryFloor :floor="floor" :floor-number="floorNumber" />
         </v-expansion-panels>
       `,
       components: { FactoryFloor },
       setup() {
-        return componentProps
+        return {
+          ...componentProps,
+          expandedPanels: [componentProps.floorNumber - 1], // Expand the floor panel
+        }
       },
     })
   }
@@ -181,8 +178,6 @@ describe('FactoryFloor Integration', () => {
   })
 
   it('calls openFloorEditor when edit button is clicked', async () => {
-    const { useFloorManagement } = await import('@/composables/useFloorManagement')
-
     const wrapper = createWrapper({ floorNumber: 2 })
 
     const editButton = wrapper.find('[data-testid="edit-floor-btn"]').exists()
@@ -191,10 +186,9 @@ describe('FactoryFloor Integration', () => {
 
     await editButton.trigger('click')
 
-    // Check that the mock was called with correct params
-    const mockUseFloorManagement = vi.mocked(useFloorManagement)
-    expect(mockUseFloorManagement).toHaveBeenCalled()
-    // The openFloorEditor function should be called with floorNumber - 1
+    // Get the mocked composables from fixtures (async due to hoisting)
+    const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
+    // Verify the openFloorEditor function was called with correct params (floorNumber - 1)
     const mockOpenFloorEditor = mockUseFloorManagement.mock.results[0]?.value?.openFloorEditor
     expect(mockOpenFloorEditor).toHaveBeenCalledWith(1)
   })
@@ -206,22 +200,46 @@ describe('FactoryFloor Integration', () => {
     expect(expansionPanel.props('value')).toBe(2) // floorNumber - 1
   })
 
-  it('uses formatFloorId for expansion panel id', async () => {
-    const { formatFloorId } = await import('@/composables/useFloorNavigation')
+  it('sets correct expansion panel id using formatFloorId', () => {
+    const wrapper = createWrapper({ floorNumber: 4 })
 
-    createWrapper({ floorNumber: 4 })
-
-    // Verify that formatFloorId was called with the correct parameter
-    expect(vi.mocked(formatFloorId)).toHaveBeenCalledWith(3) // floorNumber - 1
+    // Verify that the expansion panel has the correct ID (floor-3 for floorNumber 4)
+    const expansionPanel = wrapper.findComponent({ name: 'VExpansionPanel' })
+    expect(expansionPanel.attributes('id')).toBe('floor-3') // formatFloorId(floorNumber - 1)
   })
 
-  it('uses recipe status composable correctly', async () => {
-    const { useRecipeStatus } = await import('@/composables/useRecipeStatus')
+  it('manages recipe expansion state using getRecipePanelValue', async () => {
+    // Create floor with both expanded and collapsed recipes
+    const floor = createMockFloor()
+    // Ensure we have both expanded and non-expanded recipes
+    floor.recipes[0].expanded = true // First recipe expanded
+    floor.recipes[1].expanded = false // Second recipe collapsed
 
-    createWrapper()
+    const wrapper = createWrapper({ floor, floorNumber: 1 })
 
-    // Verify that useRecipeStatus was called
-    expect(vi.mocked(useRecipeStatus)).toHaveBeenCalled()
+    // Get the mocked composables from fixtures (async due to hoisting)
+    const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
+
+    // Access the component's computed properties to trigger the flow
+    await wrapper.vm.$nextTick()
+
+    // Verify the composable was called
+    expect(mockUseRecipeStatus).toHaveBeenCalled()
+
+    // Find the inner expansion panels (the one with multiple prop)
+    const allExpansionPanels = wrapper.findAllComponents({ name: 'VExpansionPanels' })
+    const innerExpansionPanels = allExpansionPanels.find((panel) => panel.props('multiple'))
+
+    expect(innerExpansionPanels).toBeTruthy()
+
+    // The v-model should contain panel values for expanded recipes
+    // Based on our mock implementation, getRecipePanelValue returns `${batchNumber}-${recipeName}`
+    const expectedExpandedValues = ['0-Recipe_IngotIron_C'] // Only first recipe is expanded
+    expect(innerExpansionPanels!.props('modelValue')).toEqual(expectedExpandedValues)
+
+    // Should render all RecipeNode components regardless of expansion state
+    const recipeNodes = wrapper.findAllComponents({ name: 'RecipeNode' })
+    expect(recipeNodes).toHaveLength(2)
   })
 
   it('renders expansion panels structure correctly', () => {
@@ -272,17 +290,20 @@ describe('FactoryFloor Integration', () => {
     expect(recipeNodes).toHaveLength(0)
   })
 
-  it('calls getFloorDisplayName with correct parameters', async () => {
-    const { useFloorManagement } = await import('@/composables/useFloorManagement')
+  it('displays floor name using getFloorDisplayName result', async () => {
+    const floor = createMockFloor({ name: 'Custom Floor' })
+    const wrapper = createWrapper({ floor, floorNumber: 3 })
 
-    const floor = createMockFloor()
-    createWrapper({ floor, floorNumber: 3 })
+    // Get the mocked composables from fixtures (async due to hoisting)
+    const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
 
-    // Verify that useFloorManagement was called
-    expect(vi.mocked(useFloorManagement)).toHaveBeenCalled()
-    // The getFloorDisplayName function should be called with correct params
+    // Verify that getFloorDisplayName was called with correct parameters
     const mockGetFloorDisplayName =
-      vi.mocked(useFloorManagement).mock.results[0]?.value?.getFloorDisplayName
+      mockUseFloorManagement.mock.results[0]?.value?.getFloorDisplayName
     expect(mockGetFloorDisplayName).toHaveBeenCalledWith(3, floor)
+
+    // Verify the result is displayed in the component
+    // The mock returns "Floor 3 - Custom Floor" based on the implementation
+    expect(wrapper.text()).toContain('Floor 3 - Custom Floor')
   })
 })

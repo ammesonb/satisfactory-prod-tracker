@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import RecipeDetails from '@/components/factory/RecipeDetails.vue'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
-import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
+import { createMockDataStore, createTestRecipe } from '@/__tests__/fixtures/stores/dataStore'
 import type { IDataStore, IFactoryStore, IThemeStore, IErrorStore } from '@/types/stores'
 
 // Mock the stores composable
@@ -191,13 +191,13 @@ describe('RecipeDetails Integration', () => {
     )
 
     // Add the mock recipe to the recipes database for craft time access
-    mockDataStore.recipes['NoIngredientsRecipe'] = {
+    mockDataStore.recipes['NoIngredientsRecipe'] = createTestRecipe({
       name: 'NoIngredientsRecipe',
       ingredients: [],
       products: [{ item: TEST_ITEMS.IRON_INGOT, amount: 1 }],
       time: 10,
       producedIn: [TEST_BUILDINGS.SMELTER],
-    }
+    })
     mockDataStore.recipeIngredients.mockReturnValue([])
     mockDataStore.recipeProducts.mockReturnValue([{ item: TEST_ITEMS.IRON_INGOT, amount: 1 }])
 
@@ -218,13 +218,13 @@ describe('RecipeDetails Integration', () => {
     )
 
     // Add the mock recipe to the recipes database for craft time access
-    mockDataStore.recipes['NoProductsRecipe'] = {
+    mockDataStore.recipes['NoProductsRecipe'] = createTestRecipe({
       name: 'NoProductsRecipe',
       ingredients: [{ item: TEST_ITEMS.IRON_ORE, amount: 1 }],
       products: [],
       time: 8,
       producedIn: [TEST_BUILDINGS.SMELTER],
-    }
+    })
     mockDataStore.recipeIngredients.mockReturnValue([{ item: TEST_ITEMS.IRON_ORE, amount: 1 }])
     mockDataStore.recipeProducts.mockReturnValue([])
 
