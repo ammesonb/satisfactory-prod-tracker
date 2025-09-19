@@ -21,7 +21,7 @@ const links = computed(() => [...props.recipe.outputs, ...leftoverProductsAsLink
       :key="linkToString(link)"
       :link="link"
       :recipe="props.recipe"
-      type="output"
+      direction="output"
     />
   </div>
 </template>

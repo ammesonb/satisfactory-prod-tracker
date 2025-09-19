@@ -9,7 +9,7 @@ import type { Material } from '@/types/factory'
 vi.mock('@/components/factory/RecipeLink.vue', () => ({
   default: {
     name: 'RecipeLink',
-    props: ['link', 'recipe', 'type'],
+    props: ['link', 'recipe', 'direction'],
     template: '<div data-testid="recipe-link">Link: {{ link.material }} ({{ link.amount }})</div>',
   },
 }))
@@ -103,7 +103,7 @@ describe('RecipeInputs Integration', () => {
     const recipeLinkComponent = wrapper.findComponent({ name: 'RecipeLink' })
     expect(recipeLinkComponent.props('link')).toEqual(link)
     expect(recipeLinkComponent.props('recipe')).toEqual(recipe)
-    expect(recipeLinkComponent.props('type')).toBe('input')
+    expect(recipeLinkComponent.props('direction')).toBe('input')
   })
 
   it('uses linkToString for component keys', async () => {
@@ -129,10 +129,10 @@ describe('RecipeInputs Integration', () => {
 
     expect(wrapper.findAll('[data-testid="recipe-link"]')).toHaveLength(3)
 
-    // Verify all RecipeLink components get the correct type and recipe
+    // Verify all RecipeLink components get the correct direction and recipe
     const recipeLinkComponents = wrapper.findAllComponents({ name: 'RecipeLink' })
     recipeLinkComponents.forEach((component) => {
-      expect(component.props('type')).toBe('input')
+      expect(component.props('direction')).toBe('input')
       expect(component.props('recipe')).toEqual(recipe)
     })
   })

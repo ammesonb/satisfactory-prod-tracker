@@ -21,7 +21,7 @@ vi.mock('@/composables/useRecipeStatus', async () => {
 vi.mock('@/components/factory/RecipeLink.vue', () => ({
   default: {
     name: 'RecipeLink',
-    props: ['link', 'recipe', 'type'],
+    props: ['link', 'recipe', 'direction'],
     template: '<div data-testid="recipe-link">{{ link.material }} ({{ link.amount }})</div>',
   },
 }))
@@ -108,7 +108,7 @@ describe('RecipeOutputs Integration', () => {
     const recipeLinks = wrapper.findAllComponents({ name: 'RecipeLink' })
     recipeLinks.forEach((link) => {
       expect(link.props('recipe')).toEqual(recipeNode)
-      expect(link.props('type')).toBe('output')
+      expect(link.props('direction')).toBe('output')
       expect(link.props('link')).toBeDefined()
     })
   })

@@ -35,7 +35,7 @@ vi.mock('@/components/common/CachedIcon.vue', () => ({
 vi.mock('@/components/factory/TransportCapacityTooltip.vue', () => ({
   default: {
     name: 'TransportCapacityTooltip',
-    props: ['recipe', 'link', 'type', 'isHovered'],
+    props: ['recipe', 'link', 'direction', 'isHovered'],
     template: '<div data-testid="transport-tooltip">Transport Tooltip</div>',
   },
 }))
@@ -43,7 +43,7 @@ vi.mock('@/components/factory/TransportCapacityTooltip.vue', () => ({
 vi.mock('@/components/factory/RecipeLinkTarget.vue', () => ({
   default: {
     name: 'RecipeLinkTarget',
-    props: ['link', 'type'],
+    props: ['link', 'direction'],
     template: '<div data-testid="recipe-link-target">{{ link.source }} -> {{ link.sink }}</div>',
   },
 }))
@@ -112,13 +112,13 @@ describe('RecipeLink Integration', () => {
   const createWrapper = (
     link: Material,
     recipe: RecipeNode,
-    type: 'input' | 'output' = 'input',
+    direction: 'input' | 'output' = 'input',
   ) => {
     return mount(RecipeLink, {
       props: {
         link,
         recipe,
-        type,
+        direction,
       },
     })
   }
@@ -147,13 +147,13 @@ describe('RecipeLink Integration', () => {
     // Check RecipeLinkTarget
     const linkTarget = wrapper.findComponent({ name: 'RecipeLinkTarget' })
     expect(linkTarget.props('link')).toEqual(link)
-    expect(linkTarget.props('type')).toBe('output')
+    expect(linkTarget.props('direction')).toBe('output')
 
     // Check TransportCapacityTooltip
     const tooltip = wrapper.findComponent({ name: 'TransportCapacityTooltip' })
     expect(tooltip.props('recipe')).toEqual(recipe)
     expect(tooltip.props('link')).toEqual(link)
-    expect(tooltip.props('type')).toBe('output')
+    expect(tooltip.props('direction')).toBe('output')
   })
 
   it('calls composables with correct parameters', async () => {

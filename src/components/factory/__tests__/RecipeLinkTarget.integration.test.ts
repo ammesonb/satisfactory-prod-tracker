@@ -71,11 +71,15 @@ describe('RecipeLinkTarget Integration', () => {
     )
   }
 
-  const createWrapper = (link: Material, type: 'input' | 'output' = 'input', customProps = {}) => {
+  const createWrapper = (
+    link: Material,
+    direction: 'input' | 'output' = 'input',
+    customProps = {},
+  ) => {
     return mount(RecipeLinkTarget, {
       props: {
         link,
-        type,
+        direction,
         ...customProps,
       },
     })
@@ -88,10 +92,10 @@ describe('RecipeLinkTarget Integration', () => {
 
   const expectCorrectLinkText = (
     wrapper: VueWrapper,
-    type: 'input' | 'output',
+    direction: 'input' | 'output',
     hasTarget: boolean,
   ) => {
-    const expectedText = type === 'input' ? 'from' : hasTarget ? 'to' : ''
+    const expectedText = direction === 'input' ? 'from' : hasTarget ? 'to' : ''
     if (expectedText) {
       expect(wrapper.text()).toContain(expectedText)
     }
@@ -105,14 +109,14 @@ describe('RecipeLinkTarget Integration', () => {
     expect(wrapper.text()).toContain('Test Display Name')
   })
 
-  it('shows correct link text for input type', () => {
+  it('shows correct link text for input direction', () => {
     const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
     const wrapper = createWrapper(link, 'input')
 
     expectCorrectLinkText(wrapper, 'input', true)
   })
 
-  it('shows correct link text for output type with target', async () => {
+  it('shows correct link text for output direction with target', async () => {
     // Update the centralized mock to show target exists
     const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
     mockUseLinkData.mockReturnValue({
@@ -131,7 +135,7 @@ describe('RecipeLinkTarget Integration', () => {
     expectCorrectLinkText(wrapper, 'output', true)
   })
 
-  it('shows empty link text for output type without target', async () => {
+  it('shows empty link text for output direction without target', async () => {
     // Update the centralized mock to show no target
     const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
     mockUseLinkData.mockReturnValue({

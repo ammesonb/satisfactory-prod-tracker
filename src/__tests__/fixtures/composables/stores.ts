@@ -14,23 +14,3 @@ export const mockGetStores = vi.fn(() => {
     errorStore: {} as IErrorStore,
   }
 })
-
-// Factory function for custom implementations
-export const createMockUseStores = (
-  overrides: {
-    dataStore?: Partial<IDataStore>
-    factoryStore?: Partial<IFactoryStore>
-    themeStore?: Partial<IThemeStore>
-    errorStore?: Partial<IErrorStore>
-  } = {},
-) => {
-  return () => {
-    const mockDataStore = createMockDataStore()
-    return {
-      dataStore: { ...mockDataStore, ...overrides.dataStore } as IDataStore,
-      factoryStore: { ...overrides.factoryStore } as IFactoryStore,
-      themeStore: { isDark: false, ...overrides.themeStore } as IThemeStore,
-      errorStore: { ...overrides.errorStore } as IErrorStore,
-    }
-  }
-}

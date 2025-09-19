@@ -7,7 +7,7 @@ import { useRecipeStatus } from '@/composables/useRecipeStatus'
 
 interface Props {
   link: Material
-  type: 'input' | 'output'
+  direction: 'input' | 'output'
 }
 
 const props = defineProps<Props>()
@@ -15,7 +15,7 @@ const props = defineProps<Props>()
 const { navigateToRecipe } = useFloorNavigation()
 const { linkTarget, isRecipe, targetRecipe, displayName } = useLinkData(
   computed(() => props.link),
-  computed(() => props.type),
+  computed(() => props.direction),
 )
 
 const { isLinkBuilt } = useRecipeStatus()
@@ -23,7 +23,7 @@ const { isLinkBuilt } = useRecipeStatus()
 const isHovered = ref(false)
 
 const linkText = computed(() => {
-  if (props.type === 'input') return 'from'
+  if (props.direction === 'input') return 'from'
   return linkTarget.value ? 'to' : ''
 })
 

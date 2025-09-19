@@ -17,7 +17,7 @@ const props = defineProps<{
       :key="linkToString(link)"
       :link="link"
       :recipe="props.recipe"
-      type="input"
+      direction="input"
     />
   </div>
 </template>

@@ -2,7 +2,7 @@ import type { Ref, ComputedRef } from 'vue'
 import type { Floor } from '@/types/factory'
 import type { RecipeNode } from '@/logistics/graph-node'
 import type { Material } from '@/types/factory'
-import type { ItemOption } from '@/types/data'
+import type { Building, ItemOption } from '@/types/data'
 
 export interface FloorFormData {
   index: number
@@ -84,4 +84,11 @@ export interface UseSelection {
   toggleAll: () => void
   toggleItem: (key: string) => void
   isSelected: (key: string) => boolean
+}
+
+export interface UseTransport {
+  isFluidMaterial: ComputedRef<boolean>
+  capacities: ComputedRef<number[]>
+  transportItems: ComputedRef<Building[]>
+  buildingCounts: ComputedRef<number[]>
 }

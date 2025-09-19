@@ -8,14 +8,14 @@ import { useLinkData } from '@/composables/useLinkData'
 const props = defineProps<{
   link: Material
   recipe: RecipeNode
-  type: 'input' | 'output'
+  direction: 'input' | 'output'
 }>()
 
 const { setLinkBuilt, isLinkBuilt } = useRecipeStatus()
 
 const { materialItem, transportIcon } = useLinkData(
   computed(() => props.link),
-  computed(() => props.type),
+  computed(() => props.direction),
 )
 
 const built = computed(() => isLinkBuilt(props.link))
@@ -71,7 +71,7 @@ const isTransportHovered = ref(false)
             <TransportCapacityTooltip
               :recipe="props.recipe"
               :link="props.link"
-              :type="props.type"
+              :direction="props.direction"
               :is-hovered="isTransportHovered"
             />
           </v-tooltip>
@@ -90,7 +90,7 @@ const isTransportHovered = ref(false)
           />
         </v-col>
         <v-col class="d-flex align-center">
-          <RecipeLinkTarget :link="props.link" :type="props.type" />
+          <RecipeLinkTarget :link="props.link" :direction="props.direction" />
         </v-col>
       </v-row>
     </v-card-text>

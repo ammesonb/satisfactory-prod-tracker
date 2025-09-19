@@ -103,7 +103,9 @@ const expectRecipeLinksToMatch = (actual: Material[], expected: Material[]) => {
     expect.soft({ key, value }).toEqual({ key, value: 1 })
   }
 
-  console.log(`Expected ${expected.length} links, got ${actual.length} links`)
+  if (expected.length !== actual.length) {
+    console.log(`Expected ${expected.length} links, got ${actual.length} links`)
+  }
   for (const expectedLink of expected) {
     const { amount: expectedAmount, ...expectedRest } = expectedLink
 
@@ -177,7 +179,6 @@ const expectRecipeLinksToMatch = (actual: Material[], expected: Material[]) => {
 // Helper function to check recipe batch grouping
 const expectRecipeBatchesToMatch = (actual: RecipeNode[], expectedBatches: string[][]) => {
   console.log(`Expected ${expectedBatches.length} batches`)
-
   const nodesByBatch: Record<string, RecipeNode[]> = {}
   for (const node of actual) {
     nodesByBatch[node.batchNumber!] = nodesByBatch[node.batchNumber!] || []

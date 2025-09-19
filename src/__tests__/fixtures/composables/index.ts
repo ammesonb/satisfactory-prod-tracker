@@ -1,5 +1,5 @@
 // Re-export only the main mock functions from their specific files
-export { mockGetStores, createMockUseStores } from './stores'
+export { mockGetStores } from './stores'
 export {
   mockUseFloorManagement,
   mockUseFloorNavigation,
