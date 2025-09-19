@@ -1,4 +1,9 @@
-import type { UseFloorManagement, UseRecipeStatus, UseFloorNavigation } from '@/types/composables'
+import type {
+  UseFloorManagement,
+  UseRecipeStatus,
+  UseFloorNavigation,
+  UseSelection,
+} from '@/types/composables'
 import type { IDataStore, IFactoryStore, IThemeStore, IErrorStore } from '@/types/stores'
 
 /**
@@ -57,4 +62,8 @@ export const getMockRecipeStatus = async (): Promise<UseRecipeStatus> => {
  */
 export const getMockFloorNavigation = async (): Promise<UseFloorNavigation> => {
   return getMockResult('mockUseFloorNavigation')
+}
+
+export const getMockSelection = async (): Promise<UseSelection> => {
+  return getMockResult('mockUseSelection')
 }
