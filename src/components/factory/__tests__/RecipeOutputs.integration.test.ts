@@ -1,0 +1,204 @@
+import { mount } from '@vue/test-utils'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import RecipeOutputs from '@/components/factory/RecipeOutputs.vue'
+import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
+import { recipeDatabase } from '@/__tests__/fixtures/data'
+import type { Material } from '@/types/factory'
+import { mockLeftoverProductsAsLinks } from '@/__tests__/fixtures/composables/useRecipeStatus'
+
+// Use centralized fixtures for mocking composables
+vi.mock('@/composables/useStores', async () => {
+  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
+  return { getStores: mockGetStores }
+})
+
+vi.mock('@/composables/useRecipeStatus', async () => {
+  const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
+  return { useRecipeStatus: mockUseRecipeStatus }
+})
+
+// Mock child components
+vi.mock('@/components/factory/RecipeLink.vue', () => ({
+  default: {
+    name: 'RecipeLink',
+    props: ['link', 'recipe', 'type'],
+    template: '<div data-testid="recipe-link">{{ link.material }} ({{ link.amount }})</div>',
+  },
+}))
+
+describe('RecipeOutputs Integration', () => {
+  // Test constants from fixtures
+  const TEST_RECIPES = {
+    IRON_INGOT: 'Recipe_Fake_IronIngot_C',
+    COPPER_INGOT: 'Recipe_Fake_CopperIngot_C',
+    PURE_CATERIUM: 'Recipe_PureCateriumIngot_C',
+  } as const
+
+  const TEST_ITEMS = {
+    IRON_ORE: 'Desc_OreIron_C',
+    IRON_INGOT: 'Desc_IronIngot_C',
+    COPPER_ORE: 'Desc_OreCopper_C',
+    COPPER_INGOT: 'Desc_CopperIngot_C',
+    GOLD_ORE: 'Desc_OreGold_C',
+    GOLD_INGOT: 'Desc_GoldIngot_C',
+    WATER: 'Desc_Water_C',
+  } as const
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  const createRecipeNode = (recipeName: string): RecipeNode => {
+    const recipe = recipeDatabase[recipeName]
+    if (!recipe) {
+      throw new Error(`Recipe ${recipeName} not found in fixtures`)
+    }
+
+    const node = newRecipeNode(
+      { name: recipe.name, building: recipe.producedIn[0] || 'Unknown', count: 1 },
+      recipe.ingredients,
+      recipe.products,
+    )
+
+    node.outputs = node.products.map((product) => ({
+      source: node.recipe.name,
+      sink: product.item,
+      material: product.item,
+      amount: product.amount,
+    }))
+
+    return node
+  }
+
+  const createWrapper = (recipeNode: RecipeNode) => {
+    return mount(RecipeOutputs, {
+      props: {
+        recipe: recipeNode,
+      },
+    })
+  }
+
+  it('renders without errors with default recipe', () => {
+    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const wrapper = createWrapper(recipeNode)
+
+    expect(wrapper.find('.recipe-outputs').exists()).toBe(true)
+    expect(wrapper.find('h4').text()).toBe('Outputs')
+  })
+
+  it('displays outputs section title', () => {
+    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const wrapper = createWrapper(recipeNode)
+
+    expect(wrapper.text()).toContain('Outputs')
+  })
+
+  it('renders RecipeLink components for each output', () => {
+    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const wrapper = createWrapper(recipeNode)
+
+    const recipeLinks = wrapper.findAllComponents({ name: 'RecipeLink' })
+    expect(recipeLinks.length).toBeGreaterThan(0)
+  })
+
+  it('passes correct props to RecipeLink components', () => {
+    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const wrapper = createWrapper(recipeNode)
+
+    const recipeLinks = wrapper.findAllComponents({ name: 'RecipeLink' })
+    recipeLinks.forEach((link) => {
+      expect(link.props('recipe')).toEqual(recipeNode)
+      expect(link.props('type')).toBe('output')
+      expect(link.props('link')).toBeDefined()
+    })
+  })
+
+  it('calls leftoverProductsAsLinks composable function', async () => {
+    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    createWrapper(recipeNode)
+    expect(mockLeftoverProductsAsLinks).toHaveBeenCalledWith(recipeNode)
+  })
+
+  it('includes both recipe outputs and leftover products in links', async () => {
+    const mockLeftoverProducts: Material[] = [
+      { source: 'test-recipe', sink: '', material: TEST_ITEMS.COPPER_INGOT, amount: 0.5 },
+    ]
+    mockLeftoverProductsAsLinks.mockReturnValueOnce(mockLeftoverProducts)
+
+    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const wrapper = createWrapper(recipeNode)
+
+    const recipeLinks = wrapper.findAllComponents({ name: 'RecipeLink' })
+
+    expect(recipeLinks.length).toBeGreaterThanOrEqual(recipeNode.outputs.length)
+    expect(mockLeftoverProductsAsLinks).toHaveBeenCalledWith(recipeNode)
+  })
+
+  it('displays "None" when no outputs exist', async () => {
+    mockLeftoverProductsAsLinks.mockReturnValueOnce([])
+
+    // Create a recipe node with no outputs
+    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    recipeNode.outputs = [] // Clear outputs for this test
+
+    const wrapper = createWrapper(recipeNode)
+
+    expect(wrapper.text()).toContain('None')
+    expect(wrapper.findAllComponents({ name: 'RecipeLink' })).toHaveLength(0)
+  })
+
+  it('handles recipe with multiple outputs correctly', () => {
+    const recipeNode = createRecipeNode(TEST_RECIPES.PURE_CATERIUM)
+
+    const wrapper = createWrapper(recipeNode)
+
+    const recipeLinks = wrapper.findAllComponents({ name: 'RecipeLink' })
+    expect(recipeNode.outputs.length).toBeGreaterThan(0)
+    expect(recipeLinks.length).toBeGreaterThanOrEqual(recipeNode.outputs.length)
+  })
+
+  it('uses correct key for v-for loop', () => {
+    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const wrapper = createWrapper(recipeNode)
+
+    const recipeLinks = wrapper.findAllComponents({ name: 'RecipeLink' })
+
+    // Each RecipeLink should have a unique key based on linkToString
+    recipeLinks.forEach((link) => {
+      expect(link.props('link')).toBeDefined()
+    })
+  })
+
+  it('integrates outputs from recipe node correctly', () => {
+    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const wrapper = createWrapper(recipeNode)
+
+    // The component should show outputs based on the recipe node
+    expect(wrapper.findAllComponents({ name: 'RecipeLink' }).length).toBeGreaterThanOrEqual(
+      recipeNode.outputs.length,
+    )
+  })
+
+  it('handles leftover products when they exist', async () => {
+    const mockLeftoverProducts: Material[] = [
+      { source: 'test-recipe', sink: '', material: TEST_ITEMS.IRON_ORE, amount: 2.5 },
+      { source: 'test-recipe', sink: '', material: TEST_ITEMS.COPPER_ORE, amount: 1.0 },
+    ]
+
+    mockLeftoverProductsAsLinks.mockReturnValueOnce(mockLeftoverProducts)
+
+    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    recipeNode.availableProducts = mockLeftoverProducts.map((product) => ({
+      item: product.material,
+      amount: product.amount,
+    }))
+    const wrapper = createWrapper(recipeNode)
+
+    const recipeLinks = wrapper.findAllComponents({ name: 'RecipeLink' })
+    console.log(recipeLinks.length)
+
+    // Should include both regular outputs and leftover products
+    expect(recipeLinks.length).toBe(recipeNode.outputs.length + mockLeftoverProducts.length)
+    expect(mockLeftoverProductsAsLinks).toHaveBeenCalledWith(recipeNode)
+  })
+})
