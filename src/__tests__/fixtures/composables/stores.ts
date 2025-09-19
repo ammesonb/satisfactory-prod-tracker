@@ -1,26 +1,16 @@
 import { vi } from 'vitest'
-import { ref } from 'vue'
 import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
 import type { IDataStore, IFactoryStore, IThemeStore, IErrorStore } from '@/types/stores'
-import type { Factory } from '@/types/factory'
-
-// Create reactive refs that persist across calls for key properties
-export const mockCurrentFactory = ref<Factory | null>(null)
-export const mockSelectedFactory = ref('')
-export const mockFactories = ref({})
-export const mockIsDark = ref(false)
+import { mockFactoryStore } from './factoryStore'
+import { mockThemeStore } from './themeStore'
 
 // Main stores mock
 export const mockGetStores = vi.fn(() => {
   const mockDataStore = createMockDataStore()
   return {
     dataStore: mockDataStore as IDataStore,
-    factoryStore: {
-      selected: mockSelectedFactory.value,
-      currentFactory: mockCurrentFactory.value,
-      factories: mockFactories.value,
-    } as Partial<IFactoryStore>,
-    themeStore: { isDark: mockIsDark.value } as IThemeStore,
+    factoryStore: mockFactoryStore as IFactoryStore,
+    themeStore: mockThemeStore as IThemeStore,
     errorStore: {} as IErrorStore,
   }
 })

@@ -51,12 +51,12 @@ describe('FactoryFloorsToolbar Integration', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks()
-    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/stores')
+    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/factoryStore')
     mockCurrentFactory.value = null
   })
 
   const createWrapper = async (factoryOverride?: Partial<Factory> | null) => {
-    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/stores')
+    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/factoryStore')
 
     if (factoryOverride === null) {
       mockCurrentFactory.value = null

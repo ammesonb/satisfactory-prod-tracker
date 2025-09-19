@@ -76,7 +76,7 @@ describe('FactoryPanels Integration', () => {
     vi.clearAllMocks()
 
     // Reset the centralized factory store mock
-    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/stores')
+    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/factoryStore')
     mockCurrentFactory.value = null
   })
 
@@ -85,12 +85,12 @@ describe('FactoryPanels Integration', () => {
   }
 
   const setFactoryWithFloors = async () => {
-    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/stores')
+    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/factoryStore')
     mockCurrentFactory.value = createMockFactory()
   }
 
   const setFactoryWithCustomFloors = async (floors: Floor[]) => {
-    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/stores')
+    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/factoryStore')
     mockCurrentFactory.value = createMockFactory({ floors })
   }
 
@@ -204,7 +204,7 @@ describe('FactoryPanels Integration', () => {
     await setFactoryWithFloors()
 
     // Verify factory was set in centralized mock
-    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/stores')
+    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/factoryStore')
     expect(mockCurrentFactory.value).toBeTruthy()
   })
 })
