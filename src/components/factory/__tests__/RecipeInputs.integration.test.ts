@@ -61,32 +61,32 @@ describe('RecipeInputs Integration', () => {
     amount,
   })
 
-  const createWrapper = (links: Material[], recipe: RecipeNode) => {
+  const createWrapper = (recipe: RecipeNode) => {
     return mount(RecipeInputs, {
       props: {
-        links,
         recipe,
       },
     })
   }
 
-  it('renders without errors and displays "None" when no links provided', () => {
+  it('renders without errors and displays "None" when no inputs on recipe', () => {
     const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    const wrapper = createWrapper([], recipe)
+    recipe.inputs = []
+    const wrapper = createWrapper(recipe)
 
     expect(wrapper.find('.recipe-inputs').exists()).toBe(true)
     expect(wrapper.text()).toContain('None')
     expect(wrapper.findAll('[data-testid="recipe-link"]')).toHaveLength(0)
   })
 
-  it('renders RecipeLink components and does not show "None" when links provided', () => {
+  it('renders RecipeLink components and does not show "None" when recipe has inputs', () => {
     const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    const links = [
+    recipe.inputs = [
       createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30),
       createMaterialLink('Storage', 'Smelting', TEST_ITEMS.IRON_ORE, 15),
     ]
 
-    const wrapper = createWrapper(links, recipe)
+    const wrapper = createWrapper(recipe)
 
     const recipeLinkComponents = wrapper.findAll('[data-testid="recipe-link"]')
     expect(recipeLinkComponents).toHaveLength(2)
@@ -96,9 +96,9 @@ describe('RecipeInputs Integration', () => {
   it('passes correct props to RecipeLink components', () => {
     const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
-    const links = [link]
+    recipe.inputs = [link]
 
-    const wrapper = createWrapper(links, recipe)
+    const wrapper = createWrapper(recipe)
 
     const recipeLinkComponent = wrapper.findComponent({ name: 'RecipeLink' })
     expect(recipeLinkComponent.props('link')).toEqual(link)
@@ -110,22 +110,22 @@ describe('RecipeInputs Integration', () => {
     const { linkToString } = await import('@/logistics/graph-node')
     const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
-    const links = [link]
+    recipe.inputs = [link]
 
-    createWrapper(links, recipe)
+    createWrapper(recipe)
 
     expect(vi.mocked(linkToString)).toHaveBeenCalledWith(link)
   })
 
   it('handles multiple links with different materials', () => {
     const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    const links = [
+    recipe.inputs = [
       createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30),
       createMaterialLink('Water_Pump', 'Smelting', TEST_ITEMS.WATER, 45),
       createMaterialLink('Storage', 'Smelting', TEST_ITEMS.COPPER_ORE, 15),
     ]
 
-    const wrapper = createWrapper(links, recipe)
+    const wrapper = createWrapper(recipe)
 
     expect(wrapper.findAll('[data-testid="recipe-link"]')).toHaveLength(3)
 

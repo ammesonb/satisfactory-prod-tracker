@@ -4,5 +4,10 @@ import { ref } from 'vue'
 export const mockIsDark = ref(false)
 
 export const mockThemeStore = {
-  isDark: mockIsDark.value,
+  get isDark() {
+    return mockIsDark.value
+  },
+  set isDark(value: boolean) {
+    mockIsDark.value = value
+  },
 }

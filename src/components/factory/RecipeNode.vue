@@ -12,7 +12,7 @@ const props = defineProps<{
 
 const { dataStore: data, themeStore } = getStores()
 const { getEligibleFloors, moveRecipe } = useFloorManagement()
-const { isRecipeComplete, getRecipePanelValue, leftoverProductsAsLinks } = useRecipeStatus()
+const { isRecipeComplete, getRecipePanelValue } = useRecipeStatus()
 
 const completed = computed(() => isRecipeComplete(props.recipe))
 
@@ -29,8 +29,6 @@ const availableFloors = computed(() => getEligibleFloors(props.recipe.batchNumbe
 const handleMoveRecipe = (targetFloorIndex: number) => {
   moveRecipe(props.recipe.recipe.name, props.recipe.batchNumber!, targetFloorIndex)
 }
-
-const outputs = computed(() => [...props.recipe.outputs, ...leftoverProductsAsLinks(props.recipe)])
 </script>
 
 <template>
@@ -81,9 +79,9 @@ const outputs = computed(() => [...props.recipe.outputs, ...leftoverProductsAsLi
     </v-expansion-panel-title>
     <v-expansion-panel-text>
       <div class="d-flex justify-space-between align-start gap-4">
-        <RecipeInputs :links="props.recipe.inputs" :recipe="props.recipe" />
+        <RecipeInputs :recipe="props.recipe" />
         <RecipeBuilding :recipe="props.recipe" />
-        <RecipeOutputs :links="outputs" :recipe="props.recipe" />
+        <RecipeOutputs :recipe="props.recipe" />
       </div>
     </v-expansion-panel-text>
   </v-expansion-panel>
