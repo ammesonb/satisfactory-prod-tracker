@@ -1,42 +1,32 @@
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { computed, ref, type ComputedRef, type Ref } from 'vue'
+import { computed } from 'vue'
 import RecipeLinkTarget from '@/components/factory/RecipeLinkTarget.vue'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
-import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
 import type { Material } from '@/types/factory'
-import type { IDataStore, IFactoryStore, IThemeStore, IErrorStore } from '@/types/stores'
 import type { Item } from '@/types/data'
 
-// Mock the composables
-vi.mock('@/composables/useStores', () => ({
-  getStores: vi.fn(() => ({
-    dataStore: createMockDataStore(),
-    factoryStore: {},
-  })),
-}))
+// Use centralized mock fixtures
+vi.mock('@/composables/useStores', async () => {
+  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
+  return { getStores: mockGetStores }
+})
 
-vi.mock('@/composables/useFloorNavigation', () => ({
-  useFloorNavigation: vi.fn(() => ({
-    navigateToRecipe: vi.fn(),
-  })),
-}))
+vi.mock('@/composables/useFloorNavigation', async () => {
+  const { mockUseFloorNavigation } = await import('@/__tests__/fixtures/composables')
+  return { useFloorNavigation: mockUseFloorNavigation }
+})
 
-vi.mock('@/composables/useLinkData', () => ({
-  useLinkData: vi.fn(() => ({
-    linkTarget: computed(() => 'test-target'),
-    isRecipe: computed(() => false),
-    targetRecipe: computed(() => null),
-    displayName: computed(() => 'Test Display Name'),
-  })),
-}))
+vi.mock('@/composables/useLinkData', async () => {
+  const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
+  return { useLinkData: mockUseLinkData }
+})
 
-vi.mock('@/composables/useRecipeStatus', () => ({
-  useRecipeStatus: vi.fn(() => ({
-    isLinkBuilt: vi.fn(() => false),
-  })),
-}))
+vi.mock('@/composables/useRecipeStatus', async () => {
+  const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
+  return { useRecipeStatus: mockUseRecipeStatus }
+})
 
 describe('RecipeLinkTarget Integration', () => {
   // Test constants from fixtures
@@ -51,88 +41,9 @@ describe('RecipeLinkTarget Integration', () => {
     COPPER_ORE: 'Desc_OreCopper_C',
   } as const
 
-  let mockDataStore: ReturnType<typeof createMockDataStore>
-  let mockFactoryStore: Partial<IFactoryStore>
-  let mockUseFloorNavigation: {
-    expandedFloors: Ref<number[]>
-    expandFloor: ReturnType<typeof vi.fn>
-    collapseFloor: ReturnType<typeof vi.fn>
-    setRecipeExpansionFromCompletion: ReturnType<typeof vi.fn>
-    toggleFloor: ReturnType<typeof vi.fn>
-    navigateToElement: ReturnType<typeof vi.fn>
-    initializeExpansion: ReturnType<typeof vi.fn>
-    navigateToRecipe: ReturnType<typeof vi.fn>
-  }
-  let mockUseLinkData: {
-    linkId: ComputedRef<string>
-    materialItem: ComputedRef<Item>
-    linkTarget: ComputedRef<string>
-    isRecipe: ComputedRef<boolean>
-    targetRecipe: ComputedRef<RecipeNode | null>
-    displayName: ComputedRef<string>
-    transportIcon: ComputedRef<string>
-  }
-  let mockUseRecipeStatus: {
-    isRecipeComplete: ReturnType<typeof vi.fn>
-    setRecipeBuilt: ReturnType<typeof vi.fn>
-    isLinkBuilt: ReturnType<typeof vi.fn>
-    setLinkBuilt: ReturnType<typeof vi.fn>
-    getRecipePanelValue: ReturnType<typeof vi.fn>
-    leftoverProductsAsLinks: ReturnType<typeof vi.fn>
-  }
-
   beforeEach(async () => {
-    mockDataStore = createMockDataStore()
-    mockFactoryStore = {
-      currentFactory: null,
-      getRecipeByName: vi.fn(),
-    }
-
-    const { getStores } = vi.mocked(await import('@/composables/useStores'))
-    getStores.mockReturnValue({
-      dataStore: mockDataStore as unknown as IDataStore,
-      factoryStore: mockFactoryStore as IFactoryStore,
-      themeStore: {} as IThemeStore,
-      errorStore: {} as IErrorStore,
-    })
-
-    mockUseFloorNavigation = {
-      expandedFloors: ref<number[]>([]),
-      expandFloor: vi.fn(),
-      collapseFloor: vi.fn(),
-      setRecipeExpansionFromCompletion: vi.fn(),
-      toggleFloor: vi.fn(),
-      navigateToElement: vi.fn(),
-      initializeExpansion: vi.fn(),
-      navigateToRecipe: vi.fn(),
-    }
-
-    mockUseLinkData = {
-      linkId: computed(() => 'test-link-id'),
-      materialItem: computed(() => ({ name: 'Test Item', icon: 'test-icon' }) as Item),
-      linkTarget: computed(() => 'test-target'),
-      isRecipe: computed(() => false),
-      targetRecipe: computed(() => null),
-      displayName: computed(() => 'Test Display Name'),
-      transportIcon: computed(() => 'test-transport-icon'),
-    }
-
-    mockUseRecipeStatus = {
-      isRecipeComplete: vi.fn(() => false),
-      setRecipeBuilt: vi.fn(),
-      isLinkBuilt: vi.fn(() => false),
-      setLinkBuilt: vi.fn(),
-      getRecipePanelValue: vi.fn(() => 'test-panel-value'),
-      leftoverProductsAsLinks: vi.fn(() => []),
-    }
-
-    const { useFloorNavigation } = vi.mocked(await import('@/composables/useFloorNavigation'))
-    const { useLinkData } = vi.mocked(await import('@/composables/useLinkData'))
-    const { useRecipeStatus } = vi.mocked(await import('@/composables/useRecipeStatus'))
-
-    useFloorNavigation.mockReturnValue(mockUseFloorNavigation)
-    useLinkData.mockReturnValue(mockUseLinkData)
-    useRecipeStatus.mockReturnValue(mockUseRecipeStatus)
+    // Reset all mocks before each test
+    vi.clearAllMocks()
   })
 
   const createMaterialLink = (
@@ -202,12 +113,16 @@ describe('RecipeLinkTarget Integration', () => {
   })
 
   it('shows correct link text for output type with target', async () => {
-    // Mock link data to show target exists
-    mockUseLinkData.linkTarget = computed(() => 'target-recipe')
-    const { useLinkData } = vi.mocked(await import('@/composables/useLinkData'))
-    useLinkData.mockReturnValue({
-      ...mockUseLinkData,
+    // Update the centralized mock to show target exists
+    const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
+    mockUseLinkData.mockReturnValue({
+      linkId: computed(() => 'test-link-id'),
+      materialItem: computed(() => ({ name: 'Test Item', icon: 'test-icon' }) as Item),
       linkTarget: computed(() => 'target-recipe'),
+      isRecipe: computed(() => false),
+      targetRecipe: computed(() => null),
+      displayName: computed(() => 'Test Display Name'),
+      transportIcon: computed(() => 'test-transport-icon'),
     })
 
     const link = createMaterialLink('Smelting', 'Construction', TEST_ITEMS.IRON_INGOT, 30)
@@ -217,12 +132,16 @@ describe('RecipeLinkTarget Integration', () => {
   })
 
   it('shows empty link text for output type without target', async () => {
-    // Mock link data to show no target
-    mockUseLinkData.linkTarget = computed(() => '')
-    const { useLinkData } = vi.mocked(await import('@/composables/useLinkData'))
-    useLinkData.mockReturnValue({
-      ...mockUseLinkData,
+    // Update the centralized mock to show no target
+    const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
+    mockUseLinkData.mockReturnValue({
+      linkId: computed(() => 'test-link-id'),
+      materialItem: computed(() => ({ name: 'Test Item', icon: 'test-icon' }) as Item),
       linkTarget: computed(() => ''),
+      isRecipe: computed(() => false),
+      targetRecipe: computed(() => null),
+      displayName: computed(() => 'Test Display Name'),
+      transportIcon: computed(() => 'test-transport-icon'),
     })
 
     const link = createMaterialLink('Smelting', '', TEST_ITEMS.IRON_INGOT, 30)
@@ -232,12 +151,9 @@ describe('RecipeLinkTarget Integration', () => {
   })
 
   it('applies correct text color when link is built', async () => {
-    mockUseRecipeStatus.isLinkBuilt = vi.fn(() => true)
-    const { useRecipeStatus } = vi.mocked(await import('@/composables/useRecipeStatus'))
-    useRecipeStatus.mockReturnValue({
-      ...mockUseRecipeStatus,
-      isLinkBuilt: vi.fn(() => true),
-    })
+    // Update the centralized mock to return built state
+    const { mockIsLinkBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
+    mockIsLinkBuilt.mockReturnValueOnce(true)
 
     const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
     const wrapper = createWrapper(link, 'input')
@@ -246,12 +162,9 @@ describe('RecipeLinkTarget Integration', () => {
   })
 
   it('applies correct text color when link is not built', async () => {
-    mockUseRecipeStatus.isLinkBuilt = vi.fn(() => false)
-    const { useRecipeStatus } = vi.mocked(await import('@/composables/useRecipeStatus'))
-    useRecipeStatus.mockReturnValue({
-      ...mockUseRecipeStatus,
-      isLinkBuilt: vi.fn(() => false),
-    })
+    // Update the centralized mock to return unbuilt state
+    const { mockIsLinkBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
+    mockIsLinkBuilt.mockReturnValueOnce(false)
 
     const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
     const wrapper = createWrapper(link, 'input')
@@ -262,17 +175,16 @@ describe('RecipeLinkTarget Integration', () => {
   it('renders clickable recipe link when target is a recipe', async () => {
     const targetRecipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
 
-    // Mock as recipe with target
-    mockUseLinkData.isRecipe = computed(() => true)
-    mockUseLinkData.targetRecipe = computed(() => targetRecipe)
-    mockUseLinkData.displayName = computed(() => 'Iron Ingot Recipe')
-
-    const { useLinkData } = vi.mocked(await import('@/composables/useLinkData'))
-    useLinkData.mockReturnValue({
-      ...mockUseLinkData,
+    // Update the centralized mock for recipe target
+    const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
+    mockUseLinkData.mockReturnValue({
+      linkId: computed(() => 'test-link-id'),
+      materialItem: computed(() => ({ name: 'Test Item', icon: 'test-icon' }) as Item),
+      linkTarget: computed(() => 'test-target'),
       isRecipe: computed(() => true),
       targetRecipe: computed(() => targetRecipe),
       displayName: computed(() => 'Iron Ingot Recipe'),
+      transportIcon: computed(() => 'test-transport-icon'),
     })
 
     const link = createMaterialLink('Mining', TEST_RECIPES.IRON_INGOT, TEST_ITEMS.IRON_ORE, 30)
@@ -285,15 +197,16 @@ describe('RecipeLinkTarget Integration', () => {
   })
 
   it('renders static text when target is not a recipe', async () => {
-    // Mock as non-recipe
-    mockUseLinkData.isRecipe = computed(() => false)
-    mockUseLinkData.displayName = computed(() => 'Iron Ore Resource')
-
-    const { useLinkData } = vi.mocked(await import('@/composables/useLinkData'))
-    useLinkData.mockReturnValue({
-      ...mockUseLinkData,
+    // Update the centralized mock for non-recipe
+    const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
+    mockUseLinkData.mockReturnValue({
+      linkId: computed(() => 'test-link-id'),
+      materialItem: computed(() => ({ name: 'Test Item', icon: 'test-icon' }) as Item),
+      linkTarget: computed(() => 'test-target'),
       isRecipe: computed(() => false),
+      targetRecipe: computed(() => null),
       displayName: computed(() => 'Iron Ore Resource'),
+      transportIcon: computed(() => 'test-transport-icon'),
     })
 
     const link = createMaterialLink('', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
@@ -306,15 +219,16 @@ describe('RecipeLinkTarget Integration', () => {
   it('calls navigateToRecipe when clicking recipe link', async () => {
     const targetRecipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
 
-    // Mock as recipe with target
-    mockUseLinkData.isRecipe = computed(() => true)
-    mockUseLinkData.targetRecipe = computed(() => targetRecipe)
-
-    const { useLinkData } = vi.mocked(await import('@/composables/useLinkData'))
-    useLinkData.mockReturnValue({
-      ...mockUseLinkData,
+    // Update the centralized mock for recipe with target
+    const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
+    mockUseLinkData.mockReturnValue({
+      linkId: computed(() => 'test-link-id'),
+      materialItem: computed(() => ({ name: 'Test Item', icon: 'test-icon' }) as Item),
+      linkTarget: computed(() => 'test-target'),
       isRecipe: computed(() => true),
       targetRecipe: computed(() => targetRecipe),
+      displayName: computed(() => 'Test Display Name'),
+      transportIcon: computed(() => 'test-transport-icon'),
     })
 
     const link = createMaterialLink('Mining', TEST_RECIPES.IRON_INGOT, TEST_ITEMS.IRON_ORE, 30)
@@ -323,21 +237,24 @@ describe('RecipeLinkTarget Integration', () => {
     const clickableSpan = wrapper.find('.navigate-name')
     await clickableSpan.trigger('click')
 
-    expect(mockUseFloorNavigation.navigateToRecipe).toHaveBeenCalledWith(targetRecipe)
+    // Access the centralized mock function
+    const { mockNavigateToRecipe } = await import('@/__tests__/fixtures/composables/navigation')
+    expect(mockNavigateToRecipe).toHaveBeenCalledWith(targetRecipe)
   })
 
   it('prevents event propagation when clicking recipe link', async () => {
     const targetRecipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
 
-    // Mock as recipe with target
-    mockUseLinkData.isRecipe = computed(() => true)
-    mockUseLinkData.targetRecipe = computed(() => targetRecipe)
-
-    const { useLinkData } = vi.mocked(await import('@/composables/useLinkData'))
-    useLinkData.mockReturnValue({
-      ...mockUseLinkData,
+    // Update the centralized mock for recipe with target
+    const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
+    mockUseLinkData.mockReturnValue({
+      linkId: computed(() => 'test-link-id'),
+      materialItem: computed(() => ({ name: 'Test Item', icon: 'test-icon' }) as Item),
+      linkTarget: computed(() => 'test-target'),
       isRecipe: computed(() => true),
       targetRecipe: computed(() => targetRecipe),
+      displayName: computed(() => 'Test Display Name'),
+      transportIcon: computed(() => 'test-transport-icon'),
     })
 
     const link = createMaterialLink('Mining', TEST_RECIPES.IRON_INGOT, TEST_ITEMS.IRON_ORE, 30)
@@ -357,15 +274,16 @@ describe('RecipeLinkTarget Integration', () => {
   it('shows hover effects on recipe links', async () => {
     const targetRecipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
 
-    // Mock as recipe with target
-    mockUseLinkData.isRecipe = computed(() => true)
-    mockUseLinkData.targetRecipe = computed(() => targetRecipe)
-
-    const { useLinkData } = vi.mocked(await import('@/composables/useLinkData'))
-    useLinkData.mockReturnValue({
-      ...mockUseLinkData,
+    // Update the centralized mock for recipe with target
+    const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
+    mockUseLinkData.mockReturnValue({
+      linkId: computed(() => 'test-link-id'),
+      materialItem: computed(() => ({ name: 'Test Item', icon: 'test-icon' }) as Item),
+      linkTarget: computed(() => 'test-target'),
       isRecipe: computed(() => true),
       targetRecipe: computed(() => targetRecipe),
+      displayName: computed(() => 'Test Display Name'),
+      transportIcon: computed(() => 'test-transport-icon'),
     })
 
     const link = createMaterialLink('Mining', TEST_RECIPES.IRON_INGOT, TEST_ITEMS.IRON_ORE, 30)
@@ -395,15 +313,16 @@ describe('RecipeLinkTarget Integration', () => {
   })
 
   it('does not call navigation when clicking and target recipe is null', async () => {
-    // Mock as recipe but with null target
-    mockUseLinkData.isRecipe = computed(() => true)
-    mockUseLinkData.targetRecipe = computed(() => null)
-
-    const { useLinkData } = vi.mocked(await import('@/composables/useLinkData'))
-    useLinkData.mockReturnValue({
-      ...mockUseLinkData,
+    // Update the centralized mock for recipe with null target
+    const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
+    mockUseLinkData.mockReturnValue({
+      linkId: computed(() => 'test-link-id'),
+      materialItem: computed(() => ({ name: 'Test Item', icon: 'test-icon' }) as Item),
+      linkTarget: computed(() => 'test-target'),
       isRecipe: computed(() => true),
       targetRecipe: computed(() => null),
+      displayName: computed(() => 'Test Display Name'),
+      transportIcon: computed(() => 'test-transport-icon'),
     })
 
     const link = createMaterialLink('Mining', 'unknown-recipe', TEST_ITEMS.IRON_ORE, 30)
@@ -412,7 +331,9 @@ describe('RecipeLinkTarget Integration', () => {
     const clickableSpan = wrapper.find('.navigate-name')
     await clickableSpan.trigger('click')
 
-    expect(mockUseFloorNavigation.navigateToRecipe).not.toHaveBeenCalled()
+    // Access the centralized mock function
+    const { mockNavigateToRecipe } = await import('@/__tests__/fixtures/composables/navigation')
+    expect(mockNavigateToRecipe).not.toHaveBeenCalled()
   })
 
   it('calls composables with correct parameters', async () => {

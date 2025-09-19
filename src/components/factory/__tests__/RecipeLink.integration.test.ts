@@ -1,35 +1,27 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ref, computed, type ComputedRef } from 'vue'
+import { ref, computed } from 'vue'
 import RecipeLink from '@/components/factory/RecipeLink.vue'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
-import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
 import type { Material } from '@/types/factory'
-import type { IDataStore, IFactoryStore, IThemeStore, IErrorStore } from '@/types/stores'
 import type { Item } from '@/types/data'
 
-// Mock the composables
-vi.mock('@/composables/useStores', () => ({
-  getStores: vi.fn(() => ({
-    dataStore: createMockDataStore(),
-    factoryStore: {},
-  })),
-}))
+// Use centralized mock fixtures
+vi.mock('@/composables/useStores', async () => {
+  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
+  return { getStores: mockGetStores }
+})
 
-vi.mock('@/composables/useRecipeStatus', () => ({
-  useRecipeStatus: vi.fn(() => ({
-    isLinkBuilt: vi.fn(() => false),
-    setLinkBuilt: vi.fn(),
-  })),
-}))
+vi.mock('@/composables/useRecipeStatus', async () => {
+  const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
+  return { useRecipeStatus: mockUseRecipeStatus }
+})
 
-vi.mock('@/composables/useLinkData', () => ({
-  useLinkData: vi.fn(() => ({
-    materialItem: { name: 'Iron Ore', icon: 'Desc_OreIron_C' },
-    transportIcon: 'Desc_ConveyorBeltMk1_C',
-  })),
-}))
+vi.mock('@/composables/useLinkData', async () => {
+  const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
+  return { useLinkData: mockUseLinkData }
+})
 
 // Mock child components
 vi.mock('@/components/common/CachedIcon.vue', () => ({
@@ -67,66 +59,21 @@ describe('RecipeLink Integration', () => {
     IRON_INGOT: 'Desc_IronIngot_C',
   } as const
 
-  let mockDataStore: ReturnType<typeof createMockDataStore>
-  let mockFactoryStore: Partial<IFactoryStore>
-  let mockUseRecipeStatus: {
-    isRecipeComplete: ReturnType<typeof vi.fn>
-    setRecipeBuilt: ReturnType<typeof vi.fn>
-    isLinkBuilt: ReturnType<typeof vi.fn>
-    setLinkBuilt: ReturnType<typeof vi.fn>
-    getRecipePanelValue: ReturnType<typeof vi.fn>
-    leftoverProductsAsLinks: ReturnType<typeof vi.fn>
-  }
   let mockMaterialItemValue: ReturnType<typeof ref>
-  let mockUseLinkData: {
-    linkId: ComputedRef<string>
-    materialItem: ComputedRef<Item>
-    linkTarget: ComputedRef<string>
-    isRecipe: ComputedRef<boolean>
-    targetRecipe: ComputedRef<RecipeNode | null>
-    displayName: ComputedRef<string>
-    transportIcon: ComputedRef<string>
-  }
 
   beforeEach(async () => {
-    mockDataStore = createMockDataStore()
-    const enhancedDataStore = {
-      ...mockDataStore,
-      getRecipeDisplayName: vi.fn((recipeName: string) => recipeName),
-      getBuildingDisplayName: vi.fn((buildingName: string) => buildingName),
-      getRecipeProductionBuildings: vi.fn(() => ['Desc_SmelterMk1_C']),
-      loadData: vi.fn(),
-    }
+    // Reset all mocks before each test
+    vi.clearAllMocks()
 
-    mockFactoryStore = {
-      currentFactory: null,
-      setLinkBuiltState: vi.fn(),
-      getRecipeByName: vi.fn(),
-    }
-
-    const { getStores } = vi.mocked(await import('@/composables/useStores'))
-    getStores.mockReturnValue({
-      dataStore: enhancedDataStore as unknown as IDataStore,
-      factoryStore: mockFactoryStore as IFactoryStore,
-      themeStore: {} as IThemeStore,
-      errorStore: {} as IErrorStore,
-    })
-
-    mockUseRecipeStatus = {
-      isRecipeComplete: vi.fn(() => false),
-      setRecipeBuilt: vi.fn(),
-      isLinkBuilt: vi.fn(() => false),
-      setLinkBuilt: vi.fn(),
-      getRecipePanelValue: vi.fn(() => 'test-panel-value'),
-      leftoverProductsAsLinks: vi.fn(() => []),
-    }
-
+    // Setup reactive test data for material item
     mockMaterialItemValue = ref<Item | null>({
       name: 'Iron Ore',
       icon: TEST_ITEMS.IRON_ORE,
     } as Item)
 
-    mockUseLinkData = {
+    // Update the useLinkData mock to use the reactive material item
+    const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
+    mockUseLinkData.mockReturnValue({
       linkId: computed(() => 'test-link-id'),
       materialItem: computed(() => mockMaterialItemValue.value as Item),
       linkTarget: computed(() => 'test-target'),
@@ -134,13 +81,7 @@ describe('RecipeLink Integration', () => {
       targetRecipe: computed(() => null),
       displayName: computed(() => 'Test Display Name'),
       transportIcon: computed(() => 'Desc_ConveyorBeltMk1_C'),
-    }
-
-    const { useRecipeStatus } = vi.mocked(await import('@/composables/useRecipeStatus'))
-    const { useLinkData } = vi.mocked(await import('@/composables/useLinkData'))
-
-    useRecipeStatus.mockReturnValue(mockUseRecipeStatus)
-    useLinkData.mockReturnValue(mockUseLinkData)
+    })
   })
 
   const createRecipeNode = (recipeName: string): RecipeNode => {
@@ -229,16 +170,9 @@ describe('RecipeLink Integration', () => {
   })
 
   it('handles built state correctly when link is built', async () => {
-    // Set up fresh mock that returns true
-    const { useRecipeStatus } = vi.mocked(await import('@/composables/useRecipeStatus'))
-    useRecipeStatus.mockReturnValue({
-      isRecipeComplete: vi.fn(() => false),
-      setRecipeBuilt: vi.fn(),
-      isLinkBuilt: vi.fn(() => true),
-      setLinkBuilt: vi.fn(),
-      getRecipePanelValue: vi.fn(() => 'test-panel-value'),
-      leftoverProductsAsLinks: vi.fn(() => []),
-    })
+    // Access the centralized mock functions
+    const { mockIsLinkBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
+    mockIsLinkBuilt.mockReturnValueOnce(true)
 
     const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
@@ -255,16 +189,9 @@ describe('RecipeLink Integration', () => {
   })
 
   it('handles unbuilt state correctly when link is not built', async () => {
-    // Set up fresh mock that returns false
-    const { useRecipeStatus } = vi.mocked(await import('@/composables/useRecipeStatus'))
-    useRecipeStatus.mockReturnValue({
-      isRecipeComplete: vi.fn(() => false),
-      setRecipeBuilt: vi.fn(),
-      isLinkBuilt: vi.fn(() => false),
-      setLinkBuilt: vi.fn(),
-      getRecipePanelValue: vi.fn(() => 'test-panel-value'),
-      leftoverProductsAsLinks: vi.fn(() => []),
-    })
+    // Access the centralized mock functions (default is false)
+    const { mockIsLinkBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
+    mockIsLinkBuilt.mockReturnValueOnce(false)
 
     const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
@@ -289,7 +216,9 @@ describe('RecipeLink Integration', () => {
     const card = wrapper.find('.recipe-link')
     await card.trigger('click')
 
-    expect(mockUseRecipeStatus.setLinkBuilt).toHaveBeenCalledWith(link, true)
+    // Access the centralized mock function
+    const { mockSetLinkBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
+    expect(mockSetLinkBuilt).toHaveBeenCalledWith(link, true)
   })
 
   it('toggles built state when checkbox is changed', async () => {
@@ -301,7 +230,9 @@ describe('RecipeLink Integration', () => {
     const checkbox = wrapper.findComponent({ name: 'VCheckbox' })
     await checkbox.vm.$emit('update:modelValue', true)
 
-    expect(mockUseRecipeStatus.setLinkBuilt).toHaveBeenCalledWith(link, true)
+    // Access the centralized mock function
+    const { mockSetLinkBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
+    expect(mockSetLinkBuilt).toHaveBeenCalledWith(link, true)
   })
 
   it('displays fallback material name when materialItem is not available', () => {

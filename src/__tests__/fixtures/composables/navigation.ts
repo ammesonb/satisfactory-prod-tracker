@@ -1,6 +1,7 @@
 import { vi } from 'vitest'
 import { computed } from 'vue'
 import type { Floor } from '@/types/factory'
+import type { RecipeNode } from '@/logistics/graph-node'
 
 // Floor Management mocks
 export const mockGetEligibleFloors = vi.fn(() => [
@@ -53,7 +54,7 @@ export const mockUseLinkData = vi.fn(() => ({
   materialItem: computed(() => ({ name: 'Iron Ore', icon: 'Desc_OreIron_C' })),
   linkTarget: computed(() => 'test-target'),
   isRecipe: computed(() => false),
-  targetRecipe: computed(() => null),
+  targetRecipe: computed<RecipeNode | null>(() => null),
   displayName: computed(() => 'Test Display Name'),
   transportIcon: computed(() => 'Desc_ConveyorBeltMk1_C'),
 }))
