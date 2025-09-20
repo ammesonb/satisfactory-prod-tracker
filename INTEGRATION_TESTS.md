@@ -201,6 +201,8 @@ it('calls openFloorEditor when button clicked', async () => {
 
 ### Testing Component Functionality
 
+Also check the README in `src/__tests__/fixtures/composables` for more information on how to perform mocking.
+
 **Example Integration Test Structure:**
 
 ```typescript
