@@ -179,17 +179,24 @@ it('calls openFloorEditor when button clicked', async () => {
 **✅ DO Test:**
 
 - Component renders without errors
-- User interactions trigger expected behavior
+- User interactions trigger expected behavior (button clicks open modals, change state)
 - Composable function calls with correct parameters
-- Element states based on props/store state
-- Conditional rendering
-- Events emitted with correct payloads
+- Conditional rendering based on data/state (elements show/hide based on conditions)
+- Data display accuracy (correct values are displayed)
+- Component integration, e.g.:
+  - computed props passed to the child are correct
+  - events that the child component emit are handled properly
+- Events emitted from component with correct payloads
 
 **❌ DON'T Test:**
 
 - Vuetify component internals
 - Implementation details (method names, variables)
-- Styling or CSS classes
+- Styling or CSS classes (e.g., `d-none`, `d-md-inline`, `text-truncate`)
+- Vuetify component props unless they directly affect behavior (e.g., `color="info"`, `size="small"`)
+- Layout structure details (e.g., `VSpacer`, specific DOM hierarchy)
+- Screen responsiveness or breakpoint behavior
+- Component internal attributes that don't affect functionality
 - Composable internal logic (test separately)
 
 ### Testing Component Functionality
@@ -339,6 +346,24 @@ describe('ComponentName Integration', () => {
     expect(wrapper.text()).toContain(ironOreItem.name) // "Iron Ore"
   })
 }
+```
+
+### Finding Interactive Elements
+
+**Focus on Functionality, Not Implementation:**
+
+```typescript
+// ✅ Good - find by what the element does
+const buttons = wrapper.findAllComponents({ name: 'VBtn' })
+const importBtn = buttons.find((btn) => btn.text().includes('Import/Export'))
+
+// ✅ Good - find by content or semantic meaning
+const submitBtn = wrapper.find('button[type="submit"]')
+const modal = wrapper.findComponent({ name: 'ImportExportModal' })
+
+// ❌ Avoid - testing specific props/classes unless they affect behavior
+const importBtn = wrapper.find('v-btn[color="secondary"][variant="outlined"]')
+const responsiveText = wrapper.find('.d-none.d-md-inline')
 ```
 
 ### Async Testing
