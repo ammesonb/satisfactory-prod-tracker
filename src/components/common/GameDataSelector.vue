@@ -47,6 +47,7 @@ const emit = defineEmits<{
 
 const { searchInput, filteredItems, updateSearch } = useDataSearch(
   toRef(props, 'items'),
+  (item: ItemOption, query: string) => item.name.toLowerCase().includes(query.toLowerCase()),
   props.searchOptions,
 )
 

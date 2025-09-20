@@ -1,10 +1,13 @@
 import { ref, computed, type Ref } from 'vue'
 import { refDebounced } from '@vueuse/core'
-import type { ItemOption } from '@/types/data'
 import type { SearchOptions } from '@/types/ui'
 import { DEFAULT_SEARCH_OPTIONS } from './constants'
 
-export function useDataSearch(items: Ref<ItemOption[]>, options?: SearchOptions) {
+export function useDataSearch<T>(
+  items: Ref<T[]>,
+  matchesFn: (item: T, query: string) => boolean,
+  options?: SearchOptions,
+) {
   const searchInput = ref('')
   const config = { ...DEFAULT_SEARCH_OPTIONS, ...options }
   const debouncedSearch = refDebounced(searchInput, config.debounceMs)
@@ -16,9 +19,7 @@ export function useDataSearch(items: Ref<ItemOption[]>, options?: SearchOptions)
       return items.value.slice(0, config.maxNoSearchResults)
     }
 
-    return items.value
-      .filter((item) => item.name.toLowerCase().includes(query))
-      .slice(0, config.maxResults)
+    return items.value.filter((item) => matchesFn(item, query)).slice(0, config.maxResults)
   })
 
   const updateSearch = (value: string) => {

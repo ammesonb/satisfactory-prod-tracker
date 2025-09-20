@@ -21,11 +21,6 @@ vi.mock('@/composables/useRecipeStatus', async () => {
   const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
   return { useRecipeStatus: mockUseRecipeStatus }
 })
-
-vi.mock('@/composables/useFloorNavigation', async () => {
-  const { mockFormatFloorId } = await import('@/__tests__/fixtures/composables')
-  return { formatFloorId: mockFormatFloorId }
-})
 ```
 
 ### Component Mocking for Modal/Dialog Testing

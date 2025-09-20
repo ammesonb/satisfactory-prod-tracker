@@ -10,6 +10,11 @@ export const mockFactories = ref({})
 // Factory store action mocks
 export const mockAddFactory = vi.fn()
 export const mockSetSelectedFactory = vi.fn()
+export const mockRemoveFactory = vi.fn()
+export const mockSetLinkBuiltState = vi.fn()
+export const mockGetRecipeByName = vi.fn()
+export const mockExportFactories = vi.fn()
+export const mockImportFactories = vi.fn()
 
 export const mockFactoryStore = {
   get selected() {
@@ -29,9 +34,9 @@ export const mockFactoryStore = {
   },
   addFactory: mockAddFactory,
   setSelectedFactory: mockSetSelectedFactory,
-  removeFactory: vi.fn(),
-  setLinkBuiltState: vi.fn(),
-  getRecipeByName: vi.fn(),
-  exportFactories: vi.fn(),
-  importFactories: vi.fn(),
+  removeFactory: mockRemoveFactory,
+  setLinkBuiltState: mockSetLinkBuiltState,
+  getRecipeByName: mockGetRecipeByName,
+  exportFactories: mockExportFactories,
+  importFactories: mockImportFactories,
 }
