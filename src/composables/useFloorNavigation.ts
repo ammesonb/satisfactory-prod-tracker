@@ -1,23 +1,16 @@
 import { ref } from 'vue'
 import { useFactoryStore } from '@/stores'
 import type { RecipeNode } from '@/logistics/graph-node'
+import {
+  ExpandRecipeState,
+  formatRecipeId,
+  getFloorIndexFromIdentifier,
+  isFloorIdentifier,
+  isRecipeIdentifier,
+} from '@/utils/floors'
 
 // Global singleton state
 const expandedFloors = ref<number[]>([])
-
-const floorPrefix = 'floor-'
-const recipePrefix = 'recipe-'
-
-export const ExpandRecipeState = {
-  Complete: true,
-  Incomplete: false,
-  All: null,
-}
-
-// Element ID formatters
-export const formatFloorId = (floorIndex: number): string => `${floorPrefix}${floorIndex}`
-export const formatRecipeId = (floorIndex: number, recipeName: string): string =>
-  `${recipePrefix}${floorIndex}-${recipeName}`
 
 export function useFloorNavigation() {
   const factoryStore = useFactoryStore()
@@ -83,8 +76,8 @@ export function useFloorNavigation() {
   }
 
   const navigateToElement = (elementId: string) => {
-    if (elementId.startsWith(floorPrefix)) {
-      const floorIndex = parseInt(elementId.replace(floorPrefix, ''))
+    if (isFloorIdentifier(elementId)) {
+      const floorIndex = getFloorIndexFromIdentifier(elementId)
       expandFloor(floorIndex)
 
       // Scroll to element after a delay to ensure expansion
@@ -96,7 +89,7 @@ export function useFloorNavigation() {
           window.scrollTo({ top: y, behavior: 'smooth' })
         }
       }, 100)
-    } else if (elementId.startsWith(recipePrefix)) {
+    } else if (isRecipeIdentifier(elementId)) {
       const parts = elementId.split('-')
       const floorIndex = parseInt(parts[1])
       expandFloor(floorIndex)

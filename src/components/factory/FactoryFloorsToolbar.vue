@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { getStores } from '@/composables/useStores'
-import { ExpandRecipeState, useFloorNavigation } from '@/composables/useFloorNavigation'
+import { useFloorNavigation } from '@/composables/useFloorNavigation'
 import { useRecipeStatus } from '@/composables/useRecipeStatus'
 import { useFloorManagement } from '@/composables/useFloorManagement'
+import { ExpandRecipeState } from '@/utils/floors'
 
 const { factoryStore } = getStores()
 const factoryHasFloors = computed(() => (factoryStore.currentFactory?.floors.length ?? 0) > 0)

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
-import { getStores } from '@/composables/useStores'
 import { useFloorManagement } from '@/composables/useFloorManagement'
-import { getIconURL } from '@/logistics/images'
-import { formatFloorId, formatRecipeId } from '@/composables/useFloorNavigation'
 import { useRecipeStatus } from '@/composables/useRecipeStatus'
+import { getStores } from '@/composables/useStores'
+import { getIconURL } from '@/logistics/images'
+import { formatFloorId, formatRecipeId } from '@/utils/floors'
 
 const emit = defineEmits<{
   close: []

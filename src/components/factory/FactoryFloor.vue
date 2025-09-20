@@ -4,7 +4,7 @@ import type { Floor } from '@/types/factory'
 import { getIconURL } from '@/logistics/images'
 import { getStores } from '@/composables/useStores'
 import { useFloorManagement } from '@/composables/useFloorManagement'
-import { formatFloorId } from '@/composables/useFloorNavigation'
+import { formatFloorId } from '@/utils/floors'
 import { useRecipeStatus } from '@/composables/useRecipeStatus'
 
 interface Props {

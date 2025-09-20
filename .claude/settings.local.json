@@ -8,7 +8,12 @@
       "Bash(grep:*)",
       "Bash(npm run test:run:*)",
       "Bash(npm run ci:*)",
-      "Bash(npm run format:*)"
+      "Bash(npm run format:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm run lint:*)",
+      "Bash(mkdir:*)",
+      "WebFetch(domain:vitest.dev)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

@@ -233,7 +233,7 @@ describe('GameDataSelector Integration', () => {
     })
 
     const cachedIcon = wrapper.findComponent({ name: 'CachedIcon' })
-    expect(cachedIcon.props('size')).toBe(ICON_SIZES.DEFAULT_SELECTED) // default selectedIconSize
+    expect(cachedIcon.props('size')).toBe(ICON_SIZES.DEFAULT_SELECTED)
   })
 
   it('shows correct autocomplete configuration', () => {

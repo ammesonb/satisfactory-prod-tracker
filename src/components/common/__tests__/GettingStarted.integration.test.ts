@@ -1,19 +1,16 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import GettingStarted from '@/components/common/GettingStarted.vue'
-import type { IFactoryStore } from '@/types/stores'
+import {
+  mockAddFactory,
+  mockSetSelectedFactory,
+} from '@/__tests__/fixtures/composables/factoryStore'
 
 // Mock the useStores composable
-const mockFactoryStore = {
-  addFactory: vi.fn(),
-  setSelectedFactory: vi.fn(),
-} as Partial<IFactoryStore>
-
-vi.mock('@/composables/useStores', () => ({
-  getStores: vi.fn(() => ({
-    factoryStore: mockFactoryStore,
-  })),
-}))
+vi.mock('@/composables/useStores', async () => {
+  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
+  return { getStores: mockGetStores }
+})
 
 describe('GettingStarted Integration', () => {
   // Test constants
@@ -143,7 +140,7 @@ describe('GettingStarted Integration', () => {
 
     await sampleButton.trigger('click')
 
-    expect(mockFactoryStore.addFactory).toHaveBeenCalledWith(
+    expect(mockAddFactory).toHaveBeenCalledWith(
       SAMPLE_DATA.FACTORY_NAME,
       SAMPLE_DATA.FACTORY_ICON,
       expect.any(String), // sample recipes string
@@ -157,7 +154,7 @@ describe('GettingStarted Integration', () => {
 
     await sampleButton.trigger('click')
 
-    expect(mockFactoryStore.setSelectedFactory).toHaveBeenCalledWith(SAMPLE_DATA.FACTORY_NAME)
+    expect(mockSetSelectedFactory).toHaveBeenCalledWith(SAMPLE_DATA.FACTORY_NAME)
   })
 
   it('passes sample recipes to addFactory with correct format', async () => {
@@ -166,7 +163,7 @@ describe('GettingStarted Integration', () => {
 
     await sampleButton.trigger('click')
 
-    const addFactoryCall = vi.mocked(mockFactoryStore.addFactory!).mock.calls[0]
+    const addFactoryCall = vi.mocked(mockAddFactory).mock.calls[0]
     const sampleRecipes = addFactoryCall[2]
 
     // Verify sample recipes contain expected recipe patterns
@@ -184,7 +181,7 @@ describe('GettingStarted Integration', () => {
   it('handles addFactory errors gracefully', async () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const mockError = new Error('Failed to add factory')
-    vi.mocked(mockFactoryStore.addFactory!).mockImplementation(() => {
+    vi.mocked(mockAddFactory).mockImplementation(() => {
       throw mockError
     })
 
@@ -194,7 +191,7 @@ describe('GettingStarted Integration', () => {
     await sampleButton.trigger('click')
 
     expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to add sample factory:', mockError)
-    expect(mockFactoryStore.setSelectedFactory).not.toHaveBeenCalled()
+    expect(mockSetSelectedFactory).not.toHaveBeenCalled()
 
     consoleErrorSpy.mockRestore()
   })

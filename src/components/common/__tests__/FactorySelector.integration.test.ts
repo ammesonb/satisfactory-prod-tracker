@@ -1,21 +1,21 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import FactorySelector from '@/components/common/FactorySelector.vue'
 import type { Factory } from '@/types/factory'
-import type { MockUseSelection } from '@/__tests__/fixtures/types/composables'
-import { createMockUseSelection } from '@/__tests__/fixtures/types/composables'
+import {
+  mockAllSelected,
+  mockSomeSelected,
+  mockIsSelected,
+  mockToggleAll,
+  mockToggleItem,
+} from '@/__tests__/fixtures/composables/selection'
 
 // Mock the useSelection composable
-vi.mock('@/composables/useSelection', () => ({
-  useSelection: vi.fn(() => ({
-    allSelected: ref(false),
-    someSelected: ref(false),
-    toggleAll: vi.fn(),
-    toggleItem: vi.fn(),
-    isSelected: vi.fn(() => false),
-  })),
-}))
+vi.mock('@/composables/useSelection', async () => {
+  const { mockUseSelection } = await import('@/__tests__/fixtures/composables')
+  return { useSelection: mockUseSelection }
+})
 
 // Mock the image utility
 vi.mock('@/logistics/images', () => ({
@@ -68,12 +68,8 @@ describe('FactorySelector Integration', () => {
     },
   ]
 
-  let mockUseSelection: MockUseSelection
-
   beforeEach(async () => {
-    const { useSelection } = await import('@/composables/useSelection')
-    mockUseSelection = vi.mocked(useSelection).mock.results[0]?.value || createMockUseSelection()
-    vi.mocked(useSelection).mockReturnValue(mockUseSelection)
+    vi.clearAllMocks()
   })
 
   const createWrapper = (props = {}) => {
@@ -130,7 +126,7 @@ describe('FactorySelector Integration', () => {
     const selectAllCheckbox = wrapper.find('input[type="checkbox"]')
     await selectAllCheckbox.trigger('click')
 
-    expect(mockUseSelection.toggleAll).toHaveBeenCalled()
+    expect(mockToggleAll).toHaveBeenCalled()
   })
 
   it('calls toggleItem when factory list item is clicked', async () => {
@@ -139,7 +135,7 @@ describe('FactorySelector Integration', () => {
     const firstFactoryItem = wrapper.find('.v-list-item')
     await firstFactoryItem.trigger('click')
 
-    expect(mockUseSelection.toggleItem).toHaveBeenCalledWith(FACTORY_NAMES.IRON)
+    expect(mockToggleItem).toHaveBeenCalledWith(FACTORY_NAMES.IRON)
   })
 
   it('calls toggleItem when individual factory checkbox is clicked', async () => {
@@ -148,7 +144,7 @@ describe('FactorySelector Integration', () => {
     const factoryCheckboxes = wrapper.findAll('.v-list-item input[type="checkbox"]')
     await factoryCheckboxes[1].trigger('click')
 
-    expect(mockUseSelection.toggleItem).toHaveBeenCalledWith(FACTORY_NAMES.STEEL)
+    expect(mockToggleItem).toHaveBeenCalledWith(FACTORY_NAMES.STEEL)
   })
 
   it('prevents event propagation when clicking factory checkbox directly', async () => {
@@ -160,12 +156,12 @@ describe('FactorySelector Integration', () => {
     await factoryCheckbox.trigger('click')
 
     // Verify that toggleItem was called (checkbox handler)
-    expect(mockUseSelection.toggleItem).toHaveBeenCalledWith(FACTORY_NAMES.IRON)
+    expect(mockToggleItem).toHaveBeenCalledWith(FACTORY_NAMES.IRON)
   })
 
   it('shows indeterminate state when some factories are selected', () => {
-    mockUseSelection.someSelected = computed(() => true)
-    mockUseSelection.allSelected = computed(() => false)
+    mockSomeSelected.mockReturnValue(true)
+    mockAllSelected.mockReturnValue(false)
 
     const wrapper = createWrapper()
 
@@ -174,8 +170,8 @@ describe('FactorySelector Integration', () => {
   })
 
   it('shows checked state when all factories are selected', () => {
-    mockUseSelection.allSelected = computed(() => true)
-    mockUseSelection.someSelected = computed(() => true)
+    mockAllSelected.mockReturnValue(true)
+    mockSomeSelected.mockReturnValue(true)
 
     const wrapper = createWrapper()
 
@@ -185,7 +181,7 @@ describe('FactorySelector Integration', () => {
   })
 
   it('shows individual factory as selected when isSelected returns true', () => {
-    mockUseSelection.isSelected.mockImplementation((name: string) => name === FACTORY_NAMES.STEEL)
+    mockIsSelected.mockImplementation((name: string) => name === FACTORY_NAMES.STEEL)
 
     const wrapper = createWrapper()
 

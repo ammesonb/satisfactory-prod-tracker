@@ -1,46 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import {
-  isFluid,
-  BELT_CAPACITIES,
-  PIPELINE_CAPACITIES,
-  BELT_ITEM_NAMES,
-  PIPELINE_ITEM_NAMES,
-} from '@/logistics/constants'
-import { getStores } from '@/composables/useStores'
-import { calculateTransportCapacity, type RecipeNode } from '@/logistics/graph-node'
+import { useTransport } from '@/composables/useTransport'
+import type { RecipeNode } from '@/logistics/graph-node'
 import type { Material } from '@/types/factory'
 
 const props = defineProps<{
   recipe: RecipeNode
   link: Material
-  type: 'input' | 'output'
+  direction: 'input' | 'output'
   isHovered?: boolean
 }>()
 
-const { dataStore: data } = getStores()
-
-const buildingCounts = computed(() => {
-  // Only calculate when hovered to improve performance
-  if (!props.isHovered) return []
-
-  const sources = (props.type === 'input' ? data.recipeIngredients : data.recipeProducts)(
-    props.recipe.recipe.name,
-  )
-  const source = sources.find((s) => s.item === props.link.material)
-  if (!source) return []
-
-  return calculateTransportCapacity(props.link.material, source.amount, props.recipe.recipe.count)
-})
-
-const transportConfig = computed(() => {
-  const isFluidMaterial = isFluid(props.link.material)
-  return {
-    units: isFluidMaterial ? 'm³/min' : 'items/min',
-    capacities: isFluidMaterial ? PIPELINE_CAPACITIES : BELT_CAPACITIES,
-    itemNames: isFluidMaterial ? PIPELINE_ITEM_NAMES : BELT_ITEM_NAMES,
-  }
-})
+const { buildingCounts, transportItems } = useTransport(
+  props.recipe,
+  props.link,
+  props.direction,
+  props.isHovered,
+)
 </script>
 
 <template>
@@ -53,10 +28,7 @@ const transportConfig = computed(() => {
             <template v-for="(buildingCount, index) in buildingCounts" :key="index">
               <td class="text-center pa-1">
                 <div class="d-flex flex-column align-center">
-                  <CachedIcon
-                    :icon="data.buildings[transportConfig.itemNames[index]]?.icon ?? ''"
-                    :size="32"
-                  />
+                  <CachedIcon :icon="transportItems[index].icon" :size="32" />
                   <div class="text-caption text-medium-emphasis mt-1">
                     {{ buildingCount }} &times; MK{{ index + 1 }}
                   </div>

@@ -16,6 +16,14 @@ const { setRecipeBuilt } = useRecipeStatus()
 const updateBuiltState = (value: boolean) => {
   setRecipeBuilt(props.recipe.recipe.name, value)
 }
+
+const cardClass = computed(() => {
+  return {
+    'elevation-2': true,
+    'bg-green-lighten-4': props.recipe.built,
+    'bg-surface': !props.recipe.built,
+  }
+})
 </script>
 
 <template>
@@ -25,11 +33,7 @@ const updateBuiltState = (value: boolean) => {
       hover
       @click="updateBuiltState(!props.recipe.built)"
       style="cursor: pointer; transition: all 0.2s ease"
-      :class="{
-        'elevation-2': true,
-        'bg-green-lighten-4': props.recipe.built,
-        'bg-surface': !props.recipe.built,
-      }"
+      :class="cardClass"
     >
       <v-card-text class="pa-3">
         <div class="d-flex flex-row align-center gap-2">

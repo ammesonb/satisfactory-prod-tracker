@@ -8,14 +8,14 @@ import { useLinkData } from '@/composables/useLinkData'
 const props = defineProps<{
   link: Material
   recipe: RecipeNode
-  type: 'input' | 'output'
+  direction: 'input' | 'output'
 }>()
 
 const { setLinkBuilt, isLinkBuilt } = useRecipeStatus()
 
 const { materialItem, transportIcon } = useLinkData(
   computed(() => props.link),
-  computed(() => props.type),
+  computed(() => props.direction),
 )
 
 const built = computed(() => isLinkBuilt(props.link))
@@ -24,20 +24,19 @@ const updateBuiltState = (value: boolean) => {
   setLinkBuilt(props.link, value)
 }
 
+const cardStyles = computed(() => {
+  return {
+    'elevation-2': true,
+    'bg-green-lighten-4': built,
+    'bg-surface': !built.value,
+  }
+})
+
 const isTransportHovered = ref(false)
 </script>
 
 <template>
-  <v-card
-    class="recipe-link mb-1"
-    hover
-    @click="updateBuiltState(!built)"
-    :class="{
-      'elevation-2': true,
-      'bg-green-lighten-4': built,
-      'bg-surface': !built,
-    }"
-  >
+  <v-card class="recipe-link mb-1" hover @click="updateBuiltState(!built)" :class="cardStyles">
     <v-card-text class="pa-2">
       <!-- Row 1: Icon + Material Name with Amount -->
       <v-row no-gutters class="mb-1">
@@ -72,7 +71,7 @@ const isTransportHovered = ref(false)
             <TransportCapacityTooltip
               :recipe="props.recipe"
               :link="props.link"
-              :type="props.type"
+              :direction="props.direction"
               :is-hovered="isTransportHovered"
             />
           </v-tooltip>
@@ -91,7 +90,7 @@ const isTransportHovered = ref(false)
           />
         </v-col>
         <v-col class="d-flex align-center">
-          <RecipeLinkTarget :link="props.link" :type="props.type" />
+          <RecipeLinkTarget :link="props.link" :direction="props.direction" />
         </v-col>
       </v-row>
     </v-card-text>
