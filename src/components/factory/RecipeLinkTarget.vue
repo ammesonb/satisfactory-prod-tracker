@@ -47,7 +47,7 @@ const navigateClass = computed(() => {
 </script>
 
 <template>
-  <div class="text-caption" :class="textColorClass">
+  <div class="recipe-link-target text-caption" :class="textColorClass">
     {{ linkText }}
 
     <!-- Recipe Link (clickable) -->

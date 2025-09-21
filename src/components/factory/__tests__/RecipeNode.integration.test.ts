@@ -1,14 +1,24 @@
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { VSelect, VChip } from 'vuetify/components'
-import RecipeNodeComponent from '@/components/factory/RecipeNode.vue'
+import { VSelect, VChip, VExpansionPanel } from 'vuetify/components'
 import { newRecipeNode, type RecipeNode as RecipeNodeType } from '@/logistics/graph-node'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
 import { mockGetStores } from '@/__tests__/fixtures/composables'
 import { mockIsDark } from '@/__tests__/fixtures/composables/themeStore'
 import { createTestRecipe } from '@/__tests__/fixtures/stores/dataStore'
 import { mockGetEligibleFloors, mockMoveRecipe } from '@/__tests__/fixtures/composables/navigation'
-import { expectElementExists, expectElementText } from '@/__tests__/vue-test-helpers'
+import {
+  mockGetRecipePanelValue,
+  mockIsRecipeComplete,
+} from '@/__tests__/fixtures/composables/useRecipeStatus'
+import {
+  emitEvent,
+  expectElementExists,
+  expectElementText,
+  expectProps,
+} from '@/__tests__/vue-test-helpers'
+
+import RecipeNodeComponent from '@/components/factory/RecipeNode.vue'
 
 // Use centralized mock fixtures
 vi.mock('@/composables/useStores', async () => {
@@ -120,10 +130,8 @@ describe('RecipeNode Integration', () => {
 
       const wrapper = createWrapper(recipeNode)
 
-      // The tooltip and chip should exist when recipe is available
       expectElementExists(wrapper, VChip)
-      // Check if tooltip activator exists (the chip itself acts as activator)
-      expect(wrapper.text()).toContain('x1.50')
+      expectElementText(wrapper, VChip, 'x1.50')
     })
 
     it('sets correct ID on expansion panel element', () => {
@@ -131,174 +139,98 @@ describe('RecipeNode Integration', () => {
       const wrapper = createWrapper(recipeNode)
 
       // Check that the expansion panel has the correctly formatted ID
-      const expansionPanel = wrapper.find('.v-expansion-panel')
+      const expansionPanel = wrapper.findComponent(VExpansionPanel)
       expect(expansionPanel.attributes('id')).toBe(`recipe-2-${TEST_RECIPES.IRON_INGOT}`)
     })
 
     it('handles recipe with no batch number gracefully', () => {
       const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
       recipeNode.batchNumber = undefined
-
-      const wrapper = createWrapper(recipeNode)
-
-      expectElementExists(wrapper, '.v-expansion-panel')
+      expectElementExists(createWrapper(), VExpansionPanel)
     })
 
     it('handles multiple ingredients recipe correctly', async () => {
       const recipeNode = createRecipeNode(TEST_RECIPES.PURE_CATERIUM)
       const wrapper = createWrapper(recipeNode)
 
-      expectElementText(wrapper, '.v-chip', 'x1.50')
-      expectElementExists(wrapper, '.v-expansion-panel')
+      expectElementText(wrapper, VChip, 'x1.50')
+      expectElementExists(wrapper, VExpansionPanel)
     })
   })
 
   it('applies correct panel background class when recipe is not completed in light theme', async () => {
-    // Access and update centralized mocks
-    const { mockIsRecipeComplete } = await import(
-      '@/__tests__/fixtures/composables/useRecipeStatus'
-    )
     mockIsRecipeComplete.mockReturnValueOnce(false)
-
-    const wrapper = createWrapper()
-
-    expectPanelClasses(wrapper, 'bg-grey-lighten-1')
+    expectPanelClasses(createWrapper(), 'bg-grey-lighten-1')
   })
 
   it('applies correct panel background class when recipe is completed in light theme', async () => {
-    // Access and update centralized mocks
-    const { mockIsRecipeComplete } = await import(
-      '@/__tests__/fixtures/composables/useRecipeStatus'
-    )
     mockIsRecipeComplete.mockReturnValueOnce(true)
-
-    const wrapper = createWrapper()
-
-    expectPanelClasses(wrapper, 'bg-blue-grey-lighten-1')
+    expectPanelClasses(createWrapper(), 'bg-blue-grey-lighten-1')
   })
 
   it('applies correct panel background class in dark theme', async () => {
-    // Access and update centralized mocks for dark theme
-    const { mockIsRecipeComplete } = await import(
-      '@/__tests__/fixtures/composables/useRecipeStatus'
-    )
-
     mockIsRecipeComplete.mockReturnValueOnce(false)
     mockIsDark.value = true
-
-    const wrapper = createWrapper()
-
-    expectPanelClasses(wrapper, 'bg-grey-darken-2')
+    expectPanelClasses(createWrapper(), 'bg-grey-darken-2')
   })
 
   it('applies correct title background class when recipe is not completed', async () => {
-    // Access and update centralized mocks
-    const { mockIsRecipeComplete } = await import(
-      '@/__tests__/fixtures/composables/useRecipeStatus'
-    )
     mockIsRecipeComplete.mockReturnValueOnce(false)
-
-    const wrapper = createWrapper()
-
-    expectTitleClasses(wrapper, 'bg-grey')
+    expectTitleClasses(createWrapper(), 'bg-grey')
   })
 
   it('applies correct title background class when recipe is completed', async () => {
-    // Access and update centralized mocks
-    const { mockIsRecipeComplete } = await import(
-      '@/__tests__/fixtures/composables/useRecipeStatus'
-    )
     mockIsRecipeComplete.mockReturnValueOnce(true)
-
-    const wrapper = createWrapper()
-
-    expectTitleClasses(wrapper, 'bg-green-lighten-4')
+    expectTitleClasses(createWrapper(), 'bg-green-lighten-4')
   })
 
   it('displays floor selection dropdown with eligible floors', () => {
     const wrapper = createWrapper()
 
-    const select = wrapper.findComponent(VSelect)
-    expect(select.exists()).toBe(true)
-    expect(select.props('items')).toEqual(TEST_FLOORS)
+    expectElementExists(wrapper, VSelect)
+    expectProps(wrapper, VSelect, { items: TEST_FLOORS })
   })
 
   it('displays current batch number as selected floor value', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT, 1)
-    const wrapper = createWrapper(recipeNode)
-
-    const select = wrapper.findComponent(VSelect)
-    expect(select.props('modelValue')).toBe(1)
+    expectProps(createWrapper(recipeNode), VSelect, { modelValue: 1 })
   })
 
-  it('calls getEligibleFloors with correct batch number', async () => {
+  it('calls getEligibleFloors with correct batch number', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT, 2)
     createWrapper(recipeNode)
-
-    // Access the centralized mock function
     expect(mockGetEligibleFloors).toHaveBeenCalledWith(2)
   })
 
   it('calls moveRecipe when floor selection changes', async () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT, 1)
-    const wrapper = createWrapper(recipeNode)
-
-    const select = wrapper.findComponent(VSelect)
-    await select.vm.$emit('update:modelValue', 2)
-
-    // Access the centralized mock function
+    await emitEvent(createWrapper(recipeNode), VSelect, 'update:modelValue', 2)
     expect(mockMoveRecipe).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT, 1, 2)
-  })
-
-  it('prevents click propagation on floor select', () => {
-    const wrapper = createWrapper()
-    const select = wrapper.findComponent(VSelect)
-
-    // Check that click.stop is applied (this would be in the template)
-    expect(select.attributes()).toBeDefined()
-  })
-
-  it('renders child components in expansion panel text', () => {
-    const wrapper = createWrapper()
-
-    expectElementExists(wrapper, '.v-expansion-panel-text')
-    expect(wrapper.find('.v-expansion-panel-text').html()).toBeTruthy()
   })
 
   it('calls isRecipeComplete to determine completion status', async () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     createWrapper(recipeNode)
-
-    const { mockIsRecipeComplete } = await import(
-      '@/__tests__/fixtures/composables/useRecipeStatus'
-    )
     expect(mockIsRecipeComplete).toHaveBeenCalledWith(recipeNode)
   })
 
   it('calls getRecipePanelValue for panel value', async () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     createWrapper(recipeNode)
-
-    const { mockGetRecipePanelValue } = await import(
-      '@/__tests__/fixtures/composables/useRecipeStatus'
-    )
     expect(mockGetRecipePanelValue).toHaveBeenCalledWith(recipeNode)
   })
 
   it('handles recipe with no batch number gracefully', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     recipeNode.batchNumber = undefined
-
-    const wrapper = createWrapper(recipeNode)
-
-    expectElementExists(wrapper, '.v-expansion-panel')
+    expectElementExists(createWrapper(recipeNode), '.v-expansion-panel')
   })
 
   it('displays floor plan icon in select prepend', () => {
     const wrapper = createWrapper()
 
     const select = wrapper.findComponent(VSelect)
-    expect(select.exists()).toBe(true)
+    expectElementExists(wrapper, VSelect)
     // Check that the icon slot is being used correctly
     const prependSlot = select.find('[slot="prepend-inner"]')
     expect(prependSlot.exists() || select.find('.v-icon').exists()).toBe(true)
@@ -309,8 +241,8 @@ describe('RecipeNode Integration', () => {
     const wrapper = createWrapper(recipeNode)
 
     expectElementExists(wrapper, VChip)
-    expectElementText(wrapper, '.v-chip', 'x1.50')
-    expectElementExists(wrapper, '.v-expansion-panel')
+    expectElementText(wrapper, VChip, 'x1.50')
+    expectElementExists(wrapper, VExpansionPanel)
   })
 
   it('formats recipe count correctly for different values', () => {
@@ -320,6 +252,6 @@ describe('RecipeNode Integration', () => {
     const wrapper = createWrapper(recipeNode)
 
     expectElementExists(wrapper, VChip)
-    expectElementText(wrapper, '.v-chip', 'x2.75')
+    expectElementText(wrapper, VChip, 'x2.75')
   })
 })

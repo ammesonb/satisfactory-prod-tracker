@@ -64,10 +64,7 @@ describe('AppBar Integration', () => {
 
   it('hides factory chip when no factory is selected', () => {
     mockSelectedFactory.value = ''
-
-    const wrapper = createWrapper()
-
-    expectElementNotExists(wrapper, VChip)
+    expectElementNotExists(createWrapper(), VChip)
   })
 
   it('opens import/export modal when button is clicked', async () => {

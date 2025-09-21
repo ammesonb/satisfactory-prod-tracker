@@ -58,7 +58,11 @@ const selectFactory = (factory: Factory) => {
       />
     </v-list>
     <v-list v-else>
-      <v-list-item prepend-icon="mdi-information-outline" title="No factories added yet" />
+      <v-list-item
+        class="no-factories"
+        prepend-icon="mdi-information-outline"
+        title="No factories added yet"
+      />
     </v-list>
   </v-navigation-drawer>
 </template>

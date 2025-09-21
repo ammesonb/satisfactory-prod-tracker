@@ -1,12 +1,18 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { VCheckbox } from 'vuetify/components'
+import { VCard, VCheckbox } from 'vuetify/components'
 import RecipeBuilding from '@/components/factory/RecipeBuilding.vue'
 import CachedIcon from '@/components/common/CachedIcon.vue'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
 import type { Recipe } from '@/types/factory'
-import { expectElementExists, expectElementText, expectProps } from '@/__tests__/vue-test-helpers'
+import {
+  emitEvent,
+  expectElementExists,
+  expectElementText,
+  expectProps,
+} from '@/__tests__/vue-test-helpers'
+import { mockSetRecipeBuilt } from '@/__tests__/fixtures/composables/useRecipeStatus'
 
 // Use centralized fixtures for mocking composables
 vi.mock('@/composables/useRecipeStatus', async () => {
@@ -137,56 +143,31 @@ describe('RecipeBuilding Integration', () => {
   })
 
   it('calls setRecipeBuilt when card is clicked', async () => {
-    const wrapper = createWrapper()
-
-    const card = wrapper.findComponent({ name: 'VCard' })
-    await card.trigger('click')
-
-    // Access mock only when needed for specific assertion
-    const { mockSetRecipeBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
+    emitEvent(createWrapper(), VCard, 'click')
     expect(mockSetRecipeBuilt).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT, true)
   })
 
   it('calls setRecipeBuilt when checkbox is changed', async () => {
-    const wrapper = createWrapper()
-
-    const checkbox = wrapper.findComponent({ name: 'VCheckbox' })
-    await checkbox.vm.$emit('update:modelValue', true)
-
-    // Access mock only when needed for specific assertion
-    const { mockSetRecipeBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
+    emitEvent(createWrapper(), VCheckbox, 'update:modelValue', true)
     expect(mockSetRecipeBuilt).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT, true)
   })
 
   it('toggles built state when card is clicked on built recipe', async () => {
     const builtRecipe = createTestRecipeNode(TEST_RECIPES.IRON_INGOT, true)
-    const wrapper = createWrapper({ recipe: builtRecipe })
-
-    const card = wrapper.findComponent({ name: 'VCard' })
-    await card.trigger('click')
-
-    // Access mock only when needed for specific assertion
-    const { mockSetRecipeBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
+    emitEvent(createWrapper({ recipe: builtRecipe }), VCard, 'click')
     expect(mockSetRecipeBuilt).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT, false)
   })
 
   it('handles null checkbox value correctly', async () => {
-    const wrapper = createWrapper()
-
-    const checkbox = wrapper.findComponent({ name: 'VCheckbox' })
-    await checkbox.vm.$emit('update:modelValue', null)
-
-    // Access mock only when needed for specific assertion
-    const { mockSetRecipeBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
+    emitEvent(createWrapper(), VCheckbox, 'update:modelValue', null)
     expect(mockSetRecipeBuilt).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT, false)
   })
 
   it('renders with different recipe data', () => {
     const copperRecipe = createTestRecipeNode(TEST_RECIPES.COPPER_INGOT)
     const wrapper = createWrapper({ recipe: copperRecipe })
-
-    expect(wrapper.find('.recipe-building').exists()).toBe(true)
-    expect(wrapper.text()).toContain('Smelter')
+    expectElementExists(wrapper, '.recipe-building')
+    expectElementText(wrapper, '.recipe-building', 'Smelter')
   })
 
   it('calls data store methods with correct building parameter', () => {
@@ -197,7 +178,7 @@ describe('RecipeBuilding Integration', () => {
     )
     const wrapper = createWrapper({ recipe: constructorRecipe })
 
-    expect(wrapper.text()).toContain('Constructor')
-    expect(wrapper.findComponent({ name: 'CachedIcon' }).props('icon')).toBeTruthy()
+    expectElementText(wrapper, '.recipe-building', 'Constructor')
+    expect(wrapper.findComponent(CachedIcon).props('icon')).toBeTruthy()
   })
 })

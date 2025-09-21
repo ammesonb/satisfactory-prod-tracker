@@ -1,8 +1,13 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { VListItem, VImg, VBtn } from 'vuetify/components'
+import { VListItem, VBtn, VImg } from 'vuetify/components'
 import FactoryDrawerRow from '@/components/layout/FactoryDrawerRow.vue'
-import { expectElementExists, clickElement, expectProps } from '@/__tests__/vue-test-helpers'
+import {
+  expectElementExists,
+  clickElement,
+  expectProps,
+  emitEvent,
+} from '@/__tests__/vue-test-helpers'
 import type { Factory } from '@/types/factory'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
 
@@ -94,15 +99,11 @@ describe('FactoryDrawerRow Integration', () => {
     })
 
     it('applies active state correctly when selected', () => {
-      const wrapper = createWrapper({ selected: true })
-
-      expectProps(wrapper, VListItem, { active: true })
+      expectProps(createWrapper({ selected: true }), VListItem, { active: true })
     })
 
     it('does not apply active state when not selected', () => {
-      const wrapper = createWrapper({ selected: false })
-
-      expectProps(wrapper, VListItem, { active: false })
+      expectProps(createWrapper({ selected: false }), VListItem, { active: false })
     })
   })
 
@@ -111,7 +112,6 @@ describe('FactoryDrawerRow Integration', () => {
       const wrapper = createWrapper()
 
       await clickElement(wrapper, VListItem)
-
       expect(wrapper.vm.onSelect).toHaveBeenCalled()
     })
 
@@ -120,27 +120,21 @@ describe('FactoryDrawerRow Integration', () => {
 
       await clickElement(wrapper, VBtn)
 
-      const modal = wrapper.findComponent({ name: 'ConfirmationModal' })
-      expect(modal.exists()).toBe(true)
-      expectProps(
-        wrapper,
-        { name: 'ConfirmationModal' },
-        {
-          show: true,
-          title: 'Delete Factory',
-          message:
-            "Are you sure you want to delete 'Steel Production Plant'? This action cannot be undone.",
-          confirmText: 'Delete',
-          cancelText: 'Cancel',
-        },
-      )
+      expectElementExists(wrapper, ConfirmationModal)
+      expectProps(wrapper, ConfirmationModal, {
+        show: true,
+        title: 'Delete Factory',
+        message:
+          "Are you sure you want to delete 'Steel Production Plant'? This action cannot be undone.",
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      })
     })
 
     it('prevents event propagation when delete button is clicked', async () => {
       const wrapper = createWrapper()
 
       await clickElement(wrapper, VBtn)
-
       // Select handler should not be called when delete button is clicked
       expect(wrapper.vm.onSelect).not.toHaveBeenCalled()
     })
@@ -154,9 +148,7 @@ describe('FactoryDrawerRow Integration', () => {
       await clickElement(wrapper, VBtn)
 
       // Confirm deletion
-      const modal = wrapper.findComponent({ name: 'ConfirmationModal' })
-      await modal.vm.$emit('confirm')
-
+      await emitEvent(wrapper, ConfirmationModal, 'confirm')
       expect(wrapper.vm.onDelete).toHaveBeenCalledWith('Steel Production Plant')
     })
 
@@ -165,24 +157,22 @@ describe('FactoryDrawerRow Integration', () => {
 
       // Open confirmation modal
       await clickElement(wrapper, VBtn)
-
-      let modal = wrapper.findComponent({ name: 'ConfirmationModal' })
-      expect(modal.props('show')).toBe(true)
+      expectProps(wrapper, ConfirmationModal, { show: true })
 
       // Cancel deletion
-      await modal.vm.$emit('cancel')
+      await emitEvent(wrapper, ConfirmationModal, 'cancel')
 
       // Modal should still exist but internal state manages visibility
-      modal = wrapper.findComponent({ name: 'ConfirmationModal' })
-      expect(modal.exists()).toBe(true)
+      expectElementExists(wrapper, ConfirmationModal)
       expect(wrapper.vm.onDelete).not.toHaveBeenCalled()
     })
   })
 
   describe('Factory Data Integration', () => {
     it('handles different factory configurations', () => {
+      const factoryName = 'Copper Processing Plant'
       const customFactory: Factory = {
-        name: 'Copper Processing Plant',
+        name: factoryName,
         icon: 'Desc_CopperIngot_C',
         floors: [],
         recipeLinks: {},
@@ -190,20 +180,23 @@ describe('FactoryDrawerRow Integration', () => {
 
       const wrapper = createWrapper({ factory: customFactory })
 
-      expectProps(wrapper, VListItem, { title: 'Copper Processing Plant' })
+      expectProps(wrapper, VListItem, { title: factoryName })
 
-      const image = wrapper.findComponent(VImg)
-      expect(image.props('src')).toContain('Desc-CopperIngot-C')
+      expect(wrapper.findComponent(VImg).props('src')).toContain('Desc-CopperIngot-C')
+      expectProps(wrapper, VImg, {
+        width: '32',
+        height: '32',
+      })
 
       expectProps(wrapper, ConfirmationModal, {
-        message:
-          "Are you sure you want to delete 'Copper Processing Plant'? This action cannot be undone.",
+        message: `Are you sure you want to delete '${factoryName}'? This action cannot be undone.`,
       })
     })
 
     it('works with factories having special characters in names', () => {
+      const factoryName = "John's Steel & Iron Co."
       const specialFactory: Factory = {
-        name: "John's Steel & Iron Co.",
+        name: factoryName,
         icon: 'Desc_SteelIngot_C',
         floors: [],
         recipeLinks: {},
@@ -211,11 +204,9 @@ describe('FactoryDrawerRow Integration', () => {
 
       const wrapper = createWrapper({ factory: specialFactory })
 
-      expectProps(wrapper, VListItem, { title: "John's Steel & Iron Co." })
-
+      expectProps(wrapper, VListItem, { title: factoryName })
       expectProps(wrapper, ConfirmationModal, {
-        message:
-          "Are you sure you want to delete 'John's Steel & Iron Co.'? This action cannot be undone.",
+        message: `Are you sure you want to delete '${factoryName}'? This action cannot be undone.`,
       })
     })
   })

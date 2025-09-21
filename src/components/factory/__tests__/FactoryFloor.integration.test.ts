@@ -8,6 +8,7 @@ import {
   VIcon,
   VChip,
   VBtn,
+  VExpansionPanels,
 } from 'vuetify/components'
 import FactoryFloor from '@/components/factory/FactoryFloor.vue'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
@@ -16,6 +17,8 @@ import type { Floor } from '@/types/factory'
 import { getMockFloorManagement } from '@/__tests__/fixtures/composables/testUtils'
 import { mockUseRecipeStatus } from '@/__tests__/fixtures/composables'
 import { expectElementExists, expectElementText, expectProps } from '@/__tests__/vue-test-helpers'
+
+import RecipeNode from '@/components/factory/RecipeNode.vue'
 
 vi.mock('@/composables/useStores', async () => {
   const { mockGetStores } = await import('@/__tests__/fixtures/composables')
@@ -34,15 +37,6 @@ vi.mock('@/composables/useRecipeStatus', async () => {
 
 vi.mock('@/logistics/images', () => ({
   getIconURL: vi.fn((icon: string, size: number) => `https://example.com/icon/${icon}/${size}`),
-}))
-
-// Mock RecipeNode component since it's auto-imported
-vi.mock('@/components/factory/RecipeNode.vue', () => ({
-  default: {
-    name: 'RecipeNode',
-    props: ['recipe'],
-    template: '<div data-testid="recipe-node">Recipe: {{ recipe.recipe.name }}</div>',
-  },
 }))
 
 describe('FactoryFloor Integration', () => {
@@ -193,14 +187,13 @@ describe('FactoryFloor Integration', () => {
   it('sets correct expansion panel value based on floor number', () => {
     const wrapper = createWrapper({ floorNumber: 3 })
 
-    const expansionPanel = wrapper.findComponent({ name: 'VExpansionPanel' })
-    expect(expansionPanel.props('value')).toBe(2) // floorNumber - 1
+    expectProps(wrapper, VExpansionPanel, { value: 2 })
   })
 
   it('sets correct expansion panel id using formatFloorId', () => {
     const wrapper = createWrapper({ floorNumber: 4 })
 
-    const expansionPanel = wrapper.findComponent({ name: 'VExpansionPanel' })
+    const expansionPanel = wrapper.findComponent(VExpansionPanel)
     expect(expansionPanel.attributes('id')).toBe('floor-3')
   })
 
@@ -217,7 +210,7 @@ describe('FactoryFloor Integration', () => {
 
     expect(mockUseRecipeStatus).toHaveBeenCalled()
 
-    const allExpansionPanels = wrapper.findAllComponents({ name: 'VExpansionPanels' })
+    const allExpansionPanels = wrapper.findAllComponents(VExpansionPanels)
     const innerExpansionPanels = allExpansionPanels.find((panel) => panel.props('multiple'))
 
     expect(innerExpansionPanels).toBeTruthy()
@@ -226,7 +219,7 @@ describe('FactoryFloor Integration', () => {
     expect(innerExpansionPanels!.props('modelValue')).toEqual(expectedExpandedValues)
 
     // Should render all RecipeNode components regardless of expansion state
-    const recipeNodes = wrapper.findAllComponents({ name: 'RecipeNode' })
+    const recipeNodes = wrapper.findAllComponents(RecipeNode)
     expect(recipeNodes).toHaveLength(2)
   })
 
@@ -259,7 +252,7 @@ describe('FactoryFloor Integration', () => {
     expectElementText(wrapper, VExpansionPanelTitle, '0 recipes')
 
     // Should not render any RecipeNode components
-    const recipeNodes = wrapper.findAllComponents({ name: 'RecipeNode' })
+    const recipeNodes = wrapper.findAllComponents(RecipeNode)
     expect(recipeNodes).toHaveLength(0)
   })
 

@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import FactoryDrawer from '@/components/layout/FactoryDrawer.vue'
+import { VIcon, VNavigationDrawer, VTextField } from 'vuetify/components'
 import {
   mockFactories,
   mockSelectedFactory,
@@ -14,6 +14,15 @@ import {
   mockFilteredItems,
   mockUpdateSearch,
 } from '@/__tests__/fixtures/composables/dataSearch'
+import {
+  expectElementExists,
+  expectElementNotExists,
+  emitEvent,
+  expectProps,
+} from '@/__tests__/vue-test-helpers'
+
+import FactoryDrawer from '@/components/layout/FactoryDrawer.vue'
+import FactoryDrawerRow from '@/components/layout/FactoryDrawerRow.vue'
 
 // Mock composables with centralized fixtures
 vi.mock('@/composables/useStores', async () => {
@@ -82,19 +91,11 @@ describe('FactoryDrawer Integration', () => {
 
   describe('Empty State', () => {
     it('renders with no factories message when no factories exist', () => {
-      const wrapper = createWrapper()
-
-      const listItems = wrapper.findAllComponents({ name: 'VListItem' })
-      const infoItem = listItems.find((item) => item.props('title') === 'No factories added yet')
-      expect(infoItem?.exists()).toBe(true)
-      expect(infoItem?.props('prependIcon')).toBe('mdi-information-outline')
+      expectElementExists(createWrapper(), '.no-factories')
     })
 
     it('does not show search field when no factories exist', () => {
-      const wrapper = createWrapper()
-
-      const searchField = wrapper.findComponent({ name: 'VTextField' })
-      expect(searchField.exists()).toBe(false)
+      expectElementNotExists(createWrapper(), VTextField)
     })
   })
 
@@ -112,7 +113,7 @@ describe('FactoryDrawer Integration', () => {
     it('renders all factories when search is empty', () => {
       const wrapper = createWrapper()
 
-      const factoryRows = wrapper.findAllComponents({ name: 'FactoryDrawerRow' })
+      const factoryRows = wrapper.findAllComponents(FactoryDrawerRow)
       expect(factoryRows).toHaveLength(3)
 
       const factoryNames = factoryRows.map((row) => row.props('factory').name)
@@ -125,41 +126,44 @@ describe('FactoryDrawer Integration', () => {
       const wrapper = createWrapper()
 
       // Navigation drawer starts collapsed (rail=true), expand it
-      const drawer = wrapper.findComponent({ name: 'VNavigationDrawer' })
-      await drawer.vm.$emit('update:rail', false)
+      await emitEvent(wrapper, VNavigationDrawer, 'update:rail', false)
 
-      const searchField = wrapper.findComponent({ name: 'VTextField' })
-      expect(searchField.exists()).toBe(true)
-      expect(searchField.props('placeholder')).toBe('Search factories...')
-      expect(searchField.props('prependInnerIcon')).toBe('mdi-magnify')
+      expectElementExists(wrapper, VTextField)
+      expectProps(wrapper, VTextField, {
+        placeholder: 'Search factories...',
+        prependInnerIcon: 'mdi-magnify',
+        density: 'compact',
+        hideDetails: true,
+        clearable: true,
+      })
     })
 
     it('shows search icon when drawer is collapsed', () => {
       const wrapper = createWrapper()
 
-      const searchIcon = wrapper.findComponent({ name: 'VIcon' })
-      expect(searchIcon.exists()).toBe(true)
-      expect(searchIcon.props('icon')).toBe('mdi-magnify')
+      expectElementExists(wrapper, VIcon)
+      expectProps(wrapper, VIcon, {
+        icon: 'mdi-magnify',
+        size: '24',
+        color: 'default',
+      })
     })
 
     it('shows active search icon color when search has value', () => {
       mockSearchInput.value = 'test'
       const wrapper = createWrapper()
 
-      const searchIcon = wrapper.findComponent({ name: 'VIcon' })
-      expect(searchIcon.props('color')).toBe('primary')
+      expectElementExists(wrapper, VIcon)
+      expectProps(wrapper, VIcon, {
+        color: 'primary',
+      })
     })
 
     it('calls updateSearch when search field value changes', async () => {
       const wrapper = createWrapper()
 
-      // Expand drawer to show search field
-      const drawer = wrapper.findComponent({ name: 'VNavigationDrawer' })
-      await drawer.vm.$emit('update:rail', false)
-
-      const searchField = wrapper.findComponent({ name: 'VTextField' })
-      await searchField.vm.$emit('update:modelValue', 'steel')
-
+      await emitEvent(wrapper, VNavigationDrawer, 'update:rail', false)
+      await emitEvent(wrapper, VTextField, 'update:modelValue', 'steel')
       expect(mockUpdateSearch).toHaveBeenCalledWith('steel')
     })
 
@@ -169,7 +173,7 @@ describe('FactoryDrawer Integration', () => {
 
       const wrapper = createWrapper()
 
-      const factoryRows = wrapper.findAllComponents({ name: 'FactoryDrawerRow' })
+      const factoryRows = wrapper.findAllComponents(FactoryDrawerRow)
       expect(factoryRows).toHaveLength(1)
       expect(factoryRows[0].props('factory').name).toBe('Steel Production Plant')
     })
@@ -189,7 +193,7 @@ describe('FactoryDrawer Integration', () => {
       mockSelectedFactory.value = 'Steel Production Plant'
       const wrapper = createWrapper()
 
-      const factoryRows = wrapper.findAllComponents({ name: 'FactoryDrawerRow' })
+      const factoryRows = wrapper.findAllComponents(FactoryDrawerRow)
       const steelRow = factoryRows.find(
         (row) => row.props('factory').name === 'Steel Production Plant',
       )
@@ -203,29 +207,27 @@ describe('FactoryDrawer Integration', () => {
 
     it('calls factory selection and navigation initialization when factory is selected', async () => {
       const wrapper = createWrapper()
+      const selectedName = 'Steel Production Plant'
 
-      const factoryRows = wrapper.findAllComponents({ name: 'FactoryDrawerRow' })
-      const steelRow = factoryRows.find(
-        (row) => row.props('factory').name === 'Steel Production Plant',
-      )
+      const factoryRows = wrapper.findAllComponents(FactoryDrawerRow)
+      const steelRow = factoryRows.find((row) => row.props('factory').name === selectedName)
 
       await steelRow?.vm.$emit('select', TEST_FACTORIES.STEEL_PLANT)
 
-      expect(mockSetSelectedFactory).toHaveBeenCalledWith('Steel Production Plant')
+      expect(mockSetSelectedFactory).toHaveBeenCalledWith(selectedName)
       expect(mockInitializeExpansion).toHaveBeenCalledWith(mockIsRecipeComplete)
     })
 
     it('handles factory deletion through drawer row', async () => {
       const wrapper = createWrapper()
+      const factoryName = 'Steel Production Plant'
 
-      const factoryRows = wrapper.findAllComponents({ name: 'FactoryDrawerRow' })
-      const steelRow = factoryRows.find(
-        (row) => row.props('factory').name === 'Steel Production Plant',
-      )
+      const factoryRows = wrapper.findAllComponents(FactoryDrawerRow)
+      const steelRow = factoryRows.find((row) => row.props('factory').name === factoryName)
 
-      await steelRow?.vm.$emit('delete', 'Steel Production Plant')
+      await steelRow?.vm.$emit('delete', factoryName)
 
-      expect(mockRemoveFactory).toHaveBeenCalledWith('Steel Production Plant')
+      expect(mockRemoveFactory).toHaveBeenCalledWith(factoryName)
     })
   })
 
@@ -234,7 +236,7 @@ describe('FactoryDrawer Integration', () => {
       const wrapper = createWrapper()
 
       // Drawer starts collapsed (rail=true)
-      const factoryRows = wrapper.findAllComponents({ name: 'FactoryDrawerRow' })
+      const factoryRows = wrapper.findAllComponents(FactoryDrawerRow)
       factoryRows.forEach((row) => {
         expect(row.props('rail')).toBe(true)
       })

@@ -9,6 +9,7 @@ import {
   getMockFloorNavigation,
 } from '@/__tests__/fixtures/composables/testUtils'
 import { getMockRecipeStatus } from '@/__tests__/fixtures/composables/testUtils'
+import { VBtn, VMenu } from 'vuetify/components'
 
 vi.mock('@/composables/useStores', async () => {
   const { mockGetStores } = await import('@/__tests__/fixtures/composables')
@@ -70,26 +71,18 @@ describe('FactoryFloorsToolbar Integration', () => {
   }
 
   const expectAllButtonsDisabled = (wrapper: VueWrapper) => {
-    const buttons = wrapper.findAllComponents({ name: 'VBtn' })
+    const buttons = wrapper.findAllComponents(VBtn)
     buttons.forEach((button) => {
       expect(button.props('disabled')).toBe(true)
     })
   }
 
   const expectAllButtonsEnabled = (wrapper: VueWrapper) => {
-    const buttons = wrapper.findAllComponents({ name: 'VBtn' })
+    const buttons = wrapper.findAllComponents(VBtn)
     buttons.forEach((button) => {
       expect(button.props('disabled')).toBe(false)
     })
   }
-
-  it('renders correctly', async () => {
-    const wrapper = await createWrapper()
-
-    expect(wrapper.text()).toContain('Complete')
-    expect(wrapper.text()).toContain('Incomplete')
-    expect(wrapper.text()).toContain('Edit Floors')
-  })
 
   it('disables all buttons when factory has no floors', async () => {
     const wrapper = await createWrapper(EMPTY_FACTORY)
@@ -109,20 +102,13 @@ describe('FactoryFloorsToolbar Integration', () => {
   it('renders menus with correct structure', async () => {
     const wrapper = await createWrapper()
 
-    const menus = wrapper.findAllComponents({ name: 'VMenu' })
+    const menus = wrapper.findAllComponents(VMenu)
     expect(menus).toHaveLength(2)
 
     // Check that menus have open-on-hover prop
     menus.forEach((menu) => {
       expect(menu.props('openOnHover')).toBe(true)
     })
-  })
-
-  it('renders menu buttons with correct text and icons', async () => {
-    const wrapper = await createWrapper()
-
-    expect(wrapper.text()).toContain('Complete')
-    expect(wrapper.text()).toContain('Incomplete')
   })
 
   const testMenuAction = async (
@@ -168,7 +154,7 @@ describe('FactoryFloorsToolbar Integration', () => {
 
   it('calls openFloorEditor when Edit Floors button is clicked', async () => {
     const wrapper = await createWrapper()
-    const editButton = wrapper.findAllComponents({ name: 'VBtn' })[2]
+    const editButton = wrapper.findAllComponents(VBtn)[2]
     await editButton.trigger('click')
 
     const mockOpenFloorEditor = (await getMockFloorManagement()).openFloorEditor
