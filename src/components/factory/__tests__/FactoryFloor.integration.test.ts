@@ -1,11 +1,21 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import {
+  VExpansionPanel,
+  VExpansionPanelTitle,
+  VExpansionPanelText,
+  VImg,
+  VIcon,
+  VChip,
+  VBtn,
+} from 'vuetify/components'
 import FactoryFloor from '@/components/factory/FactoryFloor.vue'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
 import { newRecipeNode } from '@/logistics/graph-node'
 import type { Floor } from '@/types/factory'
 import { getMockFloorManagement } from '@/__tests__/fixtures/composables/testUtils'
 import { mockUseRecipeStatus } from '@/__tests__/fixtures/composables'
+import { expectElementExists, expectElementText, expectProps } from '@/__tests__/vue-test-helpers'
 
 vi.mock('@/composables/useStores', async () => {
   const { mockGetStores } = await import('@/__tests__/fixtures/composables')
@@ -117,66 +127,54 @@ describe('FactoryFloor Integration', () => {
   it('renders with default props', () => {
     const wrapper = createWrapper()
 
-    // Check expansion panel exists
-    const expansionPanel = wrapper.findComponent({ name: 'VExpansionPanel' })
-    expect(expansionPanel.exists()).toBe(true)
-
-    // Check expansion panel title
-    const expansionPanelTitle = wrapper.findComponent({ name: 'VExpansionPanelTitle' })
-    expect(expansionPanelTitle.exists()).toBe(true)
-
-    // Check expansion panel text
-    const expansionPanelText = wrapper.findComponent({ name: 'VExpansionPanelText' })
-    expect(expansionPanelText.exists()).toBe(true)
+    expectElementExists(wrapper, VExpansionPanel)
+    expectElementExists(wrapper, VExpansionPanelTitle)
+    expectElementExists(wrapper, VExpansionPanelText)
   })
 
   it('displays correct floor name with custom name', () => {
     const floorWithCustomName = createMockFloor({ name: 'Smelting Floor' })
     const wrapper = createWrapper({ floor: floorWithCustomName, floorNumber: 2 })
 
-    expect(wrapper.text()).toContain('Floor 2 - Smelting Floor')
+    expectElementText(wrapper, VExpansionPanelTitle, 'Floor 2 - Smelting Floor')
   })
 
   it('displays correct floor name without custom name', () => {
     const floorWithoutName = createMockFloor({ name: undefined })
     const wrapper = createWrapper({ floor: floorWithoutName, floorNumber: 3 })
 
-    expect(wrapper.text()).toContain('Floor 3')
+    expectElementText(wrapper, VExpansionPanelTitle, 'Floor 3')
     expect(wrapper.text()).not.toContain(' - ')
   })
 
   it('displays floor icon when iconItem is present', () => {
     const wrapper = createWrapper()
 
-    const icon = wrapper.findComponent({ name: 'VImg' })
-    expect(icon.exists()).toBe(true)
-    expect(icon.props('width')).toBe('24')
-    expect(icon.props('height')).toBe('24')
+    expectElementExists(wrapper, VImg)
+    expectProps(wrapper, VImg, { width: '24', height: '24' })
   })
 
   it('displays default factory icon when iconItem is not present', () => {
     const floorWithoutIcon = createMockFloor({ iconItem: undefined })
     const wrapper = createWrapper({ floor: floorWithoutIcon })
 
-    const defaultIcon = wrapper.findComponent({ name: 'VIcon' })
-    expect(defaultIcon.exists()).toBe(true)
+    expectElementExists(wrapper, VIcon)
     expect(wrapper.html()).toContain('mdi-factory')
   })
 
   it('displays correct recipe count', () => {
     const wrapper = createWrapper()
 
-    const chip = wrapper.findComponent({ name: 'VChip' })
-    expect(chip.exists()).toBe(true)
-    expect(chip.text()).toContain('2 recipes')
+    expectElementExists(wrapper, VChip)
+    expectElementText(wrapper, VChip, '2 recipes')
   })
 
   it('displays recipe count for floor with no recipes', () => {
     const emptyFloor = createMockFloor({ recipes: [] })
     const wrapper = createWrapper({ floor: emptyFloor })
 
-    const chip = wrapper.findComponent({ name: 'VChip' })
-    expect(chip.text()).toContain('0 recipes')
+    expectElementExists(wrapper, VChip)
+    expectElementText(wrapper, VChip, '0 recipes')
   })
 
   it('calls openFloorEditor when edit button is clicked', async () => {
@@ -184,7 +182,7 @@ describe('FactoryFloor Integration', () => {
 
     const editButton = wrapper.find('[data-testid="edit-floor-btn"]').exists()
       ? wrapper.find('[data-testid="edit-floor-btn"]')
-      : wrapper.findComponent({ name: 'VBtn' })
+      : wrapper.findComponent(VBtn)
 
     await editButton.trigger('click')
 
@@ -243,11 +241,11 @@ describe('FactoryFloor Integration', () => {
       const floor = createMockFloor({ name, iconItem })
       const wrapper = createWrapper({ floor, floorNumber })
 
-      expect(wrapper.findComponent({ name: 'VExpansionPanel' }).exists()).toBe(true)
-      expect(wrapper.text()).toContain(`Floor ${floorNumber}`)
+      expectElementExists(wrapper, VExpansionPanel)
+      expectElementText(wrapper, VExpansionPanelTitle, `Floor ${floorNumber}`)
 
       if (name) {
-        expect(wrapper.text()).toContain(name)
+        expectElementText(wrapper, VExpansionPanelTitle, name)
       }
     })
   })
@@ -257,8 +255,8 @@ describe('FactoryFloor Integration', () => {
     const wrapper = createWrapper({ floor: emptyFloor })
 
     // Should render without errors
-    expect(wrapper.findComponent({ name: 'VExpansionPanel' }).exists()).toBe(true)
-    expect(wrapper.text()).toContain('0 recipes')
+    expectElementExists(wrapper, VExpansionPanel)
+    expectElementText(wrapper, VExpansionPanelTitle, '0 recipes')
 
     // Should not render any RecipeNode components
     const recipeNodes = wrapper.findAllComponents({ name: 'RecipeNode' })
@@ -272,6 +270,6 @@ describe('FactoryFloor Integration', () => {
     const mockGetFloorDisplayName = (await getMockFloorManagement()).getFloorDisplayName
     expect(mockGetFloorDisplayName).toHaveBeenCalledWith(3, floor)
 
-    expect(wrapper.text()).toContain('Floor 3 - Custom Floor')
+    expectElementText(wrapper, VExpansionPanelTitle, 'Floor 3 - Custom Floor')
   })
 })

@@ -1,5 +1,6 @@
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { VSelect, VChip } from 'vuetify/components'
 import RecipeNodeComponent from '@/components/factory/RecipeNode.vue'
 import { newRecipeNode, type RecipeNode as RecipeNodeType } from '@/logistics/graph-node'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
@@ -7,6 +8,7 @@ import { mockGetStores } from '@/__tests__/fixtures/composables'
 import { mockIsDark } from '@/__tests__/fixtures/composables/themeStore'
 import { createTestRecipe } from '@/__tests__/fixtures/stores/dataStore'
 import { mockGetEligibleFloors, mockMoveRecipe } from '@/__tests__/fixtures/composables/navigation'
+import { expectElementExists, expectElementText } from '@/__tests__/vue-test-helpers'
 
 // Use centralized mock fixtures
 vi.mock('@/composables/useStores', async () => {
@@ -74,14 +76,7 @@ describe('RecipeNode Integration', () => {
     })
   }
 
-  const expectElementExists = (wrapper: VueWrapper, selector: string) => {
-    expect(wrapper.find(selector).exists()).toBe(true)
-  }
-
-  const expectElementText = (wrapper: VueWrapper, selector: string, text: string) => {
-    expect(wrapper.find(selector).text()).toContain(text)
-  }
-
+  // Helper functions for this specific component
   const expectPanelClasses = (wrapper: VueWrapper, expectedClass: string) => {
     expect(wrapper.find('.v-expansion-panel').classes()).toContain(expectedClass)
   }
@@ -111,6 +106,7 @@ describe('RecipeNode Integration', () => {
 
       const wrapper = createWrapper(recipeNode)
 
+      expectElementExists(wrapper, VChip)
       expectElementText(wrapper, '.v-chip', 'x2.75')
     })
 
@@ -125,7 +121,7 @@ describe('RecipeNode Integration', () => {
       const wrapper = createWrapper(recipeNode)
 
       // The tooltip and chip should exist when recipe is available
-      expect(wrapper.find('.v-chip').exists()).toBe(true)
+      expectElementExists(wrapper, VChip)
       // Check if tooltip activator exists (the chip itself acts as activator)
       expect(wrapper.text()).toContain('x1.50')
     })
@@ -222,7 +218,7 @@ describe('RecipeNode Integration', () => {
   it('displays floor selection dropdown with eligible floors', () => {
     const wrapper = createWrapper()
 
-    const select = wrapper.findComponent({ name: 'VSelect' })
+    const select = wrapper.findComponent(VSelect)
     expect(select.exists()).toBe(true)
     expect(select.props('items')).toEqual(TEST_FLOORS)
   })
@@ -231,7 +227,7 @@ describe('RecipeNode Integration', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT, 1)
     const wrapper = createWrapper(recipeNode)
 
-    const select = wrapper.findComponent({ name: 'VSelect' })
+    const select = wrapper.findComponent(VSelect)
     expect(select.props('modelValue')).toBe(1)
   })
 
@@ -247,7 +243,7 @@ describe('RecipeNode Integration', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT, 1)
     const wrapper = createWrapper(recipeNode)
 
-    const select = wrapper.findComponent({ name: 'VSelect' })
+    const select = wrapper.findComponent(VSelect)
     await select.vm.$emit('update:modelValue', 2)
 
     // Access the centralized mock function
@@ -256,7 +252,7 @@ describe('RecipeNode Integration', () => {
 
   it('prevents click propagation on floor select', () => {
     const wrapper = createWrapper()
-    const select = wrapper.findComponent({ name: 'VSelect' })
+    const select = wrapper.findComponent(VSelect)
 
     // Check that click.stop is applied (this would be in the template)
     expect(select.attributes()).toBeDefined()
@@ -301,7 +297,7 @@ describe('RecipeNode Integration', () => {
   it('displays floor plan icon in select prepend', () => {
     const wrapper = createWrapper()
 
-    const select = wrapper.findComponent({ name: 'VSelect' })
+    const select = wrapper.findComponent(VSelect)
     expect(select.exists()).toBe(true)
     // Check that the icon slot is being used correctly
     const prependSlot = select.find('[slot="prepend-inner"]')
@@ -312,6 +308,7 @@ describe('RecipeNode Integration', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.PURE_CATERIUM)
     const wrapper = createWrapper(recipeNode)
 
+    expectElementExists(wrapper, VChip)
     expectElementText(wrapper, '.v-chip', 'x1.50')
     expectElementExists(wrapper, '.v-expansion-panel')
   })
@@ -322,6 +319,7 @@ describe('RecipeNode Integration', () => {
 
     const wrapper = createWrapper(recipeNode)
 
+    expectElementExists(wrapper, VChip)
     expectElementText(wrapper, '.v-chip', 'x2.75')
   })
 })

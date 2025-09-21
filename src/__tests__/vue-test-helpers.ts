@@ -1,7 +1,8 @@
+import type { Component } from 'vue'
 import { VueWrapper } from '@vue/test-utils'
 import { expect } from 'vitest'
 
-type ComponentSelector = { name: string }
+type ComponentSelector = { name: string } | Component
 type ElementSelector = string
 
 /**
@@ -13,9 +14,39 @@ export function getElement(wrapper: VueWrapper, selector: ElementSelector | Comp
 
 /**
  * Gets a component from the wrapper (use when you need component-specific methods like props)
+ * For better type inference, use wrapper.findComponent(ComponentType) directly
  */
 export function getComponent(wrapper: VueWrapper, selector: ComponentSelector) {
   return wrapper.findComponent(selector)
+}
+
+/**
+ * Helper to get text from an element or component
+ */
+export function expectElementText(
+  wrapper: VueWrapper,
+  selector: ElementSelector | ComponentSelector,
+  expectedText: string,
+): void {
+  const element = getElement(wrapper, selector)
+  expect(element.text()).toContain(expectedText)
+}
+
+/**
+ * Helper to check component props
+ */
+export function expectProps(
+  wrapper: VueWrapper,
+  selector: ComponentSelector,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  expectedProps: Record<string, any>,
+): void {
+  const component = wrapper.findComponent(selector)
+  const actualProps = component.props()
+
+  Object.entries(expectedProps).forEach(([key, expectedValue]) => {
+    expect(actualProps[key as keyof typeof actualProps]).toEqual(expectedValue)
+  })
 }
 
 /**
@@ -62,13 +93,13 @@ export async function emitEvent(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ...args: any[]
 ): Promise<void> {
-  const component = wrapper.findComponent(selector)
+  const component = getComponent(wrapper, selector)
   await component.vm.$emit(eventName, ...args)
   await wrapper.vm.$nextTick()
 }
 
 /**
- * Convenience function for component selectors
+ * Convenience function for component selectors by name
  */
 export function byComponent(name: string): ComponentSelector {
   return { name }

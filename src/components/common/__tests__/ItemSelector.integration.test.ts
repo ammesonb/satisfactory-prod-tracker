@@ -1,11 +1,13 @@
-import { mount } from '@vue/test-utils'
+import { mount, VueWrapper } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ref } from 'vue'
-import ItemSelector from '@/components/common/ItemSelector.vue'
-import GameDataSelector from '@/components/common/GameDataSelector.vue'
+import { expectElementExists, emitEvent, expectProps } from '@/__tests__/vue-test-helpers'
 import type { DisplayConfig, IconConfig } from '@/types/ui'
 import type { ItemOption, Item, Building } from '@/types/data'
 import type { IDataStore } from '@/types/stores'
+
+import ItemSelector from '@/components/common/ItemSelector.vue'
+import GameDataSelector from '@/components/common/GameDataSelector.vue'
 
 // Mock the useStores composable
 const mockDataStore = {
@@ -113,30 +115,34 @@ describe('ItemSelector Integration', () => {
     })
   }
 
+  // Helper to get the GameDataSelector from any wrapper
+  const getGameDataSelector = (wrapper: VueWrapper) => {
+    return wrapper.findComponent(GameDataSelector)
+  }
+
   it('renders GameDataSelector component', () => {
     const wrapper = createWrapper()
 
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
-    expect(gameDataSelector.exists()).toBe(true)
+    expectElementExists(wrapper, GameDataSelector)
   })
 
   it('passes through modelValue to GameDataSelector', () => {
     const wrapper = createWrapper({ modelValue: mockSelectedItem })
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
+    const gameDataSelector = getGameDataSelector(wrapper)
 
     expect(gameDataSelector.props('modelValue')).toEqual(mockSelectedItem)
   })
 
   it('passes through disabled prop to GameDataSelector', () => {
     const wrapper = createWrapper({ disabled: true })
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
+    const gameDataSelector = getGameDataSelector(wrapper)
 
     expect(gameDataSelector.props('disabled')).toBe(true)
   })
 
   it('uses default placeholder when no displayConfig provided', () => {
     const wrapper = createWrapper()
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
+    const gameDataSelector = getGameDataSelector(wrapper)
 
     expect(gameDataSelector.props('displayConfig')).toEqual({
       placeholder: DEFAULT_PLACEHOLDER,
@@ -152,7 +158,7 @@ describe('ItemSelector Integration', () => {
     }
 
     const wrapper = createWrapper({ displayConfig })
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
+    const gameDataSelector = getGameDataSelector(wrapper)
 
     expect(gameDataSelector.props('displayConfig')).toEqual({
       placeholder: CUSTOM_PLACEHOLDER,
@@ -169,14 +175,14 @@ describe('ItemSelector Integration', () => {
     }
 
     const wrapper = createWrapper({ iconConfig })
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
+    const gameDataSelector = getGameDataSelector(wrapper)
 
     expect(gameDataSelector.props('iconConfig')).toEqual(iconConfig)
   })
 
   it('includes both items and buildings by default', async () => {
     const wrapper = createWrapper()
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
+    const gameDataSelector = getGameDataSelector(wrapper)
 
     const items = gameDataSelector.props('items')
     expect(items).toHaveLength(EXPECTED_TOTAL_COUNT)
@@ -189,7 +195,7 @@ describe('ItemSelector Integration', () => {
 
   it('excludes buildings when includeBuildings is false', () => {
     const wrapper = createWrapper({ includeBuildings: false })
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
+    const gameDataSelector = getGameDataSelector(wrapper)
 
     const items = gameDataSelector.props('items')
     expect(items).toHaveLength(EXPECTED_ITEM_COUNT)
@@ -202,14 +208,14 @@ describe('ItemSelector Integration', () => {
 
   it('sets showType to false when includeBuildings is false', () => {
     const wrapper = createWrapper({ includeBuildings: false })
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
+    const gameDataSelector = getGameDataSelector(wrapper)
 
     expect(gameDataSelector.props('displayConfig')!.showType).toBe(false)
   })
 
   it('sets showType to true when includeBuildings is true', () => {
     const wrapper = createWrapper({ includeBuildings: true })
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
+    const gameDataSelector = getGameDataSelector(wrapper)
 
     expect(gameDataSelector.props('displayConfig')!.showType).toBe(true)
   })
@@ -223,7 +229,7 @@ describe('ItemSelector Integration', () => {
       includeBuildings: true,
       displayConfig,
     })
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
+    const gameDataSelector = getGameDataSelector(wrapper)
 
     // includeBuildings should override custom showType
     expect(gameDataSelector.props('displayConfig')!.showType).toBe(true)
@@ -231,9 +237,8 @@ describe('ItemSelector Integration', () => {
 
   it('emits update:modelValue when GameDataSelector emits update:modelValue', async () => {
     const wrapper = createWrapper()
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
 
-    await gameDataSelector.vm.$emit('update:modelValue', mockSelectedItem)
+    await emitEvent(wrapper, GameDataSelector, 'update:modelValue', mockSelectedItem)
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
     expect(wrapper.emitted('update:modelValue')![0]).toEqual([mockSelectedItem])
@@ -241,9 +246,8 @@ describe('ItemSelector Integration', () => {
 
   it('emits undefined when selection is cleared', async () => {
     const wrapper = createWrapper({ modelValue: mockSelectedItem })
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
 
-    await gameDataSelector.vm.$emit('update:modelValue', undefined)
+    await emitEvent(wrapper, GameDataSelector, 'update:modelValue', undefined)
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
     expect(wrapper.emitted('update:modelValue')![0]).toEqual([undefined])
@@ -260,14 +264,12 @@ describe('ItemSelector Integration', () => {
       },
     })
 
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
-
     // Test selection
-    await gameDataSelector.vm.$emit('update:modelValue', mockSelectedItem)
+    await emitEvent(wrapper, GameDataSelector, 'update:modelValue', mockSelectedItem)
     expect(modelValue.value).toEqual(mockSelectedItem)
 
     // Test clearing
-    await gameDataSelector.vm.$emit('update:modelValue', undefined)
+    await emitEvent(wrapper, GameDataSelector, 'update:modelValue', undefined)
     expect(modelValue.value).toBeUndefined()
   })
 
@@ -294,7 +296,7 @@ describe('ItemSelector Integration', () => {
 
   it('sorts combined items and buildings alphabetically', () => {
     const wrapper = createWrapper()
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
+    const gameDataSelector = getGameDataSelector(wrapper)
 
     const items = gameDataSelector.props('items')
     const names = items.map((item: ItemOption) => item.name)
@@ -307,7 +309,7 @@ describe('ItemSelector Integration', () => {
 
   it('maintains item type information', () => {
     const wrapper = createWrapper()
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
+    const gameDataSelector = getGameDataSelector(wrapper)
 
     const items = gameDataSelector.props('items')
 
@@ -321,16 +323,10 @@ describe('ItemSelector Integration', () => {
     vi.mocked(mockDataStore).items = {}
     vi.mocked(mockDataStore).buildings = {}
 
-    const wrapper = createWrapper()
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
-
-    expect(gameDataSelector.props('items')).toEqual([])
+    expectProps(createWrapper(), GameDataSelector, { items: [] })
   })
 
   it('uses default empty iconConfig when not provided', () => {
-    const wrapper = createWrapper()
-    const gameDataSelector = wrapper.findComponent(GameDataSelector)
-
-    expect(gameDataSelector.props('iconConfig')).toEqual({})
+    expectProps(createWrapper(), GameDataSelector, { iconConfig: {} })
   })
 })

@@ -1,7 +1,15 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { VApp, VLayout, VMain } from 'vuetify/components'
+import { describe, it, beforeEach, vi } from 'vitest'
+import { VApp, VLayout, VMain, VChip } from 'vuetify/components'
 import AppBar from '@/components/layout/AppBar.vue'
+import ImportExportModal from '@/components/modals/ImportExportModal.vue'
+import {
+  expectElementExists,
+  expectElementNotExists,
+  clickElement,
+  expectProps,
+  expectElementText,
+} from '@/__tests__/vue-test-helpers'
 import { mockSelectedFactory } from '@/__tests__/fixtures/composables/factoryStore'
 
 vi.mock('@/components/modals/ImportExportModal.vue', () => ({
@@ -50,9 +58,8 @@ describe('AppBar Integration', () => {
 
     const wrapper = createWrapper()
 
-    const chip = wrapper.findComponent({ name: 'VChip' })
-    expect(chip.exists()).toBe(true)
-    expect(chip.text()).toBe(testFactoryName)
+    expectElementExists(wrapper, VChip)
+    expectElementText(wrapper, VChip, testFactoryName)
   })
 
   it('hides factory chip when no factory is selected', () => {
@@ -60,26 +67,18 @@ describe('AppBar Integration', () => {
 
     const wrapper = createWrapper()
 
-    const chip = wrapper.findComponent({ name: 'VChip' })
-    expect(chip.exists()).toBe(false)
+    expectElementNotExists(wrapper, VChip)
   })
 
   it('opens import/export modal when button is clicked', async () => {
     const wrapper = createWrapper()
 
-    const buttons = wrapper.findAllComponents({ name: 'VBtn' })
-    const importBtn = buttons.find((btn) => btn.text().includes('Import/Export'))
-
-    await importBtn!.trigger('click')
-
-    const modal = wrapper.findComponent({ name: 'ImportExportModal' })
-    expect(modal.props('modelValue')).toBe(true)
+    await clickElement(wrapper, '.show-import-export')
+    expectProps(wrapper, ImportExportModal, { modelValue: true })
   })
 
   it('modal is initially closed', () => {
     const wrapper = createWrapper()
-
-    const modal = wrapper.findComponent({ name: 'ImportExportModal' })
-    expect(modal.props('modelValue')).toBe(false)
+    expectProps(wrapper, ImportExportModal, { modelValue: false })
   })
 })

@@ -2,512 +2,235 @@
 
 ## Overview
 
-This project uses Vitest with Vue Test Utils for component integration testing. The setup emphasizes **integration over isolation** - components should be tested with their real dependencies rather than heavily mocked.
+This project uses Vitest with Vue Test Utils for component integration testing, emphasizing **integration over isolation** - test components with real dependencies rather than heavily mocked ones.
 
 ## Test Writing Process
 
-When writing tests, follow these steps.
 **DO NOT SKIP THE REVIEW STEP AT THE END.**
 
-1. **Examine the component** - Understand its props, composable usage, and user interactions
-2. **Write tests with DRY principles** - Create reusable helper functions for repeated logic
-3. **Run tests and iterate** - `npm run test` until all pass
-4. **Run full CI** - `npm run ci` to ensure formatting, linting, and type compliance
-5. **Run type checking on the test files** - `npm run type-check:test` to ensure type safety
-6. **Repeat steps 4 and 5, fixing issues until all commands pass successfully**
-7. **Review all changes - AFTER running ALL lints, tests, and type-checks - ALL OF WHICH ARE MANDATORY, INCLUDING THIS STEP**:
-   - Think about this and actually look at the content critically -- it is not a self-congratulatory exercise; do not proceed without completing this step.
-   - Use git status and git diff to examine ALL uncommitted files.
-   - Explicitly state what you reviewed and confirm each file follows best practices.
+1. **Examine the component** - Understand its props, composables, and user interactions
+2. **Write tests with DRY principles** - Create reusable helper functions
+3. **Run tests** - `npm run test` until all pass
+4. **Run fix+test** - YOU MUST USE `npm run fix+test` for formatting, linting, type compliance, and tests
+5. **Fix** all issues reported by the previous command
+6. **Repeat steps 4-5** until all commands pass
+7. **Review all changes**:
+   - Use `git status` and `git diff` to examine ALL uncommitted files
+   - Explicitly confirm each file follows best practices
 
 ## Test Configuration
 
-### Vitest Setup (`vitest.config.ts`)
+### Setup Files (`vitest.config.ts`)
 
 - **Environment**: `happy-dom` for DOM simulation
-- **Globals**: Enabled for direct `describe`/`it` usage
 - **Component Auto-Import**: Via `unplugin-vue-components` with Vuetify3Resolver
-- **Setup Files**: Two-tier setup for different test types from `vitest.config.ts`
+- **Two-tier setup**:
   - `./src/logistics/__tests__/test-setup.ts` - Store mocking for logic tests
-  - `./src/components/__tests__/component-setup.ts` - Full component setup
+  - `./src/components/__tests__/component-setup.ts` - Full component setup with Vuetify and mock stores
 
-### Component Test Setup (`src/components/__tests__/component-setup.ts`)
+### Available Mock Stores
 
-**Key Features:**
-
-- **Vuetify Integration**: Full Vuetify instance with all components available
-- **Global Provides**: Mock stores injected via provide/inject pattern
-- **Pinia Reset**: Fresh Pinia instance before each test
-- **Auto-Imports**: Components auto-imported, no manual imports needed
-
-**Available Mock Stores:**
+Mock stores are provided via injection from `@/__tests__/fixtures/`:
 
 ```typescript
-// Provided via injection keys from @/composables/useStores
-const mockDataStore = createMockDataStore() // Full fixture data from @/__tests__/fixtures/stores/dataStore.ts
-const mockFactoryStore = {} // Empty object - extend as needed per IFactoryStore interface
-const mockThemeStore = {} // Empty object - extend as needed per IThemeStore interface
-const mockErrorStore = {} // Empty object - extend as needed per IErrorStore interface
+const mockDataStore = createMockDataStore() // Full fixture data
+const mockFactoryStore = {} // Empty - extend per IFactoryStore interface
+const mockThemeStore = {} // Empty - extend per IThemeStore interface
+const mockErrorStore = {} // Empty - extend per IErrorStore interface
 ```
 
-**Store Interface References:**
+All interfaces defined in `@/types/stores.ts`.
 
-All store interfaces are defined in `@/types/stores.ts`:
+## Vue Test Helpers
 
-- `IDataStore` - Game data management with items, recipes, buildings
-- `IFactoryStore` - Factory and floor management
-- `IThemeStore` - Theme switching functionality
-- `IErrorStore` - Error handling and modal display
-
-**Test Fixture Infrastructure:**
-
-The project provides comprehensive test fixtures in `src/__tests__/fixtures/`:
-
-```
-src/__tests__/fixtures/
-├── data/
-│   ├── index.ts          # Barrel exports for all game data
-│   ├── items.ts          # itemDatabase with 100+ Satisfactory items
-│   ├── recipes.ts        # recipeDatabase with production recipes
-│   └── buildings.ts      # buildingDatabase with production buildings
-├── composables/
-│   └── index.ts          # Barrel exports for all mocked composables
-├── stores/
-│   └── dataStore.ts      # createMockDataStore() with realistic data
-└── types/
-    ├── composables.ts    # Mock types for composables (useSelection, useDataSearch)
-    └── dataStore.ts      # Type definitions for fixture data
-```
-
-### Logistics Test Setup (`src/logistics/__tests__/test-setup.ts`)
-
-**Purpose**: Mocks stores at import time for pure logic testing
-
-- Mocks `@/stores/data` and `@/stores/errors`
-- Uses `createMockDataStore()` fixture with full game data
-
-## Integration Testing Patterns
-
-### Essential Patterns
-
-**Mount Helper Function:**
+Use centralized helpers from `@/__tests__/vue-test-helpers` for cleaner tests:
 
 ```typescript
-const createWrapper = (props = {}) => mount(ComponentName, { props: { ...defaultProps, ...props } })
+import {
+  expectElementExists,
+  expectElementNotExists,
+  clickElement,
+  emitEvent,
+  byComponent,
+  getComponent,
+} from '@/__tests__/vue-test-helpers'
+
+// Clean assertions
+expectElementExists(wrapper, byComponent('VFab'))
+expectElementNotExists(wrapper, '#error-message')
+
+// Simplified interactions
+await clickElement(wrapper, byComponent('VBtn'))
+// You can use Component types instead of the more-brittle byComponent(string)
+await emitEvent(wrapper, NavPanel, 'close')
+
+// Component property access
+const fab = getComponent(wrapper, byComponent('VFab'))
+expect(fab.props('icon')).toBe('mdi-map')
 ```
 
-**DRY Helper Functions:**
+## Writing Integration Tests
 
-```typescript
-const expectElementState = (wrapper, selector, prop, value) => {
-  wrapper.findAllComponents({ name: selector }).forEach((el) => expect(el.props(prop)).toBe(value))
-}
-
-const testAction = async (actionName, expectedParams) => {
-  // Setup, call action, verify composable calls with expectedParams
-}
-```
-
-**Use Constants Over Magic Strings:**
-
-```typescript
-const TEST_FACTORY = {
-  name: 'Test Factory',
-  id: 'test-factory',
-}
-
-// Good - use constants
-setFactory(TEST_FACTORY.id)
-
-// Avoid - magic strings repeated throughout tests
-setFactory('test-factory')
-```
-
-### Composable Mocking Strategy
-
-**Use Centralized Mock Fixtures:**
-
-```typescript
-// Import from centralized fixtures
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
-})
-
-vi.mock('@/composables/useFloorManagement', async () => {
-  const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
-  return { useFloorManagement: mockUseFloorManagement }
-})
-```
-
-**Test Results, Not Calls:**
-
-```typescript
-it('manages expansion state correctly', async () => {
-  // Set up test data with expected expanded state
-  const floor = createMockFloor()
-  floor.recipes[0].expanded = true
-  floor.recipes[1].expanded = false
-
-  const wrapper = createWrapper({ floor })
-
-  // Test the actual behavior/results
-  const allExpansionPanels = wrapper.findAllComponents({ name: 'VExpansionPanels' })
-  const innerPanels = allExpansionPanels.find((panel) => panel.props('multiple'))
-
-  // Verify computed values are used correctly
-  expect(innerPanels!.props('modelValue')).toEqual(['0-Recipe_IngotIron_C'])
-})
-```
-
-**Access Mocks for Specific Assertions:**
-
-```typescript
-it('calls openFloorEditor when button clicked', async () => {
-  const wrapper = createWrapper()
-  await wrapper.find('button').trigger('click')
-
-  // Access mocks only when needed to verify specific calls
-  const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
-  const mockFn = mockUseFloorManagement.mock.results[0]?.value?.openFloorEditor
-  expect(mockFn).toHaveBeenCalledWith(expectedParams)
-})
-```
-
-### What to Test
-
-**✅ DO Test:**
-
-- Component renders without errors
-- User interactions trigger expected behavior (button clicks open modals, change state)
-- Composable function calls with correct parameters
-- Conditional rendering based on data/state (elements show/hide based on conditions)
-- Data display accuracy (correct values are displayed)
-- Component integration, e.g.:
-  - computed props passed to the child are correct
-  - events that the child component emit are handled properly
-- Events emitted from component with correct payloads
-
-**❌ DON'T Test:**
-
-- Vuetify component internals
-- Implementation details (method names, variables)
-- Styling or CSS classes (e.g., `d-none`, `d-md-inline`, `text-truncate`)
-- Vuetify component props unless they directly affect behavior (e.g., `color="info"`, `size="small"`)
-- Layout structure details (e.g., `VSpacer`, specific DOM hierarchy)
-- Screen responsiveness or breakpoint behavior
-- Component internal attributes that don't affect functionality
-- Composable internal logic (test separately)
-
-### Testing Component Functionality
-
-Also check the README in `src/__tests__/fixtures/composables` for more information on how to perform mocking.
-
-**Example Integration Test Structure:**
+### Example Test Structure
 
 ```typescript
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import ComponentName from '@/components/path/ComponentName.vue'
+import { expectElementExists, clickElement, byComponent } from '@/__tests__/vue-test-helpers'
 
-// Use centralized fixtures for mocking
+// Mock composables with centralized fixtures
 vi.mock('@/composables/useStores', async () => {
+  // This is the ONLY time you should do `await import` in a test file, to avoid hoisting issues
+  // All other imports should be centralized at the top of the file
   const { mockGetStores } = await import('@/__tests__/fixtures/composables')
   return { getStores: mockGetStores }
 })
 
-vi.mock('@/composables/useComposableName', async () => {
-  const { mockUseComposableName } = await import('@/__tests__/fixtures/composables')
-  return { useComposableName: mockUseComposableName }
-})
+const getComponent = (wrapper: VueWrapper) => {
+  return wrapper.findComponent(ComponentUnderTest)
+}
 
 describe('ComponentName Integration', () => {
   const createWrapper = (props = {}) => {
+    // Use the `template` to wrap needed dependencies for a component, such as v-expansion-panels or v-list
     return mount(ComponentName, {
-      props: {
-        // reasonable defaults
-        ...props,
-      },
+      props: { ...defaultProps, ...props },
+      template: '<v-expansion-panels><ComponentName /></v-expansion-panels>',
     })
   }
 
   it('renders with default props', () => {
     const wrapper = createWrapper()
-
-    expect(wrapper.find('[data-testid="main-element"]').exists()).toBe(true)
+    expectElementExists(wrapper, '[data-testid="main-element"]')
     expect(wrapper.text()).toContain('Expected Text')
   })
 
-  it('triggers composable action and tests results', async () => {
+  it('handles user interactions', async () => {
     const wrapper = createWrapper()
-    await wrapper.find('button').trigger('click')
+    await clickElement(wrapper, byComponent('VBtn'))
 
-    // Access mock only when needed for specific assertion
-    const { mockUseComposableName } = await import('@/__tests__/fixtures/composables')
-    const mockAction = mockUseComposableName.mock.results[0].value.actionFunction
-    expect(mockAction).toHaveBeenCalledWith('expected-params')
-  })
-
-  it('integrates composable results correctly', async () => {
-    // Set up test data to produce expected results
-    const testData = { expanded: true, value: 'test' }
-    const wrapper = createWrapper({ data: testData })
-
-    // Test the complete flow: data → composable → DOM
-    const resultElement = wrapper.find('[data-testid="result"]')
-    expect(resultElement.text()).toContain('processed-test') // Composable result
+    // Test behavior, not implementation
+    expectElementExists(wrapper, Modal)
   })
 })
 ```
 
-## Key Integration Testing Principles
+### Key Principles
 
-### No Component Stubbing
+#### ✅ DO Test:
 
-- All components should render their real implementations
-- This tests the actual component integration
-- Use the auto-import system - components are available globally
+- Component renders without errors
+- User interactions trigger expected behavior
+- Composable function calls with correct parameters
+- Conditional rendering based on data/state
+- Data display accuracy
+- Component integration (props, events)
 
-### Strategic Mocking
+#### ❌ DON'T Test:
 
-- **Mock composables** that components call - test the calls, not the logic
-- **Mock external services** and stores with the provided setup
-- **Don't mock** child components - let them render fully
-- Use the provided mock store setup and extend as needed
+- Vuetify component internals
+- Implementation details (method names, internal variables)
+- CSS classes or styling
+- Layout structure details
+- Composable internal logic (test separately)
 
-### Test Data Strategy
+### Testing Patterns
 
-- Use `createMockDataStore()` for realistic game data
-- Create focused mock data for specific test scenarios
-- Prefer fixture data over inline test data
-
-**Using Test Fixtures Effectively:**
-
-```typescript
-import { itemDatabase, recipeDatabase, buildingDatabase } from '@/__tests__/fixtures/data'
-import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
-import type { MockUseDataSearch, MockUseSelection } from '@/__tests__/fixtures/types/composables'
-import {
-  createMockUseDataSearch,
-  createMockUseSelection,
-} from '@/__tests__/fixtures/types/composables'
-
-// Use fixture constants instead of magic strings
-const IRON_ORE_KEY = 'Desc_OreIron_C'
-const IRON_INGOT_RECIPE = 'Recipe_IngotIron_C'
-const CONSTRUCTOR_BUILDING = 'Build_ConstructorMk1_C'
-
-// Access real fixture data
-const ironOreItem = itemDatabase[IRON_ORE_KEY]
-const ironIngotRecipe = recipeDatabase[IRON_INGOT_RECIPE]
-const constructorBuilding = buildingDatabase[CONSTRUCTOR_BUILDING]
-
-// Mock composables with fixture types
-vi.mock('@/composables/useDataSearch', () => ({
-  useDataSearch: vi.fn(() => createMockUseDataSearch([ironOreItem, ironIngotItem])),
-}))
-```
-
-**Test Constant Patterns:**
-
-Define test constants to avoid magic strings and improve maintainability:
+#### Finding Elements
 
 ```typescript
-describe('ComponentName Integration', () => {
-  // Test constants from fixtures
-  const TEST_ITEMS = {
-    IRON_ORE: 'Desc_OreIron_C',
-    COPPER_ORE: 'Desc_OreCopper_C',
-    IRON_INGOT: 'Desc_IronIngot_C',
-  } as const
-
-  const TEST_RECIPES = {
-    IRON_INGOT: 'Recipe_IngotIron_C',
-    COPPER_INGOT: 'Recipe_IngotCopper_C',
-  } as const
-
-  const TEST_BUILDINGS = {
-    SMELTER: 'Build_SmelterMk1_C',
-    CONSTRUCTOR: 'Build_ConstructorMk1_C',
-  } as const
-
-  const createWrapper = (props = {}) => {
-    return mount(ComponentName, {
-      props: {
-        item: TEST_ITEMS.IRON_ORE,
-        recipe: TEST_RECIPES.IRON_INGOT,
-        ...props,
-      },
-    })
-  }
-
-  it('displays item from fixture data', () => {
-    const wrapper = createWrapper()
-    const ironOreItem = itemDatabase[TEST_ITEMS.IRON_ORE]
-
-    expect(wrapper.text()).toContain(ironOreItem.name) // "Iron Ore"
-  })
-}
-```
-
-### Finding Interactive Elements
-
-**Focus on Functionality, Not Implementation:**
-
-```typescript
-// ✅ Good - find by what the element does
+// ✅ Good - by functionality
 const buttons = wrapper.findAllComponents({ name: 'VBtn' })
-const importBtn = buttons.find((btn) => btn.text().includes('Import/Export'))
+const importBtn = buttons.find((btn) => btn.text().includes('Import'))
 
-// ✅ Good - find by content or semantic meaning
-const submitBtn = wrapper.find('button[type="submit"]')
-const modal = wrapper.findComponent({ name: 'ImportExportModal' })
-
-// ❌ Avoid - testing specific props/classes unless they affect behavior
-const importBtn = wrapper.find('v-btn[color="secondary"][variant="outlined"]')
-const responsiveText = wrapper.find('.d-none.d-md-inline')
+// ❌ Avoid - implementation + styling details
+const btn = wrapper.find('v-btn[color="secondary"]')
 ```
 
-### Async Testing
-
-- Always `await` user interactions: `await wrapper.find('button').trigger('click')`
-- Use `await wrapper.vm.$nextTick()` when needed for reactivity
-- Test async operations with proper awaiting
-
-## Common Patterns
-
-### Testing Vuetify Components
+#### Using Test Fixtures
 
 ```typescript
-// Vuetify components are available globally
-it('works with vuetify select', async () => {
+import { itemDatabase, recipeDatabase } from '@/__tests__/fixtures/data'
+import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
+
+const IRON_ORE = 'Desc_OreIron_C'
+const ironOreItem = itemDatabase[IRON_ORE] // Real fixture data
+
+// Define test constants
+const TEST_ITEMS = {
+  IRON_ORE: 'Desc_OreIron_C',
+  COPPER_ORE: 'Desc_OreCopper_C',
+} as const
+```
+
+#### Composable Mocking
+
+See `src/__tests__/fixtures/composables/README.md` for detailed patterns.
+
+```typescript
+import { mockNavigateToFloor } from '@/__tests__/fixtures/composables/navigation'
+
+// Basic setup with sensible defaults
+vi.mock('@/composables/useFloorNavigation', async () => {
+  const { mockUseFloorNavigation } = await import('@/__tests__/fixtures/composables')
+  return { useFloorNavigation: mockUseFloorNavigation }
+})
+
+// override/spy on individual composable functions as needed
+it('navigates to floors', () => {
   const wrapper = createWrapper()
+  mockNavigateToFloor.mockImplementation(() => {})
+  emitEvent(wrapper, NavPanel, 'floor-selected', 1)
 
-  const select = wrapper.findComponent({ name: 'VSelect' })
-  expect(select.exists()).toBe(true)
-
-  // Test select functionality
-  await select.vm.$emit('update:modelValue', 'new-value')
-  expect(wrapper.emitted('change')).toBeTruthy()
+  expect(mockNavigateToFloor).toHaveBeenCalledWith(1)
 })
 ```
-
-### Testing Store Integration
-
-```typescript
-it('integrates with factory store', () => {
-  // Mock store is automatically provided
-  const wrapper = createWrapper()
-
-  // Test that component uses store data correctly
-  expect(wrapper.text()).toContain('Ground Floor') // from mock data
-})
-```
-
-### Testing Error Handling
-
-```typescript
-it('handles errors gracefully', async () => {
-  // Simulate error condition
-  const wrapper = createWrapper({ data: null })
-
-  expect(wrapper.find('[data-testid="error-message"]').exists()).toBe(true)
-})
-```
-
-### Testing Composable Integration
-
-```typescript
-import { vi } from 'vitest'
-
-vi.mock('@/composables/useRecipeStatus', () => ({
-  useRecipeStatus: vi.fn(() => ({
-    updateStatus: vi.fn(),
-    status: ref('active'),
-  })),
-}))
-
-it('calls composable when status changes', async () => {
-  const { useRecipeStatus } = await import('@/composables/useRecipeStatus')
-  const mockUpdateStatus = vi.mocked(useRecipeStatus).mock.results[0].value.updateStatus
-
-  const wrapper = createWrapper({ recipeId: '123' })
-
-  await wrapper.find('[data-testid="status-toggle"]').trigger('click')
-
-  expect(mockUpdateStatus).toHaveBeenCalledWith('123', 'inactive')
-})
-```
-
-## File Organization
-
-- Integration tests should be in `__tests__` folders alongside components
-- Name test files `ComponentName.integration.test.ts`
-- Use descriptive describe blocks: `describe('ComponentName Integration', ...)`
-- Group related tests with nested describe blocks when needed
 
 ## Running Tests
 
-- `npm run ci` - Run full CI-style formatting and linting checks plus tests
-- `npm run type-check:test` - TypeScript type checking for tests
 - `npm test` - Watch mode for development
-- `npm run test:ui` - Visual test interface
 - `npm run test:run` - Single run (CI mode)
+- `npm run test:ui` - Visual test interface
 - `npm run test:coverage` - Coverage reports
+- `npm run ci` - Full CI pipeline
+- `npm run type-check:test` - TypeScript checking for tests
+
+## File Organization
+
+- Tests in `__tests__` folders alongside components
+- Name: `ComponentName.integration.test.ts`
+- Describe blocks: `describe('ComponentName Integration', ...)`
 
 ## Quick Reference
 
-### Key Infrastructure Files
+### Project Structure
 
-**Configuration:**
+```
+src/
+├── __tests__/
+│   ├── fixtures/        # Test data and mocks
+│   │   ├── data/       # Game data (items, recipes, buildings)
+│   │   ├── composables/# Composable mocks
+│   │   └── stores/     # Store mocks
+│   └── vue-test-helpers.ts # Testing utilities
+├── components/
+│   └── __tests__/      # Component tests
+└── types/stores.ts     # Store interfaces
+```
 
-- `vitest.config.ts` - Main test configuration with component auto-import
-- `src/components/__tests__/component-setup.ts` - Component test setup with mock stores
+### Available Mocks
 
-**Type Definitions:**
+- `mockGetStores` - Store access
+- `mockUseFloorManagement` - Floor operations
+- `mockUseRecipeStatus` - Recipe status
+- `mockUseFloorNavigation` - Navigation
+- `mockUseLinkData` - Material links
 
-- `src/types/stores.ts` - Store interface definitions (IDataStore, IFactoryStore, etc.)
-- `src/__tests__/fixtures/types/` - Mock type definitions for composables
-
-**Test Data:**
-
-- `src/__tests__/fixtures/data/` - Real Satisfactory game data (items, recipes, buildings)
-- `src/__tests__/fixtures/stores/dataStore.ts` - `createMockDataStore()` factory function
-
-**Store Integration:**
-
-- `src/composables/useStores.ts` - Injection keys and store getters
-
-### Essential Imports
-
-This is a fairly decent example of things you MAY need in a test.
-Do not assume you will need all of these, as you can see many of the store keys are not actually used in the "Common Test Pattern" example that follows.
+### Frequent Imports
 
 ```typescript
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { config } from '@vue/test-utils'
-import { itemDatabase, recipeDatabase, buildingDatabase } from '@/__tests__/fixtures/data'
-import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
-import {
-  DATA_STORE_KEY,
-  FACTORY_STORE_KEY,
-  THEME_STORE_KEY,
-  ERROR_STORE_KEY,
-} from '@/composables/useStores'
-import type { IDataStore, IFactoryStore, IThemeStore, IErrorStore } from '@/types/stores'
-```
-
-### Common Test Patterns
-
-```typescript
-// Component setup
-const createWrapper = (props = {}) => mount(ComponentName, { props: { ...defaultProps, ...props } })
-
-// Using fixture data
-const IRON_ORE = 'Desc_OreIron_C'
-const ironOreData = itemDatabase[IRON_ORE] // Real game data
-
-// Async testing
-await wrapper.find('[data-testid="button"]').trigger('click')
+import { expectElementExists, clickElement, byComponent } from '@/__tests__/vue-test-helpers'
 ```

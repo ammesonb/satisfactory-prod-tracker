@@ -1,9 +1,12 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { VCheckbox } from 'vuetify/components'
 import RecipeBuilding from '@/components/factory/RecipeBuilding.vue'
+import CachedIcon from '@/components/common/CachedIcon.vue'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
 import type { Recipe } from '@/types/factory'
+import { expectElementExists, expectElementText, expectProps } from '@/__tests__/vue-test-helpers'
 
 // Use centralized fixtures for mocking composables
 vi.mock('@/composables/useRecipeStatus', async () => {
@@ -69,8 +72,8 @@ describe('RecipeBuilding Integration', () => {
     const wrapper = createWrapper()
 
     expect(wrapper.find('.recipe-building').exists()).toBe(true)
-    expect(wrapper.text()).toContain('Building')
-    expect(wrapper.text()).toContain('Smelter')
+    expectElementText(wrapper, '.recipe-building', 'Building')
+    expectElementText(wrapper, '.recipe-building', 'Smelter')
   })
 
   it('displays building name from data store', () => {
@@ -81,32 +84,37 @@ describe('RecipeBuilding Integration', () => {
     )
     const wrapper = createWrapper({ recipe: constructorRecipe })
 
-    expect(wrapper.text()).toContain('Constructor')
+    expectElementText(wrapper, '.recipe-building', 'Constructor')
   })
 
   it('displays cached icon when available', () => {
     const wrapper = createWrapper()
 
-    const cachedIcon = wrapper.findComponent({ name: 'CachedIcon' })
-    expect(cachedIcon.exists()).toBe(true)
+    expectElementExists(wrapper, CachedIcon)
+    expectProps(wrapper, CachedIcon, {
+      size: 32,
+    })
+    const cachedIcon = wrapper.findComponent(CachedIcon)
     expect(cachedIcon.props('icon')).toBeTruthy()
-    expect(cachedIcon.props('size')).toBe(32)
   })
 
   it('shows unchecked checkbox when recipe is not built', () => {
     const wrapper = createWrapper()
 
-    const checkbox = wrapper.findComponent({ name: 'VCheckbox' })
-    expect(checkbox.exists()).toBe(true)
-    expect(checkbox.props('modelValue')).toBe(false)
+    expectElementExists(wrapper, VCheckbox)
+    expectProps(wrapper, VCheckbox, {
+      modelValue: false,
+    })
   })
 
   it('shows checked checkbox when recipe is built', () => {
     const builtRecipe = createTestRecipeNode(TEST_RECIPES.IRON_INGOT, true)
     const wrapper = createWrapper({ recipe: builtRecipe })
 
-    const checkbox = wrapper.findComponent({ name: 'VCheckbox' })
-    expect(checkbox.props('modelValue')).toBe(true)
+    expectElementExists(wrapper, VCheckbox)
+    expectProps(wrapper, VCheckbox, {
+      modelValue: true,
+    })
   })
 
   it('applies correct cardClass when recipe is not built', () => {

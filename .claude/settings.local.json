@@ -15,7 +15,8 @@
       "WebFetch(domain:vitest.dev)",
       "Bash(find:*)",
       "Bash(npm run type-check:test:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npm run fix+test:*)"
     ],
     "deny": []
   }

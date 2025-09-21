@@ -11,6 +11,8 @@ import {
   getComponent,
 } from '@/__tests__/vue-test-helpers'
 
+import { VFab } from 'vuetify/components'
+
 // Mock the useFloorNavigation composable
 vi.mock('@/composables/useFloorNavigation', async () => {
   const { mockUseFloorNavigation } = await import('@/__tests__/fixtures/composables')
@@ -34,7 +36,7 @@ describe('FloatingNav Integration', () => {
   it('renders with FAB button initially visible', () => {
     const wrapper = createWrapper()
 
-    const fab = getComponent(wrapper, byComponent('VFab'))
+    const fab = wrapper.findComponent(VFab)
     expect(fab.exists()).toBe(true)
     expect(fab.props('icon')).toBe('mdi-map')
     expect(fab.props('color')).toBe('primary')

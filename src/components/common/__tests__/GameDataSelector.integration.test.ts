@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ref, nextTick } from 'vue'
+import { ref } from 'vue'
+import { VAutocomplete } from 'vuetify/components'
 import type { SearchOptions, IconConfig, DisplayConfig } from '@/types/ui'
 import type { ItemOption } from '@/types/data'
 import {
@@ -8,8 +9,15 @@ import {
   mockSearchInput,
   mockUpdateSearch,
 } from '@/__tests__/fixtures/composables/dataSearch'
+import {
+  expectElementExists,
+  expectElementNotExists,
+  emitEvent,
+  expectProps,
+} from '@/__tests__/vue-test-helpers'
 
 import GameDataSelector from '@/components/common/GameDataSelector.vue'
+import CachedIcon from '@/components/common/CachedIcon.vue'
 
 vi.mock('@/composables/useDataSearch', async () => {
   const { mockUseDataSearch } = await import('@/__tests__/fixtures/composables/dataSearch')
@@ -116,12 +124,12 @@ describe('GameDataSelector Integration', () => {
   it('renders with default props', () => {
     const wrapper = createWrapper()
 
-    expect(wrapper.findComponent({ name: 'VAutocomplete' }).exists()).toBe(true)
-    expect(wrapper.findComponent({ name: 'VAutocomplete' }).props('placeholder')).toBe(
-      UI_TEXT.DEFAULT_PLACEHOLDER,
-    )
-    expect(wrapper.findComponent({ name: 'VAutocomplete' }).props('clearable')).toBe(true)
-    expect(wrapper.findComponent({ name: 'VAutocomplete' }).props('disabled')).toBe(false)
+    expectElementExists(wrapper, VAutocomplete)
+    expectProps(wrapper, VAutocomplete, {
+      placeholder: UI_TEXT.DEFAULT_PLACEHOLDER,
+      clearable: true,
+      disabled: false,
+    })
   })
 
   it('renders with custom display config', () => {
@@ -134,13 +142,14 @@ describe('GameDataSelector Integration', () => {
     }
 
     const wrapper = createWrapper({ displayConfig })
-    const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
 
-    expect(autocomplete.props('placeholder')).toBe(UI_TEXT.CUSTOM_PLACEHOLDER)
-    expect(autocomplete.props('variant')).toBe('filled')
-    expect(autocomplete.props('density')).toBe('compact')
-    expect(autocomplete.props('hideDetails')).toBe(false)
-    expect(autocomplete.props('label')).toBe(UI_TEXT.LABEL)
+    expectProps(wrapper, VAutocomplete, {
+      placeholder: UI_TEXT.CUSTOM_PLACEHOLDER,
+      variant: 'filled',
+      density: 'compact',
+      hideDetails: false,
+      label: UI_TEXT.LABEL,
+    })
   })
 
   it('passes through disabled and clearable props', () => {
@@ -148,10 +157,11 @@ describe('GameDataSelector Integration', () => {
       disabled: true,
       clearable: false,
     })
-    const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
 
-    expect(autocomplete.props('disabled')).toBe(true)
-    expect(autocomplete.props('clearable')).toBe(false)
+    expectProps(wrapper, VAutocomplete, {
+      disabled: true,
+      clearable: false,
+    })
   })
 
   it('calls useDataSearch composable with correct parameters', async () => {
@@ -173,9 +183,8 @@ describe('GameDataSelector Integration', () => {
 
   it('emits update:modelValue when selection changes', async () => {
     const wrapper = createWrapper()
-    const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
 
-    await autocomplete.vm.$emit('update:modelValue', mockItems[0])
+    await emitEvent(wrapper, VAutocomplete, 'update:modelValue', mockItems[0])
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
     expect(wrapper.emitted('update:modelValue')![0]).toEqual([mockItems[0]])
@@ -183,9 +192,8 @@ describe('GameDataSelector Integration', () => {
 
   it('emits undefined when selection is cleared', async () => {
     const wrapper = createWrapper({ modelValue: mockItems[0] })
-    const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
 
-    await autocomplete.vm.$emit('update:modelValue', undefined)
+    await emitEvent(wrapper, VAutocomplete, 'update:modelValue', undefined)
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
     expect(wrapper.emitted('update:modelValue')![0]).toEqual([undefined])
@@ -193,10 +201,9 @@ describe('GameDataSelector Integration', () => {
 
   it('calls updateSearch when search input changes', async () => {
     const wrapper = createWrapper()
-    const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
 
     const SEARCH_TERM = 'iron'
-    await autocomplete.vm.$emit('update:search', SEARCH_TERM)
+    await emitEvent(wrapper, VAutocomplete, 'update:search', SEARCH_TERM)
 
     expect(mockUpdateSearch).toHaveBeenCalledWith(SEARCH_TERM)
   })
@@ -212,8 +219,8 @@ describe('GameDataSelector Integration', () => {
       iconConfig,
     })
 
-    const cachedIcon = wrapper.findComponent({ name: 'CachedIcon' })
-    expect(cachedIcon.exists()).toBe(true)
+    expectElementExists(wrapper, CachedIcon)
+    const cachedIcon = wrapper.findComponent(CachedIcon)
     expect(cachedIcon.props('icon')).toBe(ITEM_ICONS.IRON_ORE)
     expect(cachedIcon.props('size')).toBe(ICON_SIZES.CUSTOM_SELECTED)
   })
@@ -228,7 +235,7 @@ describe('GameDataSelector Integration', () => {
       iconConfig,
     })
 
-    expect(wrapper.findComponent({ name: 'CachedIcon' }).exists()).toBe(false)
+    expectElementNotExists(wrapper, CachedIcon)
   })
 
   it('uses default icon sizes when not specified', () => {
@@ -236,42 +243,38 @@ describe('GameDataSelector Integration', () => {
       modelValue: mockItems[0],
     })
 
-    const cachedIcon = wrapper.findComponent({ name: 'CachedIcon' })
+    const cachedIcon = wrapper.findComponent(CachedIcon)
     expect(cachedIcon.props('size')).toBe(ICON_SIZES.DEFAULT_SELECTED)
   })
 
   it('shows correct autocomplete configuration', () => {
-    const wrapper = createWrapper()
-    const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
-
-    expect(autocomplete.props('itemTitle')).toBe('name')
-    expect(autocomplete.props('itemValue')).toBe('value')
-    expect(autocomplete.props('returnObject')).toBe(true)
-    expect(autocomplete.props('noFilter')).toBe(true)
+    expectProps(createWrapper(), VAutocomplete, {
+      itemTitle: 'name',
+      itemValue: 'value',
+      returnObject: true,
+      noFilter: true,
+    })
   })
 
   it('configures menu props correctly', () => {
-    const wrapper = createWrapper()
-    const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
-
-    expect(autocomplete.props('menuProps')).toEqual({
-      closeOnContentClick: true,
+    expectProps(createWrapper(), VAutocomplete, {
+      menuProps: {
+        closeOnContentClick: true,
+      },
     })
   })
 
   it('handles empty filtered results from composable', () => {
     mockFilteredItems.value = []
-    const wrapper = createWrapper()
-    const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
-
-    expect(autocomplete.props('items')).toEqual([])
+    expectProps(createWrapper(), VAutocomplete, {
+      items: [],
+    })
   })
 
   it('passes through class prop', () => {
-    const wrapper = createWrapper({ class: 'custom-selector' })
-    const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
-
-    expect(autocomplete.props('class')).toBe('custom-selector')
+    expectProps(createWrapper({ class: 'custom-selector' }), VAutocomplete, {
+      class: 'custom-selector',
+    })
   })
 
   it('handles v-model binding correctly', async () => {
@@ -286,38 +289,30 @@ describe('GameDataSelector Integration', () => {
       },
     })
 
-    const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
-
     // Test selection
-    await autocomplete.vm.$emit('update:modelValue', mockItems[1])
-    await nextTick()
-
+    await emitEvent(wrapper, VAutocomplete, 'update:modelValue', mockItems[1])
     expect(modelValue.value).toEqual(mockItems[1])
 
     // Test clearing
-    await autocomplete.vm.$emit('update:modelValue', undefined)
-    await nextTick()
-
+    await emitEvent(wrapper, VAutocomplete, 'update:modelValue', undefined)
     expect(modelValue.value).toBeUndefined()
   })
 
   it('uses filtered items from composable', () => {
     const filteredItems = [mockItems[0], mockItems[2]]
     mockFilteredItems.value = filteredItems
-    const wrapper = createWrapper()
-    const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
-
-    expect(autocomplete.props('items')).toEqual(filteredItems)
+    expectProps(createWrapper(), VAutocomplete, {
+      items: filteredItems,
+    })
   })
 
   it('passes search input from composable', () => {
     const SEARCH_VALUE = 'iron'
     mockSearchInput.value = SEARCH_VALUE
 
-    const wrapper = createWrapper()
-    const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
-
-    expect(autocomplete.props('search')).toBe(SEARCH_VALUE)
+    expectProps(createWrapper(), VAutocomplete, {
+      search: SEARCH_VALUE,
+    })
   })
 
   it('displays item type chips when showType is enabled', () => {

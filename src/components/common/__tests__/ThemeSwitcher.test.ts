@@ -2,6 +2,8 @@ import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import ThemeSwitcher from '@/components/common/ThemeSwitcher.vue'
 import type { IThemeStore } from '@/types/stores'
+import { clickElement, expectElementExists, expectProps } from '@/__tests__/vue-test-helpers'
+import { VBtn, VIcon } from 'vuetify/components'
 
 // Mock the useTheme composable from Vuetify
 const mockThemeChange = vi.fn()
@@ -36,14 +38,13 @@ describe('ThemeSwitcher Integration', () => {
   it('renders with default light theme', () => {
     const wrapper = createWrapper()
 
-    const button = wrapper.findComponent({ name: 'VBtn' })
-    expect(button.exists()).toBe(true)
+    const button = wrapper.findComponent(VBtn)
+    expectElementExists(wrapper, VBtn)
     expect(button.attributes('aria-label')).toBe('Switch to dark mode')
 
-    const icon = wrapper.findComponent({ name: 'VIcon' })
-    expect(icon.exists()).toBe(true)
+    expectElementExists(wrapper, VIcon)
+    expectProps(wrapper, VIcon, { color: 'orange' })
     expect(wrapper.html()).toContain('mdi-weather-night')
-    expect(icon.props('color')).toBe('orange')
   })
 
   it('renders with dark theme', () => {
@@ -51,7 +52,8 @@ describe('ThemeSwitcher Integration', () => {
 
     const wrapper = createWrapper()
 
-    const button = wrapper.findComponent({ name: 'VBtn' })
+    const button = wrapper.findComponent(VBtn)
+    expectElementExists(wrapper, VBtn)
     expect(button.attributes('aria-label')).toBe('Switch to light mode')
 
     expect(wrapper.html()).toContain('mdi-weather-sunny')
@@ -60,9 +62,7 @@ describe('ThemeSwitcher Integration', () => {
   it('calls toggleTheme when button is clicked', async () => {
     const wrapper = createWrapper()
 
-    const button = wrapper.findComponent({ name: 'VBtn' })
-    await button.trigger('click')
-
+    await clickElement(wrapper, VBtn)
     expect(mockThemeStore.toggleTheme).toHaveBeenCalledOnce()
   })
 
@@ -70,7 +70,7 @@ describe('ThemeSwitcher Integration', () => {
     const wrapper = createWrapper()
 
     const button = wrapper.findComponent({ name: 'VBtn' })
-    expect(button.props('icon')).toBe(true)
+    expectProps(wrapper, VBtn, { icon: true })
     expect(button.attributes('aria-label')).toBeTruthy()
   })
 
@@ -79,16 +79,13 @@ describe('ThemeSwitcher Integration', () => {
     mockThemeStore.isDark = false
     const lightWrapper = createWrapper()
     expect(lightWrapper.html()).toContain('mdi-weather-night')
-    expect(lightWrapper.findComponent({ name: 'VBtn' }).attributes('aria-label')).toBe(
-      'Switch to dark mode',
-    )
+    expectProps(lightWrapper, VBtn, { icon: true })
+    expect(lightWrapper.findComponent(VBtn).attributes('aria-label')).toBe('Switch to dark mode')
 
     // Test dark theme
     mockThemeStore.isDark = true
     const darkWrapper = createWrapper()
     expect(darkWrapper.html()).toContain('mdi-weather-sunny')
-    expect(darkWrapper.findComponent({ name: 'VBtn' }).attributes('aria-label')).toBe(
-      'Switch to light mode',
-    )
+    expect(darkWrapper.findComponent(VBtn).attributes('aria-label')).toBe('Switch to light mode')
   })
 })

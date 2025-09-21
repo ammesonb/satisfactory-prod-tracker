@@ -5,6 +5,8 @@ import {
   mockAddFactory,
   mockSetSelectedFactory,
 } from '@/__tests__/fixtures/composables/factoryStore'
+import { clickElement, expectElementExists, expectProps } from '@/__tests__/vue-test-helpers'
+import { VBtn, VCard, VCardTitle, VCardText, VAlert } from 'vuetify/components'
 
 // Mock the useStores composable
 vi.mock('@/composables/useStores', async () => {
@@ -158,10 +160,7 @@ describe('GettingStarted Integration', () => {
   })
 
   it('passes sample recipes to addFactory with correct format', async () => {
-    const wrapper = createWrapper()
-    const sampleButton = wrapper.find('button')
-
-    await sampleButton.trigger('click')
+    await clickElement(createWrapper(), VBtn)
 
     const addFactoryCall = vi.mocked(mockAddFactory).mock.calls[0]
     const sampleRecipes = addFactoryCall[2]
@@ -185,10 +184,7 @@ describe('GettingStarted Integration', () => {
       throw mockError
     })
 
-    const wrapper = createWrapper()
-    const sampleButton = wrapper.find('button')
-
-    await sampleButton.trigger('click')
+    await clickElement(createWrapper(), VBtn)
 
     expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to add sample factory:', mockError)
     expect(mockSetSelectedFactory).not.toHaveBeenCalled()
@@ -199,30 +195,27 @@ describe('GettingStarted Integration', () => {
   it('has proper card structure and styling', () => {
     const wrapper = createWrapper()
 
-    const card = wrapper.findComponent({ name: 'VCard' })
-    expect(card.exists()).toBe(true)
+    const card = wrapper.findComponent(VCard)
+    expectElementExists(wrapper, VCard)
     expect(card.classes()).toContain('mx-auto')
     expect(card.props('maxWidth')).toBe('800')
 
-    const cardTitle = wrapper.findComponent({ name: 'VCardTitle' })
-    expect(cardTitle.exists()).toBe(true)
+    const cardTitle = wrapper.findComponent(VCardTitle)
+    expectElementExists(wrapper, VCardTitle)
     expect(cardTitle.classes()).toContain('text-h5')
     expect(cardTitle.classes()).toContain('d-flex')
     expect(cardTitle.classes()).toContain('justify-space-between')
     expect(cardTitle.classes()).toContain('align-center')
 
-    const cardText = wrapper.findComponent({ name: 'VCardText' })
-    expect(cardText.exists()).toBe(true)
+    expectElementExists(wrapper, VCardText)
   })
 
   it('has proper button styling', () => {
-    const wrapper = createWrapper()
-
-    const button = wrapper.findComponent({ name: 'VBtn' })
-    expect(button.exists()).toBe(true)
-    expect(button.props('color')).toBe('secondary')
-    expect(button.props('variant')).toBe('elevated')
-    expect(button.props('prependIcon')).toBe(ICONS.PLAY_CIRCLE)
+    expectProps(createWrapper(), VBtn, {
+      color: 'secondary',
+      variant: 'elevated',
+      prependIcon: ICONS.PLAY_CIRCLE,
+    })
   })
 
   it('renders step descriptions with proper HTML structure', () => {
@@ -240,7 +233,7 @@ describe('GettingStarted Integration', () => {
   it('has proper alert styling and structure', () => {
     const wrapper = createWrapper()
 
-    const alert = wrapper.findComponent({ name: 'VAlert' })
+    const alert = wrapper.findComponent(VAlert)
     expect(alert.classes()).toContain('mt-4')
   })
 })
