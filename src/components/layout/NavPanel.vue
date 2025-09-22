@@ -2,6 +2,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { useFloorManagement } from '@/composables/useFloorManagement'
 import { useRecipeStatus } from '@/composables/useRecipeStatus'
+import { useFloorSearch } from '@/composables/useFloorSearch'
 import { getStores } from '@/composables/useStores'
 import { getIconURL } from '@/logistics/images'
 import { formatFloorId, formatRecipeId } from '@/utils/floors'
@@ -14,46 +15,12 @@ const emit = defineEmits<{
 const { factoryStore, dataStore } = getStores()
 const { getFloorDisplayName } = useFloorManagement()
 const { isRecipeComplete } = useRecipeStatus()
-const searchQuery = ref('')
-const searchInput = ref()
+const searchFieldRef = ref()
 
-const currentFactory = computed(() => factoryStore.currentFactory)
+const currentFactoryFloors = computed(() => factoryStore.currentFactory?.floors || [])
 
-const filteredFloors = computed(() => {
-  // only filter if search query present
-  if (!currentFactory.value || !searchQuery.value) {
-    return (
-      currentFactory.value?.floors.map((floor, index) => ({ ...floor, originalIndex: index })) || []
-    )
-  }
-
-  const query = searchQuery.value.toLowerCase()
-
-  return currentFactory.value.floors
-    .map((floor, floorIndex) => {
-      const floorName = getFloorDisplayName(floorIndex + 1, floor).toLowerCase()
-      const floorMatches = floorName.includes(query)
-
-      // only filter recipes if the floor does not match
-      const filteredRecipes = floorMatches
-        ? floor.recipes
-        : floor.recipes.filter((recipe) => {
-            const recipeName = dataStore.getRecipeDisplayName(recipe.recipe.name).toLowerCase()
-            return recipeName.includes(query)
-          })
-
-      if (floorMatches || filteredRecipes.length > 0) {
-        return {
-          ...floor,
-          originalIndex: floorIndex,
-          recipes: filteredRecipes,
-        }
-      }
-
-      return null
-    })
-    .filter((floor) => floor !== null)
-})
+// Use the floor search composable
+const { searchInput, filteredFloors } = useFloorSearch(currentFactoryFloors)
 
 const handleFloorClick = (floorIndex: number) => {
   emit('navigate', formatFloorId(floorIndex))
@@ -64,14 +31,14 @@ const handleRecipeClick = (floorIndex: number, recipeName: string) => {
 }
 
 onMounted(() => {
-  if (searchInput.value) {
-    searchInput.value.focus()
+  if (searchFieldRef.value) {
+    searchFieldRef.value.focus()
   }
 })
 </script>
 
 <template>
-  <v-card v-if="currentFactory" class="nav-panel" elevation="8">
+  <v-card v-if="currentFactoryFloors.length > 0" class="nav-panel" elevation="8">
     <v-card-title class="text-subtitle-1 pa-3 pb-2 d-flex align-center justify-space-between">
       <div class="d-flex align-center">
         <v-icon class="me-2">mdi-map</v-icon>
@@ -82,8 +49,8 @@ onMounted(() => {
 
     <div class="pa-3 pt-0">
       <v-text-field
-        ref="searchInput"
-        v-model="searchQuery"
+        ref="searchFieldRef"
+        v-model="searchInput"
         placeholder="Search floors and recipes..."
         prepend-inner-icon="mdi-magnify"
         density="compact"
