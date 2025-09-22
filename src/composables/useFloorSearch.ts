@@ -39,21 +39,13 @@ export const useFloorSearch = (floors: Ref<Floor[] | undefined>) => {
     // Filter recipes within each matched floor
     return filteredItems.value.map((floor) => {
       const floorName = getFloorDisplayName(floor.originalIndex + 1, floor).toLowerCase()
-      const floorMatches = floorName.includes(query)
 
-      // If floor matches, show all its recipes
-      if (floorMatches) {
-        return floor
-      }
-
-      const recipeMatches = (recipe: RecipeNode, query: string) =>
+      const recipeMatches = (recipe: RecipeNode) =>
         dataStore.getRecipeDisplayName(recipe.recipe.name).toLowerCase().includes(query)
 
       return {
         ...floor,
-        recipes: floorName.includes(query)
-          ? floor.recipes
-          : floor.recipes.filter((recipe) => recipeMatches(recipe, query)),
+        recipes: floorName.includes(query) ? floor.recipes : floor.recipes.filter(recipeMatches),
       }
     })
   })
