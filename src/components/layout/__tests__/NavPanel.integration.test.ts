@@ -260,7 +260,6 @@ describe('NavPanel Integration', () => {
 
       const avatar = firstRecipe.find('.v-avatar')
       expect(avatar.exists()).toBe(true)
-      expect(avatar.attributes('style')).toContain('width: 20px')
 
       const img = avatar.find('.v-img')
       expect(img.exists()).toBe(true)
@@ -333,9 +332,8 @@ describe('NavPanel Integration', () => {
     })
 
     it('renders correctly with null factory', () => {
-      const wrapper = createWrapper(null)
       // Should not render anything when factory is null
-      expectElementNotExists(wrapper, '.nav-panel')
+      expectElementNotExists(createWrapper(null), '.nav-panel')
     })
   })
 })

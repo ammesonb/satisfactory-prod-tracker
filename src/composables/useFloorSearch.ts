@@ -23,8 +23,8 @@ export const useFloorSearch = (floors: Ref<Floor[] | undefined>) => {
     floorMatches,
     {
       debounceMs: 100,
-      maxResults: 1000, // Effectively unlimited for floors
-      maxNoSearchResults: 1000, // Show all floors when no search
+      maxResults: 20,
+      maxNoSearchResults: 40,
     },
   )
 
