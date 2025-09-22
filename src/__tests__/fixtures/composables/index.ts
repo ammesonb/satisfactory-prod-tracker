@@ -10,3 +10,4 @@ export {
 export { mockUseRecipeStatus } from './useRecipeStatus'
 export { mockUseSelection } from './selection'
 export { mockUseDataSearch } from './dataSearch'
+export { mockUseFloorSearch } from './floorSearch'

@@ -3,6 +3,10 @@ import { getStores } from '@/composables/useStores'
 import type { Floor } from '@/types/factory'
 import type { ItemOption } from '@/types/data'
 
+export interface FloorWithIndex extends Floor {
+  originalIndex: number
+}
+
 export interface FloorFormData {
   index: number
   name: string | undefined
@@ -147,6 +151,19 @@ export function useFloorManagement() {
     )
   }
 
+  const floorMatches = (floor: FloorWithIndex, query: string) =>
+    // floor name includes the query
+    getFloorDisplayName(floor.originalIndex + 1, floor)
+      .toLowerCase()
+      .includes(query.toLowerCase()) ||
+    // or a recipe in it does
+    floor.recipes.some((recipe) =>
+      dataStore
+        .getRecipeDisplayName(recipe.recipe.name)
+        .toLowerCase()
+        .includes(query.toLowerCase()),
+    )
+
   return {
     showFloorEditor,
     editFloorIndex,
@@ -162,5 +179,6 @@ export function useFloorManagement() {
     getFloorFormsTemplate,
     hasFloorFormChanges,
     updateFloorsFromForms,
+    floorMatches,
   }
 }
