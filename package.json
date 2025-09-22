@@ -22,6 +22,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "ci": "run-p format:check lint:check type-check test:run",
+    "fix+test": "run-s format lint type-check type-check:test test:run",
     "fixtures:items": "tsx src/logistics/__tests__/generate-fixtures.ts items",
     "fixtures:recipes": "tsx src/logistics/__tests__/generate-fixtures.ts recipes",
     "fixtures:buildings": "tsx src/logistics/__tests__/generate-fixtures.ts buildings"

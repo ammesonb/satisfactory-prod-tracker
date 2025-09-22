@@ -3,22 +3,24 @@ import { ref, computed } from 'vue'
 import { getStores } from '@/composables/useStores'
 import { useFloorNavigation } from '@/composables/useFloorNavigation'
 import { useRecipeStatus } from '@/composables/useRecipeStatus'
+import { useDataSearch } from '@/composables/useDataSearch'
 import type { Factory } from '@/types/factory'
 
 const collapsed = ref(true)
 const { factoryStore } = getStores()
 const { initializeExpansion } = useFloorNavigation()
 const { isRecipeComplete } = useRecipeStatus()
-const searchQuery = ref('')
 
-const filteredFactories = computed(() => {
-  if (!searchQuery.value) {
-    return factoryStore.factoryList
-  }
-
-  const query = searchQuery.value.toLowerCase()
-  return factoryStore.factoryList.filter((factory) => factory.name.toLowerCase().includes(query))
-})
+const factoryList = computed(() => factoryStore.factoryList)
+const {
+  searchInput,
+  filteredItems: filteredFactories,
+  updateSearch,
+} = useDataSearch(
+  factoryList,
+  (factory: Factory, query: string) => factory.name.toLowerCase().includes(query),
+  { maxNoSearchResults: 40, maxResults: 20 },
+)
 
 const selectFactory = (factory: Factory) => {
   factoryStore.setSelectedFactory(factory.name)
@@ -31,7 +33,8 @@ const selectFactory = (factory: Factory) => {
     <div v-if="factoryStore.hasFactories" class="pa-3 pb-2">
       <v-text-field
         v-if="!collapsed"
-        v-model="searchQuery"
+        :model-value="searchInput"
+        @update:model-value="updateSearch"
         placeholder="Search factories..."
         prepend-inner-icon="mdi-magnify"
         density="compact"
@@ -39,7 +42,7 @@ const selectFactory = (factory: Factory) => {
         clearable
       />
       <div v-else class="d-flex justify-center mt-2 mb-1">
-        <v-icon icon="mdi-magnify" size="24" :color="searchQuery ? 'primary' : 'default'" />
+        <v-icon icon="mdi-magnify" size="24" :color="searchInput ? 'primary' : 'default'" />
       </div>
     </div>
 
@@ -55,7 +58,11 @@ const selectFactory = (factory: Factory) => {
       />
     </v-list>
     <v-list v-else>
-      <v-list-item prepend-icon="mdi-information-outline" title="No factories added yet" />
+      <v-list-item
+        class="no-factories"
+        prepend-icon="mdi-information-outline"
+        title="No factories added yet"
+      />
     </v-list>
   </v-navigation-drawer>
 </template>

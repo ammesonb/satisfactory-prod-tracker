@@ -21,7 +21,12 @@ const showImportExport = ref(false)
 
     <v-spacer></v-spacer>
 
-    <v-btn @click="showImportExport = true" variant="outlined" class="me-2" color="secondary">
+    <v-btn
+      @click="showImportExport = true"
+      variant="outlined"
+      class="me-2 show-import-export"
+      color="secondary"
+    >
       <v-icon icon="mdi-database-export" />
       <span class="d-none d-sm-inline ms-2">Import/Export</span>
     </v-btn>

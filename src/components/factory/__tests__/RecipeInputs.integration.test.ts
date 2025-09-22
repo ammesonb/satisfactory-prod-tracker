@@ -4,6 +4,8 @@ import RecipeInputs from '@/components/factory/RecipeInputs.vue'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
 import type { Material } from '@/types/factory'
+import RecipeLink from '../RecipeLink.vue'
+import { expectProps } from '@/__tests__/vue-test-helpers'
 
 // Mock the RecipeLink component since it's auto-imported
 vi.mock('@/components/factory/RecipeLink.vue', () => ({
@@ -88,7 +90,7 @@ describe('RecipeInputs Integration', () => {
 
     const wrapper = createWrapper(recipe)
 
-    const recipeLinkComponents = wrapper.findAll('[data-testid="recipe-link"]')
+    const recipeLinkComponents = wrapper.findAllComponents(RecipeLink)
     expect(recipeLinkComponents).toHaveLength(2)
     expect(wrapper.text()).not.toContain('None')
   })
@@ -98,12 +100,11 @@ describe('RecipeInputs Integration', () => {
     const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
     recipe.inputs = [link]
 
-    const wrapper = createWrapper(recipe)
-
-    const recipeLinkComponent = wrapper.findComponent({ name: 'RecipeLink' })
-    expect(recipeLinkComponent.props('link')).toEqual(link)
-    expect(recipeLinkComponent.props('recipe')).toEqual(recipe)
-    expect(recipeLinkComponent.props('direction')).toBe('input')
+    expectProps(createWrapper(recipe), RecipeLink, {
+      link,
+      recipe,
+      direction: 'input',
+    })
   })
 
   it('uses linkToString for component keys', async () => {
@@ -127,10 +128,10 @@ describe('RecipeInputs Integration', () => {
 
     const wrapper = createWrapper(recipe)
 
-    expect(wrapper.findAll('[data-testid="recipe-link"]')).toHaveLength(3)
+    const recipeLinkComponents = wrapper.findAllComponents(RecipeLink)
+    expect(recipeLinkComponents).toHaveLength(3)
 
     // Verify all RecipeLink components get the correct direction and recipe
-    const recipeLinkComponents = wrapper.findAllComponents({ name: 'RecipeLink' })
     recipeLinkComponents.forEach((component) => {
       expect(component.props('direction')).toBe('input')
       expect(component.props('recipe')).toEqual(recipe)

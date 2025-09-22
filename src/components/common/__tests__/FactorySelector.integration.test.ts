@@ -1,8 +1,10 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ref } from 'vue'
+import { VCheckbox, VListItem, VList, VCard } from 'vuetify/components'
 import FactorySelector from '@/components/common/FactorySelector.vue'
 import type { Factory } from '@/types/factory'
+import { expectProps } from '@/__tests__/vue-test-helpers'
 import {
   mockAllSelected,
   mockSomeSelected,
@@ -163,21 +165,14 @@ describe('FactorySelector Integration', () => {
     mockSomeSelected.mockReturnValue(true)
     mockAllSelected.mockReturnValue(false)
 
-    const wrapper = createWrapper()
-
-    const selectAllCheckbox = wrapper.findComponent({ name: 'VCheckbox' })
-    expect(selectAllCheckbox.props('indeterminate')).toBe(true)
+    expectProps(createWrapper(), VCheckbox, { indeterminate: true })
   })
 
   it('shows checked state when all factories are selected', () => {
     mockAllSelected.mockReturnValue(true)
     mockSomeSelected.mockReturnValue(true)
 
-    const wrapper = createWrapper()
-
-    const selectAllCheckbox = wrapper.findComponent({ name: 'VCheckbox' })
-    expect(selectAllCheckbox.props('modelValue')).toBe(true)
-    expect(selectAllCheckbox.props('indeterminate')).toBe(false)
+    expectProps(createWrapper(), VCheckbox, { modelValue: true, indeterminate: false })
   })
 
   it('shows individual factory as selected when isSelected returns true', () => {
@@ -185,7 +180,7 @@ describe('FactorySelector Integration', () => {
 
     const wrapper = createWrapper()
 
-    const factoryCheckboxes = wrapper.findAllComponents({ name: 'VCheckbox' })
+    const factoryCheckboxes = wrapper.findAllComponents(VCheckbox)
     // First checkbox is "Select All", then factory checkboxes
     expect(factoryCheckboxes[2].props('modelValue')).toBe(true) // Steel Factory
     expect(factoryCheckboxes[1].props('modelValue')).toBe(false) // Iron Factory
@@ -213,8 +208,8 @@ describe('FactorySelector Integration', () => {
   it('handles empty factories list gracefully', () => {
     const wrapper = createWrapper({ factories: [] })
 
-    expect(wrapper.findAll('.v-list-item')).toHaveLength(0)
-    expect(wrapper.find('.v-list').exists()).toBe(true)
+    expect(wrapper.findAllComponents(VListItem)).toHaveLength(0)
+    expect(wrapper.findComponent(VList).exists()).toBe(true)
   })
 
   it('calls composable with correct parameters', async () => {
@@ -237,7 +232,7 @@ describe('FactorySelector Integration', () => {
   it('has proper accessibility attributes', () => {
     const wrapper = createWrapper()
 
-    const checkboxes = wrapper.findAllComponents({ name: 'VCheckbox' })
+    const checkboxes = wrapper.findAllComponents(VCheckbox)
     checkboxes.forEach((checkbox) => {
       expect(checkbox.props('hideDetails')).toBe(true)
     })
@@ -246,7 +241,7 @@ describe('FactorySelector Integration', () => {
   it('has scrollable factory list with max height', () => {
     const wrapper = createWrapper()
 
-    const factoryCard = wrapper.findComponent({ name: 'VCard' })
+    const factoryCard = wrapper.findComponent(VCard)
     expect(factoryCard.props('maxHeight')).toBe('300')
     expect(factoryCard.attributes('style')).toContain('overflow-y: auto')
   })

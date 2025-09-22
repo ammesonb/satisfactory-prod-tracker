@@ -22,10 +22,6 @@ const handleDelete = () => {
 const confirmDelete = () => {
   emit('delete', props.factory.name)
 }
-
-const cancelDelete = () => {
-  showDeleteConfirm.value = false
-}
 </script>
 
 <template>
@@ -55,6 +51,6 @@ const cancelDelete = () => {
     confirm-text="Delete"
     cancel-text="Cancel"
     @confirm="confirmDelete"
-    @cancel="cancelDelete"
+    @cancel="() => {}"
   />
 </template>

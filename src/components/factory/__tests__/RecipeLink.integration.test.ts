@@ -1,11 +1,24 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ref, computed } from 'vue'
-import RecipeLink from '@/components/factory/RecipeLink.vue'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
+import { mockSetLinkBuilt } from '@/__tests__/fixtures/composables/useRecipeStatus'
 import type { Material } from '@/types/factory'
 import type { Item } from '@/types/data'
+import {
+  clickElement,
+  emitEvent,
+  expectElementExists,
+  expectElementText,
+  expectProps,
+} from '@/__tests__/vue-test-helpers'
+
+import RecipeLink from '@/components/factory/RecipeLink.vue'
+import CachedIcon from '@/components/common/CachedIcon.vue'
+import RecipeLinkTarget from '@/components/factory/RecipeLinkTarget.vue'
+import TransportCapacityTooltip from '@/components/factory/TransportCapacityTooltip.vue'
+import { VCheckbox } from 'vuetify/components'
 
 // Use centralized mock fixtures
 vi.mock('@/composables/useStores', async () => {
@@ -22,31 +35,6 @@ vi.mock('@/composables/useLinkData', async () => {
   const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
   return { useLinkData: mockUseLinkData }
 })
-
-// Mock child components
-vi.mock('@/components/common/CachedIcon.vue', () => ({
-  default: {
-    name: 'CachedIcon',
-    props: ['icon', 'size'],
-    template: '<div data-testid="cached-icon">{{ icon }}</div>',
-  },
-}))
-
-vi.mock('@/components/factory/TransportCapacityTooltip.vue', () => ({
-  default: {
-    name: 'TransportCapacityTooltip',
-    props: ['recipe', 'link', 'direction', 'isHovered'],
-    template: '<div data-testid="transport-tooltip">Transport Tooltip</div>',
-  },
-}))
-
-vi.mock('@/components/factory/RecipeLinkTarget.vue', () => ({
-  default: {
-    name: 'RecipeLinkTarget',
-    props: ['link', 'direction'],
-    template: '<div data-testid="recipe-link-target">{{ link.source }} -> {{ link.sink }}</div>',
-  },
-}))
 
 describe('RecipeLink Integration', () => {
   // Test constants from fixtures
@@ -129,9 +117,9 @@ describe('RecipeLink Integration', () => {
 
     const wrapper = createWrapper(link, recipe, 'input')
 
-    expect(wrapper.find('.recipe-link').exists()).toBe(true)
-    expect(wrapper.text()).toContain('Iron Ore')
-    expect(wrapper.text()).toContain('30.50/min')
+    expectElementExists(wrapper, RecipeLink)
+    expectElementText(wrapper, RecipeLink, 'Iron Ore')
+    expectElementText(wrapper, RecipeLink, '30.50/min')
   })
 
   it('renders child components with correct props', () => {
@@ -141,19 +129,21 @@ describe('RecipeLink Integration', () => {
     const wrapper = createWrapper(link, recipe, 'output')
 
     // Check CachedIcon components
-    const cachedIcons = wrapper.findAllComponents({ name: 'CachedIcon' })
+    const cachedIcons = wrapper.findAllComponents(CachedIcon)
     expect(cachedIcons.length).toBeGreaterThanOrEqual(2) // Material icon + transport icon
 
     // Check RecipeLinkTarget
-    const linkTarget = wrapper.findComponent({ name: 'RecipeLinkTarget' })
-    expect(linkTarget.props('link')).toEqual(link)
-    expect(linkTarget.props('direction')).toBe('output')
+    expectProps(wrapper, RecipeLinkTarget, {
+      link,
+      direction: 'output',
+    })
 
     // Check TransportCapacityTooltip
-    const tooltip = wrapper.findComponent({ name: 'TransportCapacityTooltip' })
-    expect(tooltip.props('recipe')).toEqual(recipe)
-    expect(tooltip.props('link')).toEqual(link)
-    expect(tooltip.props('direction')).toBe('output')
+    expectProps(wrapper, TransportCapacityTooltip, {
+      recipe,
+      link,
+      direction: 'output',
+    })
   })
 
   it('calls composables with correct parameters', async () => {
@@ -180,12 +170,13 @@ describe('RecipeLink Integration', () => {
     const wrapper = createWrapper(link, recipe)
 
     // Should have built styling
-    const card = wrapper.find('.recipe-link')
+    const card = wrapper.findComponent(RecipeLink)
     expect(card.classes()).toContain('bg-green-lighten-4')
 
     // Checkbox should be checked
-    const checkbox = wrapper.findComponent({ name: 'VCheckbox' })
-    expect(checkbox.props('modelValue')).toBe(true)
+    expectProps(wrapper, VCheckbox, {
+      modelValue: true,
+    })
   })
 
   it('handles unbuilt state correctly when link is not built', async () => {
@@ -199,25 +190,21 @@ describe('RecipeLink Integration', () => {
     const wrapper = createWrapper(link, recipe)
 
     // Should have unbuilt styling
-    const card = wrapper.find('.recipe-link')
+    const card = wrapper.findComponent(RecipeLink)
     expect(card.classes()).toContain('bg-surface')
 
     // Checkbox should be unchecked
-    const checkbox = wrapper.findComponent({ name: 'VCheckbox' })
-    expect(checkbox.props('modelValue')).toBe(false)
+    expectProps(wrapper, VCheckbox, {
+      modelValue: false,
+    })
   })
 
   it('toggles built state when card is clicked', async () => {
     const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
 
-    const wrapper = createWrapper(link, recipe)
+    await clickElement(createWrapper(link, recipe), RecipeLink)
 
-    const card = wrapper.find('.recipe-link')
-    await card.trigger('click')
-
-    // Access the centralized mock function
-    const { mockSetLinkBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
     expect(mockSetLinkBuilt).toHaveBeenCalledWith(link, true)
   })
 
@@ -225,13 +212,7 @@ describe('RecipeLink Integration', () => {
     const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
 
-    const wrapper = createWrapper(link, recipe)
-
-    const checkbox = wrapper.findComponent({ name: 'VCheckbox' })
-    await checkbox.vm.$emit('update:modelValue', true)
-
-    // Access the centralized mock function
-    const { mockSetLinkBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
+    await emitEvent(createWrapper(link, recipe), VCheckbox, 'update:modelValue', true)
     expect(mockSetLinkBuilt).toHaveBeenCalledWith(link, true)
   })
 
@@ -240,10 +221,9 @@ describe('RecipeLink Integration', () => {
 
     const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     const link = createMaterialLink('Mining', 'Smelting', 'Unknown_Material', 25)
-
     const wrapper = createWrapper(link, recipe)
 
-    expect(wrapper.text()).toContain('Unknown_Material')
-    expect(wrapper.text()).toContain('25.00/min')
+    expectElementText(wrapper, RecipeLink, 'Unknown_Material')
+    expectElementText(wrapper, RecipeLink, '25.00/min')
   })
 })

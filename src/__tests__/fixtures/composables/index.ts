@@ -9,3 +9,4 @@ export {
 } from './navigation'
 export { mockUseRecipeStatus } from './useRecipeStatus'
 export { mockUseSelection } from './selection'
+export { mockUseDataSearch } from './dataSearch'

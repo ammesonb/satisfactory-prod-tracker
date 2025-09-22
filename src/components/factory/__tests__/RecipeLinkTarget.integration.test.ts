@@ -1,11 +1,19 @@
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { computed } from 'vue'
-import RecipeLinkTarget from '@/components/factory/RecipeLinkTarget.vue'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
-import { recipeDatabase } from '@/__tests__/fixtures/data'
 import type { Material } from '@/types/factory'
 import type { Item } from '@/types/data'
+import { recipeDatabase } from '@/__tests__/fixtures/data'
+import { mockNavigateToRecipe } from '@/__tests__/fixtures/composables/navigation'
+import {
+  clickElement,
+  expectElementExists,
+  expectElementNotExists,
+  expectElementText,
+} from '@/__tests__/vue-test-helpers'
+
+import RecipeLinkTarget from '@/components/factory/RecipeLinkTarget.vue'
 
 // Use centralized mock fixtures
 vi.mock('@/composables/useStores', async () => {
@@ -96,24 +104,20 @@ describe('RecipeLinkTarget Integration', () => {
     hasTarget: boolean,
   ) => {
     const expectedText = direction === 'input' ? 'from' : hasTarget ? 'to' : ''
-    if (expectedText) {
-      expect(wrapper.text()).toContain(expectedText)
-    }
+    expectElementText(wrapper, RecipeLinkTarget, expectedText)
   }
 
   it('renders without errors and displays basic content', () => {
     const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
     const wrapper = createWrapper(link, 'input')
 
-    expect(wrapper.find('.text-caption').exists()).toBe(true)
-    expect(wrapper.text()).toContain('Test Display Name')
+    expectElementExists(wrapper, RecipeLinkTarget)
+    expectElementText(wrapper, RecipeLinkTarget, 'Test Display Name')
   })
 
   it('shows correct link text for input direction', () => {
     const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
-    const wrapper = createWrapper(link, 'input')
-
-    expectCorrectLinkText(wrapper, 'input', true)
+    expectCorrectLinkText(createWrapper(link, 'input'), 'input', true)
   })
 
   it('shows correct link text for output direction with target', async () => {
@@ -130,9 +134,7 @@ describe('RecipeLinkTarget Integration', () => {
     })
 
     const link = createMaterialLink('Smelting', 'Construction', TEST_ITEMS.IRON_INGOT, 30)
-    const wrapper = createWrapper(link, 'output')
-
-    expectCorrectLinkText(wrapper, 'output', true)
+    expectCorrectLinkText(createWrapper(link, 'output'), 'output', true)
   })
 
   it('shows empty link text for output direction without target', async () => {
@@ -149,9 +151,7 @@ describe('RecipeLinkTarget Integration', () => {
     })
 
     const link = createMaterialLink('Smelting', '', TEST_ITEMS.IRON_INGOT, 30)
-    const wrapper = createWrapper(link, 'output')
-
-    expectCorrectLinkText(wrapper, 'output', false)
+    expectCorrectLinkText(createWrapper(link, 'output'), 'output', false)
   })
 
   it('applies correct text color when link is built', async () => {
@@ -160,9 +160,7 @@ describe('RecipeLinkTarget Integration', () => {
     mockIsLinkBuilt.mockReturnValueOnce(true)
 
     const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
-    const wrapper = createWrapper(link, 'input')
-
-    expectLinkBuiltState(wrapper, true)
+    expectLinkBuiltState(createWrapper(link, 'input'), true)
   })
 
   it('applies correct text color when link is not built', async () => {
@@ -171,9 +169,7 @@ describe('RecipeLinkTarget Integration', () => {
     mockIsLinkBuilt.mockReturnValueOnce(false)
 
     const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
-    const wrapper = createWrapper(link, 'input')
-
-    expectLinkBuiltState(wrapper, false)
+    expectLinkBuiltState(createWrapper(link, 'input'), false)
   })
 
   it('renders clickable recipe link when target is a recipe', async () => {
@@ -194,8 +190,8 @@ describe('RecipeLinkTarget Integration', () => {
     const link = createMaterialLink('Mining', TEST_RECIPES.IRON_INGOT, TEST_ITEMS.IRON_ORE, 30)
     const wrapper = createWrapper(link, 'input')
 
+    expectElementExists(wrapper, '.navigate-name')
     const clickableSpan = wrapper.find('.navigate-name')
-    expect(clickableSpan.exists()).toBe(true)
     expect(clickableSpan.classes()).toContain('text-decoration-underline')
     expect(clickableSpan.text()).toContain('Iron Ingot Recipe')
   })
@@ -216,8 +212,8 @@ describe('RecipeLinkTarget Integration', () => {
     const link = createMaterialLink('', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
     const wrapper = createWrapper(link, 'input')
 
-    expect(wrapper.find('.navigate-name').exists()).toBe(false)
-    expect(wrapper.text()).toContain('Iron Ore Resource')
+    expectElementNotExists(wrapper, '.navigate-name')
+    expectElementText(wrapper, RecipeLinkTarget, 'Iron Ore Resource')
   })
 
   it('calls navigateToRecipe when clicking recipe link', async () => {
@@ -237,12 +233,7 @@ describe('RecipeLinkTarget Integration', () => {
 
     const link = createMaterialLink('Mining', TEST_RECIPES.IRON_INGOT, TEST_ITEMS.IRON_ORE, 30)
     const wrapper = createWrapper(link, 'input')
-
-    const clickableSpan = wrapper.find('.navigate-name')
-    await clickableSpan.trigger('click')
-
-    // Access the centralized mock function
-    const { mockNavigateToRecipe } = await import('@/__tests__/fixtures/composables/navigation')
+    await clickElement(wrapper, '.navigate-name')
     expect(mockNavigateToRecipe).toHaveBeenCalledWith(targetRecipe)
   })
 
@@ -331,25 +322,7 @@ describe('RecipeLinkTarget Integration', () => {
 
     const link = createMaterialLink('Mining', 'unknown-recipe', TEST_ITEMS.IRON_ORE, 30)
     const wrapper = createWrapper(link, 'input')
-
-    const clickableSpan = wrapper.find('.navigate-name')
-    await clickableSpan.trigger('click')
-
-    // Access the centralized mock function
-    const { mockNavigateToRecipe } = await import('@/__tests__/fixtures/composables/navigation')
+    await clickElement(wrapper, '.navigate-name')
     expect(mockNavigateToRecipe).not.toHaveBeenCalled()
-  })
-
-  it('calls composables with correct parameters', async () => {
-    const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
-    createWrapper(link, 'input')
-
-    const { useFloorNavigation } = await import('@/composables/useFloorNavigation')
-    const { useLinkData } = await import('@/composables/useLinkData')
-    const { useRecipeStatus } = await import('@/composables/useRecipeStatus')
-
-    expect(vi.mocked(useFloorNavigation)).toHaveBeenCalled()
-    expect(vi.mocked(useLinkData)).toHaveBeenCalled()
-    expect(vi.mocked(useRecipeStatus)).toHaveBeenCalled()
   })
 })

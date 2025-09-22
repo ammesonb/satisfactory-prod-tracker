@@ -5,6 +5,12 @@ import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
 import type { Material } from '@/types/factory'
 import { mockLeftoverProductsAsLinks } from '@/__tests__/fixtures/composables/useRecipeStatus'
+import {
+  expectElementExists,
+  expectElementNotExists,
+  expectElementText,
+} from '@/__tests__/vue-test-helpers'
+import RecipeLink from '../RecipeLink.vue'
 
 // Use centralized fixtures for mocking composables
 vi.mock('@/composables/useStores', async () => {
@@ -82,30 +88,19 @@ describe('RecipeOutputs Integration', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     const wrapper = createWrapper(recipeNode)
 
-    expect(wrapper.find('.recipe-outputs').exists()).toBe(true)
-    expect(wrapper.find('h4').text()).toBe('Outputs')
-  })
-
-  it('displays outputs section title', () => {
-    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    const wrapper = createWrapper(recipeNode)
-
-    expect(wrapper.text()).toContain('Outputs')
+    expectElementExists(wrapper, RecipeOutputs)
+    expectElementText(wrapper, 'h4', 'Outputs')
   })
 
   it('renders RecipeLink components for each output', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    const wrapper = createWrapper(recipeNode)
-
-    const recipeLinks = wrapper.findAllComponents({ name: 'RecipeLink' })
+    const recipeLinks = createWrapper(recipeNode).findAllComponents(RecipeLink)
     expect(recipeLinks.length).toBeGreaterThan(0)
   })
 
   it('passes correct props to RecipeLink components', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    const wrapper = createWrapper(recipeNode)
-
-    const recipeLinks = wrapper.findAllComponents({ name: 'RecipeLink' })
+    const recipeLinks = createWrapper(recipeNode).findAllComponents(RecipeLink)
     recipeLinks.forEach((link) => {
       expect(link.props('recipe')).toEqual(recipeNode)
       expect(link.props('direction')).toBe('output')
@@ -126,10 +121,7 @@ describe('RecipeOutputs Integration', () => {
     mockLeftoverProductsAsLinks.mockReturnValueOnce(mockLeftoverProducts)
 
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    const wrapper = createWrapper(recipeNode)
-
-    const recipeLinks = wrapper.findAllComponents({ name: 'RecipeLink' })
-
+    const recipeLinks = createWrapper(recipeNode).findAllComponents(RecipeLink)
     expect(recipeLinks.length).toBeGreaterThanOrEqual(recipeNode.outputs.length)
     expect(mockLeftoverProductsAsLinks).toHaveBeenCalledWith(recipeNode)
   })
@@ -139,12 +131,11 @@ describe('RecipeOutputs Integration', () => {
 
     // Create a recipe node with no outputs
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    recipeNode.outputs = [] // Clear outputs for this test
+    recipeNode.outputs = []
 
     const wrapper = createWrapper(recipeNode)
-
-    expect(wrapper.text()).toContain('None')
-    expect(wrapper.findAllComponents({ name: 'RecipeLink' })).toHaveLength(0)
+    expectElementText(wrapper, RecipeOutputs, 'None')
+    expectElementNotExists(wrapper, RecipeLink)
   })
 
   it('handles recipe with multiple outputs correctly', () => {
@@ -152,7 +143,7 @@ describe('RecipeOutputs Integration', () => {
 
     const wrapper = createWrapper(recipeNode)
 
-    const recipeLinks = wrapper.findAllComponents({ name: 'RecipeLink' })
+    const recipeLinks = wrapper.findAllComponents(RecipeLink)
     expect(recipeNode.outputs.length).toBeGreaterThan(0)
     expect(recipeLinks.length).toBeGreaterThanOrEqual(recipeNode.outputs.length)
   })
@@ -161,7 +152,7 @@ describe('RecipeOutputs Integration', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     const wrapper = createWrapper(recipeNode)
 
-    const recipeLinks = wrapper.findAllComponents({ name: 'RecipeLink' })
+    const recipeLinks = wrapper.findAllComponents(RecipeLink)
 
     // Each RecipeLink should have a unique key based on linkToString
     recipeLinks.forEach((link) => {
@@ -174,7 +165,7 @@ describe('RecipeOutputs Integration', () => {
     const wrapper = createWrapper(recipeNode)
 
     // The component should show outputs based on the recipe node
-    expect(wrapper.findAllComponents({ name: 'RecipeLink' }).length).toBeGreaterThanOrEqual(
+    expect(wrapper.findAllComponents(RecipeLink).length).toBeGreaterThanOrEqual(
       recipeNode.outputs.length,
     )
   })
@@ -192,12 +183,7 @@ describe('RecipeOutputs Integration', () => {
       item: product.material,
       amount: product.amount,
     }))
-    const wrapper = createWrapper(recipeNode)
-
-    const recipeLinks = wrapper.findAllComponents({ name: 'RecipeLink' })
-    console.log(recipeLinks.length)
-
-    // Should include both regular outputs and leftover products
+    const recipeLinks = createWrapper(recipeNode).findAllComponents(RecipeLink)
     expect(recipeLinks.length).toBe(recipeNode.outputs.length + mockLeftoverProducts.length)
     expect(mockLeftoverProductsAsLinks).toHaveBeenCalledWith(recipeNode)
   })

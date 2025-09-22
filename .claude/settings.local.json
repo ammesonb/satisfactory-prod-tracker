@@ -13,7 +13,10 @@
       "Bash(npm run lint:*)",
       "Bash(mkdir:*)",
       "WebFetch(domain:vitest.dev)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npm run type-check:test:*)",
+      "Bash(cat:*)",
+      "Bash(npm run fix+test:*)"
     ],
     "deny": []
   }

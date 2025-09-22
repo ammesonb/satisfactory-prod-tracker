@@ -1,6 +1,5 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import TransportCapacityTooltip from '@/components/factory/TransportCapacityTooltip.vue'
 import { useTransport } from '@/composables/useTransport'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import type { Material } from '@/types/factory'
@@ -10,6 +9,9 @@ import {
   mockTransportItems,
   mockBuildingCounts,
 } from '@/__tests__/fixtures/composables/transport'
+
+import TransportCapacityTooltip from '@/components/factory/TransportCapacityTooltip.vue'
+import CachedIcon from '@/components/common/CachedIcon.vue'
 
 // Use centralized fixtures for mocking composables
 vi.mock('@/composables/useStores', async () => {
@@ -22,15 +24,6 @@ vi.mock('@/composables/useTransport', async () => {
   const { mockUseTransport } = await import('@/__tests__/fixtures/composables/transport')
   return { useTransport: mockUseTransport }
 })
-
-// Mock CachedIcon component
-vi.mock('@/components/common/CachedIcon.vue', () => ({
-  default: {
-    name: 'CachedIcon',
-    props: ['icon', 'size'],
-    template: '<div data-testid="cached-icon" class="cached-icon">{{ icon }}</div>',
-  },
-}))
 
 describe('TransportCapacityTooltip Integration', () => {
   // Single test data definition
@@ -69,11 +62,6 @@ describe('TransportCapacityTooltip Integration', () => {
     vi.clearAllMocks()
   })
 
-  it('renders without errors', () => {
-    const wrapper = createWrapper()
-    expect(wrapper.exists()).toBe(true)
-  })
-
   it('calls useTransport composable with correct parameters', async () => {
     const recipe = createTestRecipe()
     const link = createTestLink()
@@ -92,11 +80,10 @@ describe('TransportCapacityTooltip Integration', () => {
   })
 
   it('renders transport items with correct icons', async () => {
-    const { mockBuildingCounts } = await import('@/__tests__/fixtures/composables/transport')
     mockBuildingCounts.mockReturnValue([1, 1, 1])
 
     const wrapper = createWrapper()
-    const cachedIcons = wrapper.findAllComponents({ name: 'CachedIcon' })
+    const cachedIcons = wrapper.findAllComponents(CachedIcon)
 
     expect(cachedIcons).toHaveLength(3)
     expect(cachedIcons[0].props('icon')).toBe('conveyor-mk1')
@@ -118,7 +105,7 @@ describe('TransportCapacityTooltip Integration', () => {
     expect(wrapper.text()).toContain('2 × MK1')
     expect(wrapper.text()).toContain('1 × MK2')
 
-    const cachedIcons = wrapper.findAllComponents({ name: 'CachedIcon' })
+    const cachedIcons = wrapper.findAllComponents(CachedIcon)
     expect(cachedIcons[0].props('icon')).toBe('pipeline-mk1')
     expect(cachedIcons[1].props('icon')).toBe('pipeline-mk2')
   })
