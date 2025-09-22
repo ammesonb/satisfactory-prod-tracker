@@ -107,7 +107,12 @@ onMounted(() => {
               </v-list-item-title>
 
               <template #append>
-                <v-icon v-if="isRecipeComplete(recipe)" size="16" color="success">
+                <v-icon
+                  v-if="isRecipeComplete(recipe)"
+                  class="recipe-built"
+                  size="16"
+                  color="success"
+                >
                   mdi-check-circle
                 </v-icon>
               </template>
