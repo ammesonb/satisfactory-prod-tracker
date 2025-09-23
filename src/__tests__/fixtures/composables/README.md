@@ -7,6 +7,13 @@ This directory provides utilities to abstract repetitive composable mocking in f
 ### Basic Setup (works out of the box with sensible defaults)
 
 ```ts
+// Full useStores mock (includes all individual store getters)
+vi.mock('@/composables/useStores', async () => {
+  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
+  return mockUseStores
+})
+
+// Alternative: if you only need getStores
 vi.mock('@/composables/useStores', async () => {
   const { mockGetStores } = await import('@/__tests__/fixtures/composables')
   return { getStores: mockGetStores }
@@ -136,20 +143,21 @@ import {
   expectElementNotExists,
   getComponent,
   clickElement,
-  byComponent,
 } from '@/__tests__/vue-test-helpers'
 
-// ✅ Good - using test helpers for clean assertions
-expectElementExists(wrapper, byComponent('VBtn'))
+import { VBtn, VFab } from 'vuetify/components'
+
+// ✅ Good - using test helpers forclean assertions
+expectElementExists(wrapper, VBtn)
 expectElementNotExists(wrapper, 'button[type="submit"]')
 
 // ✅ Good - find by functionality and content
-const buttons = wrapper.findAllComponents({ name: 'VBtn' })
+const buttons = wrapper.findAllComponents(VBtn)
 const importBtn = buttons.find((btn) => btn.text().includes('Import/Export'))
 
 // ✅ Good - using helpers for component interaction
-await clickElement(wrapper, byComponent('VFab'))
-const modal = getComponent(wrapper, byComponent('ImportExportModal'))
+await clickElement(wrapper, VFab)
+const modal = getComponent(wrapper, ImportExportModal)
 expect(modal.props('modelValue')).toBe(true)
 
 // ❌ Avoid - testing implementation details
@@ -162,17 +170,20 @@ const responsiveText = wrapper.find('.d-none.d-md-inline')
 Test that interactions produce the expected behavior using the Vue test helpers:
 
 ```ts
-import { clickElement, emitEvent, byComponent, getComponent } from '@/__tests__/vue-test-helpers'
+import { clickElement, emitEvent, getComponent } from '@/__tests__/vue-test-helpers'
+
+import { ImportExportModal } from '@/components/modals'
+import { VBtn } from 'vuetify/components'
 
 it('opens import/export modal when button is clicked', async () => {
   const wrapper = createWrapper()
 
-  const buttons = wrapper.findAllComponents({ name: 'VBtn' })
+  const buttons = wrapper.findAllComponents(VBtn)
   const importBtn = buttons.find((btn) => btn.text().includes('Import/Export'))
 
   await importBtn!.trigger('click')
 
-  const modal = getComponent(wrapper, byComponent('ImportExportModal'))
+  const modal = getComponent(wrapper, ImportExportModal)
   expect(modal.props('modelValue')).toBe(true)
 })
 
@@ -180,8 +191,8 @@ it('opens import/export modal when button is clicked', async () => {
 it('closes modal on close event', async () => {
   const wrapper = createWrapper()
 
-  await emitEvent(wrapper, byComponent('ImportExportModal'), 'close')
-  expectElementNotExists(wrapper, byComponent('ImportExportModal'))
+  await emitEvent(wrapper, ImportExportModal, 'close')
+  expectElementNotExists(wrapper, ImportExportModal)
 })
 ```
 
@@ -197,7 +208,6 @@ The `@/__tests__/vue-test-helpers` module provides utilities for cleaner test as
 - `expectElementNotExists(wrapper, selector)` - Assert element/component doesn't exist
 - `clickElement(wrapper, selector)` - Click element and wait for Vue update
 - `emitEvent(wrapper, selector, event, ...args)` - Emit event from component
-- `byComponent(name)` - Helper to create component selector
 
 ### Example Usage
 
@@ -207,20 +217,22 @@ import {
   expectElementNotExists,
   clickElement,
   emitEvent,
-  byComponent,
   getComponent,
 } from '@/__tests__/vue-test-helpers'
 
+import { NavPanel } from '@/components/navigation'
+import { VBtn, VFab } from 'vuetify/components'
+
 // Clean assertions
-expectElementExists(wrapper, byComponent('VFab'))
+expectElementExists(wrapper, VFab)
 expectElementNotExists(wrapper, '#error-message')
 
 // Component interactions
-await clickElement(wrapper, byComponent('VBtn'))
-await emitEvent(wrapper, byComponent('NavPanel'), 'navigate', 'floor-1')
+await clickElement(wrapper, VBtn)
+await emitEvent(wrapper, NavPanel, 'navigate', 'floor-1')
 
 // Accessing component props
-const fab = getComponent(wrapper, byComponent('VFab'))
+const fab = getComponent(wrapper, VFab)
 expect(fab.props('icon')).toBe('mdi-map')
 ```
 

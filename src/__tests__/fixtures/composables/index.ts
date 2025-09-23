@@ -1,5 +1,12 @@
 // Re-export only the main mock functions from their specific files
-export { mockGetStores } from './stores'
+export {
+  mockGetStores,
+  mockGetDataStore,
+  mockGetFactoryStore,
+  mockGetThemeStore,
+  mockGetErrorStore,
+  mockUseStores,
+} from './stores'
 export {
   mockUseFloorManagement,
   mockUseFloorNavigation,

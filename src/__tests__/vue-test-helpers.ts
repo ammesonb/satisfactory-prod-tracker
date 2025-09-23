@@ -97,10 +97,3 @@ export async function emitEvent(
   await component.vm.$emit(eventName, ...args)
   await wrapper.vm.$nextTick()
 }
-
-/**
- * Convenience function for component selectors by name
- */
-export function byComponent(name: string): ComponentSelector {
-  return { name }
-}
