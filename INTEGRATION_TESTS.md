@@ -70,6 +70,7 @@ const wrapper = createWrapper()
 expectElementExists(wrapper, VBtn) // ❌ Bad
 
 // ✅ GOOD: Inline when there's only one use of wrapper
+// this can apply to emitEvent, clickElement, etc. too
 expectElementExists(createWrapper(), VBtn) // ✅ Good
 
 // ❌ AVOID: Don't inline when wrapper is used multiple times
@@ -90,7 +91,7 @@ expectElementText(wrapper, VBtn, 'Add') // ✅ Good - same wrapper
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import ComponentName from '@/components/path/ComponentName.vue'
-import { expectElementExists, clickElement, byComponent } from '@/__tests__/vue-test-helpers'
+import { expectElementExists, clickElement } from '@/__tests__/vue-test-helpers'
 
 // Mock composables with centralized fixtures
 vi.mock('@/composables/useStores', async () => {
@@ -121,7 +122,7 @@ describe('ComponentName Integration', () => {
 
   it('handles user interactions', async () => {
     const wrapper = createWrapper()
-    await clickElement(wrapper, byComponent('VBtn'))
+    await clickElement(wrapper, VBtn)
 
     // Test behavior, not implementation
     expectElementExists(wrapper, Modal)
@@ -245,5 +246,5 @@ src/
 ```typescript
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { expectElementExists, clickElement, byComponent } from '@/__tests__/vue-test-helpers'
+import { expectElementExists, clickElement } from '@/__tests__/vue-test-helpers'
 ```

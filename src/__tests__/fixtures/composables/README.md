@@ -240,6 +240,7 @@ expect(fab.props('icon')).toBe('mdi-map')
 ## Available Composable Mocks
 
 ### Store Access
+
 - `mockGetStores` - Main store access with all store types
 - `mockGetDataStore` - Individual data store getter (includes items, recipes, buildings)
 - `mockGetFactoryStore` - Individual factory store getter
@@ -248,6 +249,7 @@ expect(fab.props('icon')).toBe('mdi-map')
 - `mockUseStores` - Complete object with all store getters (recommended)
 
 ### Other Composables
+
 - `mockUseFloorManagement` - Floor operations and navigation helpers
 - `mockUseRecipeStatus` - Recipe completion and link status
 - `mockFormatRecipeId` / `mockFormatFloorId` - ID formatting utilities
