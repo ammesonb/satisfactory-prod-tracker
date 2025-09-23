@@ -7,13 +7,14 @@ This directory provides utilities to abstract repetitive composable mocking in f
 ### Basic Setup (works out of the box with sensible defaults)
 
 ```ts
-// Full useStores mock (includes all individual store getters)
+// ✅ PREFERRED: Full useStores mock (includes all individual store getters)
+// Use this for components that may use getDataStore(), getFactoryStore(), etc.
 vi.mock('@/composables/useStores', async () => {
   const { mockUseStores } = await import('@/__tests__/fixtures/composables')
   return mockUseStores
 })
 
-// Alternative: if you only need getStores
+// ✅ ALTERNATIVE: if you only need getStores (less common)
 vi.mock('@/composables/useStores', async () => {
   const { mockGetStores } = await import('@/__tests__/fixtures/composables')
   return { getStores: mockGetStores }
@@ -238,7 +239,15 @@ expect(fab.props('icon')).toBe('mdi-map')
 
 ## Available Composable Mocks
 
-- `mockGetStores` - Store access with mock data store
+### Store Access
+- `mockGetStores` - Main store access with all store types
+- `mockGetDataStore` - Individual data store getter (includes items, recipes, buildings)
+- `mockGetFactoryStore` - Individual factory store getter
+- `mockGetThemeStore` - Individual theme store getter
+- `mockGetErrorStore` - Individual error store getter
+- `mockUseStores` - Complete object with all store getters (recommended)
+
+### Other Composables
 - `mockUseFloorManagement` - Floor operations and navigation helpers
 - `mockUseRecipeStatus` - Recipe completion and link status
 - `mockFormatRecipeId` / `mockFormatFloorId` - ID formatting utilities

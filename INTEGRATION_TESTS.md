@@ -49,24 +49,37 @@ Use centralized helpers from `@/__tests__/vue-test-helpers` for cleaner tests:
 import {
   expectElementExists,
   expectElementNotExists,
+  expectElementText,
+  expectProps,
   clickElement,
   emitEvent,
-  byComponent,
-  getComponent,
 } from '@/__tests__/vue-test-helpers'
 
-// Clean assertions
-expectElementExists(wrapper, byComponent('VFab'))
+// Clean assertions - prefer these helpers over manual finds
+expectElementExists(wrapper, VBtn)
 expectElementNotExists(wrapper, '#error-message')
+expectElementText(wrapper, VChip, 'Expected Text')
+expectProps(wrapper, VBtn, { disabled: true })
 
 // Simplified interactions
-await clickElement(wrapper, byComponent('VBtn'))
-// You can use Component types instead of the more-brittle byComponent(string)
-await emitEvent(wrapper, NavPanel, 'close')
+await clickElement(wrapper, VBtn)
+await emitEvent(wrapper, ItemSelector, 'update:modelValue', mockValue)
 
-// Component property access
-const fab = getComponent(wrapper, byComponent('VFab'))
-expect(fab.props('icon')).toBe('mdi-map')
+// ❌ AVOID: Don't store components in variables when you can pass createWrapper() directly
+const wrapper = createWrapper()
+expectElementExists(wrapper, VBtn) // ❌ Bad
+
+// ✅ GOOD: Inline when there's only one use of wrapper
+expectElementExists(createWrapper(), VBtn) // ✅ Good
+
+// ❌ AVOID: Don't inline when wrapper is used multiple times
+expectElementExists(createWrapper(), VBtn)
+expectElementText(createWrapper(), VBtn, 'Add') // ❌ Bad - creates different wrappers
+
+// ✅ GOOD: Store wrapper when used multiple times
+const wrapper = createWrapper()
+expectElementExists(wrapper, VBtn)
+expectElementText(wrapper, VBtn, 'Add') // ✅ Good - same wrapper
 ```
 
 ## Writing Integration Tests
@@ -83,8 +96,8 @@ import { expectElementExists, clickElement, byComponent } from '@/__tests__/vue-
 vi.mock('@/composables/useStores', async () => {
   // This is the ONLY time you should do `await import` in a test file, to avoid hoisting issues
   // All other imports should be centralized at the top of the file
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
+  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
+  return mockUseStores // Use complete mock object for full coverage, interact with individual components in tests if needed
 })
 
 const getComponent = (wrapper: VueWrapper) => {
@@ -103,7 +116,7 @@ describe('ComponentName Integration', () => {
   it('renders with default props', () => {
     const wrapper = createWrapper()
     expectElementExists(wrapper, '[data-testid="main-element"]')
-    expect(wrapper.text()).toContain('Expected Text')
+    expectElementText(wrapper, ComponentName, 'Expected Text')
   })
 
   it('handles user interactions', async () => {
