@@ -14,7 +14,7 @@ This project uses Vitest with Vue Test Utils for component integration testing, 
 4. **Run fix+test** - YOU MUST USE `npm run fix+test` for formatting, linting, type compliance, and tests
 5. **Fix** all issues reported by the previous command
 6. **Repeat steps 4-5** until all commands pass
-7. **Review all changes**:
+7. **Critique the current set of changes, checking for issues such as broken reactivity, adherence to best practices, etc**:
    - Use `git status` and `git diff` to examine ALL uncommitted files
    - Explicitly confirm each file follows best practices
 

@@ -130,7 +130,7 @@ const openHelpWiki = () => {
             </div>
           </div>
 
-          <RecipeForm v-if="inputMode === 'recipe'" v-model="form.recipeList" />
+          <RecipeForm v-if="inputMode === 'recipe'" @change="form.recipeList = $event" />
 
           <v-textarea
             v-if="inputMode === 'import'"
