@@ -56,3 +56,22 @@ export const asFactory = (data: unknown): Factory => {
 
   return factory
 }
+
+export const parseFactoriesFromJson = (rawData: string): Record<string, Factory> => {
+  if (!rawData.trim()) {
+    return {}
+  }
+
+  const data = JSON.parse(rawData)
+  if (!data || typeof data !== 'object') {
+    throw new Error('Import data must be an object')
+  }
+
+  return Object.entries(data).reduce(
+    (factories, [name, factoryData]) => ({
+      ...factories,
+      [name]: asFactory(factoryData),
+    }),
+    {} as Record<string, Factory>,
+  )
+}
