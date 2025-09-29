@@ -97,3 +97,18 @@ export async function emitEvent(
   await component.vm.$emit(eventName, ...args)
   await wrapper.vm.$nextTick()
 }
+
+/**
+ * Helper to find a component by text content
+ */
+export function getComponentWithText(
+  wrapper: VueWrapper,
+  selector: ElementSelector | ComponentSelector,
+  text: string,
+) {
+  const components =
+    typeof selector === 'string'
+      ? wrapper.findAllComponents(selector)
+      : wrapper.findAllComponents(selector)
+  return components.find((component) => component.text().includes(text))
+}

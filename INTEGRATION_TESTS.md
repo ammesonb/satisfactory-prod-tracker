@@ -16,7 +16,6 @@ This project uses Vitest with Vue Test Utils for component integration testing, 
 6. **Repeat steps 4-5** until all commands pass
 7. **Critique the current set of changes, checking for issues such as broken reactivity, adherence to best practices, etc**:
    - Use `git status` and `git diff` to examine ALL uncommitted files
-   - Explicitly confirm each file follows best practices
 
 ## Test Configuration
 
@@ -47,13 +46,21 @@ Use centralized helpers from `@/__tests__/vue-test-helpers` for cleaner tests:
 
 ```typescript
 import {
+  getElement,
+  getComponent,
   expectElementExists,
   expectElementNotExists,
   expectElementText,
   expectProps,
   clickElement,
   emitEvent,
+  getComponentMatching,
+  getComponentWithText,
 } from '@/__tests__/vue-test-helpers'
+
+// Element/Component Access
+const element = getElement(wrapper, 'div.my-class') // Works with string selectors or components
+const component = getComponent(wrapper, VBtn) // Component-specific access
 
 // Clean assertions - prefer these helpers over manual finds
 expectElementExists(wrapper, VBtn)
@@ -64,6 +71,10 @@ expectProps(wrapper, VBtn, { disabled: true })
 // Simplified interactions
 await clickElement(wrapper, VBtn)
 await emitEvent(wrapper, ItemSelector, 'update:modelValue', mockValue)
+
+// Advanced finding
+const matchingComponent = getComponentMatching(wrapper, VBtn, (btn) => btn.props().disabled === true)
+const componentWithText = getComponentWithText(wrapper, VListItem, 'Import Recipe')
 
 // ❌ AVOID: Don't store components in variables when you can pass createWrapper() directly
 const wrapper = createWrapper()
@@ -154,7 +165,15 @@ describe('ComponentName Integration', () => {
 #### Finding Elements
 
 ```typescript
-// ✅ Good - by functionality
+// ✅ Good - using helper functions for finding by functionality
+const importBtn = getComponentWithText(wrapper, VBtn, 'Import')
+const disabledBtn = getComponentMatching(wrapper, VBtn, (btn) => btn.props().disabled === true)
+
+// ✅ Good - basic element/component access
+const element = getElement(wrapper, '.my-selector') // string selector
+const component = getComponent(wrapper, VBtn) // component selector
+
+// ❌ Avoid - manual finds without helpers
 const buttons = wrapper.findAllComponents({ name: 'VBtn' })
 const importBtn = buttons.find((btn) => btn.text().includes('Import'))
 
