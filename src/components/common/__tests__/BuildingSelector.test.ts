@@ -6,7 +6,7 @@ import type { ItemOption } from '@/types/data'
 // Import the test setups for real Vue + Pinia environment with fixture data
 import '@/components/__tests__/component-setup'
 import '@/logistics/__tests__/test-setup'
-import { emitEvent, expectElementExists, expectProps } from '@/__tests__/vue-test-helpers'
+import { component } from '@/__tests__/vue-test-helpers'
 import GameDataSelector from '../GameDataSelector.vue'
 import { VAutocomplete } from 'vuetify/components'
 
@@ -55,8 +55,8 @@ describe('BuildingSelector Integration', () => {
     it('should render real GameDataSelector with Vuetify autocomplete', () => {
       wrapper = createWrapper()
 
-      expectElementExists(wrapper, GameDataSelector)
-      expectElementExists(wrapper, VAutocomplete)
+      component(wrapper, GameDataSelector).assert()
+      component(wrapper, VAutocomplete).assert()
     })
 
     it('should pass real fixture data to autocomplete', () => {
@@ -77,13 +77,12 @@ describe('BuildingSelector Integration', () => {
     it('should configure autocomplete with correct Vuetify props', () => {
       wrapper = createWrapper({ disabled: true })
 
-      expectProps(wrapper, VAutocomplete, {
-        disabled: true,
-        itemTitle: 'name',
-        itemValue: 'value',
-        returnObject: true,
-        clearable: true,
-      })
+      const autocomplete = component(wrapper, VAutocomplete).getComponent()
+      expect(autocomplete.props('disabled')).toBe(true)
+      expect(autocomplete.props('itemTitle')).toBe('name')
+      expect(autocomplete.props('itemValue')).toBe('value')
+      expect(autocomplete.props('returnObject')).toBe(true)
+      expect(autocomplete.props('clearable')).toBe(true)
     })
   })
 
@@ -91,34 +90,24 @@ describe('BuildingSelector Integration', () => {
     it('should pass modelValue to real GameDataSelector', () => {
       wrapper = createWrapper({ modelValue: SMELTER_BUILDING })
 
-      expectProps(wrapper, GameDataSelector, {
-        modelValue: SMELTER_BUILDING,
-      })
-
-      expectProps(wrapper, VAutocomplete, {
-        modelValue: SMELTER_BUILDING,
-      })
+      expect(component(wrapper, GameDataSelector).getComponent().props('modelValue')).toEqual(SMELTER_BUILDING)
+      expect(component(wrapper, VAutocomplete).getComponent().props('modelValue')).toEqual(SMELTER_BUILDING)
     })
 
     it('should pass displayConfig to real components', () => {
       wrapper = createWrapper({ displayConfig: CUSTOM_DISPLAY_CONFIG })
 
-      expectProps(wrapper, GameDataSelector, {
-        displayConfig: CUSTOM_DISPLAY_CONFIG,
-      })
+      expect(component(wrapper, GameDataSelector).getComponent().props('displayConfig')).toEqual(CUSTOM_DISPLAY_CONFIG)
 
-      expectProps(wrapper, VAutocomplete, {
-        placeholder: CUSTOM_DISPLAY_CONFIG.placeholder,
-        label: CUSTOM_DISPLAY_CONFIG.label,
-      })
+      const autocomplete = component(wrapper, VAutocomplete).getComponent()
+      expect(autocomplete.props('placeholder')).toBe(CUSTOM_DISPLAY_CONFIG.placeholder)
+      expect(autocomplete.props('label')).toBe(CUSTOM_DISPLAY_CONFIG.label)
     })
 
     it('should use default displayConfig when not provided', () => {
       wrapper = createWrapper()
 
-      expectProps(wrapper, VAutocomplete, {
-        placeholder: DEFAULT_PLACEHOLDER,
-      })
+      expect(component(wrapper, VAutocomplete).getComponent().props('placeholder')).toBe(DEFAULT_PLACEHOLDER)
     })
   })
 
@@ -203,7 +192,7 @@ describe('BuildingSelector Integration', () => {
     it('should emit update:modelValue when real autocomplete selection changes', async () => {
       wrapper = createWrapper()
 
-      await emitEvent(wrapper, VAutocomplete, 'update:modelValue', CONSTRUCTOR_BUILDING)
+      await component(wrapper, VAutocomplete).emit('update:modelValue', CONSTRUCTOR_BUILDING)
 
       expect(wrapper.emitted('update:modelValue')?.[0]?.[0]).toEqual(CONSTRUCTOR_BUILDING)
     })
@@ -211,7 +200,7 @@ describe('BuildingSelector Integration', () => {
     it('should emit update:modelValue with undefined when cleared', async () => {
       wrapper = createWrapper()
 
-      await emitEvent(wrapper, VAutocomplete, 'update:modelValue', undefined)
+      await component(wrapper, VAutocomplete).emit('update:modelValue', undefined)
 
       expect(wrapper.emitted('update:modelValue')?.[0]?.[0]).toBeUndefined()
     })

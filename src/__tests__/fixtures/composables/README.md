@@ -132,8 +132,6 @@ vi.mock('@/composables/useStores', async () => {
 })
 ```
 
-
-
 > **Note:** For detailed information about the test helper API, see [VUE_TEST_HELPERS.md](../../VUE_TEST_HELPERS.md)
 
 ## Available Composable Mocks

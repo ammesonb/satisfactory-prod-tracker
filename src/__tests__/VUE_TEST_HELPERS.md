@@ -21,7 +21,7 @@ await component(wrapper, VBtn)
   .click()
 
 // Emit events
-await component(wrapper, Modal).emit('close', ["arg1", 2, 3.14])
+await component(wrapper, Modal).emit('close', ['arg1', 2, 3.14])
 
 // Chain matchers
 component(wrapper, VBtn)
@@ -45,6 +45,7 @@ const allButtons = component(wrapper, VBtn).getComponents()
 ## Key Features
 
 **Matchers are functions** - Provides maximum flexibility for filtering:
+
 ```ts
 .match((el) => el.text().includes('text'))
 .match((el) => el.props().value === expected)
@@ -52,6 +53,7 @@ const allButtons = component(wrapper, VBtn).getComponents()
 ```
 
 **Reuse helper instances** - Store matched helpers to avoid recreating matchers:
+
 ```ts
 const btn = component(wrapper, VBtn).match((b) => b.text() === 'Save')
 btn.assert()
@@ -59,11 +61,13 @@ await btn.click()
 ```
 
 **Force clicks** - For hidden/disabled elements:
+
 ```ts
 await component(wrapper, VBtn).click(true)
 ```
 
 **Full type inference** - `getComponent()` returns fully typed wrappers:
+
 ```ts
 const btn = component(wrapper, VBtn).getComponent()
 // btn.vm is fully typed

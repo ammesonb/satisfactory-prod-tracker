@@ -19,6 +19,7 @@ import {
   expectElementNotExists,
   emitEvent,
   expectProps,
+  getComponentMatching,
 } from '@/__tests__/vue-test-helpers'
 
 import FactoryDrawer from '@/components/layout/FactoryDrawer.vue'
@@ -193,24 +194,29 @@ describe('FactoryDrawer Integration', () => {
       mockSelectedFactory.value = 'Steel Production Plant'
       const wrapper = createWrapper()
 
-      const factoryRows = wrapper.findAllComponents(FactoryDrawerRow)
-      const steelRow = factoryRows.find(
-        (row) => row.props('factory').name === 'Steel Production Plant',
+      const steelRow = getComponentMatching(
+        wrapper,
+        FactoryDrawerRow,
+        (row) => row.props('factory').name === 'Steel Production Plant' && row.props('selected'),
       )
-      const ironRow = factoryRows.find(
-        (row) => row.props('factory').name === 'Iron Processing Plant',
+      const ironRow = getComponentMatching(
+        wrapper,
+        FactoryDrawerRow,
+        (row) => row.props('factory').name === 'Iron Processing Plant' && !row.props('selected'),
       )
-
-      expect(steelRow?.props('selected')).toBe(true)
-      expect(ironRow?.props('selected')).toBe(false)
+      expect(steelRow).toBeDefined()
+      expect(ironRow).toBeDefined()
     })
 
     it('calls factory selection and navigation initialization when factory is selected', async () => {
       const wrapper = createWrapper()
       const selectedName = 'Steel Production Plant'
 
-      const factoryRows = wrapper.findAllComponents(FactoryDrawerRow)
-      const steelRow = factoryRows.find((row) => row.props('factory').name === selectedName)
+      const steelRow = getComponentMatching(
+        wrapper,
+        FactoryDrawerRow,
+        (row) => row.props('factory').name === selectedName,
+      )
 
       await steelRow?.vm.$emit('select', TEST_FACTORIES.STEEL_PLANT)
 
