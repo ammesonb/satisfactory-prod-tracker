@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ref, type Ref } from 'vue'
+import { ref, computed } from 'vue'
 import RecipeForm from '../RecipeForm.vue'
 import RecipeSelector from '@/components/common/RecipeSelector.vue'
 import BuildingSelector from '@/components/common/BuildingSelector.vue'
@@ -13,6 +13,7 @@ import {
   expectProps,
   clickElement,
   emitEvent,
+  createUnwrapProxy,
 } from '@/__tests__/vue-test-helpers'
 import type { RecipeEntry } from '@/types/factory'
 
@@ -22,25 +23,6 @@ vi.mock('@/composables/useStores', async () => {
 })
 
 import type { ItemOption } from '@/types/data'
-
-// Mock interface that matches how the real composable works
-interface MockForm {
-  selectedRecipe: Ref<ItemOption | undefined>
-  buildingCount: Ref<number>
-  selectedBuilding: Ref<ItemOption | undefined>
-  productionBuildings: Ref<string[]>
-  displayError: Ref<string>
-  errorMessage: Ref<string>
-  isValid: Ref<boolean>
-  selectedRecipes: Ref<RecipeEntry[]>
-  recipeKeys: string[]
-  reset: () => void
-  changeRecipe: (recipe: ItemOption | undefined) => void
-  setError: (error: string) => void
-  clearError: () => void
-  addRecipe: () => void
-  removeRecipe: (index: number) => void
-}
 
 // Create reactive refs that persist across calls
 const mockSelectedRecipe = ref<ItemOption | undefined>(undefined)
@@ -57,31 +39,29 @@ const mockSetError = vi.fn()
 const mockClearError = vi.fn()
 const mockAddRecipe = vi.fn()
 const mockRemoveRecipe = vi.fn()
-
-const mockForm: MockForm = {
-  selectedRecipe: mockSelectedRecipe,
-  buildingCount: mockBuildingCount,
-  selectedBuilding: mockSelectedBuilding,
-  productionBuildings: mockProductionBuildings,
-  displayError: mockDisplayError,
-  errorMessage: mockErrorMessage,
-  isValid: mockIsValid,
-  get selectedRecipes() {
-    return mockSelectedRecipes
-  },
-  get recipeKeys() {
-    return mockSelectedRecipes.value.map((entry) => entry.recipe)
-  },
-  reset: mockReset,
-  changeRecipe: mockChangeRecipe,
-  setError: mockSetError,
-  clearError: mockClearError,
-  addRecipe: mockAddRecipe,
-  removeRecipe: mockRemoveRecipe,
-}
+const mockRecipeKeysRef = computed(() => mockSelectedRecipes.value.map((entry) => entry.recipe))
 
 vi.mock('../composables/useRecipeInputForm', () => ({
-  useRecipeInputForm: vi.fn(() => mockForm),
+  useRecipeInputForm: vi.fn(() => {
+    const form = {
+      selectedRecipe: mockSelectedRecipe,
+      buildingCount: mockBuildingCount,
+      selectedBuilding: mockSelectedBuilding,
+      productionBuildings: mockProductionBuildings,
+      displayError: mockDisplayError,
+      errorMessage: mockErrorMessage,
+      isValid: mockIsValid,
+      selectedRecipes: createUnwrapProxy(mockSelectedRecipes),
+      recipeKeys: createUnwrapProxy(mockRecipeKeysRef),
+      reset: mockReset,
+      changeRecipe: mockChangeRecipe,
+      setError: mockSetError,
+      clearError: mockClearError,
+      addRecipe: mockAddRecipe,
+      removeRecipe: mockRemoveRecipe,
+    }
+    return form
+  }),
 }))
 
 describe('RecipeForm Integration', () => {
@@ -192,9 +172,13 @@ describe('RecipeForm Integration', () => {
     it('passes correct props to RecipeSelector', () => {
       mockSelectedRecipes.value = [mockRecipeEntry]
 
-      expectProps(createWrapper(), RecipeSelector, {
-        excludeKeys: [mockRecipeEntry.recipe],
-      })
+      const wrapper = createWrapper()
+      const recipeSelector = wrapper.findComponent(RecipeSelector)
+      const excludeKeys = recipeSelector.props('excludeKeys')
+
+      // Check array content since proxies don't match in deep equality
+      expect(Array.isArray(excludeKeys)).toBe(true)
+      expect(excludeKeys ? Array.from(excludeKeys) : []).toEqual([mockRecipeEntry.recipe])
     })
 
     it('passes selected recipe value to RecipeSelector', () => {
@@ -220,7 +204,7 @@ describe('RecipeForm Integration', () => {
     })
 
     it('enables BuildingSelector when recipe is selected', () => {
-      mockForm.selectedRecipe.value = {
+      mockSelectedRecipe.value = {
         value: 'Recipe_IronIngot_C',
         name: 'Iron Ingot',
         icon: 'iron-ingot',
@@ -246,9 +230,13 @@ describe('RecipeForm Integration', () => {
       const testRecipes = [mockRecipeEntry]
       mockSelectedRecipes.value = testRecipes
 
-      expectProps(createWrapper(), RecipeDisplay, {
-        recipes: mockSelectedRecipes,
-      })
+      const wrapper = createWrapper()
+      const recipeDisplay = wrapper.findComponent(RecipeDisplay)
+      const recipes = recipeDisplay.props('recipes')
+
+      // Check array content since proxies don't match in deep equality
+      expect(Array.isArray(recipes)).toBe(true)
+      expect(Array.from(recipes)).toEqual(testRecipes)
     })
   })
 
@@ -261,7 +249,7 @@ describe('RecipeForm Integration', () => {
         name: 'Iron Ingot',
       })
 
-      expect(mockForm.changeRecipe).toHaveBeenCalledWith({
+      expect(mockChangeRecipe).toHaveBeenCalledWith({
         value: 'Recipe_IronIngot_C',
         name: 'Iron Ingot',
       })
@@ -275,7 +263,7 @@ describe('RecipeForm Integration', () => {
         name: 'Smelter',
       })
 
-      expect(mockForm.selectedBuilding.value).toEqual({
+      expect(mockSelectedBuilding.value).toEqual({
         value: 'Build_SmelterMk1_C',
         name: 'Smelter',
       })
@@ -314,13 +302,13 @@ describe('RecipeForm Integration', () => {
     it('handles recipe removal from RecipeDisplay', async () => {
       await emitEvent(createWrapper(), RecipeDisplay, 'remove', 0)
 
-      expect(mockForm.removeRecipe).toHaveBeenCalledWith(0)
+      expect(mockRemoveRecipe).toHaveBeenCalledWith(0)
     })
 
     it('handles recipe removal with correct index', async () => {
       await emitEvent(createWrapper(), RecipeDisplay, 'remove', 2)
 
-      expect(mockForm.removeRecipe).toHaveBeenCalledWith(2)
+      expect(mockRemoveRecipe).toHaveBeenCalledWith(2)
     })
   })
 })

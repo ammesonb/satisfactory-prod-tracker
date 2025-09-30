@@ -112,3 +112,28 @@ export function getComponentWithText(
       : wrapper.findAllComponents(selector)
   return components.find((component) => component.text().includes(text))
 }
+
+/**
+ * Creates a proxy that behaves like an unwrapped ref for testing purposes.
+ * The proxy allows both .value access (for watchers) and direct property access (for templates).
+ *
+ * @param mockRef - The ref to wrap in a proxy
+ * @returns A proxy that auto-unwraps the ref while maintaining .value access
+ *
+ * @example
+ * const mockItems = ref<Item[]>([])
+ * const itemsProxy = createUnwrapProxy(mockItems)
+ * // Can access .value for watchers: itemsProxy.value
+ * // Can access array methods directly: itemsProxy[0], itemsProxy.map(...)
+ */
+export function createUnwrapProxy<T extends object>(mockRef: { value: T }): T {
+  // proxy requires an object as a target, so use an empty array
+  // never actually returned, since get() intercepts all access
+  return new Proxy([] as unknown as T, {
+    get(_target, prop) {
+      if (prop === 'value') return mockRef.value
+      const unwrapped = mockRef.value as Record<string | symbol, unknown>
+      return unwrapped[prop]
+    },
+  })
+}
