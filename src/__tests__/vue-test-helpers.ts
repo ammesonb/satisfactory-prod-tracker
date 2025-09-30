@@ -103,13 +103,10 @@ export async function emitEvent(
  */
 export function getComponentWithText(
   wrapper: VueWrapper,
-  selector: ElementSelector | ComponentSelector,
+  selector: ComponentSelector,
   text: string,
 ) {
-  const components =
-    typeof selector === 'string'
-      ? wrapper.findAllComponents(selector)
-      : wrapper.findAllComponents(selector)
+  const components = wrapper.findAllComponents(selector)
   return components.find((component) => component.text().includes(text))
 }
 
@@ -133,7 +130,13 @@ export function createUnwrapProxy<T extends object>(mockRef: { value: T }): T {
     get(_target, prop) {
       if (prop === 'value') return mockRef.value
       const unwrapped = mockRef.value as Record<string | symbol, unknown>
-      return unwrapped[prop]
+      const value = unwrapped[prop]
+      // Bind array methods to the unwrapped value to maintain correct 'this' context
+      if (typeof value === 'function') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (value as any).bind(mockRef.value)
+      }
+      return value
     },
   })
 }

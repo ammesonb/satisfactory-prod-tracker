@@ -39,3 +39,22 @@ beforeEach(() => {
 // Components will be auto-imported via unplugin-vue-components in vitest.config.ts
 // Mock CSS imports that Vuetify might use
 vi.mock('vuetify/styles', () => ({}))
+
+// Mock visualViewport for Vuetify dialog tests
+if (!globalThis.visualViewport) {
+  Object.defineProperty(globalThis, 'visualViewport', {
+    value: {
+      width: 1024,
+      height: 768,
+      scale: 1,
+      pageLeft: 0,
+      pageTop: 0,
+      offsetLeft: 0,
+      offsetTop: 0,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    },
+    writable: true,
+    configurable: true,
+  })
+}

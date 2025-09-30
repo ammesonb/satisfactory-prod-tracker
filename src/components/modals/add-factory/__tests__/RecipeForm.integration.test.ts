@@ -26,17 +26,17 @@ import {
   mockRemoveRecipe,
 } from '@/__tests__/fixtures/composables/recipeInputForm'
 
-import RecipeForm from '../RecipeForm.vue'
+import RecipeForm from '@/components/modals/add-factory/RecipeForm.vue'
 import RecipeSelector from '@/components/common/RecipeSelector.vue'
 import BuildingSelector from '@/components/common/BuildingSelector.vue'
-import RecipeDisplay from '../RecipeDisplay.vue'
+import RecipeDisplay from '@/components/modals/add-factory/RecipeDisplay.vue'
 
 vi.mock('@/composables/useStores', async () => {
   const { mockUseStores } = await import('@/__tests__/fixtures/composables')
   return mockUseStores
 })
 
-vi.mock('../composables/useRecipeInputForm', async () => {
+vi.mock('@/composables/useRecipeInputForm', async () => {
   const { mockUseRecipeInputForm } = await import('@/__tests__/fixtures/composables')
   return mockUseRecipeInputForm
 })
