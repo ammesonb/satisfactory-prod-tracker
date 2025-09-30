@@ -129,12 +129,11 @@ export function getComponentWithText<T extends ComponentConstructor>(
  * // Can access array methods directly: itemsProxy[0], itemsProxy.map(...)
  */
 export function createUnwrapProxy<T extends object>(mockRef: { value: T }): T {
-  // Create a proxy that delegates to the unwrapped value
-  // Use the actual value as target to ensure proper prototype chain (for Array.isArray, etc.)
-  const handler: ProxyHandler<T> = {
-    get(target, prop) {
+  // proxy requires an object as a target, so use an empty array
+  // never actually returned, since get() intercepts all access
+  return new Proxy([] as unknown as T, {
+    get(_target, prop) {
       if (prop === 'value') return mockRef.value
-      // Always get from the current ref value
       const unwrapped = mockRef.value as Record<string | symbol, unknown>
       const value = unwrapped[prop]
       // Bind functions to the unwrapped value to maintain correct 'this' context
@@ -142,28 +141,7 @@ export function createUnwrapProxy<T extends object>(mockRef: { value: T }): T {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return (value as any).bind(mockRef.value)
       }
-      // If the value is undefined, fall back to the target (for methods like .join when value is undefined)
-      if (value === undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const targetValue = (target as any)[prop]
-        if (typeof targetValue === 'function') {
-          return targetValue.bind(mockRef.value || target)
-        }
-        return targetValue
-      }
       return value
     },
-    // Make the proxy appear as the actual array/object type
-    has(_target, prop) {
-      if (prop === 'value') return true
-      return prop in mockRef.value
-    },
-    ownKeys() {
-      return Reflect.ownKeys(mockRef.value)
-    },
-    getOwnPropertyDescriptor(_target, prop) {
-      return Reflect.getOwnPropertyDescriptor(mockRef.value, prop)
-    },
-  }
-  return new Proxy(mockRef.value, handler)
+  })
 }
