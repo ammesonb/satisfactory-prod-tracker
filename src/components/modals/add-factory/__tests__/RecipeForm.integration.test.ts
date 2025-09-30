@@ -1,10 +1,5 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ref, computed } from 'vue'
-import RecipeForm from '../RecipeForm.vue'
-import RecipeSelector from '@/components/common/RecipeSelector.vue'
-import BuildingSelector from '@/components/common/BuildingSelector.vue'
-import RecipeDisplay from '../RecipeDisplay.vue'
 import { VBtn, VTextField, VAlert } from 'vuetify/components'
 import {
   expectElementExists,
@@ -13,56 +8,38 @@ import {
   expectProps,
   clickElement,
   emitEvent,
-  createUnwrapProxy,
 } from '@/__tests__/vue-test-helpers'
 import type { RecipeEntry } from '@/types/factory'
+import type { ItemOption } from '@/types/data'
+import {
+  mockSelectedRecipe,
+  mockBuildingCount,
+  mockSelectedBuilding,
+  mockProductionBuildings,
+  mockDisplayError,
+  mockErrorMessage,
+  mockIsValid,
+  mockSelectedRecipes,
+  mockChangeRecipe,
+  mockClearError,
+  mockAddRecipe,
+  mockRemoveRecipe,
+} from '@/__tests__/fixtures/composables/recipeInputForm'
+
+import RecipeForm from '../RecipeForm.vue'
+import RecipeSelector from '@/components/common/RecipeSelector.vue'
+import BuildingSelector from '@/components/common/BuildingSelector.vue'
+import RecipeDisplay from '../RecipeDisplay.vue'
 
 vi.mock('@/composables/useStores', async () => {
   const { mockUseStores } = await import('@/__tests__/fixtures/composables')
   return mockUseStores
 })
 
-import type { ItemOption } from '@/types/data'
-
-// Create reactive refs that persist across calls
-const mockSelectedRecipe = ref<ItemOption | undefined>(undefined)
-const mockBuildingCount = ref(1)
-const mockSelectedBuilding = ref<ItemOption | undefined>(undefined)
-const mockSelectedRecipes = ref<RecipeEntry[]>([])
-const mockProductionBuildings = ref<string[]>([])
-const mockErrorMessage = ref('')
-const mockIsValid = ref(false)
-const mockDisplayError = ref('')
-const mockReset = vi.fn()
-const mockChangeRecipe = vi.fn()
-const mockSetError = vi.fn()
-const mockClearError = vi.fn()
-const mockAddRecipe = vi.fn()
-const mockRemoveRecipe = vi.fn()
-const mockRecipeKeysRef = computed(() => mockSelectedRecipes.value.map((entry) => entry.recipe))
-
-vi.mock('../composables/useRecipeInputForm', () => ({
-  useRecipeInputForm: vi.fn(() => {
-    const form = {
-      selectedRecipe: mockSelectedRecipe,
-      buildingCount: mockBuildingCount,
-      selectedBuilding: mockSelectedBuilding,
-      productionBuildings: mockProductionBuildings,
-      displayError: mockDisplayError,
-      errorMessage: mockErrorMessage,
-      isValid: mockIsValid,
-      selectedRecipes: createUnwrapProxy(mockSelectedRecipes),
-      recipeKeys: createUnwrapProxy(mockRecipeKeysRef),
-      reset: mockReset,
-      changeRecipe: mockChangeRecipe,
-      setError: mockSetError,
-      clearError: mockClearError,
-      addRecipe: mockAddRecipe,
-      removeRecipe: mockRemoveRecipe,
-    }
-    return form
-  }),
-}))
+vi.mock('../composables/useRecipeInputForm', async () => {
+  const { mockUseRecipeInputForm } = await import('@/__tests__/fixtures/composables')
+  return mockUseRecipeInputForm
+})
 
 describe('RecipeForm Integration', () => {
   const mockRecipeEntry: RecipeEntry = {
