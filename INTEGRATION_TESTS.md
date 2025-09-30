@@ -56,6 +56,7 @@ import {
   emitEvent,
   getComponentMatching,
   getComponentWithText,
+  createUnwrapProxy,
 } from '@/__tests__/vue-test-helpers'
 
 // Element/Component Access
@@ -218,6 +219,25 @@ it('navigates to floors', () => {
 
   expect(mockNavigateToFloor).toHaveBeenCalledWith(1)
 })
+```
+
+#### Mocking Refs in Composables
+
+When mocking composables that return refs, use `createUnwrapProxy()` to ensure the mock behaves correctly with both `.value` access (for watchers) and direct property access (for templates):
+
+```typescript
+import { ref, computed } from 'vue'
+import { createUnwrapProxy } from '@/__tests__/vue-test-helpers'
+
+const mockItems = ref<Item[]>([])
+const mockItemKeys = computed(() => mockItems.value.map((item) => item.key))
+
+vi.mock('./composables/useItemForm', () => ({
+  useItemForm: vi.fn(() => ({
+    items: createUnwrapProxy(mockItems),      // Supports both .value and array methods
+    itemKeys: createUnwrapProxy(mockItemKeys), // Works with computed refs too
+  })),
+}))
 ```
 
 ## Running Tests
