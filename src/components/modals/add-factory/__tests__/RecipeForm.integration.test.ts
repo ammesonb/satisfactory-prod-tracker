@@ -8,6 +8,7 @@ import {
   expectProps,
   clickElement,
   emitEvent,
+  createUnwrapProxy,
 } from '@/__tests__/vue-test-helpers'
 import type { RecipeEntry } from '@/types/factory'
 import type { ItemOption } from '@/types/data'
@@ -24,6 +25,9 @@ import {
   mockClearError,
   mockAddRecipe,
   mockRemoveRecipe,
+  mockRecipeKeysRef,
+  mockReset,
+  mockSetError,
 } from '@/__tests__/fixtures/composables/recipeInputForm'
 
 import RecipeForm from '@/components/modals/add-factory/RecipeForm.vue'
@@ -36,10 +40,28 @@ vi.mock('@/composables/useStores', async () => {
   return mockUseStores
 })
 
-vi.mock('@/composables/useRecipeInputForm', async () => {
-  const { mockUseRecipeInputForm } = await import('@/__tests__/fixtures/composables')
-  return mockUseRecipeInputForm
-})
+vi.mock('../composables/useRecipeInputForm', () => ({
+  useRecipeInputForm: vi.fn(() => {
+    const form = {
+      selectedRecipe: mockSelectedRecipe,
+      buildingCount: mockBuildingCount,
+      selectedBuilding: mockSelectedBuilding,
+      productionBuildings: mockProductionBuildings,
+      displayError: mockDisplayError,
+      errorMessage: mockErrorMessage,
+      isValid: mockIsValid,
+      selectedRecipes: createUnwrapProxy(mockSelectedRecipes),
+      recipeKeys: createUnwrapProxy(mockRecipeKeysRef),
+      reset: mockReset,
+      changeRecipe: mockChangeRecipe,
+      setError: mockSetError,
+      clearError: mockClearError,
+      addRecipe: mockAddRecipe,
+      removeRecipe: mockRemoveRecipe,
+    }
+    return form
+  }),
+}))
 
 describe('RecipeForm Integration', () => {
   const mockRecipeEntry: RecipeEntry = {

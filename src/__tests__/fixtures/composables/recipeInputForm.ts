@@ -23,21 +23,24 @@ export const mockRecipeKeysRef = computed(() =>
 )
 
 export const mockUseRecipeInputForm = {
-  useRecipeInputForm: vi.fn(() => ({
-    selectedRecipe: mockSelectedRecipe,
-    buildingCount: mockBuildingCount,
-    selectedBuilding: mockSelectedBuilding,
-    productionBuildings: mockProductionBuildings,
-    displayError: mockDisplayError,
-    errorMessage: mockErrorMessage,
-    isValid: mockIsValid,
-    selectedRecipes: createUnwrapProxy(mockSelectedRecipes),
-    recipeKeys: createUnwrapProxy(mockRecipeKeysRef),
-    reset: mockReset,
-    changeRecipe: mockChangeRecipe,
-    setError: mockSetError,
-    clearError: mockClearError,
-    addRecipe: mockAddRecipe,
-    removeRecipe: mockRemoveRecipe,
-  })),
+  useRecipeInputForm: vi.fn(() => {
+    // Create proxies fresh on each call to avoid stale references
+    return {
+      selectedRecipe: mockSelectedRecipe,
+      buildingCount: mockBuildingCount,
+      selectedBuilding: mockSelectedBuilding,
+      productionBuildings: mockProductionBuildings,
+      displayError: mockDisplayError,
+      errorMessage: mockErrorMessage,
+      isValid: mockIsValid,
+      selectedRecipes: createUnwrapProxy(mockSelectedRecipes),
+      recipeKeys: createUnwrapProxy(mockRecipeKeysRef),
+      reset: mockReset,
+      changeRecipe: mockChangeRecipe,
+      setError: mockSetError,
+      clearError: mockClearError,
+      addRecipe: mockAddRecipe,
+      removeRecipe: mockRemoveRecipe,
+    }
+  }),
 }
