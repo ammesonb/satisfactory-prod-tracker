@@ -12,6 +12,9 @@ type ComponentMatcher<T extends ComponentConstructor> = (
 interface Assertions {
   exists?: boolean
   count?: number
+  props?: Record<string, unknown>
+  attributes?: Record<string, unknown>
+  classes?: string[]
 }
 
 class ElementHelper {
@@ -60,6 +63,16 @@ class ElementHelper {
         expect(elements.length).toBeGreaterThan(0)
       } else {
         expect(elements.length).toBe(0)
+      }
+    }
+    if (options.attributes !== undefined && elements.length === 1) {
+      for (const [key, value] of Object.entries(options.attributes)) {
+        expect(elements[0].attributes(key)).toBe(value)
+      }
+    }
+    if (options.classes !== undefined && elements.length === 1) {
+      for (const value of options.classes) {
+        expect(elements[0].classes()).toContain(value)
       }
     }
     return this
@@ -126,6 +139,27 @@ class ComponentHelper<T extends ComponentConstructor> {
         expect(components.length).toBeGreaterThan(0)
       } else {
         expect(components.length).toBe(0)
+      }
+    }
+    if (options.props !== undefined && components.length === 1) {
+      for (const [key, value] of Object.entries(options.props)) {
+        const propValue = components[0].props(key)
+        // Use deep equality for objects/arrays, reference equality for primitives
+        if (typeof value === 'object' && value !== null) {
+          expect(propValue).toStrictEqual(value)
+        } else {
+          expect(propValue).toBe(value)
+        }
+      }
+    }
+    if (options.attributes !== undefined && components.length === 1) {
+      for (const [key, value] of Object.entries(options.attributes)) {
+        expect(components[0].attributes(key)).toBe(value)
+      }
+    }
+    if (options.classes !== undefined && components.length === 1) {
+      for (const value of options.classes) {
+        expect(components[0].classes()).toContain(value)
       }
     }
     return this

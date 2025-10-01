@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ref } from 'vue'
 import RecipeSelector from '@/components/common/RecipeSelector.vue'
 import GameDataSelector from '@/components/common/GameDataSelector.vue'
-import { expectElementExists, emitEvent, expectProps } from '@/__tests__/vue-test-helpers'
+import { component } from '@/__tests__/vue-test-helpers'
 import type { DisplayConfig, IconConfig } from '@/types/ui'
 import type { ItemOption } from '@/types/data'
 import type { IDataStore } from '@/types/stores'
@@ -119,30 +119,39 @@ describe('RecipeSelector Integration', () => {
   it('renders GameDataSelector component', () => {
     const wrapper = createWrapper()
 
-    expectElementExists(wrapper, GameDataSelector)
+    component(wrapper, GameDataSelector).assert()
   })
 
   it('passes through modelValue to GameDataSelector', () => {
     const wrapper = createWrapper({ modelValue: mockSelectedRecipe })
-    const gameDataSelector = getGameDataSelector(wrapper)
 
-    expect(gameDataSelector.props('modelValue')).toEqual(mockSelectedRecipe)
+    component(wrapper, GameDataSelector).assert({
+      props: {
+        modelValue: mockSelectedRecipe,
+      },
+    })
   })
 
   it('passes through disabled prop to GameDataSelector', () => {
     const wrapper = createWrapper({ disabled: true })
-    const gameDataSelector = getGameDataSelector(wrapper)
 
-    expect(gameDataSelector.props('disabled')).toBe(true)
+    component(wrapper, GameDataSelector).assert({
+      props: {
+        disabled: true,
+      },
+    })
   })
 
   it('uses default displayConfig when none provided', () => {
     const wrapper = createWrapper()
-    const gameDataSelector = getGameDataSelector(wrapper)
 
-    expect(gameDataSelector.props('displayConfig')).toEqual({
-      placeholder: DEFAULT_PLACEHOLDER,
-      label: DEFAULT_LABEL,
+    component(wrapper, GameDataSelector).assert({
+      props: {
+        displayConfig: {
+          placeholder: DEFAULT_PLACEHOLDER,
+          label: DEFAULT_LABEL,
+        },
+      },
     })
   })
 
@@ -155,13 +164,11 @@ describe('RecipeSelector Integration', () => {
     }
 
     const wrapper = createWrapper({ displayConfig })
-    const gameDataSelector = getGameDataSelector(wrapper)
 
-    expect(gameDataSelector.props('displayConfig')).toEqual({
-      placeholder: CUSTOM_PLACEHOLDER,
-      label: CUSTOM_LABEL,
-      variant: 'filled',
-      density: 'compact',
+    component(wrapper, GameDataSelector).assert({
+      props: {
+        displayConfig,
+      },
     })
   })
 
@@ -172,9 +179,12 @@ describe('RecipeSelector Integration', () => {
     }
 
     const wrapper = createWrapper({ iconConfig })
-    const gameDataSelector = getGameDataSelector(wrapper)
 
-    expect(gameDataSelector.props('iconConfig')).toEqual(iconConfig)
+    component(wrapper, GameDataSelector).assert({
+      props: {
+        iconConfig,
+      },
+    })
   })
 
   it('converts recipes to ItemOption format correctly', () => {
@@ -245,7 +255,7 @@ describe('RecipeSelector Integration', () => {
   it('emits update:modelValue when GameDataSelector emits update:modelValue', async () => {
     const wrapper = createWrapper()
 
-    await emitEvent(wrapper, GameDataSelector, 'update:modelValue', mockSelectedRecipe)
+    await component(wrapper, GameDataSelector).emit('update:modelValue', mockSelectedRecipe)
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
     expect(wrapper.emitted('update:modelValue')![0]).toEqual([mockSelectedRecipe])
@@ -254,7 +264,7 @@ describe('RecipeSelector Integration', () => {
   it('emits undefined when selection is cleared', async () => {
     const wrapper = createWrapper({ modelValue: mockSelectedRecipe })
 
-    await emitEvent(wrapper, GameDataSelector, 'update:modelValue', undefined)
+    await component(wrapper, GameDataSelector).emit('update:modelValue', undefined)
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
     expect(wrapper.emitted('update:modelValue')![0]).toEqual([undefined])
@@ -272,11 +282,11 @@ describe('RecipeSelector Integration', () => {
     })
 
     // Test selection
-    await emitEvent(wrapper, GameDataSelector, 'update:modelValue', mockSelectedRecipe)
+    await component(wrapper, GameDataSelector).emit('update:modelValue', mockSelectedRecipe)
     expect(modelValue.value).toEqual(mockSelectedRecipe)
 
     // Test clearing
-    await emitEvent(wrapper, GameDataSelector, 'update:modelValue', undefined)
+    await component(wrapper, GameDataSelector).emit('update:modelValue', undefined)
     expect(modelValue.value).toBeUndefined()
   })
 
@@ -296,11 +306,11 @@ describe('RecipeSelector Integration', () => {
 
   it('handles empty recipes object gracefully', () => {
     vi.mocked(mockDataStore).recipes = {}
-    expectProps(createWrapper(), GameDataSelector, { items: [] })
+    component(createWrapper(), GameDataSelector).assert({ props: { items: [] } })
   })
 
   it('handles undefined iconConfig gracefully', () => {
-    expectProps(createWrapper(), GameDataSelector, { iconConfig: {} })
+    component(createWrapper(), GameDataSelector).assert({ props: { iconConfig: {} } })
   })
 
   it('ensures all recipe items have recipe type', () => {

@@ -28,68 +28,92 @@ describe('CachedIcon Integration', () => {
   })
 
   it('uses correct source size for small icons', () => {
-    expect(
-      component(createWrapper({ size: 24 }), VImg)
-        .getComponent()
-        .props('src'),
-    ).toBe('https://example.com/icons/iron-ore_64.png')
+    const wrapper = createWrapper({ size: 24 })
+    component(wrapper, VImg).assert({
+      props: {
+        src: 'https://example.com/icons/iron-ore_64.png',
+      },
+    })
   })
 
   it('uses correct source size for large icons', () => {
-    expect(
-      component(createWrapper({ size: 64 }), VImg)
-        .getComponent()
-        .props('src'),
-    ).toBe('https://example.com/icons/iron-ore_256.png')
+    const wrapper = createWrapper({ size: 64 })
+    component(wrapper, VImg).assert({
+      props: {
+        src: 'https://example.com/icons/iron-ore_256.png',
+      },
+    })
   })
 
   it('applies custom size prop correctly', () => {
-    const img = component(createWrapper({ size: 48 }), VImg).getComponent()
-    expect(img.props('width')).toBe(48)
-    expect(img.props('height')).toBe(48)
+    const wrapper = createWrapper({ size: 48 })
+    component(wrapper, VImg).assert({
+      props: {
+        width: 48,
+        height: 48,
+      },
+    })
   })
 
   it('applies alt text when provided', () => {
-    expect(
-      component(createWrapper({ alt: 'Iron Ore Icon' }), VImg)
-        .getComponent()
-        .props('alt'),
-    ).toBe('Iron Ore Icon')
+    const wrapper = createWrapper({ alt: 'Iron Ore Icon' })
+    component(wrapper, VImg).assert({
+      props: {
+        alt: 'Iron Ore Icon',
+      },
+    })
   })
 
   it('uses undefined alt when not provided', () => {
-    expect(component(createWrapper(), VImg).getComponent().props('alt')).toBeUndefined()
+    const wrapper = createWrapper()
+    component(wrapper, VImg).assert({
+      props: {
+        alt: undefined,
+      },
+    })
   })
 
   it('updates icon URL when icon prop changes', async () => {
     const wrapper = createWrapper({ icon: 'copper-ore' })
 
-    expect(component(wrapper, VImg).getComponent().props('src')).toBe(
-      'https://example.com/icons/copper-ore_64.png',
-    )
+    component(wrapper, VImg).assert({
+      props: {
+        src: 'https://example.com/icons/copper-ore_64.png',
+      },
+    })
 
     await wrapper.setProps({ icon: 'iron-plate' })
 
-    expect(component(wrapper, VImg).getComponent().props('src')).toBe(
-      'https://example.com/icons/iron-plate_64.png',
-    )
+    component(wrapper, VImg).assert({
+      props: {
+        src: 'https://example.com/icons/iron-plate_64.png',
+      },
+    })
   })
 
   it('updates source size when size prop changes', async () => {
     const wrapper = createWrapper({ size: 24 })
 
-    expect(component(wrapper, VImg).getComponent().props('src')).toBe(
-      'https://example.com/icons/iron-ore_64.png',
-    )
+    component(wrapper, VImg).assert({
+      props: {
+        src: 'https://example.com/icons/iron-ore_64.png',
+      },
+    })
 
     await wrapper.setProps({ size: 64 })
 
-    expect(component(wrapper, VImg).getComponent().props('src')).toBe(
-      'https://example.com/icons/iron-ore_256.png',
-    )
+    component(wrapper, VImg).assert({
+      props: {
+        src: 'https://example.com/icons/iron-ore_256.png',
+      },
+    })
   })
 
   it('has correct CSS classes and styling', () => {
-    expect(component(createWrapper(), VImg).getComponent().props('class')).toBe('icon-image')
+    component(createWrapper(), VImg).assert({
+      props: {
+        class: 'icon-image',
+      },
+    })
   })
 })
