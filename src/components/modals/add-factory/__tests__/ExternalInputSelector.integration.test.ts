@@ -8,13 +8,7 @@ import {
   VChip,
   VIcon,
 } from 'vuetify/components'
-import {
-  expectElementExists,
-  expectElementText,
-  expectProps,
-  clickElement,
-  emitEvent,
-} from '@/__tests__/vue-test-helpers'
+import { component, element } from '@/__tests__/vue-test-helpers'
 import type { RecipeProduct, ItemOption } from '@/types/data'
 
 import ExternalInputSelector from '@/components/modals/add-factory/ExternalInputSelector.vue'
@@ -90,10 +84,10 @@ describe('ExternalInputSelector Integration', () => {
     it('renders expansion panel with correct title and icon', () => {
       const wrapper = createWrapper()
 
-      expectElementExists(wrapper, VExpansionPanels)
-      expectElementExists(wrapper, VExpansionPanel)
-      expectElementText(wrapper, VExpansionPanel, 'External Inputs')
-      expectElementText(wrapper, ExternalInputSelector, 'External Inputs')
+      component(wrapper, VExpansionPanels).assert()
+      component(wrapper, VExpansionPanel).assert()
+      component(wrapper, VExpansionPanel).assert({ text: 'External Inputs' })
+      component(wrapper, ExternalInputSelector).assert({ text: 'External Inputs' })
     })
 
     it('shows item count chip when inputs exist', () => {
@@ -103,17 +97,11 @@ describe('ExternalInputSelector Integration', () => {
       ]
       const wrapper = createWrapper({ modelValue: existingInputs })
 
-      expectElementExists(wrapper, VChip)
-      expectElementText(wrapper, VChip, '2')
+      component(wrapper, VChip).assert({ exists: true, text: '2' })
     })
 
     it('hides count chip when no inputs exist', () => {
-      const wrapper = createWrapper()
-
-      const chips = wrapper
-        .findAllComponents(VChip)
-        .filter((chip) => chip.text() === '0' || chip.text() === '')
-      expect(chips.length).toBe(0)
+      component(createWrapper(), VChip).assert({ exists: false })
     })
   })
 
@@ -121,16 +109,14 @@ describe('ExternalInputSelector Integration', () => {
     it('renders Add button that is initially disabled', () => {
       const wrapper = createWrapper()
 
-      expectElementExists(wrapper, VBtn)
-      expectElementText(wrapper, VBtn, 'Add')
-      expectProps(wrapper, VBtn, { disabled: true })
+      component(wrapper, VBtn).assert({ text: 'Add', props: { disabled: true } })
     })
 
     it('enables Add button when item is selected', async () => {
       const wrapper = createWrapper()
 
-      await emitEvent(wrapper, ItemSelector, 'update:modelValue', mockIronOreOption)
-      expectProps(wrapper, VBtn, { disabled: false })
+      await component(wrapper, ItemSelector).emit('update:modelValue', mockIronOreOption)
+      component(wrapper, VBtn).assert({ props: { disabled: false } })
     })
   })
 
@@ -138,13 +124,10 @@ describe('ExternalInputSelector Integration', () => {
     it('adds new external input when Add button is clicked', async () => {
       const wrapper = createWrapper()
 
-      await emitEvent(wrapper, ItemSelector, 'update:modelValue', mockIronOreOption)
+      await component(wrapper, ItemSelector).emit('update:modelValue', mockIronOreOption)
 
-      // Set quantity
-      const quantityField = wrapper.findComponent(VTextField)
-      await quantityField.setValue(150)
-
-      await clickElement(wrapper, VBtn)
+      await component(wrapper, VTextField).getComponent().setValue(150)
+      await component(wrapper, VBtn).click()
 
       const emittedEvents = wrapper.emitted('update:modelValue')
       expect(emittedEvents).toHaveLength(1)
@@ -155,12 +138,10 @@ describe('ExternalInputSelector Integration', () => {
       const existingInputs: RecipeProduct[] = [{ item: IRON_ORE, amount: 100 }]
       const wrapper = createWrapper({ modelValue: existingInputs })
 
-      await emitEvent(wrapper, ItemSelector, 'update:modelValue', mockIronOreOption)
+      await component(wrapper, ItemSelector).emit('update:modelValue', mockIronOreOption)
 
-      const quantityField = wrapper.findComponent(VTextField)
-      await quantityField.setValue(50)
-
-      await clickElement(wrapper, VBtn)
+      await component(wrapper, VTextField).getComponent().setValue(50)
+      await component(wrapper, VBtn).click()
 
       const emittedEvents = wrapper.emitted('update:modelValue')
       expect(emittedEvents).toHaveLength(1)
@@ -172,15 +153,13 @@ describe('ExternalInputSelector Integration', () => {
     it('resets form after adding input', async () => {
       const wrapper = createWrapper()
 
-      await emitEvent(wrapper, ItemSelector, 'update:modelValue', mockIronOreOption)
+      await component(wrapper, ItemSelector).emit('update:modelValue', mockIronOreOption)
 
-      const quantityField = wrapper.findComponent(VTextField)
-      await quantityField.setValue(200)
+      await component(wrapper, VTextField).getComponent().setValue(200)
+      await component(wrapper, VBtn).click()
 
-      await clickElement(wrapper, VBtn)
-
-      expectProps(wrapper, VBtn, { disabled: true })
-      expectProps(wrapper, VTextField, { modelValue: 1 })
+      component(wrapper, VBtn).assert({ props: { disabled: true } })
+      component(wrapper, VTextField).assert({ props: { modelValue: 1 } })
     })
   })
 
@@ -192,10 +171,9 @@ describe('ExternalInputSelector Integration', () => {
       ]
       const wrapper = createWrapper({ modelValue: existingInputs })
 
-      expectElementText(wrapper, 'h4', 'Added External Inputs:')
+      element(wrapper, 'h4').assert({ text: 'Added External Inputs:' })
 
-      const inputItems = wrapper.findAllComponents(ExternalInputItem)
-      expect(inputItems).toHaveLength(2)
+      const inputItems = component(wrapper, ExternalInputItem).assert({ count: 2 }).getComponents()
 
       expect(inputItems[0].props()).toEqual({ item: IRON_ORE, amount: 100 })
       expect(inputItems[1].props()).toEqual({ item: COPPER_ORE, amount: 50 })
@@ -221,14 +199,11 @@ describe('ExternalInputSelector Integration', () => {
     it('shows empty state when no external inputs exist', () => {
       const wrapper = createWrapper()
 
-      expectElementExists(wrapper, VIcon)
+      component(wrapper, VIcon).assert()
       // Empty state shows different text - check for the actual empty state messages
-      expectElementText(wrapper, ExternalInputSelector, 'No external inputs added yet')
-      expectElementText(
-        wrapper,
-        ExternalInputSelector,
-        'Select an item above to add external inputs',
-      )
+      component(wrapper, ExternalInputSelector).assert({
+        text: ['No external inputs added yet', 'Select an item above to add external inputs'],
+      })
     })
 
     it('hides empty state when external inputs exist', () => {
@@ -245,12 +220,10 @@ describe('ExternalInputSelector Integration', () => {
     it('handles complete add-and-remove workflow', async () => {
       const wrapper = createWrapper()
       // Step 1: Add first item
-      await emitEvent(wrapper, ItemSelector, 'update:modelValue', mockIronOreOption)
+      await component(wrapper, ItemSelector).emit('update:modelValue', mockIronOreOption)
 
-      const quantityField = wrapper.findComponent(VTextField)
-      await quantityField.setValue(100)
-
-      await clickElement(wrapper, VBtn)
+      await component(wrapper, VTextField).getComponent().setValue(100)
+      await component(wrapper, VBtn).click()
 
       // Verify first item was added
       expect(wrapper.emitted('update:modelValue')?.[0][0]).toEqual([
@@ -264,9 +237,9 @@ describe('ExternalInputSelector Integration', () => {
 
       // Step 3: Add second item
 
-      await emitEvent(wrapper, ItemSelector, 'update:modelValue', mockCopperOreOption)
-      await quantityField.setValue(50)
-      await clickElement(wrapper, VBtn)
+      await component(wrapper, ItemSelector).emit('update:modelValue', mockCopperOreOption)
+      await component(wrapper, VTextField).getComponent().setValue(50)
+      await component(wrapper, VBtn).click()
 
       // Verify second item was added
       expect(wrapper.emitted('update:modelValue')?.[1][0]).toEqual([

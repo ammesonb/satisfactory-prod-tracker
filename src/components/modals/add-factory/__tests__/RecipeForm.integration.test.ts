@@ -1,14 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { VBtn, VTextField, VAlert } from 'vuetify/components'
-import {
-  expectElementExists,
-  expectElementNotExists,
-  expectElementText,
-  expectProps,
-  clickElement,
-  emitEvent,
-} from '@/__tests__/vue-test-helpers'
+import { component } from '@/__tests__/vue-test-helpers'
 import type { RecipeEntry } from '@/types/factory'
 import type { ItemOption } from '@/types/data'
 import {
@@ -83,25 +76,21 @@ describe('RecipeForm Integration', () => {
         }),
       )
 
-      expectElementText(wrapper, VBtn, 'Add Recipe')
-      expectProps(wrapper, VBtn, { disabled: true })
+      component(wrapper, VBtn).assert({ text: 'Add Recipe', props: { disabled: true } })
     })
 
     it('passes building count value from form', () => {
       mockBuildingCount.value = 3.5
 
-      const textFields = createWrapper().findAllComponents(VTextField)
-      const buildingCountField = textFields.find(
-        (field) => field.props('label') === 'Building count',
-      )
-
-      expect(buildingCountField?.props('modelValue')).toBe(3.5)
+      component(createWrapper(), VTextField)
+        .match((field) => field.props('label') === 'Building count')
+        .assert({ exists: true, props: { modelValue: 3.5 } })
     })
 
     it('enables add button when form is valid', () => {
       mockIsValid.value = true
 
-      expectProps(createWrapper(), VBtn, { disabled: false })
+      component(createWrapper(), VBtn).assert({ props: { disabled: false } })
     })
   })
 
@@ -111,14 +100,13 @@ describe('RecipeForm Integration', () => {
 
       const wrapper = createWrapper()
 
-      expectElementExists(wrapper, VAlert)
-      expectElementText(wrapper, VAlert, 'Test error message')
+      component(wrapper, VAlert).assert({ exists: true, text: 'Test error message' })
     })
 
     it('hides error alert when no error', () => {
       mockDisplayError.value = ''
 
-      expectElementNotExists(createWrapper(), VAlert)
+      component(createWrapper(), VAlert).assert({ exists: false })
     })
 
     it('closes error alert when close button is clicked', async () => {
@@ -128,9 +116,9 @@ describe('RecipeForm Integration', () => {
       const wrapper = createWrapper()
       await wrapper.vm.$nextTick()
 
-      await emitEvent(wrapper, VAlert, 'click:close')
+      await component(wrapper, VAlert).emit('click:close')
 
-      expectProps(wrapper, VAlert, { closable: true })
+      component(wrapper, VAlert).assert({ props: { closable: true } })
       expect(mockClearError).toHaveBeenCalled()
     })
 
@@ -141,7 +129,7 @@ describe('RecipeForm Integration', () => {
       const wrapper = createWrapper()
       await wrapper.vm.$nextTick()
 
-      expectProps(wrapper, VAlert, { closable: false })
+      component(wrapper, VAlert).assert({ props: { closable: false } })
     })
   })
 
@@ -149,9 +137,7 @@ describe('RecipeForm Integration', () => {
     it('passes correct props to RecipeSelector', () => {
       mockSelectedRecipes.value = [mockRecipeEntry]
 
-      const wrapper = createWrapper()
-      const recipeSelector = wrapper.findComponent(RecipeSelector)
-      const excludeKeys = recipeSelector.props('excludeKeys')
+      const excludeKeys = createWrapper().findComponent(RecipeSelector).props('excludeKeys')
 
       // Check array content since proxies don't match in deep equality
       expect(Array.isArray(excludeKeys)).toBe(true)
@@ -167,16 +153,18 @@ describe('RecipeForm Integration', () => {
       } as ItemOption
       mockSelectedRecipe.value = testRecipe
 
-      expectProps(createWrapper(), RecipeSelector, { modelValue: testRecipe })
+      component(createWrapper(), RecipeSelector).assert({ props: { modelValue: testRecipe } })
     })
 
     it('passes correct props to BuildingSelector', () => {
       const testBuildings = ['Build_SmelterMk1_C', 'Build_FoundryMk1_C']
       mockProductionBuildings.value = testBuildings
 
-      expectProps(createWrapper(), BuildingSelector, {
-        filterKeys: testBuildings,
-        disabled: true,
+      component(createWrapper(), BuildingSelector).assert({
+        props: {
+          filterKeys: testBuildings,
+          disabled: true,
+        },
       })
     })
 
@@ -188,7 +176,7 @@ describe('RecipeForm Integration', () => {
         type: 'recipe',
       }
 
-      expectProps(createWrapper(), BuildingSelector, { disabled: false })
+      component(createWrapper(), BuildingSelector).assert({ props: { disabled: false } })
     })
 
     it('passes selected building value to BuildingSelector', () => {
@@ -200,16 +188,14 @@ describe('RecipeForm Integration', () => {
       } as ItemOption
       mockSelectedBuilding.value = testBuilding
 
-      expectProps(createWrapper(), BuildingSelector, { modelValue: testBuilding })
+      component(createWrapper(), BuildingSelector).assert({ props: { modelValue: testBuilding } })
     })
 
     it('passes selectedRecipes to RecipeDisplay', () => {
       const testRecipes = [mockRecipeEntry]
       mockSelectedRecipes.value = testRecipes
 
-      const wrapper = createWrapper()
-      const recipeDisplay = wrapper.findComponent(RecipeDisplay)
-      const recipes = recipeDisplay.props('recipes')
+      const recipes = createWrapper().findComponent(RecipeDisplay).props('recipes')
 
       // Check array content since proxies don't match in deep equality
       expect(Array.isArray(recipes)).toBe(true)
@@ -221,7 +207,7 @@ describe('RecipeForm Integration', () => {
     it('handles recipe selection', async () => {
       const wrapper = createWrapper()
 
-      await emitEvent(wrapper, RecipeSelector, 'update:modelValue', {
+      await component(wrapper, RecipeSelector).emit('update:modelValue', {
         value: 'Recipe_IronIngot_C',
         name: 'Iron Ingot',
       })
@@ -235,7 +221,7 @@ describe('RecipeForm Integration', () => {
     it('handles building selection', async () => {
       const wrapper = createWrapper()
 
-      await emitEvent(wrapper, BuildingSelector, 'update:modelValue', {
+      await component(wrapper, BuildingSelector).emit('update:modelValue', {
         value: 'Build_SmelterMk1_C',
         name: 'Smelter',
       })
@@ -249,7 +235,7 @@ describe('RecipeForm Integration', () => {
     it('adds recipe when add button is clicked and form is valid', async () => {
       mockIsValid.value = true
 
-      await clickElement(createWrapper(), VBtn)
+      await component(createWrapper(), VBtn).click()
 
       expect(mockAddRecipe).toHaveBeenCalled()
     })
@@ -257,7 +243,7 @@ describe('RecipeForm Integration', () => {
     it('does not add recipe when form is invalid', async () => {
       mockIsValid.value = false
 
-      await clickElement(createWrapper(), VBtn)
+      await component(createWrapper(), VBtn).click()
 
       expect(mockAddRecipe).not.toHaveBeenCalled()
     })
@@ -277,13 +263,13 @@ describe('RecipeForm Integration', () => {
     })
 
     it('handles recipe removal from RecipeDisplay', async () => {
-      await emitEvent(createWrapper(), RecipeDisplay, 'remove', 0)
+      await component(createWrapper(), RecipeDisplay).emit('remove', 0)
 
       expect(mockRemoveRecipe).toHaveBeenCalledWith(0)
     })
 
     it('handles recipe removal with correct index', async () => {
-      await emitEvent(createWrapper(), RecipeDisplay, 'remove', 2)
+      await component(createWrapper(), RecipeDisplay).emit('remove', 2)
 
       expect(mockRemoveRecipe).toHaveBeenCalledWith(2)
     })
