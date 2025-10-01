@@ -72,7 +72,7 @@ describe('RecipeBuilding Integration', () => {
   it('renders with default props', () => {
     component(createWrapper(), VCard).assert({
       exists: true,
-      text:  'Smelter',
+      text: 'Smelter',
     })
   })
 

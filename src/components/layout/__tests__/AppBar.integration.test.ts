@@ -3,13 +3,7 @@ import { describe, it, beforeEach, vi } from 'vitest'
 import { VApp, VLayout, VMain, VChip } from 'vuetify/components'
 import AppBar from '@/components/layout/AppBar.vue'
 import ImportExportModal from '@/components/modals/ImportExportModal.vue'
-import {
-  expectElementExists,
-  expectElementNotExists,
-  clickElement,
-  expectProps,
-  expectElementText,
-} from '@/__tests__/vue-test-helpers'
+import { component, element } from '@/__tests__/vue-test-helpers'
 import { mockSelectedFactory } from '@/__tests__/fixtures/composables/factoryStore'
 
 vi.mock('@/components/modals/ImportExportModal.vue', () => ({
@@ -58,24 +52,23 @@ describe('AppBar Integration', () => {
 
     const wrapper = createWrapper()
 
-    expectElementExists(wrapper, VChip)
-    expectElementText(wrapper, VChip, testFactoryName)
+    component(wrapper, VChip).assert({ text: testFactoryName })
   })
 
   it('hides factory chip when no factory is selected', () => {
     mockSelectedFactory.value = ''
-    expectElementNotExists(createWrapper(), VChip)
+    component(createWrapper(), VChip).assert({ exists: false })
   })
 
   it('opens import/export modal when button is clicked', async () => {
     const wrapper = createWrapper()
 
-    await clickElement(wrapper, '.show-import-export')
-    expectProps(wrapper, ImportExportModal, { modelValue: true })
+    await element(wrapper, '.show-import-export').click()
+    component(wrapper, ImportExportModal).assert({ props: { modelValue: true } })
   })
 
   it('modal is initially closed', () => {
     const wrapper = createWrapper()
-    expectProps(wrapper, ImportExportModal, { modelValue: false })
+    component(wrapper, ImportExportModal).assert({ props: { modelValue: false } })
   })
 })

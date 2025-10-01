@@ -207,7 +207,9 @@ describe('RecipeLink Integration', () => {
     const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
 
-    await component(createWrapper(link, recipe), VCard).match((card) => card.classes().includes('recipe-link')).click()
+    await component(createWrapper(link, recipe), VCard)
+      .match((card) => card.classes().includes('recipe-link'))
+      .click()
 
     expect(mockSetLinkBuilt).toHaveBeenCalledWith(link, true)
   })
