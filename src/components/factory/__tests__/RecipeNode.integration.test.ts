@@ -11,12 +11,7 @@ import {
   mockGetRecipePanelValue,
   mockIsRecipeComplete,
 } from '@/__tests__/fixtures/composables/useRecipeStatus'
-import {
-  emitEvent,
-  expectElementExists,
-  expectElementText,
-  expectProps,
-} from '@/__tests__/vue-test-helpers'
+import { component, element } from '@/__tests__/vue-test-helpers'
 
 import RecipeNodeComponent from '@/components/factory/RecipeNode.vue'
 
@@ -100,14 +95,14 @@ describe('RecipeNode Integration', () => {
       const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
       const wrapper = createWrapper(recipeNode)
 
-      expectElementText(wrapper, '.text-h6', TEST_RECIPES.IRON_INGOT)
+      element(wrapper, '.text-h6').assert({ text: TEST_RECIPES.IRON_INGOT })
     })
 
     it('displays recipe count in chip with correct formatting', () => {
       const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
       const wrapper = createWrapper(recipeNode)
 
-      expectElementText(wrapper, '.v-chip', 'x1.50')
+      component(wrapper, VChip).assert({ text: 'x1.50' })
     })
 
     it('formats recipe count correctly for different values', () => {
@@ -116,8 +111,7 @@ describe('RecipeNode Integration', () => {
 
       const wrapper = createWrapper(recipeNode)
 
-      expectElementExists(wrapper, VChip)
-      expectElementText(wrapper, '.v-chip', 'x2.75')
+      component(wrapper, VChip).assert({ exists: true, text: 'x2.75' })
     })
 
     it('shows RecipeDetails tooltip when recipe exists in data store', async () => {
@@ -130,8 +124,7 @@ describe('RecipeNode Integration', () => {
 
       const wrapper = createWrapper(recipeNode)
 
-      expectElementExists(wrapper, VChip)
-      expectElementText(wrapper, VChip, 'x1.50')
+      component(wrapper, VChip).assert({ exists: true, text: 'x1.50' })
     })
 
     it('sets correct ID on expansion panel element', () => {
@@ -146,15 +139,15 @@ describe('RecipeNode Integration', () => {
     it('handles recipe with no batch number gracefully', () => {
       const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
       recipeNode.batchNumber = undefined
-      expectElementExists(createWrapper(), VExpansionPanel)
+      component(createWrapper(), VExpansionPanel).assert()
     })
 
     it('handles multiple ingredients recipe correctly', async () => {
       const recipeNode = createRecipeNode(TEST_RECIPES.PURE_CATERIUM)
       const wrapper = createWrapper(recipeNode)
 
-      expectElementText(wrapper, VChip, 'x1.50')
-      expectElementExists(wrapper, VExpansionPanel)
+      component(wrapper, VChip).assert({ text: 'x1.50' })
+      component(wrapper, VExpansionPanel).assert()
     })
   })
 
@@ -187,13 +180,12 @@ describe('RecipeNode Integration', () => {
   it('displays floor selection dropdown with eligible floors', () => {
     const wrapper = createWrapper()
 
-    expectElementExists(wrapper, VSelect)
-    expectProps(wrapper, VSelect, { items: TEST_FLOORS })
+    component(wrapper, VSelect).assert({ exists: true, props: { items: TEST_FLOORS } })
   })
 
   it('displays current batch number as selected floor value', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT, 1)
-    expectProps(createWrapper(recipeNode), VSelect, { modelValue: 1 })
+    component(createWrapper(recipeNode), VSelect).assert({ props: { modelValue: 1 } })
   })
 
   it('calls getEligibleFloors with correct batch number', () => {
@@ -204,7 +196,7 @@ describe('RecipeNode Integration', () => {
 
   it('calls moveRecipe when floor selection changes', async () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT, 1)
-    await emitEvent(createWrapper(recipeNode), VSelect, 'update:modelValue', 2)
+    await component(createWrapper(recipeNode), VSelect).emit('update:modelValue', 2)
     expect(mockMoveRecipe).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT, 1, 2)
   })
 
@@ -223,14 +215,14 @@ describe('RecipeNode Integration', () => {
   it('handles recipe with no batch number gracefully', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     recipeNode.batchNumber = undefined
-    expectElementExists(createWrapper(recipeNode), '.v-expansion-panel')
+    component(createWrapper(recipeNode), VExpansionPanel).assert()
   })
 
   it('displays floor plan icon in select prepend', () => {
     const wrapper = createWrapper()
 
     const select = wrapper.findComponent(VSelect)
-    expectElementExists(wrapper, VSelect)
+    component(wrapper, VSelect).assert()
     // Check that the icon slot is being used correctly
     const prependSlot = select.find('[slot="prepend-inner"]')
     expect(prependSlot.exists() || select.find('.v-icon').exists()).toBe(true)
@@ -240,9 +232,8 @@ describe('RecipeNode Integration', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.PURE_CATERIUM)
     const wrapper = createWrapper(recipeNode)
 
-    expectElementExists(wrapper, VChip)
-    expectElementText(wrapper, VChip, 'x1.50')
-    expectElementExists(wrapper, VExpansionPanel)
+    component(wrapper, VChip).assert({ exists: true, text: 'x1.50' })
+    component(wrapper, VExpansionPanel).assert({ exists: true })
   })
 
   it('formats recipe count correctly for different values', () => {
@@ -251,7 +242,6 @@ describe('RecipeNode Integration', () => {
 
     const wrapper = createWrapper(recipeNode)
 
-    expectElementExists(wrapper, VChip)
-    expectElementText(wrapper, VChip, 'x2.75')
+    component(wrapper, VChip).assert({ exists: true, text: 'x2.75' })
   })
 })

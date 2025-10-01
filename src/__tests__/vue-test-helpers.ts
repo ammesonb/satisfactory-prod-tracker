@@ -15,6 +15,62 @@ interface Assertions {
   props?: Record<string, unknown>
   attributes?: Record<string, unknown>
   classes?: string[]
+  text?: string | string[]
+  html?: string | string[]
+}
+
+type AssertableWrapper = DOMWrapper<Element> | VueWrapper<InstanceType<ComponentConstructor>>
+
+function applyAssertions(
+  wrapper: AssertableWrapper,
+  options: Assertions,
+  hardFail: boolean,
+): boolean {
+  try {
+    if (options.props !== undefined && 'props' in wrapper) {
+      for (const [key, value] of Object.entries(options.props)) {
+        const propValue = wrapper.props(key)
+        if (typeof value === 'object' && value !== null) {
+          expect(propValue).toStrictEqual(value)
+        } else {
+          expect(propValue).toBe(value)
+        }
+      }
+    }
+
+    if (options.attributes !== undefined) {
+      for (const [key, value] of Object.entries(options.attributes)) {
+        expect(wrapper.attributes(key)).toBe(value)
+      }
+    }
+
+    if (options.classes !== undefined) {
+      for (const value of options.classes) {
+        expect(wrapper.classes()).toContain(value)
+      }
+    }
+
+    if (options.text !== undefined) {
+      const textValues = Array.isArray(options.text) ? options.text : [options.text]
+      for (const value of textValues) {
+        expect(wrapper.text()).toContain(value)
+      }
+    }
+
+    if (options.html !== undefined) {
+      const htmlValues = Array.isArray(options.html) ? options.html : [options.html]
+      for (const value of htmlValues) {
+        expect(wrapper.html()).toContain(value)
+      }
+    }
+
+    return true
+  } catch (error) {
+    if (hardFail) {
+      throw error
+    }
+    return false
+  }
 }
 
 class ElementHelper {
@@ -52,7 +108,7 @@ class ElementHelper {
     return this
   }
 
-  assert(options: Assertions = { exists: true }): this {
+  assertAny(options: Assertions = { exists: true }): this {
     const elements = this.findAll()
 
     if (options.count !== undefined) {
@@ -65,17 +121,30 @@ class ElementHelper {
         expect(elements.length).toBe(0)
       }
     }
-    if (options.attributes !== undefined && elements.length === 1) {
-      for (const [key, value] of Object.entries(options.attributes)) {
-        expect(elements[0].attributes(key)).toBe(value)
-      }
+
+    // Try to find at least one element that matches all assertions
+    const hasMatch = elements.some((element) => applyAssertions(element, options, false))
+
+    if (elements.length > 0 && !hasMatch) {
+      throw new Error(`No element matching "${this.selector}" satisfied the given assertions`)
     }
-    if (options.classes !== undefined && elements.length === 1) {
-      for (const value of options.classes) {
-        expect(elements[0].classes()).toContain(value)
-      }
-    }
+
     return this
+  }
+
+  assertAll(options: Assertions): this {
+    const elements = this.findAll()
+    expect(elements.length).toBeGreaterThan(0)
+
+    for (const element of elements) {
+      applyAssertions(element, options, true)
+    }
+
+    return this
+  }
+
+  assert(options: Assertions = { exists: true }): this {
+    return this.assertAny(options)
   }
 
   async click(force?: boolean): Promise<this> {
@@ -128,7 +197,7 @@ class ComponentHelper<T extends ComponentConstructor> {
     return this
   }
 
-  assert(options: Assertions = { exists: true }): this {
+  assertAny(options: Assertions = { exists: true }): this {
     const components = this.findAll()
 
     if (options.count !== undefined) {
@@ -141,28 +210,30 @@ class ComponentHelper<T extends ComponentConstructor> {
         expect(components.length).toBe(0)
       }
     }
-    if (options.props !== undefined && components.length === 1) {
-      for (const [key, value] of Object.entries(options.props)) {
-        const propValue = components[0].props(key)
-        // Use deep equality for objects/arrays, reference equality for primitives
-        if (typeof value === 'object' && value !== null) {
-          expect(propValue).toStrictEqual(value)
-        } else {
-          expect(propValue).toBe(value)
-        }
-      }
+
+    // Try to find at least one component that matches all assertions
+    const hasMatch = components.some((component) => applyAssertions(component, options, false))
+
+    if (components.length > 0 && !hasMatch) {
+      throw new Error(`No component of type "${this.type.name}" satisfied the given assertions`)
     }
-    if (options.attributes !== undefined && components.length === 1) {
-      for (const [key, value] of Object.entries(options.attributes)) {
-        expect(components[0].attributes(key)).toBe(value)
-      }
-    }
-    if (options.classes !== undefined && components.length === 1) {
-      for (const value of options.classes) {
-        expect(components[0].classes()).toContain(value)
-      }
-    }
+
     return this
+  }
+
+  assertAll(options: Assertions): this {
+    const components = this.findAll()
+    expect(components.length).toBeGreaterThan(0)
+
+    for (const component of components) {
+      applyAssertions(component, options, true)
+    }
+
+    return this
+  }
+
+  assert(options: Assertions = { exists: true }): this {
+    return this.assertAny(options)
   }
 
   async click(force?: boolean): Promise<this> {

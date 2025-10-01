@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
-import { expectElementExists, expectElementNotExists } from '@/__tests__/vue-test-helpers'
+import { component } from '@/__tests__/vue-test-helpers'
 import { mockUseFloorNavigation } from '@/__tests__/fixtures/composables'
 import { mockCurrentFactory } from '@/__tests__/fixtures/composables/factoryStore'
 import { VExpansionPanels } from 'vuetify/components'
@@ -105,18 +105,18 @@ describe('FactoryPanels Integration', () => {
   it('renders nothing when no current factory is set', () => {
     const wrapper = createWrapper()
 
-    expect(wrapper.html()).toBe('<!--v-if-->')
-    expectElementNotExists(wrapper, '[data-testid="factory-floors-toolbar"]')
-    expectElementNotExists(wrapper, '[data-testid="factory-floor"]')
+    component(wrapper, FactoryFloorsToolbar).assert({ exists: false })
+    component(wrapper, VExpansionPanels).assert({ exists: false })
+    component(wrapper, FloorEditModal).assert({ exists: false })
   })
 
   it('renders factory components when current factory exists', async () => {
     await setFactoryWithFloors()
     const wrapper = createWrapper()
 
-    expectElementExists(wrapper, FactoryFloorsToolbar)
-    expectElementExists(wrapper, VExpansionPanels)
-    expectElementExists(wrapper, FloorEditModal)
+    component(wrapper, FactoryFloorsToolbar).assert()
+    component(wrapper, VExpansionPanels).assert()
+    component(wrapper, FloorEditModal).assert()
   })
 
   it('renders correct number of factory floors', async () => {
@@ -151,9 +151,9 @@ describe('FactoryPanels Integration', () => {
     await setFactoryWithCustomFloors([])
     const wrapper = createWrapper()
 
-    expectElementExists(wrapper, FactoryFloorsToolbar)
-    expectElementExists(wrapper, VExpansionPanels)
-    expect(wrapper.findAllComponents(FactoryFloor)).toHaveLength(0)
+    component(wrapper, FactoryFloorsToolbar).assert()
+    component(wrapper, VExpansionPanels).assert()
+    component(wrapper, FactoryFloor).assert({ exists: false })
   })
 
   it('handles factory with single floor', async () => {
@@ -195,7 +195,7 @@ describe('FactoryPanels Integration', () => {
     const mockResult = mockUseFloorNavigation.mock.results[0]?.value
     expect(mockResult).toHaveProperty('expandedFloors')
 
-    expectElementExists(wrapper, VExpansionPanels)
+    component(wrapper, VExpansionPanels).assert()
   })
 
   it('maintains reactive connection to factory store', async () => {
