@@ -259,7 +259,6 @@ class ComponentHelper<T extends ComponentConstructor> {
   }
 }
 
-// CLAUDE: with matcher changes, this could take a list of matchers, defaulting to empty if not provided
 export function element(wrapper: VueWrapper, selector: string): ElementHelper {
   return new ElementHelper(wrapper, selector)
 }
