@@ -90,16 +90,24 @@ describe('ExportTab Integration', () => {
 
   it('has both export buttons disabled when no factories selected', () => {
     const wrapper = createWrapper()
-    component(wrapper, VBtn).assert({ attributes: { disabled: '', text: 'Clipboard' } })
-    component(wrapper, VBtn).assert({ attributes: { disabled: '', text: 'File' } })
+    component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('Clipboard'))
+      .assert({ exists: true, attributes: { disabled: '' } })
+    component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('File'))
+      .assert({ exists: true, attributes: { disabled: '' } })
   })
 
   it('enables export buttons when factories are selected', async () => {
     const wrapper = createWrapper()
     await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
 
-    component(wrapper, VBtn).assert({ attributes: { disabled: undefined, text: 'Clipboard' } })
-    component(wrapper, VBtn).assert({ attributes: { disabled: undefined, text: 'File' } })
+    component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('Clipboard'))
+      .assert({ exists: true, attributes: { disabled: undefined } })
+    component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('File'))
+      .assert({ exists: true, attributes: { disabled: undefined } })
   })
 
   it('emits error when trying to export without selecting factories', async () => {
@@ -117,7 +125,7 @@ describe('ExportTab Integration', () => {
     await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
 
     await component(wrapper, VBtn)
-      .match((btn) => btn.text() === 'Clipboard')
+      .match((btn) => btn.text().includes('Clipboard'))
       .click()
 
     expect(mockExportFactories).toHaveBeenCalledWith([TEST_FACTORIES.IRON])
@@ -131,7 +139,7 @@ describe('ExportTab Integration', () => {
     await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
 
     await component(wrapper, VBtn)
-      .match((btn) => btn.text() === 'File')
+      .match((btn) => btn.text().includes('File'))
       .click()
 
     expect(mockExportFactories).toHaveBeenCalledWith([TEST_FACTORIES.IRON])
@@ -148,7 +156,7 @@ describe('ExportTab Integration', () => {
     await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
 
     await component(wrapper, VBtn)
-      .match((btn) => btn.text() === 'Clipboard')
+      .match((btn) => btn.text().includes('Clipboard'))
       .click()
 
     expect(wrapper.emitted('error')).toEqual([
@@ -166,7 +174,7 @@ describe('ExportTab Integration', () => {
     await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
 
     await component(wrapper, VBtn)
-      .match((btn) => btn.text() === 'File')
+      .match((btn) => btn.text().includes('File'))
       .click()
 
     expect(wrapper.emitted('error')).toEqual([['Failed to export factories: Error: File error']])
@@ -182,7 +190,7 @@ describe('ExportTab Integration', () => {
     await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
 
     await component(wrapper, VBtn)
-      .match((btn) => btn.text() === 'Clipboard')
+      .match((btn) => btn.text().includes('Clipboard'))
       .click()
 
     expect(wrapper.emitted('error')).toEqual([['Failed to export factories: Error: Export error']])

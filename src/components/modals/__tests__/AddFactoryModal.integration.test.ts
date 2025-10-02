@@ -55,7 +55,9 @@ interface AddFactoryEvent {
 }
 
 const setTextFieldValue = (wrapper: VueWrapper, value: string) => {
-  const textField = component(wrapper, VTextField)
+  const textField = component(wrapper, VTextField).match(
+    (field) => field.props('label') === 'Factory name',
+  )
   textField.assert()
   textField.getComponent().setValue(value)
 }
@@ -138,27 +140,21 @@ describe('AddFactoryModal Integration', () => {
 
     it('shows textarea when switched to import mode', async () => {
       const wrapper = createWrapper()
-      component(wrapper, VBtn)
-        .match((btn) => btn.text().includes('Import from Satisfactory Tools'))
-        .click()
+      await component(wrapper, VBtnToggle).emit('update:modelValue', 'import')
 
       component(wrapper, VTextarea).assert()
     })
 
     it('hides RecipeForm when switched to import mode', async () => {
       const wrapper = createWrapper()
-      component(wrapper, VBtn)
-        .match((btn) => btn.text().includes('Import from Satisfactory Tools'))
-        .click()
+      await component(wrapper, VBtnToggle).emit('update:modelValue', 'import')
 
       component(wrapper, RecipeForm).assert({ exists: false })
     })
 
     it('shows help icon in import mode', async () => {
       const wrapper = createWrapper()
-      component(wrapper, VBtn)
-        .match((btn) => btn.text().includes('Import from Satisfactory Tools'))
-        .click()
+      await component(wrapper, VBtnToggle).emit('update:modelValue', 'import')
 
       component(wrapper, VBtn)
         .match((btn) => btn.props('icon') === 'mdi-help-circle-outline')
@@ -193,48 +189,45 @@ describe('AddFactoryModal Integration', () => {
       const wrapper = createWrapper()
       setTextFieldValue(wrapper, 'Test Factory')
 
-      component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.IRON)
+      await component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.IRON)
 
       component(wrapper, VBtn)
         .match((btn) => btn.text().includes('Add Factory'))
-        .match((btn) => btn.props('disabled') === true)
-        .assert()
+        .assert({ props: { disabled: true } })
     })
 
     it('enables Add Factory button when all required fields are filled in recipe mode', async () => {
       const wrapper = createWrapper()
       setTextFieldValue(wrapper, 'Test Factory')
 
-      component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.IRON)
+      await component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.IRON)
 
-      component(wrapper, RecipeForm).emit('change', [
+      await component(wrapper, RecipeForm).emit('change', [
         { recipe: 'Recipe_IronIngot_C', building: 'Build_SmelterMk1_C', count: 2 },
       ])
 
       component(wrapper, VBtn)
         .match((btn) => btn.text().includes('Add Factory'))
-        .match((btn) => btn.props('disabled') === false)
-        .assert()
+        .assert({ props: { disabled: false } })
     })
 
     it('enables Add Factory button when all required fields are filled in import mode', async () => {
       const wrapper = createWrapper()
       setTextFieldValue(wrapper, 'Test Factory')
 
-      component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.IRON)
+      await component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.IRON)
 
-      component(wrapper, VBtn)
-        .match((btn) => btn.text().includes('Import from Satisfactory Tools'))
-        .click()
+      await component(wrapper, VBtnToggle).emit('update:modelValue', 'import')
 
       component(wrapper, VTextarea)
         .getComponent()
         .setValue('"Recipe_IronIngot_C@1.0#Build_SmelterMk1_C": "2"')
 
+      await wrapper.vm.$nextTick()
+
       component(wrapper, VBtn)
         .match((btn) => btn.text().includes('Add Factory'))
-        .match((btn) => btn.props('disabled') === false)
-        .assert()
+        .assert({ props: { disabled: false } })
     })
   })
 
@@ -243,9 +236,9 @@ describe('AddFactoryModal Integration', () => {
       const wrapper = createWrapper()
       setTextFieldValue(wrapper, 'Iron Production')
 
-      component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.IRON)
+      await component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.IRON)
 
-      component(wrapper, RecipeForm).emit('change', [
+      await component(wrapper, RecipeForm).emit('change', [
         { recipe: 'Recipe_IronIngot_C', building: 'Build_SmelterMk1_C', count: 2 },
         { recipe: 'Recipe_IronPlate_C', building: 'Build_ConstructorMk1_C', count: 3 },
       ])
@@ -266,16 +259,16 @@ describe('AddFactoryModal Integration', () => {
       const wrapper = createWrapper()
       setTextFieldValue(wrapper, 'Imported Factory')
 
-      component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.COPPER)
+      await component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.COPPER)
 
-      component(wrapper, VBtn)
-        .match((btn) => btn.text().includes('Import from Satisfactory Tools'))
-        .click()
+      await component(wrapper, VBtnToggle).emit('update:modelValue', 'import')
 
       const recipesText = '"Recipe_CopperIngot_C@1.0#Build_SmelterMk1_C": "4"'
       component(wrapper, VTextarea).getComponent().setValue(recipesText)
 
-      component(wrapper, VBtn)
+      await wrapper.vm.$nextTick()
+
+      await component(wrapper, VBtn)
         .match((btn) => btn.text().includes('Add Factory'))
         .click()
 
@@ -290,15 +283,15 @@ describe('AddFactoryModal Integration', () => {
       const wrapper = createWrapper()
       setTextFieldValue(wrapper, 'Factory with Imports')
 
-      component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.IRON)
+      await component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.IRON)
 
-      component(wrapper, RecipeForm).emit('change', [
+      await component(wrapper, RecipeForm).emit('change', [
         { recipe: 'Recipe_IronIngot_C', building: 'Build_SmelterMk1_C', count: 2 },
       ])
 
       const testExternalInputs = [{ item: TEST_ITEMS.IRON_ORE, rate: 60, isInput: true }]
 
-      component(wrapper, ExternalInputSelector).emit('update:modelValue', testExternalInputs)
+      await component(wrapper, ExternalInputSelector).emit('update:modelValue', testExternalInputs)
 
       component(wrapper, VBtn)
         .match((btn) => btn.text().includes('Add Factory'))
@@ -330,9 +323,7 @@ describe('AddFactoryModal Integration', () => {
     it('resets input mode to recipe when form is cleared', async () => {
       const wrapper = createWrapper()
 
-      component(wrapper, VBtn)
-        .match((btn) => btn.text().includes('Import from Satisfactory Tools'))
-        .click()
+      await component(wrapper, VBtnToggle).emit('update:modelValue', 'import')
 
       component(wrapper, VTextarea).assert()
 
@@ -351,9 +342,9 @@ describe('AddFactoryModal Integration', () => {
       const wrapper = createWrapper()
       setTextFieldValue(wrapper, 'Test Factory')
 
-      component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.IRON)
+      await component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.IRON)
 
-      component(wrapper, RecipeForm).emit('change', [
+      await component(wrapper, RecipeForm).emit('change', [
         { recipe: 'Recipe_IronIngot_C', building: 'Build_SmelterMk1_C', count: 2 },
       ])
 
@@ -371,9 +362,7 @@ describe('AddFactoryModal Integration', () => {
       const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
       const wrapper = createWrapper()
 
-      component(wrapper, VBtn)
-        .match((btn) => btn.text().includes('Import from Satisfactory Tools'))
-        .click()
+      await component(wrapper, VBtnToggle).emit('update:modelValue', 'import')
 
       component(wrapper, VBtn)
         .match((btn) => btn.props('icon') === 'mdi-help-circle-outline')

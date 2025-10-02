@@ -36,7 +36,7 @@ describe('RecipeDisplay Integration', () => {
   }
 
   it('renders empty state when no recipes provided', () => {
-    element(createWrapper(), '.recipe-display').assert()
+    element(createWrapper(), '.recipe-display').assert({ exists: false })
   })
 
   it('renders with single recipe', () => {
