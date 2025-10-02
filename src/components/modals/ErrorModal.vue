@@ -12,39 +12,13 @@ const showDialog = computed({
     }
   },
 })
-
-const getIcon = () => {
-  switch (errorStore.level) {
-    case 'error':
-      return 'mdi-alert-circle'
-    case 'warning':
-      return 'mdi-alert'
-    case 'info':
-      return 'mdi-information'
-    default:
-      return 'mdi-alert-circle'
-  }
-}
-
-const getColor = () => {
-  switch (errorStore.level) {
-    case 'error':
-      return 'error'
-    case 'warning':
-      return 'warning'
-    case 'info':
-      return 'info'
-    default:
-      return 'error'
-  }
-}
 </script>
 
 <template>
   <v-dialog v-model="showDialog" max-width="500px">
     <v-card>
       <v-card-title class="d-flex align-center">
-        <v-icon :icon="getIcon()" :color="getColor()" class="mr-2" />
+        <v-icon :icon="errorStore.icon" :color="errorStore.color" class="mr-2" />
         {{ errorStore.summary }}
       </v-card-title>
       <v-card-text v-if="errorStore.bodyContent">

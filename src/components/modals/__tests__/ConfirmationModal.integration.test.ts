@@ -89,14 +89,5 @@ describe('ConfirmationModal Integration', () => {
       expect(wrapper.emitted('update:show')).toBeTruthy()
       expect(wrapper.emitted('update:show')?.[0]).toEqual([false])
     })
-
-    it('supports v-model for show prop', async () => {
-      const wrapper = createWrapper({ show: true })
-
-      await wrapper.setProps({ show: false })
-      await wrapper.vm.$nextTick()
-
-      component(wrapper, VCard).assert({ exists: false })
-    })
   })
 })

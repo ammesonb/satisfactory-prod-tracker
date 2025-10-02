@@ -3,13 +3,14 @@ import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
 import type { IDataStore, IFactoryStore, IThemeStore, IErrorStore } from '@/types/stores'
 import { mockFactoryStore } from './factoryStore'
 import { mockThemeStore } from './themeStore'
+import { mockErrorStore } from './errorStore'
 
 // Create stores once to ensure consistency across all getters
 const mockStores = {
   dataStore: createMockDataStore() as IDataStore,
   factoryStore: mockFactoryStore as IFactoryStore,
   themeStore: mockThemeStore as IThemeStore,
-  errorStore: {} as IErrorStore,
+  errorStore: mockErrorStore as IErrorStore,
 }
 
 // Main stores mock
