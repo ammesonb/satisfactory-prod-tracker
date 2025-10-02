@@ -1,7 +1,7 @@
 import { mount, VueWrapper } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ref } from 'vue'
-import { expectElementExists, emitEvent, expectProps } from '@/__tests__/vue-test-helpers'
+import { component } from '@/__tests__/vue-test-helpers'
 import type { DisplayConfig, IconConfig } from '@/types/ui'
 import type { ItemOption, Item, Building } from '@/types/data'
 import type { IDataStore } from '@/types/stores'
@@ -75,6 +75,10 @@ vi.mock('@/utils/buildings', () => ({
   ),
 }))
 
+const getGameDataSelector = (wrapper: VueWrapper) => {
+  return component(wrapper, GameDataSelector).getComponent()
+}
+
 describe('ItemSelector Integration', () => {
   // Test constants
   const DEFAULT_PLACEHOLDER = 'Search for an item...'
@@ -115,38 +119,37 @@ describe('ItemSelector Integration', () => {
     })
   }
 
-  // Helper to get the GameDataSelector from any wrapper
-  const getGameDataSelector = (wrapper: VueWrapper) => {
-    return wrapper.findComponent(GameDataSelector)
-  }
-
   it('renders GameDataSelector component', () => {
-    const wrapper = createWrapper()
-
-    expectElementExists(wrapper, GameDataSelector)
+    component(createWrapper(), GameDataSelector).assert()
   })
 
   it('passes through modelValue to GameDataSelector', () => {
     const wrapper = createWrapper({ modelValue: mockSelectedItem })
-    const gameDataSelector = getGameDataSelector(wrapper)
-
-    expect(gameDataSelector.props('modelValue')).toEqual(mockSelectedItem)
+    component(wrapper, GameDataSelector).assert({
+      props: {
+        modelValue: mockSelectedItem,
+      },
+    })
   })
 
   it('passes through disabled prop to GameDataSelector', () => {
     const wrapper = createWrapper({ disabled: true })
-    const gameDataSelector = getGameDataSelector(wrapper)
-
-    expect(gameDataSelector.props('disabled')).toBe(true)
+    component(wrapper, GameDataSelector).assert({
+      props: {
+        disabled: true,
+      },
+    })
   })
 
   it('uses default placeholder when no displayConfig provided', () => {
     const wrapper = createWrapper()
-    const gameDataSelector = getGameDataSelector(wrapper)
-
-    expect(gameDataSelector.props('displayConfig')).toEqual({
-      placeholder: DEFAULT_PLACEHOLDER,
-      showType: true, // includeBuildings default
+    component(wrapper, GameDataSelector).assert({
+      props: {
+        displayConfig: {
+          placeholder: DEFAULT_PLACEHOLDER,
+          showType: true, // includeBuildings default
+        },
+      },
     })
   })
 
@@ -158,13 +161,15 @@ describe('ItemSelector Integration', () => {
     }
 
     const wrapper = createWrapper({ displayConfig })
-    const gameDataSelector = getGameDataSelector(wrapper)
-
-    expect(gameDataSelector.props('displayConfig')).toEqual({
-      placeholder: CUSTOM_PLACEHOLDER,
-      label: CUSTOM_LABEL,
-      variant: 'filled',
-      showType: true, // includeBuildings default
+    component(wrapper, GameDataSelector).assert({
+      props: {
+        displayConfig: {
+          placeholder: CUSTOM_PLACEHOLDER,
+          label: CUSTOM_LABEL,
+          variant: 'filled',
+          showType: true, // includeBuildings default
+        },
+      },
     })
   })
 
@@ -175,9 +180,11 @@ describe('ItemSelector Integration', () => {
     }
 
     const wrapper = createWrapper({ iconConfig })
-    const gameDataSelector = getGameDataSelector(wrapper)
-
-    expect(gameDataSelector.props('iconConfig')).toEqual(iconConfig)
+    component(wrapper, GameDataSelector).assert({
+      props: {
+        iconConfig,
+      },
+    })
   })
 
   it('includes both items and buildings by default', async () => {
@@ -238,7 +245,7 @@ describe('ItemSelector Integration', () => {
   it('emits update:modelValue when GameDataSelector emits update:modelValue', async () => {
     const wrapper = createWrapper()
 
-    await emitEvent(wrapper, GameDataSelector, 'update:modelValue', mockSelectedItem)
+    await component(wrapper, GameDataSelector).emit('update:modelValue', mockSelectedItem)
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
     expect(wrapper.emitted('update:modelValue')![0]).toEqual([mockSelectedItem])
@@ -247,7 +254,7 @@ describe('ItemSelector Integration', () => {
   it('emits undefined when selection is cleared', async () => {
     const wrapper = createWrapper({ modelValue: mockSelectedItem })
 
-    await emitEvent(wrapper, GameDataSelector, 'update:modelValue', undefined)
+    await component(wrapper, GameDataSelector).emit('update:modelValue', undefined)
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
     expect(wrapper.emitted('update:modelValue')![0]).toEqual([undefined])
@@ -265,11 +272,11 @@ describe('ItemSelector Integration', () => {
     })
 
     // Test selection
-    await emitEvent(wrapper, GameDataSelector, 'update:modelValue', mockSelectedItem)
+    await component(wrapper, GameDataSelector).emit('update:modelValue', mockSelectedItem)
     expect(modelValue.value).toEqual(mockSelectedItem)
 
     // Test clearing
-    await emitEvent(wrapper, GameDataSelector, 'update:modelValue', undefined)
+    await component(wrapper, GameDataSelector).emit('update:modelValue', undefined)
     expect(modelValue.value).toBeUndefined()
   })
 
@@ -323,10 +330,18 @@ describe('ItemSelector Integration', () => {
     vi.mocked(mockDataStore).items = {}
     vi.mocked(mockDataStore).buildings = {}
 
-    expectProps(createWrapper(), GameDataSelector, { items: [] })
+    component(createWrapper(), GameDataSelector).assert({
+      props: {
+        items: [],
+      },
+    })
   })
 
   it('uses default empty iconConfig when not provided', () => {
-    expectProps(createWrapper(), GameDataSelector, { iconConfig: {} })
+    component(createWrapper(), GameDataSelector).assert({
+      props: {
+        iconConfig: {},
+      },
+    })
   })
 })

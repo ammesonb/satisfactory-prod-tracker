@@ -2,12 +2,7 @@ import { mount } from '@vue/test-utils'
 import { describe, it, expect, vi } from 'vitest'
 import RecipeDisplay from '@/components/modals/add-factory/RecipeDisplay.vue'
 import RecipeListItem from '@/components/modals/add-factory/RecipeListItem.vue'
-import {
-  emitEvent,
-  expectElementExists,
-  expectElementNotExists,
-  expectElementText,
-} from '@/__tests__/vue-test-helpers'
+import { component, element } from '@/__tests__/vue-test-helpers'
 import type { RecipeEntry } from '@/types/factory'
 import { VCard } from 'vuetify/components'
 
@@ -41,17 +36,17 @@ describe('RecipeDisplay Integration', () => {
   }
 
   it('renders empty state when no recipes provided', () => {
-    expectElementNotExists(createWrapper(), '.recipe-display')
+    element(createWrapper(), '.recipe-display').assert({ exists: false })
   })
 
   it('renders with single recipe', () => {
     const recipe = createMockRecipeEntry()
     const wrapper = createWrapper({ recipes: [recipe] })
 
-    expectElementExists(wrapper, '.recipe-display')
-    expectElementText(wrapper, 'h4', 'Selected Recipes')
-    expectElementExists(wrapper, VCard)
-    expectElementExists(wrapper, RecipeListItem)
+    element(wrapper, '.recipe-display').assert()
+    element(wrapper, 'h4').assert({ text: 'Selected Recipes' })
+    component(wrapper, VCard).assert()
+    component(wrapper, RecipeListItem).assert()
   })
 
   it('renders multiple recipes', () => {
@@ -61,16 +56,16 @@ describe('RecipeDisplay Integration', () => {
     ]
     const wrapper = createWrapper({ recipes })
 
-    expectElementExists(wrapper, '.recipe-display')
-    expect(wrapper.findAllComponents(VCard)).toHaveLength(2)
-    expect(wrapper.findAllComponents(RecipeListItem)).toHaveLength(2)
+    element(wrapper, '.recipe-display').assert()
+    component(wrapper, VCard).assert({ count: 2 })
+    component(wrapper, RecipeListItem).assert({ count: 2 })
   })
 
   it('handles recipe removal', async () => {
     const recipe = createMockRecipeEntry()
     const wrapper = createWrapper({ recipes: [recipe] })
 
-    emitEvent(wrapper, RecipeListItem, 'remove', [])
+    component(wrapper, RecipeListItem).emit('remove', [])
 
     // Check that the component emits remove with correct index
     expect(wrapper.emitted('remove')).toBeTruthy()
@@ -99,8 +94,6 @@ describe('RecipeDisplay Integration', () => {
     })
     const wrapper = createWrapper({ recipes: [recipe] })
 
-    const recipeItem = wrapper.findComponent(RecipeListItem)
-    expect(recipeItem.props('entry')).toEqual(recipe)
-    expect(recipeItem.props('rowNumber')).toBe(1)
+    component(wrapper, RecipeListItem).assert({ props: { entry: recipe, rowNumber: 1 } })
   })
 })

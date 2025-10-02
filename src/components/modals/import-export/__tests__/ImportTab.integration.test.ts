@@ -2,12 +2,7 @@ import { mount } from '@vue/test-utils'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import ImportTab from '@/components/modals/import-export/ImportTab.vue'
 import FactorySelector from '@/components/common/FactorySelector.vue'
-import {
-  expectElementExists,
-  expectElementText,
-  expectElementNotExists,
-  getComponentWithText,
-} from '@/__tests__/vue-test-helpers'
+import { component } from '@/__tests__/vue-test-helpers'
 import type { Factory } from '@/types/factory'
 import { parseFactoriesFromJson } from '@/types/factory'
 import {
@@ -73,26 +68,34 @@ describe('ImportTab Integration', () => {
 
   it('renders import source buttons', () => {
     const wrapper = createWrapper()
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'From Clipboard')
-    const uploadBtn = getComponentWithText(wrapper, VBtn, 'Upload File')
 
-    expect(clipboardBtn).toBeTruthy()
-    expect(uploadBtn).toBeTruthy()
+    component(wrapper, VBtn).assert({
+      exists: true,
+      text: 'From Clipboard',
+    })
+    component(wrapper, VBtn).assert({
+      exists: true,
+      text: 'Upload File',
+    })
   })
 
   it('shows message when no data is loaded', () => {
-    expectElementText(createWrapper(), VCard, 'Use the buttons above to load factory data')
+    component(createWrapper(), VCard).assert({
+      text: 'Use the buttons above to load factory data',
+    })
   })
 
   it('does not show FactorySelector initially', () => {
-    expectElementNotExists(createWrapper(), FactorySelector)
+    component(createWrapper(), FactorySelector).assert({
+      exists: false,
+    })
   })
 
   it('loads factories from clipboard when clipboard button is clicked', async () => {
     const wrapper = createWrapper()
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'From Clipboard')
-
-    await clipboardBtn!.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('From Clipboard'))
+      .click()
 
     expect(mockImportFromClipboard).toHaveBeenCalled()
     expect(vi.mocked(parseFactoriesFromJson)).toHaveBeenCalledWith('{"test": "data"}')
@@ -100,91 +103,103 @@ describe('ImportTab Integration', () => {
 
   it('triggers file input when upload file button is clicked', async () => {
     const wrapper = createWrapper()
-    const uploadBtn = getComponentWithText(wrapper, VBtn, 'Upload File')
-    await uploadBtn!.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('Upload File'))
+      .click()
 
     expect(mockImportFromFile).toHaveBeenCalled()
   })
 
   it('shows FactorySelector after successful data load', async () => {
     const wrapper = createWrapper()
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'From Clipboard')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('From Clipboard'))
+      .click()
 
-    await clipboardBtn!.trigger('click')
-
-    expectElementExists(wrapper, FactorySelector)
+    component(wrapper, FactorySelector).assert()
   })
 
   it('passes correct props to FactorySelector', async () => {
     const wrapper = createWrapper()
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'From Clipboard')
-    await clipboardBtn!.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('From Clipboard'))
+      .click()
 
-    const factorySelector = wrapper.findComponent(FactorySelector)
-    expect(factorySelector.props()).toEqual({
-      modelValue: [],
-      factories: Object.values(testFactories),
-      title: 'Select Factories to Import',
+    component(wrapper, FactorySelector).assert({
+      props: {
+        modelValue: [],
+        factories: Object.values(testFactories),
+        title: 'Select Factories to Import',
+      },
     })
   })
 
   it('displays import count correctly for single factory', async () => {
     const wrapper = createWrapper()
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'From Clipboard')
-    await clipboardBtn!.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('From Clipboard'))
+      .click()
 
-    const factorySelector = wrapper.findComponent(FactorySelector)
-    await factorySelector.vm.$emit('update:modelValue', [TEST_FACTORIES.IRON])
+    await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
+    component(wrapper, ImportTab).assert({ text: '1 factory selected' })
+  })
 
-    expectElementText(wrapper, ImportTab, '1 factory selected')
+  it('displays import count correctly for single factory', async () => {
+    const wrapper = createWrapper()
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('From Clipboard'))
+      .click()
+
+    await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
+
+    component(wrapper, ImportTab).assert({ text: '1 factory selected' })
   })
 
   it('displays import count correctly for multiple factories', async () => {
     const wrapper = createWrapper()
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'From Clipboard')
-    await clipboardBtn!.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('From Clipboard'))
+      .click()
 
-    const factorySelector = wrapper.findComponent(FactorySelector)
-    await factorySelector.vm.$emit('update:modelValue', [
+    await component(wrapper, FactorySelector).emit('update:modelValue', [
       TEST_FACTORIES.IRON,
       TEST_FACTORIES.COPPER,
     ])
 
-    expectElementText(wrapper, ImportTab, '2 factories selected')
+    component(wrapper, ImportTab).assert({ text: '2 factories selected' })
   })
 
   it('has import button disabled when no factories selected', async () => {
     const wrapper = createWrapper()
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'From Clipboard')
-    await clipboardBtn!.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('From Clipboard'))
+      .click()
 
-    const importBtn = getComponentWithText(wrapper, VBtn, 'Import')
-    expect(importBtn?.attributes('disabled')).toBe('')
+    component(wrapper, VBtn).assert({ text: 'Import', attributes: { disabled: '' } })
   })
 
   it('enables import button when factories are selected', async () => {
     const wrapper = createWrapper()
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'From Clipboard')
-    await clipboardBtn!.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('From Clipboard'))
+      .click()
 
-    const factorySelector = wrapper.findComponent(FactorySelector)
-    await factorySelector.vm.$emit('update:modelValue', [TEST_FACTORIES.IRON])
+    await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
 
-    const importBtn = getComponentWithText(wrapper, VBtn, 'Import')
-    expect(importBtn?.attributes('disabled')).toBeUndefined()
+    component(wrapper, VBtn).assert({ text: 'Import', attributes: { disabled: undefined } })
   })
 
   it('calls factoryStore.importFactories when import button is clicked', async () => {
     const wrapper = createWrapper()
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'From Clipboard')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('From Clipboard'))
+      .click()
 
-    await clipboardBtn!.trigger('click')
+    await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
 
-    const factorySelector = wrapper.findComponent(FactorySelector)
-    await factorySelector.vm.$emit('update:modelValue', [TEST_FACTORIES.IRON])
-
-    const importBtn = getComponentWithText(wrapper, VBtn, 'Import')
-    await importBtn!.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('Import'))
+      .click()
 
     expect(mockImportFactories).toHaveBeenCalledWith({
       [TEST_FACTORIES.IRON]: testFactories[TEST_FACTORIES.IRON],
@@ -193,14 +208,15 @@ describe('ImportTab Integration', () => {
 
   it('emits success when import is successful', async () => {
     const wrapper = createWrapper()
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'From Clipboard')
-    await clipboardBtn!.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('From Clipboard'))
+      .click()
 
-    const factorySelector = wrapper.findComponent(FactorySelector)
-    await factorySelector.vm.$emit('update:modelValue', [TEST_FACTORIES.IRON])
+    await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
 
-    const importBtn = getComponentWithText(wrapper, VBtn, 'Import')
-    await importBtn!.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('Import'))
+      .click()
 
     expect(wrapper.emitted('success')).toEqual([[]])
   })
@@ -209,8 +225,9 @@ describe('ImportTab Integration', () => {
     const wrapper = createWrapper()
     mockImportFromClipboard.mockRejectedValue(new Error('Clipboard error'))
 
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'From Clipboard')
-    await clipboardBtn!.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('From Clipboard'))
+      .click()
 
     expect(wrapper.emitted('error')).toEqual([['Clipboard error']])
   })
@@ -221,8 +238,9 @@ describe('ImportTab Integration', () => {
       throw new Error('Parse error')
     })
 
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'From Clipboard')
-    await clipboardBtn!.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('From Clipboard'))
+      .click()
 
     expect(wrapper.emitted('error')).toEqual([['Parse error']])
   })
@@ -233,14 +251,15 @@ describe('ImportTab Integration', () => {
       throw new Error('Import error')
     })
 
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'From Clipboard')
-    await clipboardBtn!.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('From Clipboard'))
+      .click()
 
-    const factorySelector = wrapper.findComponent(FactorySelector)
-    await factorySelector.vm.$emit('update:modelValue', [TEST_FACTORIES.IRON])
+    await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
 
-    const importBtn = getComponentWithText(wrapper, VBtn, 'Import')
-    await importBtn!.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('Import'))
+      .click()
 
     expect(wrapper.emitted('error')).toEqual([['Import error']])
   })
@@ -259,8 +278,9 @@ describe('ImportTab Integration', () => {
     const wrapper = createWrapper()
     mockImportFromClipboard.mockRejectedValue('String error')
 
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'From Clipboard')
-    await clipboardBtn!.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('From Clipboard'))
+      .click()
 
     expect(wrapper.emitted('error')).toEqual([['Import failed: String error']])
   })

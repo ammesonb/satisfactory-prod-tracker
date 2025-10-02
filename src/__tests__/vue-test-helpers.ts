@@ -1,118 +1,273 @@
-import type { Component } from 'vue'
-import { VueWrapper } from '@vue/test-utils'
+import { DOMWrapper, VueWrapper } from '@vue/test-utils'
 import { expect } from 'vitest'
 
-type ComponentSelector = { name: string } | Component
-type ElementSelector = string
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ComponentConstructor = new (...args: any) => any
+type ComponentConstructor = new (...args: any[]) => any
 
-/**
- * Gets an element or component from the wrapper
- */
-export function getElement(wrapper: VueWrapper, selector: ElementSelector | ComponentSelector) {
-  return typeof selector === 'string' ? wrapper.find(selector) : wrapper.findComponent(selector)
+type ElementMatcher = (wrapper: DOMWrapper<Element>) => boolean
+type ComponentMatcher<T extends ComponentConstructor> = (
+  wrapper: VueWrapper<InstanceType<T>>,
+) => boolean
+
+interface Assertions {
+  exists?: boolean
+  count?: number
+  props?: Record<string, unknown>
+  attributes?: Record<string, unknown>
+  classes?: string[]
+  text?: string | string[]
+  html?: string | string[]
 }
 
-/**
- * Gets a component from the wrapper (use when you need component-specific methods like props)
- * For better type inference, use wrapper.findComponent(ComponentType) directly
- */
-export function getComponent(wrapper: VueWrapper, selector: ComponentSelector) {
-  return wrapper.findComponent(selector)
+type AssertableWrapper = DOMWrapper<Element> | VueWrapper<InstanceType<ComponentConstructor>>
+
+function applyAssertions(
+  wrapper: AssertableWrapper,
+  options: Assertions,
+  hardFail: boolean,
+): boolean {
+  try {
+    if (options.props !== undefined && 'props' in wrapper) {
+      for (const [key, value] of Object.entries(options.props)) {
+        const propValue = wrapper.props(key)
+        if (typeof value === 'object' && value !== null) {
+          expect(propValue).toStrictEqual(value)
+        } else {
+          expect(propValue).toBe(value)
+        }
+      }
+    }
+
+    if (options.attributes !== undefined) {
+      for (const [key, value] of Object.entries(options.attributes)) {
+        expect(wrapper.attributes(key)).toBe(value)
+      }
+    }
+
+    if (options.classes !== undefined) {
+      for (const value of options.classes) {
+        expect(wrapper.classes()).toContain(value)
+      }
+    }
+
+    if (options.text !== undefined) {
+      const textValues = Array.isArray(options.text) ? options.text : [options.text]
+      for (const value of textValues) {
+        expect(wrapper.text()).toContain(value)
+      }
+    }
+
+    if (options.html !== undefined) {
+      const htmlValues = Array.isArray(options.html) ? options.html : [options.html]
+      for (const value of htmlValues) {
+        expect(wrapper.html()).toContain(value)
+      }
+    }
+
+    return true
+  } catch (error) {
+    if (hardFail) {
+      throw error
+    }
+    return false
+  }
 }
 
-/**
- * Helper to get text from an element or component
- */
-export function expectElementText(
-  wrapper: VueWrapper,
-  selector: ElementSelector | ComponentSelector,
-  expectedText: string,
-): void {
-  const element = getElement(wrapper, selector)
-  expect(element.text()).toContain(expectedText)
+class ElementHelper {
+  constructor(
+    private wrapper: VueWrapper,
+    private selector: string,
+    private matchers: ElementMatcher[] = [],
+  ) {}
+
+  private findAll(): DOMWrapper<Element>[] {
+    let elements = this.wrapper.findAll(this.selector)
+
+    for (const matcher of this.matchers) {
+      elements = elements.filter(matcher)
+    }
+
+    return elements
+  }
+
+  private findOne(): DOMWrapper<Element> {
+    const elements = this.findAll()
+    if (elements.length > 1) {
+      throw new Error(
+        `Expected to find one element matching "${this.selector}", but found ${elements.length}`,
+      )
+    }
+    if (elements.length === 0) {
+      throw new Error(`Expected to find one element matching "${this.selector}", but found none`)
+    }
+    return elements[0]
+  }
+
+  match(matcher: ElementMatcher): this {
+    this.matchers.push(matcher)
+    return this
+  }
+
+  assertAny(options: Assertions = { exists: true }): this {
+    const elements = this.findAll()
+
+    if (options.count !== undefined) {
+      expect(elements).toHaveLength(options.count)
+    }
+    if (options.exists !== undefined) {
+      if (options.exists) {
+        expect(elements.length).toBeGreaterThan(0)
+      } else {
+        expect(elements.length).toBe(0)
+      }
+    }
+
+    // Try to find at least one element that matches all assertions
+    const hasMatch = elements.some((element) => applyAssertions(element, options, false))
+
+    if (elements.length > 0 && !hasMatch) {
+      throw new Error(`No element matching "${this.selector}" satisfied the given assertions`)
+    }
+
+    return this
+  }
+
+  assertAll(options: Assertions): this {
+    const elements = this.findAll()
+    expect(elements.length).toBeGreaterThan(0)
+
+    for (const element of elements) {
+      applyAssertions(element, options, true)
+    }
+
+    return this
+  }
+
+  assert(options: Assertions = { exists: true }): this {
+    return this.assertAny(options)
+  }
+
+  async click(force?: boolean): Promise<this> {
+    await this.findOne().trigger('click', force ? { force } : {})
+    await this.wrapper.vm.$nextTick()
+    return this
+  }
+
+  getElement(): DOMWrapper<Element> {
+    return this.findOne()
+  }
+
+  getElements(): DOMWrapper<Element>[] {
+    return this.findAll()
+  }
 }
 
-/**
- * Helper to check component props
- */
-export function expectProps(
-  wrapper: VueWrapper,
-  selector: ComponentSelector,
+class ComponentHelper<T extends ComponentConstructor> {
+  constructor(
+    private wrapper: VueWrapper,
+    private type: T,
+    private matchers: ComponentMatcher<T>[] = [],
+  ) {}
+
+  private findAll(): VueWrapper<InstanceType<T>>[] {
+    let components = this.wrapper.findAllComponents(this.type) as VueWrapper<InstanceType<T>>[]
+
+    for (const matcher of this.matchers) {
+      components = components.filter(matcher)
+    }
+
+    return components
+  }
+
+  private findOne(): VueWrapper<InstanceType<T>> {
+    const components = this.findAll()
+    if (components.length > 1) {
+      throw new Error(
+        `Expected to find one component of type "${this.type.name}", but found ${components.length}`,
+      )
+    }
+    if (components.length === 0) {
+      throw new Error(`Expected to find one component of type "${this.type.name}", but found none`)
+    }
+    return components[0]
+  }
+
+  match(matcher: ComponentMatcher<T>): this {
+    this.matchers.push(matcher)
+    return this
+  }
+
+  assertAny(options: Assertions = { exists: true }): this {
+    const components = this.findAll()
+
+    if (options.count !== undefined) {
+      expect(components).toHaveLength(options.count)
+    }
+    if (options.exists !== undefined) {
+      if (options.exists) {
+        expect(components.length).toBeGreaterThan(0)
+      } else {
+        expect(components.length).toBe(0)
+      }
+    }
+
+    // Try to find at least one component that matches all assertions
+    const hasMatch = components.some((component) => applyAssertions(component, options, false))
+
+    if (components.length > 0 && !hasMatch) {
+      throw new Error(`No component of type "${this.type.name}" satisfied the given assertions`)
+    }
+
+    return this
+  }
+
+  assertAll(options: Assertions): this {
+    const components = this.findAll()
+    expect(components.length).toBeGreaterThan(0)
+
+    for (const component of components) {
+      applyAssertions(component, options, true)
+    }
+
+    return this
+  }
+
+  assert(options: Assertions = { exists: true }): this {
+    return this.assertAny(options)
+  }
+
+  async click(force?: boolean): Promise<this> {
+    await this.findOne().trigger('click', force ? { force } : {})
+    await this.wrapper.vm.$nextTick()
+    return this
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  expectedProps: Record<string, any>,
-): void {
-  const component = wrapper.findComponent(selector)
-  const actualProps = component.props()
+  async emit(eventName: string, ...args: any[]): Promise<this> {
+    const component = this.findOne()
+    await component.vm.$emit(eventName, ...args)
+    await this.wrapper.vm.$nextTick()
+    return this
+  }
 
-  Object.entries(expectedProps).forEach(([key, expectedValue]) => {
-    expect(actualProps[key as keyof typeof actualProps]).toEqual(expectedValue)
-  })
+  getComponent(): VueWrapper<InstanceType<T>> {
+    return this.findOne()
+  }
+
+  getComponents(): VueWrapper<InstanceType<T>>[] {
+    return this.findAll()
+  }
 }
 
-/**
- * Asserts that an element or component exists in the wrapper
- */
-export function expectElementExists(
-  wrapper: VueWrapper,
-  selector: ElementSelector | ComponentSelector,
-): void {
-  const element = getElement(wrapper, selector)
-  expect(element.exists()).toBe(true)
+export function element(wrapper: VueWrapper, selector: string): ElementHelper {
+  return new ElementHelper(wrapper, selector)
 }
 
-/**
- * Asserts that an element or component does not exist in the wrapper
- */
-export function expectElementNotExists(
+export function component<T extends ComponentConstructor>(
   wrapper: VueWrapper,
-  selector: ElementSelector | ComponentSelector,
-): void {
-  const element = getElement(wrapper, selector)
-  expect(element.exists()).toBe(false)
-}
-
-/**
- * Helper to click an element or component and wait for Vue to update
- */
-export async function clickElement(
-  wrapper: VueWrapper,
-  selector: ElementSelector | ComponentSelector,
-): Promise<void> {
-  const element = getElement(wrapper, selector)
-  await element.trigger('click')
-  await wrapper.vm.$nextTick()
-}
-
-/**
- * Helper to emit an event from a component and wait for Vue to update
- */
-export async function emitEvent(
-  wrapper: VueWrapper,
-  selector: ComponentSelector,
-  eventName: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ...args: any[]
-): Promise<void> {
-  const component = getComponent(wrapper, selector)
-  await component.vm.$emit(eventName, ...args)
-  await wrapper.vm.$nextTick()
-}
-
-/**
- * Helper to find a component by text content
- * Returns a VueWrapper for the component, or undefined if not found
- */
-export function getComponentWithText<T extends ComponentConstructor>(
-  wrapper: VueWrapper,
-  selector: T,
-  text: string,
-): VueWrapper<InstanceType<T>> | undefined {
-  const components = wrapper.findAllComponents(selector)
-  return components.find((component) => component.text().includes(text)) as
-    | VueWrapper<InstanceType<T>>
-    | undefined
+  type: T,
+): ComponentHelper<T> {
+  return new ComponentHelper(wrapper, type)
 }
 
 /**

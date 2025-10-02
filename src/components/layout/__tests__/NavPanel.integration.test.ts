@@ -1,13 +1,8 @@
 import { mount, VueWrapper } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { VBtn, VTextField, VListItem, VChip } from 'vuetify/components'
+import { VBtn, VTextField, VListItem, VChip, VCard, VCardTitle } from 'vuetify/components'
 import { mockCurrentFactory } from '@/__tests__/fixtures/composables/factoryStore'
-import {
-  expectElementExists,
-  expectElementNotExists,
-  expectProps,
-  clickElement,
-} from '@/__tests__/vue-test-helpers'
+import { component } from '@/__tests__/vue-test-helpers'
 import { formatFloorId, formatRecipeId } from '@/utils/floors'
 import { mockGetFloorDisplayName } from '@/__tests__/fixtures/composables/navigation'
 import type { Factory, Floor } from '@/types/factory'
@@ -101,20 +96,16 @@ describe('NavPanel Integration', () => {
     return mount(NavPanel)
   }
 
-  const getSearchField = (wrapper: VueWrapper) => {
-    return wrapper.findComponent(VTextField)
-  }
-
   const getFloorItems = (wrapper: VueWrapper) => {
-    return wrapper
-      .findAllComponents(VListItem)
-      .filter((item) => item.classes().includes('floor-item'))
+    return component(wrapper, VListItem)
+      .match((row) => row.classes().includes('floor-item'))
+      .getComponents()
   }
 
   const getRecipeItems = (wrapper: VueWrapper) => {
-    return wrapper
-      .findAllComponents(VListItem)
-      .filter((item) => item.classes().includes('recipe-item'))
+    return component(wrapper, VListItem)
+      .match((row) => row.classes().includes('recipe-item'))
+      .getComponents()
   }
 
   beforeEach(() => {
@@ -132,14 +123,14 @@ describe('NavPanel Integration', () => {
       const wrapper = createWrapper()
 
       // Check title and close button
-      expectElementExists(wrapper, '.nav-panel')
-      expect(wrapper.find('.v-card-title').text()).toContain('Navigation')
-      expectElementExists(wrapper, VBtn)
+      component(wrapper, VCard).assert()
+      component(wrapper, VCardTitle).assert({ text: 'Navigation' })
+      component(wrapper, VBtn).assert()
 
       // Check search field
-      const searchField = getSearchField(wrapper)
-      expect(searchField.exists()).toBe(true)
-      expect(searchField.props('placeholder')).toBe('Search floors and recipes...')
+      component(wrapper, VTextField).assert({
+        props: { placeholder: 'Search floors and recipes...' },
+      })
 
       // Check floor items
       const floorItems = getFloorItems(wrapper)
@@ -157,7 +148,7 @@ describe('NavPanel Integration', () => {
       }
       const wrapper = createWrapper(emptyFactory)
 
-      expectElementNotExists(wrapper, '.nav-panel')
+      component(wrapper, VCard).assert({ exists: false })
     })
 
     it('renders floor recipe counts', () => {
@@ -185,9 +176,9 @@ describe('NavPanel Integration', () => {
     it('emits close event when close button is clicked', async () => {
       const wrapper = createWrapper()
 
-      expectProps(wrapper, VBtn, { icon: 'mdi-close' })
-
-      await clickElement(wrapper, VBtn)
+      await component(wrapper, VBtn)
+        .assert({ props: { icon: 'mdi-close' } })
+        .click()
 
       expect(wrapper.emitted('close')).toBeTruthy()
       expect(wrapper.emitted('close')).toHaveLength(1)
@@ -333,7 +324,7 @@ describe('NavPanel Integration', () => {
 
     it('renders correctly with null factory', () => {
       // Should not render anything when factory is null
-      expectElementNotExists(createWrapper(null), '.nav-panel')
+      component(createWrapper(null), VCard).assert({ exists: false })
     })
   })
 })

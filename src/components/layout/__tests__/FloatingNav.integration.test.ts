@@ -2,13 +2,7 @@ import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { VFab } from 'vuetify/components'
 import { mockNavigateToElement } from '@/__tests__/fixtures/composables/navigation'
-import {
-  expectElementExists,
-  expectElementNotExists,
-  expectProps,
-  clickElement,
-  emitEvent,
-} from '@/__tests__/vue-test-helpers'
+import { component } from '@/__tests__/vue-test-helpers'
 
 import FloatingNav from '@/components/layout/FloatingNav.vue'
 import NavPanel from '../NavPanel.vue'
@@ -25,7 +19,7 @@ describe('FloatingNav Integration', () => {
   }
 
   const openNavPanel = async (wrapper: ReturnType<typeof createWrapper>) => {
-    await clickElement(wrapper, VFab)
+    await component(wrapper, VFab).click()
     return wrapper.findComponent(NavPanel)
   }
 
@@ -36,10 +30,12 @@ describe('FloatingNav Integration', () => {
   it('renders with FAB button initially visible', () => {
     const wrapper = createWrapper()
 
-    expectElementExists(wrapper, VFab)
-    expectProps(wrapper, VFab, {
-      icon: 'mdi-map',
-      color: 'primary',
+    component(wrapper, VFab).assert({
+      exists: true,
+      props: {
+        icon: 'mdi-map',
+        color: 'primary',
+      },
     })
   })
 
@@ -47,13 +43,13 @@ describe('FloatingNav Integration', () => {
     const wrapper = createWrapper()
 
     // Initially, FAB is visible and NavPanel is not rendered
-    expectElementExists(wrapper, VFab)
-    expectElementNotExists(wrapper, NavPanel)
+    component(wrapper, VFab).assert()
+    component(wrapper, NavPanel).assert({ exists: false })
 
-    await clickElement(wrapper, VFab)
+    await component(wrapper, VFab).click()
 
     // After clicking, NavPanel should be visible
-    expectElementExists(wrapper, NavPanel)
+    component(wrapper, NavPanel).assert()
   })
 
   it('handles navigate event from NavPanel and calls composable', async () => {
@@ -62,42 +58,42 @@ describe('FloatingNav Integration', () => {
     const navPanel = await openNavPanel(wrapper)
     expect(navPanel.exists()).toBe(true)
 
-    await emitEvent(wrapper, NavPanel, 'navigate', 'floor-1')
+    await component(wrapper, NavPanel).emit('navigate', 'floor-1')
 
     expect(mockNavigateToElement).toHaveBeenCalledWith('floor-1')
     // Panel should be closed after navigate
-    expectElementNotExists(wrapper, NavPanel)
+    component(wrapper, NavPanel).assert({ exists: false })
   })
 
   it('handles close event from NavPanel', async () => {
     const wrapper = createWrapper()
 
     await openNavPanel(wrapper)
-    expectElementExists(wrapper, NavPanel)
+    component(wrapper, NavPanel).assert()
 
-    await emitEvent(wrapper, NavPanel, 'close')
+    await component(wrapper, NavPanel).emit('close')
 
     // Nav panel should be closed
-    expectElementNotExists(wrapper, NavPanel)
+    component(wrapper, NavPanel).assert({ exists: false })
   })
 
   it('maintains closed state after multiple toggles', async () => {
     const wrapper = createWrapper()
 
     // Open panel
-    await clickElement(wrapper, VFab)
-    expectElementExists(wrapper, NavPanel)
+    await component(wrapper, VFab).click()
+    component(wrapper, NavPanel).assert()
 
     // Close via close event
-    await emitEvent(wrapper, NavPanel, 'close')
-    expectElementNotExists(wrapper, NavPanel)
+    await component(wrapper, NavPanel).emit('close')
+    component(wrapper, NavPanel).assert({ exists: false })
 
     // Open again
-    await clickElement(wrapper, VFab)
-    expectElementExists(wrapper, NavPanel)
+    await component(wrapper, VFab).click()
+    component(wrapper, NavPanel).assert()
 
     // Close via navigate
-    await emitEvent(wrapper, NavPanel, 'navigate', 'test-element')
-    expectElementNotExists(wrapper, NavPanel)
+    await component(wrapper, NavPanel).emit('navigate', 'test-element')
+    component(wrapper, NavPanel).assert({ exists: false })
   })
 })

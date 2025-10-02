@@ -6,7 +6,7 @@ import type { ItemOption } from '@/types/data'
 // Import the test setups for real Vue + Pinia environment with fixture data
 import '@/components/__tests__/component-setup'
 import '@/logistics/__tests__/test-setup'
-import { emitEvent, expectElementExists, expectProps } from '@/__tests__/vue-test-helpers'
+import { component } from '@/__tests__/vue-test-helpers'
 import GameDataSelector from '../GameDataSelector.vue'
 import { VAutocomplete } from 'vuetify/components'
 
@@ -55,8 +55,8 @@ describe('BuildingSelector Integration', () => {
     it('should render real GameDataSelector with Vuetify autocomplete', () => {
       wrapper = createWrapper()
 
-      expectElementExists(wrapper, GameDataSelector)
-      expectElementExists(wrapper, VAutocomplete)
+      component(wrapper, GameDataSelector).assert()
+      component(wrapper, VAutocomplete).assert()
     })
 
     it('should pass real fixture data to autocomplete', () => {
@@ -75,14 +75,15 @@ describe('BuildingSelector Integration', () => {
     })
 
     it('should configure autocomplete with correct Vuetify props', () => {
-      wrapper = createWrapper({ disabled: true })
-
-      expectProps(wrapper, VAutocomplete, {
-        disabled: true,
-        itemTitle: 'name',
-        itemValue: 'value',
-        returnObject: true,
-        clearable: true,
+      const wrapper = createWrapper({ disabled: true })
+      component(wrapper, VAutocomplete).assert({
+        props: {
+          disabled: true,
+          itemTitle: 'name',
+          itemValue: 'value',
+          returnObject: true,
+          clearable: true,
+        },
       })
     })
   })
@@ -91,44 +92,51 @@ describe('BuildingSelector Integration', () => {
     it('should pass modelValue to real GameDataSelector', () => {
       wrapper = createWrapper({ modelValue: SMELTER_BUILDING })
 
-      expectProps(wrapper, GameDataSelector, {
-        modelValue: SMELTER_BUILDING,
+      component(wrapper, GameDataSelector).assert({
+        props: {
+          modelValue: SMELTER_BUILDING,
+        },
       })
-
-      expectProps(wrapper, VAutocomplete, {
-        modelValue: SMELTER_BUILDING,
+      component(wrapper, VAutocomplete).assert({
+        props: {
+          modelValue: SMELTER_BUILDING,
+        },
       })
     })
 
     it('should pass displayConfig to real components', () => {
       wrapper = createWrapper({ displayConfig: CUSTOM_DISPLAY_CONFIG })
 
-      expectProps(wrapper, GameDataSelector, {
-        displayConfig: CUSTOM_DISPLAY_CONFIG,
+      component(wrapper, GameDataSelector).assert({
+        props: {
+          displayConfig: CUSTOM_DISPLAY_CONFIG,
+        },
       })
 
-      expectProps(wrapper, VAutocomplete, {
-        placeholder: CUSTOM_DISPLAY_CONFIG.placeholder,
-        label: CUSTOM_DISPLAY_CONFIG.label,
+      component(wrapper, VAutocomplete).assert({
+        props: {
+          placeholder: CUSTOM_DISPLAY_CONFIG.placeholder,
+          label: CUSTOM_DISPLAY_CONFIG.label,
+        },
       })
     })
 
     it('should use default displayConfig when not provided', () => {
       wrapper = createWrapper()
 
-      expectProps(wrapper, VAutocomplete, {
-        placeholder: DEFAULT_PLACEHOLDER,
+      component(wrapper, VAutocomplete).assert({
+        props: {
+          placeholder: DEFAULT_PLACEHOLDER,
+        },
       })
     })
   })
 
   describe('building filtering with real data', () => {
     it('should show all fixture buildings when no filterKeys provided', () => {
-      wrapper = createWrapper()
+      const wrapper = createWrapper()
 
-      const autocomplete = wrapper.findComponent(VAutocomplete)
-      const items = autocomplete.props('items') as ItemOption[]
-
+      const items = wrapper.findComponent(VAutocomplete).props('items') as ItemOption[]
       expect(items).toHaveLength(TOTAL_FIXTURE_BUILDINGS)
     })
 
@@ -136,9 +144,7 @@ describe('BuildingSelector Integration', () => {
       const filterKeys = [SMELTER_BUILDING.value, CONSTRUCTOR_BUILDING.value]
       wrapper = createWrapper({ filterKeys })
 
-      const autocomplete = wrapper.findComponent(VAutocomplete)
-      const items = autocomplete.props('items') as ItemOption[]
-
+      const items = wrapper.findComponent(VAutocomplete).props('items') as ItemOption[]
       expect(items).toHaveLength(2)
       expect(items.map((item) => item.value)).toEqual(filterKeys.sort())
     })
@@ -146,9 +152,7 @@ describe('BuildingSelector Integration', () => {
     it('should handle empty filterKeys array', () => {
       wrapper = createWrapper({ filterKeys: [] })
 
-      const autocomplete = wrapper.findComponent(VAutocomplete)
-      const items = autocomplete.props('items') as ItemOption[]
-
+      const items = wrapper.findComponent(VAutocomplete).props('items') as ItemOption[]
       expect(items).toHaveLength(TOTAL_FIXTURE_BUILDINGS)
     })
 
@@ -156,9 +160,7 @@ describe('BuildingSelector Integration', () => {
       const filterKeys = [NON_EXISTENT_BUILDING]
       wrapper = createWrapper({ filterKeys })
 
-      const autocomplete = wrapper.findComponent(VAutocomplete)
-      const items = autocomplete.props('items') as ItemOption[]
-
+      const items = wrapper.findComponent(VAutocomplete).props('items') as ItemOption[]
       expect(items).toHaveLength(0)
     })
   })
@@ -203,7 +205,7 @@ describe('BuildingSelector Integration', () => {
     it('should emit update:modelValue when real autocomplete selection changes', async () => {
       wrapper = createWrapper()
 
-      await emitEvent(wrapper, VAutocomplete, 'update:modelValue', CONSTRUCTOR_BUILDING)
+      await component(wrapper, VAutocomplete).emit('update:modelValue', CONSTRUCTOR_BUILDING)
 
       expect(wrapper.emitted('update:modelValue')?.[0]?.[0]).toEqual(CONSTRUCTOR_BUILDING)
     })
@@ -211,7 +213,7 @@ describe('BuildingSelector Integration', () => {
     it('should emit update:modelValue with undefined when cleared', async () => {
       wrapper = createWrapper()
 
-      await emitEvent(wrapper, VAutocomplete, 'update:modelValue', undefined)
+      await component(wrapper, VAutocomplete).emit('update:modelValue', undefined)
 
       expect(wrapper.emitted('update:modelValue')?.[0]?.[0]).toBeUndefined()
     })
@@ -221,15 +223,13 @@ describe('BuildingSelector Integration', () => {
     it('should update when filterKeys change via real computed property', async () => {
       wrapper = createWrapper()
 
-      let autocomplete = wrapper.findComponent(VAutocomplete)
-      let items = autocomplete.props('items') as ItemOption[]
+      let items = wrapper.findComponent(VAutocomplete).props('items') as ItemOption[]
       expect(items).toHaveLength(TOTAL_FIXTURE_BUILDINGS)
 
       // Change filterKeys and test real Vue reactivity
       await wrapper.setProps({ filterKeys: [SMELTER_BUILDING.value] })
 
-      autocomplete = wrapper.findComponent(VAutocomplete)
-      items = autocomplete.props('items') as ItemOption[]
+      items = wrapper.findComponent(VAutocomplete).props('items') as ItemOption[]
       expect(items).toHaveLength(1)
       expect(items[0]).toEqual(SMELTER_BUILDING)
     })
@@ -237,8 +237,7 @@ describe('BuildingSelector Integration', () => {
     it('should maintain correct building data structure from real store', () => {
       wrapper = createWrapper()
 
-      const autocomplete = wrapper.findComponent(VAutocomplete)
-      const items = autocomplete.props('items') as ItemOption[]
+      const items = wrapper.findComponent(VAutocomplete).props('items') as ItemOption[]
 
       // Verify real fixture data structure
       items.forEach((building) => {
@@ -283,22 +282,19 @@ describe('BuildingSelector Integration', () => {
   describe('real component integration edge cases', () => {
     it('should handle null/undefined filterKeys with real computed property', () => {
       wrapper = createWrapper({ filterKeys: null })
-      let autocomplete = wrapper.findComponent(VAutocomplete)
-      let items = autocomplete.props('items') as ItemOption[]
+      let items = wrapper.findComponent(VAutocomplete).props('items') as ItemOption[]
       expect(items).toHaveLength(TOTAL_FIXTURE_BUILDINGS)
 
       wrapper.unmount()
       wrapper = createWrapper({ filterKeys: undefined })
-      autocomplete = wrapper.findComponent(VAutocomplete)
-      items = autocomplete.props('items') as ItemOption[]
+      items = wrapper.findComponent(VAutocomplete).props('items') as ItemOption[]
       expect(items).toHaveLength(TOTAL_FIXTURE_BUILDINGS)
     })
 
     it('should use real fixture building data', () => {
       wrapper = createWrapper()
 
-      const autocomplete = wrapper.findComponent({ name: 'VAutocomplete' })
-      const items = autocomplete.props('items') as ItemOption[]
+      const items = wrapper.findComponent(VAutocomplete).props('items') as ItemOption[]
 
       // Verify we're getting real fixture data, not mock data
       const smelter = items.find((b) => b.value === SMELTER_BUILDING.value)

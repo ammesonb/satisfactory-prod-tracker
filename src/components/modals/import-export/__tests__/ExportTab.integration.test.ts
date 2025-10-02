@@ -2,12 +2,7 @@ import { mount } from '@vue/test-utils'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import ExportTab from '@/components/modals/import-export/ExportTab.vue'
 import FactorySelector from '@/components/common/FactorySelector.vue'
-import {
-  expectElementExists,
-  expectElementText,
-  expectProps,
-  getComponentWithText,
-} from '@/__tests__/vue-test-helpers'
+import { component } from '@/__tests__/vue-test-helpers'
 import type { Factory } from '@/types/factory'
 import { mockFactories, mockExportFactories } from '@/__tests__/fixtures/composables/factoryStore'
 import { mockExportToClipboard, mockExportToFile } from '@/__tests__/fixtures/composables/dataShare'
@@ -58,57 +53,61 @@ describe('ExportTab Integration', () => {
   })
 
   it('renders with FactorySelector component', () => {
-    expectElementExists(createWrapper(), FactorySelector)
+    component(createWrapper(), FactorySelector).assert()
   })
 
   it('passes correct props to FactorySelector', () => {
-    expectProps(createWrapper(), FactorySelector, {
-      factories: testFactories,
-      title: 'Select Factories to Export',
+    component(createWrapper(), FactorySelector).assert({
+      props: {
+        factories: testFactories,
+        title: 'Select Factories to Export',
+      },
     })
   })
 
   it('displays export count correctly for single factory', async () => {
     const wrapper = createWrapper()
-    const factorySelector = wrapper.findComponent(FactorySelector)
-
-    await factorySelector.vm.$emit('update:modelValue', [TEST_FACTORIES.IRON])
-
-    expectElementText(wrapper, ExportTab, 'Export 1 Factory')
+    const selector = await component(wrapper, FactorySelector).emit('update:modelValue', [
+      TEST_FACTORIES.IRON,
+    ])
+    selector.assert({
+      props: {
+        modelValue: [TEST_FACTORIES.IRON],
+      },
+    })
+    component(wrapper, ExportTab).assert({ text: 'Export 1 Factory' })
   })
 
   it('displays export count correctly for multiple factories', async () => {
     const wrapper = createWrapper()
-    const factorySelector = wrapper.findComponent(FactorySelector)
-
-    await factorySelector.vm.$emit('update:modelValue', [
+    component(wrapper, FactorySelector).emit('update:modelValue', [
       TEST_FACTORIES.IRON,
       TEST_FACTORIES.COPPER,
     ])
 
-    expectElementText(wrapper, ExportTab, 'Export 2 Factories')
+    component(wrapper, ExportTab).assert({ text: 'Export 2 Factories' })
   })
 
   it('has both export buttons disabled when no factories selected', () => {
     const wrapper = createWrapper()
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'Clipboard')
-    const fileBtn = getComponentWithText(wrapper, VBtn, 'File')
-
-    expect(clipboardBtn?.attributes('disabled')).toBe('')
-    expect(fileBtn?.attributes('disabled')).toBe('')
+    component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('Clipboard'))
+      .assert({ exists: true, attributes: { disabled: '' } })
+    component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('File'))
+      .assert({ exists: true, attributes: { disabled: '' } })
   })
 
   it('enables export buttons when factories are selected', async () => {
     const wrapper = createWrapper()
-    const factorySelector = wrapper.findComponent(FactorySelector)
+    await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
 
-    await factorySelector.vm.$emit('update:modelValue', [TEST_FACTORIES.IRON])
-
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'Clipboard')
-    const fileBtn = getComponentWithText(wrapper, VBtn, 'File')
-
-    expect(clipboardBtn?.attributes('disabled')).toBeUndefined()
-    expect(fileBtn?.attributes('disabled')).toBeUndefined()
+    component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('Clipboard'))
+      .assert({ exists: true, attributes: { disabled: undefined } })
+    component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('File'))
+      .assert({ exists: true, attributes: { disabled: undefined } })
   })
 
   it('emits error when trying to export without selecting factories', async () => {
@@ -123,12 +122,11 @@ describe('ExportTab Integration', () => {
 
   it('calls exportToClipboard when clipboard button is clicked', async () => {
     const wrapper = createWrapper()
-    const factorySelector = wrapper.findComponent(FactorySelector)
+    await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
 
-    await factorySelector.vm.$emit('update:modelValue', [TEST_FACTORIES.IRON])
-
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'Clipboard')
-    await clipboardBtn?.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('Clipboard'))
+      .click()
 
     expect(mockExportFactories).toHaveBeenCalledWith([TEST_FACTORIES.IRON])
     expect(mockExportToClipboard).toHaveBeenCalledWith(
@@ -138,12 +136,11 @@ describe('ExportTab Integration', () => {
 
   it('calls exportToFile when file button is clicked', async () => {
     const wrapper = createWrapper()
-    const factorySelector = wrapper.findComponent(FactorySelector)
+    await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
 
-    await factorySelector.vm.$emit('update:modelValue', [TEST_FACTORIES.IRON])
-
-    const fileBtn = getComponentWithText(wrapper, VBtn, 'File')
-    await fileBtn?.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('File'))
+      .click()
 
     expect(mockExportFactories).toHaveBeenCalledWith([TEST_FACTORIES.IRON])
     expect(mockExportToFile).toHaveBeenCalledWith(
@@ -153,14 +150,14 @@ describe('ExportTab Integration', () => {
 
   it('emits error when exportToClipboard fails', async () => {
     const wrapper = createWrapper()
-    const factorySelector = wrapper.findComponent(FactorySelector)
 
     mockExportToClipboard.mockRejectedValue(new Error('Clipboard error'))
 
-    await factorySelector.vm.$emit('update:modelValue', [TEST_FACTORIES.IRON])
+    await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
 
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'Clipboard')
-    await clipboardBtn?.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('Clipboard'))
+      .click()
 
     expect(wrapper.emitted('error')).toEqual([
       ['Failed to export factories: Error: Clipboard error'],
@@ -169,32 +166,32 @@ describe('ExportTab Integration', () => {
 
   it('emits error when exportToFile fails', async () => {
     const wrapper = createWrapper()
-    const factorySelector = wrapper.findComponent(FactorySelector)
 
     mockExportToFile.mockImplementation(() => {
       throw new Error('File error')
     })
 
-    await factorySelector.vm.$emit('update:modelValue', [TEST_FACTORIES.IRON])
+    await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
 
-    const fileBtn = getComponentWithText(wrapper, VBtn, 'File')
-    await fileBtn?.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('File'))
+      .click()
 
     expect(wrapper.emitted('error')).toEqual([['Failed to export factories: Error: File error']])
   })
 
   it('emits error when factoryStore.exportFactories fails', async () => {
     const wrapper = createWrapper()
-    const factorySelector = wrapper.findComponent(FactorySelector)
 
     mockExportFactories.mockImplementation(() => {
       throw new Error('Export error')
     })
 
-    await factorySelector.vm.$emit('update:modelValue', [TEST_FACTORIES.IRON])
+    await component(wrapper, FactorySelector).emit('update:modelValue', [TEST_FACTORIES.IRON])
 
-    const clipboardBtn = getComponentWithText(wrapper, VBtn, 'Clipboard')
-    await clipboardBtn?.trigger('click')
+    await component(wrapper, VBtn)
+      .match((btn) => btn.text().includes('Clipboard'))
+      .click()
 
     expect(wrapper.emitted('error')).toEqual([['Failed to export factories: Error: Export error']])
   })

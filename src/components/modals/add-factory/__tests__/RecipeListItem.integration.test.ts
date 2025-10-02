@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import RecipeListItem from '@/components/modals/add-factory/RecipeListItem.vue'
-import { clickElement, expectElementText, expectProps } from '@/__tests__/vue-test-helpers'
+import { component } from '@/__tests__/vue-test-helpers'
 import type { RecipeEntry } from '@/types/factory'
 import { VBtn } from 'vuetify/components'
 import CachedIcon from '@/components/common/CachedIcon.vue'
@@ -54,7 +54,7 @@ describe('RecipeListItem Integration', () => {
   it('emits remove event when delete button is clicked', async () => {
     const wrapper = createWrapper()
 
-    await clickElement(wrapper, VBtn)
+    await component(wrapper, VBtn).click()
 
     expect(wrapper.emitted('remove')).toBeTruthy()
     expect(wrapper.emitted('remove')?.[0]).toEqual([])
@@ -80,18 +80,20 @@ describe('RecipeListItem Integration', () => {
     const wrapper = createWrapper({ entry: mockEntry, rowNumber: 5 })
 
     // Check row number and recipe name (dataStore returns the recipe key as display name)
-    expectElementText(wrapper, RecipeListItem, '5. Recipe_Fake_IronIngot_C')
+    component(wrapper, RecipeListItem).assert({ text: '5. Recipe_Fake_IronIngot_C' })
 
     // Check building count and name (dataStore returns "Smelter" for Desc_SmelterMk1_C)
-    expectElementText(wrapper, RecipeListItem, '3x Smelter')
+    component(wrapper, RecipeListItem).assert({ text: '3x Smelter' })
   })
 
   it('sets correct props on delete button', () => {
-    expectProps(createWrapper(), VBtn, {
-      icon: 'mdi-delete',
-      size: 'small',
-      variant: 'text',
-      color: 'error',
+    component(createWrapper(), VBtn).assert({
+      props: {
+        icon: 'mdi-delete',
+        size: 'small',
+        variant: 'text',
+        color: 'error',
+      },
     })
   })
 })

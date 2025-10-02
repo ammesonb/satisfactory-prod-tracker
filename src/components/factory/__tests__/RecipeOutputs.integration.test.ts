@@ -5,11 +5,7 @@ import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
 import type { Material } from '@/types/factory'
 import { mockLeftoverProductsAsLinks } from '@/__tests__/fixtures/composables/useRecipeStatus'
-import {
-  expectElementExists,
-  expectElementNotExists,
-  expectElementText,
-} from '@/__tests__/vue-test-helpers'
+import { component, element } from '@/__tests__/vue-test-helpers'
 import RecipeLink from '../RecipeLink.vue'
 
 // Use centralized fixtures for mocking composables
@@ -88,8 +84,8 @@ describe('RecipeOutputs Integration', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     const wrapper = createWrapper(recipeNode)
 
-    expectElementExists(wrapper, RecipeOutputs)
-    expectElementText(wrapper, 'h4', 'Outputs')
+    expect(wrapper.exists()).toBe(true)
+    element(wrapper, 'h4').assert({ text: 'Outputs' })
   })
 
   it('renders RecipeLink components for each output', () => {
@@ -134,8 +130,8 @@ describe('RecipeOutputs Integration', () => {
     recipeNode.outputs = []
 
     const wrapper = createWrapper(recipeNode)
-    expectElementText(wrapper, RecipeOutputs, 'None')
-    expectElementNotExists(wrapper, RecipeLink)
+    expect(wrapper.text()).toContain('None')
+    component(wrapper, RecipeLink).assert({ exists: false })
   })
 
   it('handles recipe with multiple outputs correctly', () => {

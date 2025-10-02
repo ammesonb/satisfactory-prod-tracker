@@ -42,57 +42,22 @@ All interfaces defined in `@/types/stores.ts`.
 
 ## Vue Test Helpers
 
-Use centralized helpers from `@/__tests__/vue-test-helpers` for cleaner tests:
+> **See [src/__tests__/VUE_TEST_HELPERS.md](src/__tests__/VUE_TEST_HELPERS.md) for detailed API documentation and examples.**
+
+Quick reference for the fluent test helper API:
 
 ```typescript
-import {
-  getElement,
-  getComponent,
-  expectElementExists,
-  expectElementNotExists,
-  expectElementText,
-  expectProps,
-  clickElement,
-  emitEvent,
-  getComponentMatching,
-  getComponentWithText,
-  createUnwrapProxy,
-} from '@/__tests__/vue-test-helpers'
+import { element, component } from '@/__tests__/vue-test-helpers'
+import { VBtn } from 'vuetify/components'
 
-// Element/Component Access
-const element = getElement(wrapper, 'div.my-class') // Works with string selectors or components
-const component = getComponent(wrapper, VBtn) // Component-specific access
+// Basic usage
+component(wrapper, VBtn).assert()
+await component(wrapper, VBtn).match((btn) => btn.text().includes('Save')).click()
 
-// Clean assertions - prefer these helpers over manual finds
-expectElementExists(wrapper, VBtn)
-expectElementNotExists(wrapper, '#error-message')
-expectElementText(wrapper, VChip, 'Expected Text')
-expectProps(wrapper, VBtn, { disabled: true })
-
-// Simplified interactions
-await clickElement(wrapper, VBtn)
-await emitEvent(wrapper, ItemSelector, 'update:modelValue', mockValue)
-
-// Advanced finding
-const matchingComponent = getComponentMatching(wrapper, VBtn, (btn) => btn.props().disabled === true)
-const componentWithText = getComponentWithText(wrapper, VListItem, 'Import Recipe')
-
-// ❌ AVOID: Don't store components in variables when you can pass createWrapper() directly
-const wrapper = createWrapper()
-expectElementExists(wrapper, VBtn) // ❌ Bad
-
-// ✅ GOOD: Inline when there's only one use of wrapper
-// this can apply to emitEvent, clickElement, etc. too
-expectElementExists(createWrapper(), VBtn) // ✅ Good
-
-// ❌ AVOID: Don't inline when wrapper is used multiple times
-expectElementExists(createWrapper(), VBtn)
-expectElementText(createWrapper(), VBtn, 'Add') // ❌ Bad - creates different wrappers
-
-// ✅ GOOD: Store wrapper when used multiple times
-const wrapper = createWrapper()
-expectElementExists(wrapper, VBtn)
-expectElementText(wrapper, VBtn, 'Add') // ✅ Good - same wrapper
+// Reuse matched helpers
+const saveBtn = component(wrapper, VBtn).match((btn) => btn.text() === 'Save')
+saveBtn.assert()
+await saveBtn.click()
 ```
 
 ## Writing Integration Tests
@@ -102,8 +67,11 @@ expectElementText(wrapper, VBtn, 'Add') // ✅ Good - same wrapper
 ```typescript
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { VBtn } from 'vuetify/components'
 import ComponentName from '@/components/path/ComponentName.vue'
-import { expectElementExists, clickElement } from '@/__tests__/vue-test-helpers'
+import { component, element } from '@/__tests__/vue-test-helpers'
+
+import Modal from '@/components/modals/Modal.vue'
 
 // Mock composables with centralized fixtures
 vi.mock('@/composables/useStores', async () => {
@@ -112,10 +80,6 @@ vi.mock('@/composables/useStores', async () => {
   const { mockUseStores } = await import('@/__tests__/fixtures/composables')
   return mockUseStores // Use complete mock object for full coverage, interact with individual components in tests if needed
 })
-
-const getComponent = (wrapper: VueWrapper) => {
-  return wrapper.findComponent(ComponentUnderTest)
-}
 
 describe('ComponentName Integration', () => {
   const createWrapper = (props = {}) => {
@@ -128,16 +92,18 @@ describe('ComponentName Integration', () => {
 
   it('renders with default props', () => {
     const wrapper = createWrapper()
-    expectElementExists(wrapper, '[data-testid="main-element"]')
-    expectElementText(wrapper, ComponentName, 'Expected Text')
+    element(wrapper, '[data-testid="main-element"]').assert()
+    component(wrapper, ComponentName)
+      .match((c) => c.text().includes('Expected Text'))
+      .assert()
   })
 
   it('handles user interactions', async () => {
     const wrapper = createWrapper()
-    await clickElement(wrapper, VBtn)
+    await component(wrapper, VBtn).click()
 
     // Test behavior, not implementation
-    expectElementExists(wrapper, Modal)
+    component(wrapper, Modal).assert()
   })
 })
 ```
@@ -166,19 +132,35 @@ describe('ComponentName Integration', () => {
 #### Finding Elements
 
 ```typescript
-// ✅ Good - using helper functions for finding by functionality
-const importBtn = getComponentWithText(wrapper, VBtn, 'Import')
-const disabledBtn = getComponentMatching(wrapper, VBtn, (btn) => btn.props().disabled === true)
+import { element, component } from '@/__tests__/vue-test-helpers'
+import { VBtn } from 'vuetify/components'
 
-// ✅ Good - basic element/component access
-const element = getElement(wrapper, '.my-selector') // string selector
-const component = getComponent(wrapper, VBtn) // component selector
+// ✅ Good - fluent API with flexible matchers
+const importBtn = component(wrapper, VBtn)
+  .match((btn) => btn.text().includes('Import'))
+  .getComponent()
+const disabledBtn = component(wrapper, VBtn)
+  .match((btn) => btn.props().disabled === true)
+  .getComponent()
 
-// ❌ Avoid - manual finds without helpers
+// ✅ Good - direct assertions without intermediate variables
+component(wrapper, VBtn)
+  .match((btn) => btn.text() === 'Submit')
+  .assert()
+element(wrapper, '.error-message').assert({ count: 3 })
+
+// ✅ Good - get all matching components
+const allButtons = component(wrapper, VBtn).getComponents()
+const primaryButtons = component(wrapper, VBtn)
+  .match((btn) => btn.props().color === 'primary')
+  .getComponents()
+
+// ❌ Avoid - manual finds without helpers, string component names
 const buttons = wrapper.findAllComponents({ name: 'VBtn' })
 const importBtn = buttons.find((btn) => btn.text().includes('Import'))
 
-// ❌ Avoid - implementation + styling details
+// ❌ Avoid - testing implementation/styling details.
+//    Even purpose-based classes such as subtitle or caption are brittle since changing them does not affect component operation
 const btn = wrapper.find('v-btn[color="secondary"]')
 ```
 
@@ -234,7 +216,7 @@ const mockItemKeys = computed(() => mockItems.value.map((item) => item.key))
 
 vi.mock('./composables/useItemForm', () => ({
   useItemForm: vi.fn(() => ({
-    items: createUnwrapProxy(mockItems),      // Supports both .value and array methods
+    items: createUnwrapProxy(mockItems), // Supports both .value and array methods
     itemKeys: createUnwrapProxy(mockItemKeys), // Works with computed refs too
   })),
 }))
@@ -285,5 +267,8 @@ src/
 ```typescript
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { expectElementExists, clickElement } from '@/__tests__/vue-test-helpers'
+import { component, element } from '@/__tests__/vue-test-helpers'
+import { VBtn } from 'vuetify/components' // or other relevant components, not all components have buttons
+
+import Component from '@/components/Component.vue'
 ```
