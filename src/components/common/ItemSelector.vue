@@ -29,7 +29,7 @@ const { dataStore } = getStores()
 
 // Get all available items and buildings with icons
 const allItems = computed<ItemOption[]>(() => {
-  const options = itemsToOptions(dataStore.items)
+  const options = [...itemsToOptions(dataStore.items)]
   if (props.includeBuildings) {
     options.push(...buildingsToOptions(dataStore.buildings))
   }

@@ -17,6 +17,7 @@ import { createPinia } from 'pinia'
 
 import 'vuetify/styles'
 import '@mdi/font/css/materialdesignicons.css'
+import './styles/responsive.css'
 import { createVuetify } from 'vuetify'
 import { mdi } from 'vuetify/iconsets/mdi'
 
@@ -38,6 +39,28 @@ const vuetify = createVuetify({
     defaultSet: 'mdi',
     sets: {
       mdi,
+    },
+  },
+  display: {
+    mobileBreakpoint: 'sm',
+    thresholds: {
+      xs: 0,
+      sm: 600,
+      md: 960,
+      lg: 1280,
+      xl: 1440,
+      xxl: 1920,
+    },
+  },
+  defaults: {
+    VTextField: {
+      density: 'comfortable',
+    },
+    VSelect: {
+      density: 'comfortable',
+    },
+    VAutocomplete: {
+      density: 'comfortable',
     },
   },
 })

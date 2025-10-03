@@ -8,6 +8,7 @@ const emit = defineEmits<{
 }>()
 
 const form = useRecipeInputForm()
+console.log(form.recipeKeys.value)
 
 watch(
   () => form.selectedRecipes.value,
@@ -43,7 +44,7 @@ const addRecipe = () => {
       <RecipeSelector
         :model-value="form.selectedRecipe.value"
         @update:model-value="form.changeRecipe"
-        :exclude-keys="form.recipeKeys"
+        :exclude-keys="form.recipeKeys.value"
         class="mb-3"
       />
 
@@ -81,7 +82,7 @@ const addRecipe = () => {
         </v-col>
       </v-row>
 
-      <RecipeDisplay :recipes="form.selectedRecipes" @remove="form.removeRecipe" />
+      <RecipeDisplay :recipes="form.selectedRecipes.value" @remove="form.removeRecipe" />
     </div>
   </div>
 </template>

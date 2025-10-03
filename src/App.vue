@@ -82,8 +82,8 @@ code {
 
 @media (min-width: 1440px) {
   .fab-container {
-    bottom: 1.5rem;
-    right: 1.5rem;
+    bottom: 1rem;
+    right: 1rem;
     gap: 1rem;
   }
 }
