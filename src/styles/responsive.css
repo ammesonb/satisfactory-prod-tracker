@@ -1,0 +1,148 @@
+/* Responsive scaling for larger displays */
+:root {
+  --text-scale: 1;
+  --spacing-scale: 1;
+  --icon-scale: 1;
+}
+
+@media (min-width: 1440px) {
+  :root {
+    --text-scale: 1.15;
+    --spacing-scale: 1.25;
+    --icon-scale: 1.15;
+  }
+}
+
+@media (min-width: 1920px) {
+  :root {
+    --text-scale: 1.3;
+    --spacing-scale: 1.4;
+    --icon-scale: 1.3;
+  }
+}
+
+/* Apply scaling to body text */
+@media (min-width: 1440px) {
+  body {
+    font-size: 1.125rem;
+  }
+
+  /* Scale all buttons moderately */
+  .v-btn {
+    font-size: calc(0.75rem * var(--text-scale)) !important;
+    padding: 0 calc(16px * 1.1) !important;
+    min-height: calc(36px * 1.1) !important;
+  }
+
+  /* Scale FAB buttons more aggressively */
+  .fab-container .v-btn,
+  .fab-container .v-fab {
+    width: calc(56px * var(--spacing-scale)) !important;
+    height: calc(56px * var(--spacing-scale)) !important;
+    min-height: calc(56px * var(--spacing-scale)) !important;
+  }
+
+  /* Scale FAB icons */
+  .fab-container .v-icon {
+    font-size: calc(28px * var(--icon-scale)) !important;
+  }
+
+  .v-icon {
+    font-size: calc(24px * var(--icon-scale)) !important;
+  }
+
+  .v-chip {
+    height: calc(32px * var(--spacing-scale));
+    font-size: calc(0.85rem * var(--text-scale)) !important;
+  }
+
+  /* Scale all Vuetify text classes */
+  .text-h1 {
+    font-size: calc(6rem * var(--text-scale)) !important;
+  }
+  .text-h2 {
+    font-size: calc(3.75rem * var(--text-scale)) !important;
+  }
+  .text-h3 {
+    font-size: calc(3rem * var(--text-scale)) !important;
+  }
+  .text-h4 {
+    font-size: calc(2.125rem * var(--text-scale)) !important;
+  }
+  .text-h5 {
+    font-size: calc(1.5rem * var(--text-scale)) !important;
+  }
+  .text-h6 {
+    font-size: calc(1.25rem * var(--text-scale)) !important;
+  }
+  .text-subtitle-1 {
+    font-size: calc(1rem * var(--text-scale)) !important;
+  }
+  .text-subtitle-2 {
+    font-size: calc(0.875rem * var(--text-scale)) !important;
+  }
+  .text-body-1 {
+    font-size: calc(1rem * var(--text-scale)) !important;
+  }
+  .text-body-2 {
+    font-size: calc(0.875rem * var(--text-scale)) !important;
+  }
+  .text-button {
+    font-size: calc(0.875rem * var(--text-scale)) !important;
+  }
+  .text-caption {
+    font-size: calc(0.775rem * var(--text-scale)) !important;
+  }
+  .text-overline {
+    font-size: calc(0.75rem * var(--text-scale)) !important;
+  }
+
+  /* Scale card content */
+  .v-card-text {
+    font-size: calc(0.875rem * var(--text-scale)) !important;
+  }
+
+  .v-card-title {
+    font-size: calc(1.25rem * var(--text-scale)) !important;
+  }
+
+  /* Scale expansion panel text */
+  .v-expansion-panel-title {
+    font-size: calc(1rem * var(--text-scale)) !important;
+  }
+
+  .v-expansion-panel-text {
+    font-size: calc(0.875rem * var(--text-scale)) !important;
+  }
+
+  /* Scale checkbox */
+  .v-checkbox {
+    font-size: calc(1rem * var(--text-scale)) !important;
+  }
+
+  /* Scale select and input text */
+  .v-select .v-field__input,
+  .v-text-field .v-field__input,
+  .v-autocomplete .v-field__input {
+    font-size: calc(1rem * var(--text-scale)) !important;
+  }
+
+  /* Increase padding for better spacing at larger sizes */
+  .v-card {
+    padding: calc(4px * var(--spacing-scale));
+  }
+
+  .v-expansion-panel-title {
+    padding: calc(16px * var(--spacing-scale)) !important;
+  }
+
+  .v-expansion-panel-text__wrapper {
+    padding: calc(16px * var(--spacing-scale)) !important;
+  }
+}
+
+@media (min-width: 1920px) {
+  body {
+    font-size: 1.25rem;
+  }
+}
