@@ -9,6 +9,32 @@ export const useErrorStore = defineStore('error', {
     summary: '',
     bodyContent: null as VNode | (() => VNode) | null,
   }),
+  getters: {
+    icon(): string {
+      switch (this.level) {
+        case 'error':
+          return 'mdi-alert-circle'
+        case 'warning':
+          return 'mdi-alert'
+        case 'info':
+          return 'mdi-information'
+        default:
+          return 'mdi-alert-circle'
+      }
+    },
+    color() {
+      switch (this.level) {
+        case 'error':
+          return 'error'
+        case 'warning':
+          return 'warning'
+        case 'info':
+          return 'info'
+        default:
+          return 'error'
+      }
+    },
+  },
   actions: {
     createBuilder(level: 'error' | 'warning' | 'info'): ErrorBuilder {
       // eslint-disable-next-line @typescript-eslint/no-this-alias

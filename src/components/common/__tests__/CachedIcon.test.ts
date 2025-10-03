@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, vi } from 'vitest'
 import CachedIcon from '@/components/common/CachedIcon.vue'
-import { expectProps } from '@/__tests__/vue-test-helpers'
+import { component } from '@/__tests__/vue-test-helpers'
 import { VImg } from 'vuetify/components'
 
 vi.mock('@/logistics/images', () => ({
@@ -21,89 +21,99 @@ describe('CachedIcon Integration', () => {
   }
 
   it('renders with default props', () => {
-    const wrapper = createWrapper()
-
-    expectProps(wrapper, VImg, {
-      width: 24,
-      height: 24,
-    })
-    expect(wrapper.findComponent(VImg).attributes('loading')).toBe('lazy')
+    const img = component(createWrapper(), VImg).getComponent()
+    expect(img.props('width')).toBe(24)
+    expect(img.props('height')).toBe(24)
+    expect(img.attributes('loading')).toBe('lazy')
   })
 
   it('uses correct source size for small icons', () => {
     const wrapper = createWrapper({ size: 24 })
-
-    expectProps(wrapper, VImg, {
-      src: 'https://example.com/icons/iron-ore_64.png',
+    component(wrapper, VImg).assert({
+      props: {
+        src: 'https://example.com/icons/iron-ore_64.png',
+      },
     })
   })
 
   it('uses correct source size for large icons', () => {
     const wrapper = createWrapper({ size: 64 })
-
-    expectProps(wrapper, VImg, {
-      src: 'https://example.com/icons/iron-ore_256.png',
+    component(wrapper, VImg).assert({
+      props: {
+        src: 'https://example.com/icons/iron-ore_256.png',
+      },
     })
   })
 
   it('applies custom size prop correctly', () => {
     const wrapper = createWrapper({ size: 48 })
-
-    expectProps(wrapper, VImg, {
-      width: 48,
-      height: 48,
+    component(wrapper, VImg).assert({
+      props: {
+        width: 48,
+        height: 48,
+      },
     })
   })
 
   it('applies alt text when provided', () => {
     const wrapper = createWrapper({ alt: 'Iron Ore Icon' })
-
-    expectProps(wrapper, VImg, {
-      alt: 'Iron Ore Icon',
+    component(wrapper, VImg).assert({
+      props: {
+        alt: 'Iron Ore Icon',
+      },
     })
   })
 
   it('uses undefined alt when not provided', () => {
     const wrapper = createWrapper()
-
-    expectProps(wrapper, VImg, {
-      alt: undefined,
+    component(wrapper, VImg).assert({
+      props: {
+        alt: undefined,
+      },
     })
   })
 
   it('updates icon URL when icon prop changes', async () => {
     const wrapper = createWrapper({ icon: 'copper-ore' })
 
-    expectProps(wrapper, VImg, {
-      src: 'https://example.com/icons/copper-ore_64.png',
+    component(wrapper, VImg).assert({
+      props: {
+        src: 'https://example.com/icons/copper-ore_64.png',
+      },
     })
 
     await wrapper.setProps({ icon: 'iron-plate' })
 
-    expectProps(wrapper, VImg, {
-      src: 'https://example.com/icons/iron-plate_64.png',
+    component(wrapper, VImg).assert({
+      props: {
+        src: 'https://example.com/icons/iron-plate_64.png',
+      },
     })
   })
 
   it('updates source size when size prop changes', async () => {
     const wrapper = createWrapper({ size: 24 })
 
-    expectProps(wrapper, VImg, {
-      src: 'https://example.com/icons/iron-ore_64.png',
+    component(wrapper, VImg).assert({
+      props: {
+        src: 'https://example.com/icons/iron-ore_64.png',
+      },
     })
 
     await wrapper.setProps({ size: 64 })
 
-    expectProps(wrapper, VImg, {
-      src: 'https://example.com/icons/iron-ore_256.png',
+    component(wrapper, VImg).assert({
+      props: {
+        src: 'https://example.com/icons/iron-ore_256.png',
+      },
     })
   })
 
   it('has correct CSS classes and styling', () => {
-    const wrapper = createWrapper()
-
-    expectProps(wrapper, VImg, {
-      class: 'icon-image',
+    component(createWrapper(), VImg).assert({
+      props: {
+        class: 'icon-image',
+      },
     })
   })
 })

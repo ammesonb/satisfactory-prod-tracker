@@ -14,9 +14,8 @@ This project uses Vitest with Vue Test Utils for component integration testing, 
 4. **Run fix+test** - YOU MUST USE `npm run fix+test` for formatting, linting, type compliance, and tests
 5. **Fix** all issues reported by the previous command
 6. **Repeat steps 4-5** until all commands pass
-7. **Review all changes**:
+7. **Critique the current set of changes, checking for issues such as broken reactivity, adherence to best practices, etc**:
    - Use `git status` and `git diff` to examine ALL uncommitted files
-   - Explicitly confirm each file follows best practices
 
 ## Test Configuration
 
@@ -43,30 +42,22 @@ All interfaces defined in `@/types/stores.ts`.
 
 ## Vue Test Helpers
 
-Use centralized helpers from `@/__tests__/vue-test-helpers` for cleaner tests:
+> **See [src/__tests__/VUE_TEST_HELPERS.md](src/__tests__/VUE_TEST_HELPERS.md) for detailed API documentation and examples.**
+
+Quick reference for the fluent test helper API:
 
 ```typescript
-import {
-  expectElementExists,
-  expectElementNotExists,
-  clickElement,
-  emitEvent,
-  byComponent,
-  getComponent,
-} from '@/__tests__/vue-test-helpers'
+import { element, component } from '@/__tests__/vue-test-helpers'
+import { VBtn } from 'vuetify/components'
 
-// Clean assertions
-expectElementExists(wrapper, byComponent('VFab'))
-expectElementNotExists(wrapper, '#error-message')
+// Basic usage
+component(wrapper, VBtn).assert()
+await component(wrapper, VBtn).match((btn) => btn.text().includes('Save')).click()
 
-// Simplified interactions
-await clickElement(wrapper, byComponent('VBtn'))
-// You can use Component types instead of the more-brittle byComponent(string)
-await emitEvent(wrapper, NavPanel, 'close')
-
-// Component property access
-const fab = getComponent(wrapper, byComponent('VFab'))
-expect(fab.props('icon')).toBe('mdi-map')
+// Reuse matched helpers
+const saveBtn = component(wrapper, VBtn).match((btn) => btn.text() === 'Save')
+saveBtn.assert()
+await saveBtn.click()
 ```
 
 ## Writing Integration Tests
@@ -76,20 +67,19 @@ expect(fab.props('icon')).toBe('mdi-map')
 ```typescript
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { VBtn } from 'vuetify/components'
 import ComponentName from '@/components/path/ComponentName.vue'
-import { expectElementExists, clickElement, byComponent } from '@/__tests__/vue-test-helpers'
+import { component, element } from '@/__tests__/vue-test-helpers'
+
+import Modal from '@/components/modals/Modal.vue'
 
 // Mock composables with centralized fixtures
 vi.mock('@/composables/useStores', async () => {
   // This is the ONLY time you should do `await import` in a test file, to avoid hoisting issues
   // All other imports should be centralized at the top of the file
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
+  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
+  return mockUseStores // Use complete mock object for full coverage, interact with individual components in tests if needed
 })
-
-const getComponent = (wrapper: VueWrapper) => {
-  return wrapper.findComponent(ComponentUnderTest)
-}
 
 describe('ComponentName Integration', () => {
   const createWrapper = (props = {}) => {
@@ -102,16 +92,18 @@ describe('ComponentName Integration', () => {
 
   it('renders with default props', () => {
     const wrapper = createWrapper()
-    expectElementExists(wrapper, '[data-testid="main-element"]')
-    expect(wrapper.text()).toContain('Expected Text')
+    element(wrapper, '[data-testid="main-element"]').assert()
+    component(wrapper, ComponentName)
+      .match((c) => c.text().includes('Expected Text'))
+      .assert()
   })
 
   it('handles user interactions', async () => {
     const wrapper = createWrapper()
-    await clickElement(wrapper, byComponent('VBtn'))
+    await component(wrapper, VBtn).click()
 
     // Test behavior, not implementation
-    expectElementExists(wrapper, Modal)
+    component(wrapper, Modal).assert()
   })
 })
 ```
@@ -140,11 +132,35 @@ describe('ComponentName Integration', () => {
 #### Finding Elements
 
 ```typescript
-// ✅ Good - by functionality
+import { element, component } from '@/__tests__/vue-test-helpers'
+import { VBtn } from 'vuetify/components'
+
+// ✅ Good - fluent API with flexible matchers
+const importBtn = component(wrapper, VBtn)
+  .match((btn) => btn.text().includes('Import'))
+  .getComponent()
+const disabledBtn = component(wrapper, VBtn)
+  .match((btn) => btn.props().disabled === true)
+  .getComponent()
+
+// ✅ Good - direct assertions without intermediate variables
+component(wrapper, VBtn)
+  .match((btn) => btn.text() === 'Submit')
+  .assert()
+element(wrapper, '.error-message').assert({ count: 3 })
+
+// ✅ Good - get all matching components
+const allButtons = component(wrapper, VBtn).getComponents()
+const primaryButtons = component(wrapper, VBtn)
+  .match((btn) => btn.props().color === 'primary')
+  .getComponents()
+
+// ❌ Avoid - manual finds without helpers, string component names
 const buttons = wrapper.findAllComponents({ name: 'VBtn' })
 const importBtn = buttons.find((btn) => btn.text().includes('Import'))
 
-// ❌ Avoid - implementation + styling details
+// ❌ Avoid - testing implementation/styling details.
+//    Even purpose-based classes such as subtitle or caption are brittle since changing them does not affect component operation
 const btn = wrapper.find('v-btn[color="secondary"]')
 ```
 
@@ -185,6 +201,25 @@ it('navigates to floors', () => {
 
   expect(mockNavigateToFloor).toHaveBeenCalledWith(1)
 })
+```
+
+#### Mocking Refs in Composables
+
+When mocking composables that return refs, use `createUnwrapProxy()` to ensure the mock behaves correctly with both `.value` access (for watchers) and direct property access (for templates):
+
+```typescript
+import { ref, computed } from 'vue'
+import { createUnwrapProxy } from '@/__tests__/vue-test-helpers'
+
+const mockItems = ref<Item[]>([])
+const mockItemKeys = computed(() => mockItems.value.map((item) => item.key))
+
+vi.mock('./composables/useItemForm', () => ({
+  useItemForm: vi.fn(() => ({
+    items: createUnwrapProxy(mockItems), // Supports both .value and array methods
+    itemKeys: createUnwrapProxy(mockItemKeys), // Works with computed refs too
+  })),
+}))
 ```
 
 ## Running Tests
@@ -232,5 +267,8 @@ src/
 ```typescript
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { expectElementExists, clickElement, byComponent } from '@/__tests__/vue-test-helpers'
+import { component, element } from '@/__tests__/vue-test-helpers'
+import { VBtn } from 'vuetify/components' // or other relevant components, not all components have buttons
+
+import Component from '@/components/Component.vue'
 ```

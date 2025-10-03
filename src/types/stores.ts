@@ -75,6 +75,10 @@ export interface IErrorStore {
   summary: string
   bodyContent: VNode | (() => VNode) | null
 
+  // Getters
+  icon: string
+  color: string
+
   // Actions
   createBuilder: (level: 'error' | 'warning' | 'info') => ErrorBuilder
   error: () => ErrorBuilder

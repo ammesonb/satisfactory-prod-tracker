@@ -68,6 +68,18 @@ export function useRecipeInputForm() {
     }
   }
 
+  const selectedRecipes = ref<RecipeEntry[]>([])
+  const recipeKeys = computed(() => selectedRecipes.value.map((entry) => entry.recipe))
+
+  const addRecipe = () => {
+    selectedRecipes.value.push(toRecipeEntry())
+    reset()
+  }
+
+  const removeRecipe = (index: number) => {
+    selectedRecipes.value.splice(index, 1)
+  }
+
   return {
     selectedRecipe,
     buildingCount,
@@ -82,5 +94,9 @@ export function useRecipeInputForm() {
     clearError,
     isValid,
     toRecipeEntry,
+    selectedRecipes,
+    recipeKeys,
+    addRecipe,
+    removeRecipe,
   }
 }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { getStores } from '@/composables/useStores'
+import { useDataShare } from '@/composables/useDataShare'
 import { ref } from 'vue'
 
 const emit = defineEmits<{
@@ -7,39 +8,19 @@ const emit = defineEmits<{
 }>()
 
 const { factoryStore } = getStores()
+const { exportToClipboard, exportToFile } = useDataShare()
 const selectedFactories = ref<string[]>([])
 
-const exportToClipboard = async () => {
+const exportFactories = async (exporter: (data: string) => void) => {
   if (selectedFactories.value.length === 0) {
     emit('error', 'Please select at least one factory to export')
     return
   }
 
   try {
-    const factories = factoryStore.exportFactories(selectedFactories.value)
-    const jsonString = JSON.stringify(factories, null, 2)
-    await navigator.clipboard.writeText(jsonString)
+    await exporter(JSON.stringify(factoryStore.exportFactories(selectedFactories.value)))
   } catch (err) {
-    emit('error', `Failed to copy to clipboard: ${err}`)
-  }
-}
-
-const exportToFile = () => {
-  if (selectedFactories.value.length === 0) {
-    emit('error', 'Please select at least one factory to export')
-    return
-  }
-
-  try {
-    const factories = JSON.stringify(factoryStore.exportFactories(selectedFactories.value), null, 2)
-    const url = URL.createObjectURL(new Blob([factories], { type: 'application/json' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `satisfactory-tracker-${new Date().toISOString().split('T')[0]}.json`
-    a.click()
-    URL.revokeObjectURL(url)
-  } catch (err) {
-    emit('error', `Failed to export to file: ${err}`)
+    emit('error', `Failed to export factories: ${err}`)
   }
 }
 </script>
@@ -65,7 +46,7 @@ const exportToFile = () => {
         <div class="d-flex gap-3">
           <v-btn
             color="secondary"
-            @click="exportToClipboard"
+            @click="exportFactories(exportToClipboard)"
             :disabled="selectedFactories.length === 0"
             variant="outlined"
             size="small"
@@ -76,7 +57,7 @@ const exportToFile = () => {
           </v-btn>
           <v-btn
             color="secondary"
-            @click="exportToFile"
+            @click="exportFactories(exportToFile)"
             :disabled="selectedFactories.length === 0"
             size="small"
           >

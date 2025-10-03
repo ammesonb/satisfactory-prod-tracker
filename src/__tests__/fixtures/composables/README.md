@@ -7,6 +7,14 @@ This directory provides utilities to abstract repetitive composable mocking in f
 ### Basic Setup (works out of the box with sensible defaults)
 
 ```ts
+// ✅ PREFERRED: Full useStores mock (includes all individual store getters)
+// Use this for components that may use getDataStore(), getFactoryStore(), etc.
+vi.mock('@/composables/useStores', async () => {
+  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
+  return mockUseStores
+})
+
+// ✅ ALTERNATIVE: if you only need getStores (less common)
 vi.mock('@/composables/useStores', async () => {
   const { mockGetStores } = await import('@/__tests__/fixtures/composables')
   return { getStores: mockGetStores }
@@ -124,109 +132,21 @@ vi.mock('@/composables/useStores', async () => {
 })
 ```
 
-## Testing Patterns
-
-### Finding Interactive Elements by Behavior
-
-Focus on what elements do, not how they're implemented. Use the Vue test helpers for cleaner assertions:
-
-```ts
-import {
-  expectElementExists,
-  expectElementNotExists,
-  getComponent,
-  clickElement,
-  byComponent,
-} from '@/__tests__/vue-test-helpers'
-
-// ✅ Good - using test helpers for clean assertions
-expectElementExists(wrapper, byComponent('VBtn'))
-expectElementNotExists(wrapper, 'button[type="submit"]')
-
-// ✅ Good - find by functionality and content
-const buttons = wrapper.findAllComponents({ name: 'VBtn' })
-const importBtn = buttons.find((btn) => btn.text().includes('Import/Export'))
-
-// ✅ Good - using helpers for component interaction
-await clickElement(wrapper, byComponent('VFab'))
-const modal = getComponent(wrapper, byComponent('ImportExportModal'))
-expect(modal.props('modelValue')).toBe(true)
-
-// ❌ Avoid - testing implementation details
-const importBtn = wrapper.find('v-btn[color="secondary"][variant="outlined"]')
-const responsiveText = wrapper.find('.d-none.d-md-inline')
-```
-
-### Testing User Interactions and State Changes
-
-Test that interactions produce the expected behavior using the Vue test helpers:
-
-```ts
-import { clickElement, emitEvent, byComponent, getComponent } from '@/__tests__/vue-test-helpers'
-
-it('opens import/export modal when button is clicked', async () => {
-  const wrapper = createWrapper()
-
-  const buttons = wrapper.findAllComponents({ name: 'VBtn' })
-  const importBtn = buttons.find((btn) => btn.text().includes('Import/Export'))
-
-  await importBtn!.trigger('click')
-
-  const modal = getComponent(wrapper, byComponent('ImportExportModal'))
-  expect(modal.props('modelValue')).toBe(true)
-})
-
-// Using helpers for cleaner event handling
-it('closes modal on close event', async () => {
-  const wrapper = createWrapper()
-
-  await emitEvent(wrapper, byComponent('ImportExportModal'), 'close')
-  expectElementNotExists(wrapper, byComponent('ImportExportModal'))
-})
-```
-
-## Vue Test Helpers
-
-The `@/__tests__/vue-test-helpers` module provides utilities for cleaner test assertions:
-
-### Available Functions
-
-- `getElement(wrapper, selector)` - Gets element or component (accepts string or `{ name: string }`)
-- `getComponent(wrapper, selector)` - Gets component specifically (for accessing props, etc.)
-- `expectElementExists(wrapper, selector)` - Assert element/component exists
-- `expectElementNotExists(wrapper, selector)` - Assert element/component doesn't exist
-- `clickElement(wrapper, selector)` - Click element and wait for Vue update
-- `emitEvent(wrapper, selector, event, ...args)` - Emit event from component
-- `byComponent(name)` - Helper to create component selector
-
-### Example Usage
-
-```ts
-import {
-  expectElementExists,
-  expectElementNotExists,
-  clickElement,
-  emitEvent,
-  byComponent,
-  getComponent,
-} from '@/__tests__/vue-test-helpers'
-
-// Clean assertions
-expectElementExists(wrapper, byComponent('VFab'))
-expectElementNotExists(wrapper, '#error-message')
-
-// Component interactions
-await clickElement(wrapper, byComponent('VBtn'))
-await emitEvent(wrapper, byComponent('NavPanel'), 'navigate', 'floor-1')
-
-// Accessing component props
-const fab = getComponent(wrapper, byComponent('VFab'))
-expect(fab.props('icon')).toBe('mdi-map')
-```
+> **Note:** For detailed information about the test helper API, see [VUE_TEST_HELPERS.md](../../VUE_TEST_HELPERS.md)
 
 ## Available Composable Mocks
 
-- `mockGetStores` - Store access with mock data store
+### Store Access
+
+- `mockGetStores` - Main store access with all store types
+- `mockGetDataStore` - Individual data store getter (includes items, recipes, buildings)
+- `mockGetFactoryStore` - Individual factory store getter
+- `mockGetThemeStore` - Individual theme store getter
+- `mockGetErrorStore` - Individual error store getter
+- `mockUseStores` - Complete object with all store getters (recommended)
+
+### Other Composables
+
 - `mockUseFloorManagement` - Floor operations and navigation helpers
 - `mockUseRecipeStatus` - Recipe completion and link status
 - `mockFormatRecipeId` / `mockFormatFloorId` - ID formatting utilities

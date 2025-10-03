@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { getStores } from '@/composables/useStores'
-import { asFactory, type Factory } from '@/types/factory'
-import { ref, watch } from 'vue'
+import { useDataShare } from '@/composables/useDataShare'
+import { parseFactoriesFromJson, type Factory } from '@/types/factory'
+import { ref } from 'vue'
 
 const emit = defineEmits<{
   error: [message: string]
@@ -9,63 +10,16 @@ const emit = defineEmits<{
 }>()
 
 const { factoryStore } = getStores()
+const { importFromClipboard, importFromFile, handleFileImport, fileInput } = useDataShare()
 const selectedFactories = ref<string[]>([])
-const importData = ref('')
-const importFactories = ref<Record<string, Factory>>({})
-const fileInput = ref<HTMLInputElement>()
+const factoriesToImport = ref<Record<string, Factory>>({})
 
-const importFromClipboard = async () => {
-  try {
-    const text = await navigator.clipboard.readText()
-    importData.value = text
-  } catch (err) {
-    emit('error', `Failed to read from clipboard: ${err}`)
-  }
-}
-
-const importFromFile = () => {
-  fileInput.value?.click()
-}
-
-const handleFileImport = (event: Event) => {
-  const file = (event.target as HTMLInputElement).files?.[0]
-  if (!file) return
-
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    importData.value = (e.target?.result as string) || ''
-  }
-  reader.readAsText(file)
-}
-
-// Watch importData and parse automatically
-watch(importData, () => {
+const importFactories = async (loader: () => Promise<string>) => {
   selectedFactories.value = []
-  importFactories.value = {}
-
-  if (!importData.value.trim()) {
-    return
-  }
-
-  let data: Record<string, Factory>
-  try {
-    data = JSON.parse(importData.value)
-
-    if (!data || typeof data !== 'object') {
-      emit('error', 'Import data must be an object')
-      return
-    }
-  } catch (err) {
-    emit('error', `Invalid JSON format: ${err}`)
-    return
-  }
+  factoriesToImport.value = {}
 
   try {
-    const factories: Record<string, Factory> = {}
-    for (const [name, factoryData] of Object.entries(data)) {
-      factories[name] = asFactory(factoryData)
-    }
-    importFactories.value = factories
+    factoriesToImport.value = parseFactoriesFromJson(await loader())
 
     // Reset file input on successful parsing
     if (fileInput.value) {
@@ -74,7 +28,11 @@ watch(importData, () => {
   } catch (err) {
     emit('error', err instanceof Error ? err.message : `Import failed: ${err}`)
   }
-})
+}
+
+const handleFileChange = async (event: Event) => {
+  await importFactories(() => handleFileImport(event))
+}
 
 const performImport = () => {
   if (selectedFactories.value.length === 0) {
@@ -88,7 +46,7 @@ const performImport = () => {
         (factories, name) => {
           return {
             ...factories,
-            [name]: importFactories.value[name],
+            [name]: factoriesToImport.value[name],
           }
         },
         {} as Record<string, Factory>,
@@ -105,7 +63,7 @@ const performImport = () => {
   <div>
     <!-- Import Source Buttons -->
     <div class="d-flex gap-2 mb-4">
-      <v-btn @click="importFromClipboard" variant="outlined" class="flex-grow-1">
+      <v-btn @click="importFactories(importFromClipboard)" variant="outlined" class="flex-grow-1">
         <v-icon icon="mdi-content-paste" class="me-2" />
         From Clipboard
       </v-btn>
@@ -116,10 +74,10 @@ const performImport = () => {
     </div>
 
     <!-- Show factories if data is parsed -->
-    <div v-if="Object.keys(importFactories).length > 0">
+    <div v-if="Object.keys(factoriesToImport).length > 0">
       <FactorySelector
         v-model="selectedFactories"
-        :factories="Object.values(importFactories)"
+        :factories="Object.values(factoriesToImport)"
         title="Select Factories to Import"
       />
 
@@ -160,7 +118,7 @@ const performImport = () => {
       type="file"
       accept=".json"
       style="display: none"
-      @change="handleFileImport"
+      @change="handleFileChange"
     />
   </div>
 </template>

@@ -1,43 +1,28 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { watch } from 'vue'
 import { type RecipeEntry } from '@/types/factory'
 import { useRecipeInputForm } from './composables/useRecipeInputForm'
 
-interface Props {
-  modelValue: RecipeEntry[]
-}
-
-const props = defineProps<Props>()
 const emit = defineEmits<{
-  'update:modelValue': [value: RecipeEntry[]]
+  change: [value: RecipeEntry[]]
 }>()
 
 const form = useRecipeInputForm()
 
-const excludedRecipeKeys = computed(() => props.modelValue.map((entry) => entry.recipe))
+watch(
+  () => form.selectedRecipes.value,
+  () => {
+    emit('change', form.selectedRecipes.value)
+  },
+  { deep: true },
+)
 
 const addRecipe = () => {
   if (!form.isValid) {
     return
   }
 
-  try {
-    const updatedList = [...props.modelValue, form.toRecipeEntry()]
-    emit('update:modelValue', updatedList)
-    form.reset()
-  } catch (error) {
-    if (error instanceof Error) {
-      form.setError(`Failed to add recipe: ${error.message}`)
-    } else {
-      form.setError(`Failed to add recipe: ${String(error)}`)
-    }
-  }
-}
-
-const removeRecipe = (index: number) => {
-  const updatedList = [...props.modelValue]
-  updatedList.splice(index, 1)
-  emit('update:modelValue', updatedList)
+  form.addRecipe()
 }
 </script>
 
@@ -58,7 +43,7 @@ const removeRecipe = (index: number) => {
       <RecipeSelector
         :model-value="form.selectedRecipe.value"
         @update:model-value="form.changeRecipe"
-        :exclude-keys="excludedRecipeKeys"
+        :exclude-keys="form.recipeKeys"
         class="mb-3"
       />
 
@@ -96,7 +81,7 @@ const removeRecipe = (index: number) => {
         </v-col>
       </v-row>
 
-      <RecipeDisplay :recipes="modelValue" @remove="removeRecipe" />
+      <RecipeDisplay :recipes="form.selectedRecipes" @remove="form.removeRecipe" />
     </div>
   </div>
 </template>

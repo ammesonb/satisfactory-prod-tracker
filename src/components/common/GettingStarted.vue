@@ -60,7 +60,7 @@ const addSampleFactory = () => {
 
       <div class="mb-4">
         <div v-for="(step, index) in steps" :key="index" class="mb-4">
-          <div class="text-subtitle-1 font-weight-medium mb-1">
+          <div class="text-subtitle-1 font-weight-medium mb-1 instruction-step">
             {{ index + 1 }}. {{ step.title }}
           </div>
           <div class="text-body-2 text-medium-emphasis" v-html="step.description"></div>

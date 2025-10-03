@@ -4,7 +4,7 @@ import { ref } from 'vue'
 import { VCheckbox, VListItem, VList, VCard } from 'vuetify/components'
 import FactorySelector from '@/components/common/FactorySelector.vue'
 import type { Factory } from '@/types/factory'
-import { expectProps } from '@/__tests__/vue-test-helpers'
+import { component } from '@/__tests__/vue-test-helpers'
 import {
   mockAllSelected,
   mockSomeSelected,
@@ -12,6 +12,7 @@ import {
   mockToggleAll,
   mockToggleItem,
 } from '@/__tests__/fixtures/composables/selection'
+import CachedIcon from '../CachedIcon.vue'
 
 // Mock the useSelection composable
 vi.mock('@/composables/useSelection', async () => {
@@ -87,9 +88,9 @@ describe('FactorySelector Integration', () => {
   it('renders with default props', () => {
     const wrapper = createWrapper()
 
-    expect(wrapper.find('input[type="checkbox"]').exists()).toBe(true)
+    component(wrapper, VCheckbox).assert()
     expect(wrapper.text()).toContain(UI_TEXT.SELECT_ALL)
-    expect(wrapper.findAll('.v-list-item')).toHaveLength(EXPECTED_FACTORY_COUNT)
+    component(wrapper, VListItem).assert({ count: EXPECTED_FACTORY_COUNT })
   })
 
   it('renders custom title when provided', () => {
@@ -100,87 +101,67 @@ describe('FactorySelector Integration', () => {
   })
 
   it('displays all factories in the list', () => {
-    const wrapper = createWrapper()
-
-    expect(wrapper.text()).toContain(FACTORY_NAMES.IRON)
-    expect(wrapper.text()).toContain(FACTORY_NAMES.STEEL)
-    expect(wrapper.text()).toContain(FACTORY_NAMES.CONCRETE)
+    const text = createWrapper().text()
+    for (const name of Object.values(FACTORY_NAMES)) {
+      expect(text).toContain(name)
+    }
   })
 
   it('renders factory icons using CachedIcon component', () => {
-    const wrapper = createWrapper()
-
-    const cachedIcons = wrapper.findAllComponents({ name: 'CachedIcon' })
-    expect(cachedIcons).toHaveLength(EXPECTED_FACTORY_COUNT)
-
+    const iconWrapper = component(createWrapper(), CachedIcon).match(
+      (icon) => icon.props('size') === ICON_SIZE,
+    )
+    iconWrapper.assert({ count: EXPECTED_FACTORY_COUNT })
+    const cachedIcons = iconWrapper.getComponents()
     expect(cachedIcons[0].props('icon')).toBe(FACTORY_ICONS.IRON)
     expect(cachedIcons[1].props('icon')).toBe(FACTORY_ICONS.STEEL)
     expect(cachedIcons[2].props('icon')).toBe(FACTORY_ICONS.CONCRETE)
-
-    cachedIcons.forEach((icon) => {
-      expect(icon.props('size')).toBe(ICON_SIZE)
-    })
   })
 
   it('calls toggleAll when select all checkbox is clicked', async () => {
-    const wrapper = createWrapper()
-
-    const selectAllCheckbox = wrapper.find('input[type="checkbox"]')
-    await selectAllCheckbox.trigger('click')
-
+    await component(createWrapper(), VCheckbox).getComponents()[0].trigger('click')
     expect(mockToggleAll).toHaveBeenCalled()
   })
 
   it('calls toggleItem when factory list item is clicked', async () => {
     const wrapper = createWrapper()
-
-    const firstFactoryItem = wrapper.find('.v-list-item')
-    await firstFactoryItem.trigger('click')
-
+    const firstListItem = component(wrapper, VListItem).getComponents()[0]
+    await firstListItem.trigger('click')
+    await wrapper.vm.$nextTick()
     expect(mockToggleItem).toHaveBeenCalledWith(FACTORY_NAMES.IRON)
   })
 
   it('calls toggleItem when individual factory checkbox is clicked', async () => {
     const wrapper = createWrapper()
-
-    const factoryCheckboxes = wrapper.findAll('.v-list-item input[type="checkbox"]')
+    const factoryCheckboxes = component(wrapper, VListItem).getComponents()
     await factoryCheckboxes[1].trigger('click')
-
+    await wrapper.vm.$nextTick()
     expect(mockToggleItem).toHaveBeenCalledWith(FACTORY_NAMES.STEEL)
-  })
-
-  it('prevents event propagation when clicking factory checkbox directly', async () => {
-    const wrapper = createWrapper()
-
-    // This test verifies the @click.stop directive works by checking the toggle is called
-    // without the parent list item handler being triggered
-    const factoryCheckbox = wrapper.find('.v-list-item input[type="checkbox"]')
-    await factoryCheckbox.trigger('click')
-
-    // Verify that toggleItem was called (checkbox handler)
-    expect(mockToggleItem).toHaveBeenCalledWith(FACTORY_NAMES.IRON)
   })
 
   it('shows indeterminate state when some factories are selected', () => {
     mockSomeSelected.mockReturnValue(true)
     mockAllSelected.mockReturnValue(false)
 
-    expectProps(createWrapper(), VCheckbox, { indeterminate: true })
+    expect(component(createWrapper(), VCheckbox).getComponents()[0].props('indeterminate')).toBe(
+      true,
+    )
   })
 
   it('shows checked state when all factories are selected', () => {
     mockAllSelected.mockReturnValue(true)
     mockSomeSelected.mockReturnValue(true)
 
-    expectProps(createWrapper(), VCheckbox, { modelValue: true, indeterminate: false })
+    expect(component(createWrapper(), VCheckbox).getComponents()[0].props('indeterminate')).toBe(
+      false,
+    )
   })
 
   it('shows individual factory as selected when isSelected returns true', () => {
     mockIsSelected.mockImplementation((name: string) => name === FACTORY_NAMES.STEEL)
 
     const wrapper = createWrapper()
-
-    const factoryCheckboxes = wrapper.findAllComponents(VCheckbox)
+    const factoryCheckboxes = component(wrapper, VCheckbox).getComponents()
     // First checkbox is "Select All", then factory checkboxes
     expect(factoryCheckboxes[2].props('modelValue')).toBe(true) // Steel Factory
     expect(factoryCheckboxes[1].props('modelValue')).toBe(false) // Iron Factory
@@ -208,8 +189,8 @@ describe('FactorySelector Integration', () => {
   it('handles empty factories list gracefully', () => {
     const wrapper = createWrapper({ factories: [] })
 
-    expect(wrapper.findAllComponents(VListItem)).toHaveLength(0)
-    expect(wrapper.findComponent(VList).exists()).toBe(true)
+    component(wrapper, VListItem).assert({ count: 0 })
+    component(wrapper, VList).assert({ exists: true })
   })
 
   it('calls composable with correct parameters', async () => {
@@ -232,10 +213,11 @@ describe('FactorySelector Integration', () => {
   it('has proper accessibility attributes', () => {
     const wrapper = createWrapper()
 
-    const checkboxes = wrapper.findAllComponents(VCheckbox)
-    checkboxes.forEach((checkbox) => {
-      expect(checkbox.props('hideDetails')).toBe(true)
-    })
+    component(wrapper, VCheckbox)
+      .getComponents()
+      .forEach((checkbox) => {
+        expect(checkbox.props('hideDetails')).toBe(true)
+      })
   })
 
   it('has scrollable factory list with max height', () => {

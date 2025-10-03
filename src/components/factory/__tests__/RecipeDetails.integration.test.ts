@@ -5,7 +5,7 @@ import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
 import { createTestRecipe } from '@/__tests__/fixtures/stores/dataStore'
 import { getMockStores } from '@/__tests__/fixtures/composables/testUtils'
-import { expectElementExists, expectElementText } from '@/__tests__/vue-test-helpers'
+import { component } from '@/__tests__/vue-test-helpers'
 import { VCard } from 'vuetify/components'
 
 // Use centralized fixtures for mocking composables
@@ -93,15 +93,14 @@ describe('RecipeDetails Integration', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     const wrapper = createWrapper(recipeNode)
 
-    expectElementExists(wrapper, '.recipe-details')
-    expectElementExists(wrapper, VCard)
+    component(wrapper, VCard).assert()
   })
 
   it('displays craft time correctly', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     const wrapper = createWrapper(recipeNode)
 
-    expect(wrapper.text()).toContain('5.0s') // Iron ingot recipe takes 5 seconds
+    component(wrapper, VCard).assert({ text: ['5.0s'] })
   })
 
   it('calls data store methods for recipe ingredients', async () => {
@@ -124,25 +123,21 @@ describe('RecipeDetails Integration', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     const wrapper = createWrapper(recipeNode)
 
-    expectElementText(wrapper, '.recipe-details', 'Ingredients')
-    expectElementText(wrapper, '.recipe-details', 'Iron Ore') // from fixture data
+    component(wrapper, VCard).assert({ text: ['Ingredients', 'Iron Ore'] })
   })
 
   it('displays products section when products exist', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
     const wrapper = createWrapper(recipeNode)
 
-    expectElementText(wrapper, '.recipe-details', 'Products')
-    expectElementText(wrapper, '.recipe-details', 'Iron Ingot') // from fixture data
+    component(wrapper, VCard).assert({ text: ['Products', 'Iron Ingot'] })
   })
 
   it('handles recipe with multiple ingredients correctly', () => {
     const recipeNode = createRecipeNode(TEST_RECIPES.PURE_CATERIUM)
     const wrapper = createWrapper(recipeNode)
 
-    expectElementText(wrapper, '.recipe-details', 'Caterium Ore') // Gold ore in fixtures
-    expectElementText(wrapper, '.recipe-details', 'Water')
-    expectElementText(wrapper, '.recipe-details', '2.0/min') // Both ingredients have amount 2
+    component(wrapper, VCard).assert({ text: ['Caterium Ore', 'Water', '2.0/min'] })
   })
 
   it('calls getIcon and getItemDisplayName for each ingredient', async () => {
@@ -173,19 +168,17 @@ describe('RecipeDetails Integration', () => {
   })
 
   it('displays ingredient amounts with /min suffix', () => {
-    expectElementText(
-      createWrapper(createRecipeNode(TEST_RECIPES.IRON_INGOT)),
-      '.recipe-details',
-      '1.0/min',
-    ) // Iron ore amount from fixture
+    const wrapper = createWrapper(createRecipeNode(TEST_RECIPES.IRON_INGOT))
+    component(wrapper, VCard).assert({
+      text: ['1.0/min'],
+    })
   })
 
   it('displays product amounts with /min suffix', () => {
-    expectElementText(
-      createWrapper(createRecipeNode(TEST_RECIPES.IRON_INGOT)),
-      '.recipe-details',
-      '1.0/min',
-    ) // Iron ingot amount from fixture
+    const wrapper = createWrapper(createRecipeNode(TEST_RECIPES.IRON_INGOT))
+    component(wrapper, VCard).assert({
+      text: ['1.0/min'],
+    })
   })
 
   it('handles empty ingredients gracefully', async () => {
@@ -207,7 +200,7 @@ describe('RecipeDetails Integration', () => {
     // Should not show ingredients section
     expect(wrapper.text()).not.toContain('Ingredients')
     // But should still show products
-    expectElementText(wrapper, '.recipe-details', 'Products')
+    component(wrapper, VCard).assert({ text: ['Products'] })
   })
 
   it('handles empty products gracefully', async () => {
@@ -227,7 +220,7 @@ describe('RecipeDetails Integration', () => {
     const wrapper = createWrapper(emptyRecipeNode)
 
     // Should show ingredients section
-    expectElementText(wrapper, '.recipe-details', 'Ingredients')
+    component(wrapper, VCard).assert({ text: ['Ingredients'] })
     // But should not show products section
     expect(wrapper.text()).not.toContain('Products')
   })

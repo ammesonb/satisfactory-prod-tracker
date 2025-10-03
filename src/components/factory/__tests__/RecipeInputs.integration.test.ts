@@ -5,7 +5,7 @@ import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
 import type { Material } from '@/types/factory'
 import RecipeLink from '../RecipeLink.vue'
-import { expectProps } from '@/__tests__/vue-test-helpers'
+import { component, element } from '@/__tests__/vue-test-helpers'
 
 // Mock the RecipeLink component since it's auto-imported
 vi.mock('@/components/factory/RecipeLink.vue', () => ({
@@ -76,9 +76,11 @@ describe('RecipeInputs Integration', () => {
     recipe.inputs = []
     const wrapper = createWrapper(recipe)
 
-    expect(wrapper.find('.recipe-inputs').exists()).toBe(true)
-    expect(wrapper.text()).toContain('None')
-    expect(wrapper.findAll('[data-testid="recipe-link"]')).toHaveLength(0)
+    element(wrapper, '.recipe-inputs').assert({
+      exists: true,
+      text: ['None'],
+    })
+    component(wrapper, RecipeLink).assert({ exists: false })
   })
 
   it('renders RecipeLink components and does not show "None" when recipe has inputs', () => {
@@ -90,8 +92,7 @@ describe('RecipeInputs Integration', () => {
 
     const wrapper = createWrapper(recipe)
 
-    const recipeLinkComponents = wrapper.findAllComponents(RecipeLink)
-    expect(recipeLinkComponents).toHaveLength(2)
+    component(wrapper, RecipeLink).assert({ count: 2 })
     expect(wrapper.text()).not.toContain('None')
   })
 
@@ -100,10 +101,12 @@ describe('RecipeInputs Integration', () => {
     const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
     recipe.inputs = [link]
 
-    expectProps(createWrapper(recipe), RecipeLink, {
-      link,
-      recipe,
-      direction: 'input',
+    component(createWrapper(recipe), RecipeLink).assert({
+      props: {
+        link,
+        recipe,
+        direction: 'input',
+      },
     })
   })
 

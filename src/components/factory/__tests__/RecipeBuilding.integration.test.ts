@@ -6,12 +6,7 @@ import CachedIcon from '@/components/common/CachedIcon.vue'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
 import type { Recipe } from '@/types/factory'
-import {
-  emitEvent,
-  expectElementExists,
-  expectElementText,
-  expectProps,
-} from '@/__tests__/vue-test-helpers'
+import { component } from '@/__tests__/vue-test-helpers'
 import { mockSetRecipeBuilt } from '@/__tests__/fixtures/composables/useRecipeStatus'
 
 // Use centralized fixtures for mocking composables
@@ -75,11 +70,10 @@ describe('RecipeBuilding Integration', () => {
   })
 
   it('renders with default props', () => {
-    const wrapper = createWrapper()
-
-    expect(wrapper.find('.recipe-building').exists()).toBe(true)
-    expectElementText(wrapper, '.recipe-building', 'Building')
-    expectElementText(wrapper, '.recipe-building', 'Smelter')
+    component(createWrapper(), VCard).assert({
+      exists: true,
+      text: 'Smelter',
+    })
   })
 
   it('displays building name from data store', () => {
@@ -90,15 +84,19 @@ describe('RecipeBuilding Integration', () => {
     )
     const wrapper = createWrapper({ recipe: constructorRecipe })
 
-    expectElementText(wrapper, '.recipe-building', 'Constructor')
+    component(wrapper, VCard).assert({
+      text: ['Constructor'],
+    })
   })
 
   it('displays cached icon when available', () => {
     const wrapper = createWrapper()
 
-    expectElementExists(wrapper, CachedIcon)
-    expectProps(wrapper, CachedIcon, {
-      size: 32,
+    component(wrapper, CachedIcon).assert({
+      exists: true,
+      props: {
+        size: 32,
+      },
     })
     const cachedIcon = wrapper.findComponent(CachedIcon)
     expect(cachedIcon.props('icon')).toBeTruthy()
@@ -107,9 +105,11 @@ describe('RecipeBuilding Integration', () => {
   it('shows unchecked checkbox when recipe is not built', () => {
     const wrapper = createWrapper()
 
-    expectElementExists(wrapper, VCheckbox)
-    expectProps(wrapper, VCheckbox, {
-      modelValue: false,
+    component(wrapper, VCheckbox).assert({
+      exists: true,
+      props: {
+        modelValue: false,
+      },
     })
   })
 
@@ -117,16 +117,17 @@ describe('RecipeBuilding Integration', () => {
     const builtRecipe = createTestRecipeNode(TEST_RECIPES.IRON_INGOT, true)
     const wrapper = createWrapper({ recipe: builtRecipe })
 
-    expectElementExists(wrapper, VCheckbox)
-    expectProps(wrapper, VCheckbox, {
-      modelValue: true,
+    component(wrapper, VCheckbox).assert({
+      props: {
+        modelValue: true,
+      },
     })
   })
 
   it('applies correct cardClass when recipe is not built', () => {
     const wrapper = createWrapper()
 
-    const card = wrapper.findComponent({ name: 'VCard' })
+    const card = wrapper.findComponent(VCard)
     expect(card.classes()).toContain('bg-surface')
     expect(card.classes()).not.toContain('bg-green-lighten-4')
     expect(card.classes()).toContain('elevation-2')
@@ -136,38 +137,37 @@ describe('RecipeBuilding Integration', () => {
     const builtRecipe = createTestRecipeNode(TEST_RECIPES.IRON_INGOT, true)
     const wrapper = createWrapper({ recipe: builtRecipe })
 
-    const card = wrapper.findComponent({ name: 'VCard' })
+    const card = wrapper.findComponent(VCard)
     expect(card.classes()).toContain('bg-green-lighten-4')
     expect(card.classes()).not.toContain('bg-surface')
     expect(card.classes()).toContain('elevation-2')
   })
 
   it('calls setRecipeBuilt when card is clicked', async () => {
-    emitEvent(createWrapper(), VCard, 'click')
+    component(createWrapper(), VCard).click()
     expect(mockSetRecipeBuilt).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT, true)
   })
 
   it('calls setRecipeBuilt when checkbox is changed', async () => {
-    emitEvent(createWrapper(), VCheckbox, 'update:modelValue', true)
+    component(createWrapper(), VCheckbox).emit('update:modelValue', true)
     expect(mockSetRecipeBuilt).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT, true)
   })
 
   it('toggles built state when card is clicked on built recipe', async () => {
     const builtRecipe = createTestRecipeNode(TEST_RECIPES.IRON_INGOT, true)
-    emitEvent(createWrapper({ recipe: builtRecipe }), VCard, 'click')
+    component(createWrapper({ recipe: builtRecipe }), VCard).click()
     expect(mockSetRecipeBuilt).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT, false)
   })
 
   it('handles null checkbox value correctly', async () => {
-    emitEvent(createWrapper(), VCheckbox, 'update:modelValue', null)
+    component(createWrapper(), VCheckbox).emit('update:modelValue', null)
     expect(mockSetRecipeBuilt).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT, false)
   })
 
   it('renders with different recipe data', () => {
     const copperRecipe = createTestRecipeNode(TEST_RECIPES.COPPER_INGOT)
     const wrapper = createWrapper({ recipe: copperRecipe })
-    expectElementExists(wrapper, '.recipe-building')
-    expectElementText(wrapper, '.recipe-building', 'Smelter')
+    component(wrapper, VCard).assert({ exists: true, text: ['Smelter'] })
   })
 
   it('calls data store methods with correct building parameter', () => {
@@ -178,7 +178,7 @@ describe('RecipeBuilding Integration', () => {
     )
     const wrapper = createWrapper({ recipe: constructorRecipe })
 
-    expectElementText(wrapper, '.recipe-building', 'Constructor')
+    component(wrapper, VCard).assert({ text: ['Constructor'] })
     expect(wrapper.findComponent(CachedIcon).props('icon')).toBeTruthy()
   })
 })
