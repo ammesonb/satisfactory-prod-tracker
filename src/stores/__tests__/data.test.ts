@@ -9,8 +9,7 @@ global.fetch = vi.fn()
 
 // Import the real store implementation directly, bypassing the global mock
 vi.doMock('@/stores/data', async () => {
-  const actual = await vi.importActual('@/stores/data')
-  return actual
+  return await vi.importActual('@/stores/data')
 })
 
 const { useDataStore } = await import('../data')

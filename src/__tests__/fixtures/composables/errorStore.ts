@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { vi } from 'vitest'
 import type { VNode } from 'vue'
+import type { ErrorBuilder } from '@/types/errors'
 
 // Create reactive refs that persist across calls for key properties
 export const mockErrorShow = ref(false)
@@ -8,16 +9,50 @@ export const mockErrorLevel = ref<'error' | 'warning' | 'info'>('error')
 export const mockErrorSummary = ref('')
 export const mockErrorBodyContent = ref<VNode | (() => VNode) | null>(null)
 
+// Create chainable builder mock
+const createMockBuilder = () => {
+  const builder = {
+    _title: '',
+    _bodyContent: null as VNode | (() => VNode) | null,
+    title: vi.fn(function (this: ErrorBuilder, text: string) {
+      this._title = text
+      return this
+    }),
+    body: vi.fn(function (this: ErrorBuilder, content: VNode | (() => VNode)) {
+      this._bodyContent = content
+      return this
+    }),
+    show: vi.fn(function (this: ErrorBuilder) {
+      mockErrorShow.value = true
+      mockErrorSummary.value = this._title
+      mockErrorBodyContent.value = this._bodyContent
+    }),
+  }
+  return builder
+}
+
 // Error store action mocks
 export const mockHideError = vi.fn(() => {
   mockErrorShow.value = false
   mockErrorSummary.value = ''
   mockErrorBodyContent.value = null
 })
-export const mockCreateBuilder = vi.fn()
-export const mockErrorBuilder = vi.fn()
-export const mockWarningBuilder = vi.fn()
-export const mockInfoBuilder = vi.fn()
+export const mockCreateBuilder = vi.fn((level: 'error' | 'warning' | 'info') => {
+  mockErrorLevel.value = level
+  return createMockBuilder()
+})
+export const mockErrorBuilder = vi.fn(() => {
+  mockErrorLevel.value = 'error'
+  return createMockBuilder()
+})
+export const mockWarningBuilder = vi.fn(() => {
+  mockErrorLevel.value = 'warning'
+  return createMockBuilder()
+})
+export const mockInfoBuilder = vi.fn(() => {
+  mockErrorLevel.value = 'info'
+  return createMockBuilder()
+})
 
 export const mockErrorStore = {
   get show() {
