@@ -25,7 +25,7 @@ const CONSTRUCTOR_BUILDING: ItemOption = {
   type: 'building',
 }
 
-const TOTAL_FIXTURE_BUILDINGS = 11
+const TOTAL_FIXTURE_BUILDINGS = 13
 const CUSTOM_PLACEHOLDER = 'Custom placeholder'
 const DEFAULT_PLACEHOLDER = 'Search for a building...'
 const NON_EXISTENT_BUILDING = 'Desc_NonExistent_C'
