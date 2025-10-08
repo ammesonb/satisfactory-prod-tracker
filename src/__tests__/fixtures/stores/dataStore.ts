@@ -32,6 +32,45 @@ export function createTestRecipe(data: {
   }
 }
 
+export const mockRecipeIngredients = vi.fn((recipeName: string) => {
+  const recipe = recipeDatabase[recipeName]
+  return recipe ? recipe.ingredients : []
+})
+
+export const mockRecipeProducts = vi.fn((recipeName: string) => {
+  const recipe = recipeDatabase[recipeName]
+  return recipe ? recipe.products : []
+})
+
+export const mockGetItemDisplayName = vi.fn((itemKey: string) => {
+  const item = itemDatabase[itemKey]
+  return item?.name || itemKey
+})
+
+export const mockGetRecipeDisplayName = vi.fn((recipeName: string) => recipeName)
+
+export const mockGetBuildingDisplayName = vi.fn((buildingName: string) => {
+  const building = buildingDatabase[buildingName]
+  return building?.name || buildingName
+})
+
+export const mockGetRecipeProductionBuildings = vi.fn((recipeName: string) => {
+  const recipe = recipeDatabase[recipeName]
+  return recipe ? recipe.producedIn : []
+})
+
+export const mockGetIcon = vi.fn((itemKey: string) => {
+  const item =
+    itemDatabase[itemKey] ||
+    (() => {
+      const foundKey = Object.keys(itemDatabase).find((key) => itemDatabase[key].icon === itemKey)
+      return foundKey ? itemDatabase[foundKey] : undefined
+    })()
+  return item?.icon || itemKey
+})
+
+export const mockLoadData = vi.fn()
+
 /**
  * Creates a mock data store for testing that uses the recipe database fixture
  * instead of mockReturnValueOnce calls
@@ -41,45 +80,13 @@ export function createMockDataStore() {
     buildings: buildingDatabase as Record<string, Building>,
     recipes: recipeDatabase as Record<string, Recipe>,
     items: itemDatabase as Record<string, Item>,
-    recipeIngredients: vi.fn((recipeName: string) => {
-      const recipe = recipeDatabase[recipeName]
-      return recipe ? recipe.ingredients : []
-    }),
-    recipeProducts: vi.fn((recipeName: string) => {
-      const recipe = recipeDatabase[recipeName]
-      return recipe ? recipe.products : []
-    }),
-    getItemDisplayName: vi.fn((itemKey: string) => {
-      const item =
-        itemDatabase[itemKey] ||
-        (() => {
-          const foundKey = Object.keys(itemDatabase).find(
-            (key) => itemDatabase[key].icon === itemKey,
-          )
-          return foundKey ? itemDatabase[foundKey] : undefined
-        })()
-      return item?.name || itemKey
-    }),
-    getRecipeDisplayName: vi.fn((recipeName: string) => recipeName),
-    getBuildingDisplayName: vi.fn((buildingName: string) => {
-      const building = buildingDatabase[buildingName]
-      return building?.name || buildingName
-    }),
-    getRecipeProductionBuildings: vi.fn((recipeName: string) => {
-      const recipe = recipeDatabase[recipeName]
-      return recipe ? recipe.producedIn : []
-    }),
-    getIcon: vi.fn((itemKey: string) => {
-      const item =
-        itemDatabase[itemKey] ||
-        (() => {
-          const foundKey = Object.keys(itemDatabase).find(
-            (key) => itemDatabase[key].icon === itemKey,
-          )
-          return foundKey ? itemDatabase[foundKey] : undefined
-        })()
-      return item?.icon || itemKey
-    }),
-    loadData: vi.fn(),
+    recipeIngredients: mockRecipeIngredients,
+    recipeProducts: mockRecipeProducts,
+    getItemDisplayName: mockGetItemDisplayName,
+    getRecipeDisplayName: mockGetRecipeDisplayName,
+    getBuildingDisplayName: mockGetBuildingDisplayName,
+    getRecipeProductionBuildings: mockGetRecipeProductionBuildings,
+    getIcon: mockGetIcon,
+    loadData: mockLoadData,
   }
 }
