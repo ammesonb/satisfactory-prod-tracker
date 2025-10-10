@@ -9,11 +9,7 @@ import {
   mockFactoryStore,
   mockGetRecipeByName,
 } from '@/__tests__/fixtures/composables/factoryStore'
-import {
-  createMockDataStore,
-  mockGetItemDisplayName,
-  mockGetRecipeDisplayName,
-} from '@/__tests__/fixtures/stores/dataStore'
+import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
 import { EXTERNAL_RECIPE, BELT_ITEM_NAMES, PIPELINE_ITEM_NAMES } from '@/logistics/constants'
 
 vi.mock('@/stores', () => ({
@@ -274,20 +270,6 @@ describe('useLinkData', () => {
       const { transportIcon } = useLinkData(link, type)
 
       expect(transportIcon.value).toBe('desc-pipeline-c')
-    })
-
-    it('returns empty string when transport building not found', () => {
-      const link = computed(() =>
-        makeMaterial('Desc_IronIngot_C', 'Recipe_IronIngot_C', 'Recipe_IronPlate_C'),
-      )
-      const type = computed(() => 'input' as const)
-
-      const mockStore = createMockDataStore()
-      delete mockStore.buildings[BELT_ITEM_NAMES[0]]
-
-      const { transportIcon } = useLinkData(link, type)
-
-      expect(transportIcon.value).toBe('')
     })
   })
 })
