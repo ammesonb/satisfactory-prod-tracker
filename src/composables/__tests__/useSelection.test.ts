@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { nextTick, ref } from 'vue'
 
 import { useSelection } from '@/composables/useSelection'
@@ -11,272 +11,199 @@ interface TestItem {
 describe('useSelection', () => {
   const makeItem = (id: string, name: string): TestItem => ({ id, name })
 
-  beforeEach(() => {
-    // No mocks needed - testing actual implementation
-  })
+  const makeItems = (...ids: string[]) => ids.map((id) => makeItem(id, `Item ${id}`))
+
+  const setupSelection = (itemIds: string[], selectedIds: string[]) => {
+    const items = ref(makeItems(...itemIds))
+    const selected = ref(selectedIds)
+    return {
+      items,
+      selected,
+      selection: useSelection({
+        items,
+        selected,
+        getKey: (item) => item.id,
+      }),
+    }
+  }
 
   describe('selectedSet', () => {
-    it('returns a Set containing selected item keys', () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1'), makeItem('2', 'Item 2')])
-      const selected = ref(['1'])
+    const testCases = [
+      {
+        name: 'returns a Set containing selected item keys',
+        items: ['1', '2'],
+        selected: ['1'],
+        expectedSize: 1,
+        expectedHas: { '1': true, '2': false },
+      },
+      {
+        name: 'returns empty Set when no items selected',
+        items: ['1'],
+        selected: [],
+        expectedSize: 0,
+        expectedHas: {},
+      },
+    ]
 
-      const { selectedSet } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
+    testCases.forEach(({ name, items, selected, expectedSize, expectedHas }) => {
+      it(name, () => {
+        const { selection } = setupSelection(items, selected)
+
+        expect(selection.selectedSet.value).toBeInstanceOf(Set)
+        expect(selection.selectedSet.value.size).toBe(expectedSize)
+        Object.entries(expectedHas).forEach(([key, expected]) => {
+          expect(selection.selectedSet.value.has(key)).toBe(expected)
+        })
       })
-
-      expect(selectedSet.value).toBeInstanceOf(Set)
-      expect(selectedSet.value.has('1')).toBe(true)
-      expect(selectedSet.value.has('2')).toBe(false)
-    })
-
-    it('returns empty Set when no items selected', () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1')])
-      const selected = ref<string[]>([])
-
-      const { selectedSet } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      expect(selectedSet.value.size).toBe(0)
     })
 
     it('updates reactively when selected changes', async () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1'), makeItem('2', 'Item 2')])
-      const selected = ref<string[]>([])
+      const { selected, selection } = setupSelection(['1', '2'], [])
 
-      const { selectedSet } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      expect(selectedSet.value.size).toBe(0)
+      expect(selection.selectedSet.value.size).toBe(0)
 
       selected.value = ['1', '2']
       await nextTick()
 
-      expect(selectedSet.value.size).toBe(2)
-      expect(selectedSet.value.has('1')).toBe(true)
-      expect(selectedSet.value.has('2')).toBe(true)
+      expect(selection.selectedSet.value.size).toBe(2)
+      expect(selection.selectedSet.value.has('1')).toBe(true)
+      expect(selection.selectedSet.value.has('2')).toBe(true)
     })
   })
 
   describe('allSelected', () => {
-    it('returns true when all items are selected', () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1'), makeItem('2', 'Item 2')])
-      const selected = ref(['1', '2'])
+    const testCases = [
+      {
+        name: 'returns true when all items are selected',
+        items: ['1', '2'],
+        selected: ['1', '2'],
+        expected: true,
+      },
+      {
+        name: 'returns false when some items are selected',
+        items: ['1', '2'],
+        selected: ['1'],
+        expected: false,
+      },
+      {
+        name: 'returns false when no items are selected',
+        items: ['1', '2'],
+        selected: [],
+        expected: false,
+      },
+      {
+        name: 'returns false when items list is empty',
+        items: [],
+        selected: [],
+        expected: false,
+      },
+    ]
 
-      const { allSelected } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
+    testCases.forEach(({ name, items, selected, expected }) => {
+      it(name, () => {
+        const { selection } = setupSelection(items, selected)
+        expect(selection.allSelected.value).toBe(expected)
       })
-
-      expect(allSelected.value).toBe(true)
-    })
-
-    it('returns false when some items are selected', () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1'), makeItem('2', 'Item 2')])
-      const selected = ref(['1'])
-
-      const { allSelected } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      expect(allSelected.value).toBe(false)
-    })
-
-    it('returns false when no items are selected', () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1'), makeItem('2', 'Item 2')])
-      const selected = ref<string[]>([])
-
-      const { allSelected } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      expect(allSelected.value).toBe(false)
-    })
-
-    it('returns false when items list is empty', () => {
-      const items = ref<TestItem[]>([])
-      const selected = ref<string[]>([])
-
-      const { allSelected } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      expect(allSelected.value).toBe(false)
     })
 
     it('updates reactively when items change', async () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1')])
-      const selected = ref(['1'])
+      const { items, selection } = setupSelection(['1'], ['1'])
 
-      const { allSelected } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      expect(allSelected.value).toBe(true)
+      expect(selection.allSelected.value).toBe(true)
 
       items.value.push(makeItem('2', 'Item 2'))
       await nextTick()
 
-      expect(allSelected.value).toBe(false)
+      expect(selection.allSelected.value).toBe(false)
     })
 
     it('updates reactively when selected changes', async () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1'), makeItem('2', 'Item 2')])
-      const selected = ref(['1'])
+      const { selected, selection } = setupSelection(['1', '2'], ['1'])
 
-      const { allSelected } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      expect(allSelected.value).toBe(false)
+      expect(selection.allSelected.value).toBe(false)
 
       selected.value = ['1', '2']
       await nextTick()
 
-      expect(allSelected.value).toBe(true)
+      expect(selection.allSelected.value).toBe(true)
     })
   })
 
   describe('someSelected', () => {
-    it('returns true when some items are selected', () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1'), makeItem('2', 'Item 2')])
-      const selected = ref(['1'])
+    const testCases = [
+      {
+        name: 'returns true when some items are selected',
+        items: ['1', '2'],
+        selected: ['1'],
+        expected: true,
+      },
+      {
+        name: 'returns true when all items are selected',
+        items: ['1', '2'],
+        selected: ['1', '2'],
+        expected: true,
+      },
+      {
+        name: 'returns false when no items are selected',
+        items: ['1', '2'],
+        selected: [],
+        expected: false,
+      },
+    ]
 
-      const { someSelected } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
+    testCases.forEach(({ name, items, selected, expected }) => {
+      it(name, () => {
+        const { selection } = setupSelection(items, selected)
+        expect(selection.someSelected.value).toBe(expected)
       })
-
-      expect(someSelected.value).toBe(true)
-    })
-
-    it('returns true when all items are selected', () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1'), makeItem('2', 'Item 2')])
-      const selected = ref(['1', '2'])
-
-      const { someSelected } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      expect(someSelected.value).toBe(true)
-    })
-
-    it('returns false when no items are selected', () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1'), makeItem('2', 'Item 2')])
-      const selected = ref<string[]>([])
-
-      const { someSelected } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      expect(someSelected.value).toBe(false)
     })
 
     it('updates reactively when selected changes', async () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1'), makeItem('2', 'Item 2')])
-      const selected = ref<string[]>([])
+      const { selected, selection } = setupSelection(['1', '2'], [])
 
-      const { someSelected } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      expect(someSelected.value).toBe(false)
+      expect(selection.someSelected.value).toBe(false)
 
       selected.value = ['1']
       await nextTick()
 
-      expect(someSelected.value).toBe(true)
+      expect(selection.someSelected.value).toBe(true)
     })
   })
 
   describe('toggleAll', () => {
-    it('selects all items when none are selected', () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1'), makeItem('2', 'Item 2')])
-      const selected = ref<string[]>([])
+    const testCases = [
+      {
+        name: 'selects all items when none are selected',
+        items: ['1', '2'],
+        selected: [],
+        expected: ['1', '2'],
+      },
+      {
+        name: 'selects all items when some are selected',
+        items: ['1', '2', '3'],
+        selected: ['1'],
+        expected: ['1', '2', '3'],
+      },
+      {
+        name: 'deselects all items when all are selected',
+        items: ['1', '2'],
+        selected: ['1', '2'],
+        expected: [],
+      },
+      {
+        name: 'does nothing with empty items list',
+        items: [],
+        selected: [],
+        expected: [],
+      },
+    ]
 
-      const { toggleAll } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
+    testCases.forEach(({ name, items, selected: initialSelected, expected }) => {
+      it(name, () => {
+        const { selected, selection } = setupSelection(items, initialSelected)
+        selection.toggleAll()
+        expect(selected.value).toEqual(expected)
       })
-
-      toggleAll()
-
-      expect(selected.value).toEqual(['1', '2'])
-    })
-
-    it('selects all items when some are selected', () => {
-      const items = ref<TestItem[]>([
-        makeItem('1', 'Item 1'),
-        makeItem('2', 'Item 2'),
-        makeItem('3', 'Item 3'),
-      ])
-      const selected = ref(['1'])
-
-      const { toggleAll } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      toggleAll()
-
-      expect(selected.value).toEqual(['1', '2', '3'])
-    })
-
-    it('deselects all items when all are selected', () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1'), makeItem('2', 'Item 2')])
-      const selected = ref(['1', '2'])
-
-      const { toggleAll } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      toggleAll()
-
-      expect(selected.value).toEqual([])
-    })
-
-    it('does nothing with empty items list', () => {
-      const items = ref<TestItem[]>([])
-      const selected = ref<string[]>([])
-
-      const { toggleAll } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      toggleAll()
-
-      expect(selected.value).toEqual([])
     })
 
     it('uses getKey to extract item keys', () => {
@@ -296,68 +223,43 @@ describe('useSelection', () => {
   })
 
   describe('toggleItem', () => {
-    it('adds item to selection when not selected', () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1'), makeItem('2', 'Item 2')])
-      const selected = ref<string[]>([])
+    const testCases = [
+      {
+        name: 'adds item to selection when not selected',
+        items: ['1', '2'],
+        selected: [],
+        toggleKey: '1',
+        expected: ['1'],
+      },
+      {
+        name: 'removes item from selection when selected',
+        items: ['1', '2'],
+        selected: ['1', '2'],
+        toggleKey: '1',
+        expected: ['2'],
+      },
+      {
+        name: 'adds item to existing selection',
+        items: ['1', '2'],
+        selected: ['1'],
+        toggleKey: '2',
+        expected: ['1', '2'],
+      },
+      {
+        name: 'removes item from middle of selection',
+        items: ['1', '2', '3'],
+        selected: ['1', '2', '3'],
+        toggleKey: '2',
+        expected: ['1', '3'],
+      },
+    ]
 
-      const { toggleItem } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
+    testCases.forEach(({ name, items, selected: initialSelected, toggleKey, expected }) => {
+      it(name, () => {
+        const { selected, selection } = setupSelection(items, initialSelected)
+        selection.toggleItem(toggleKey)
+        expect(selected.value).toEqual(expected)
       })
-
-      toggleItem('1')
-
-      expect(selected.value).toEqual(['1'])
-    })
-
-    it('removes item from selection when selected', () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1'), makeItem('2', 'Item 2')])
-      const selected = ref(['1', '2'])
-
-      const { toggleItem } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      toggleItem('1')
-
-      expect(selected.value).toEqual(['2'])
-    })
-
-    it('adds item to existing selection', () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1'), makeItem('2', 'Item 2')])
-      const selected = ref(['1'])
-
-      const { toggleItem } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      toggleItem('2')
-
-      expect(selected.value).toEqual(['1', '2'])
-    })
-
-    it('removes item from middle of selection', () => {
-      const items = ref<TestItem[]>([
-        makeItem('1', 'Item 1'),
-        makeItem('2', 'Item 2'),
-        makeItem('3', 'Item 3'),
-      ])
-      const selected = ref(['1', '2', '3'])
-
-      const { toggleItem } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      toggleItem('2')
-
-      expect(selected.value).toEqual(['1', '3'])
     })
 
     it('handles toggling same item multiple times', () => {
@@ -399,56 +301,42 @@ describe('useSelection', () => {
   })
 
   describe('isSelected', () => {
-    it('returns true when item is selected', () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1'), makeItem('2', 'Item 2')])
-      const selected = ref(['1'])
+    const testCases = [
+      {
+        name: 'returns true when item is selected',
+        items: ['1', '2'],
+        selected: ['1'],
+        checkKey: '1',
+        expected: true,
+      },
+      {
+        name: 'returns false when item is not selected',
+        items: ['1', '2'],
+        selected: ['1'],
+        checkKey: '2',
+        expected: false,
+      },
+      {
+        name: 'returns false for non-existent items',
+        items: ['1'],
+        selected: ['1'],
+        checkKey: '999',
+        expected: false,
+      },
+      {
+        name: 'returns false when no items are selected',
+        items: ['1'],
+        selected: [],
+        checkKey: '1',
+        expected: false,
+      },
+    ]
 
-      const { isSelected } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
+    testCases.forEach(({ name, items, selected, checkKey, expected }) => {
+      it(name, () => {
+        const { selection } = setupSelection(items, selected)
+        expect(selection.isSelected(checkKey)).toBe(expected)
       })
-
-      expect(isSelected('1')).toBe(true)
-    })
-
-    it('returns false when item is not selected', () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1'), makeItem('2', 'Item 2')])
-      const selected = ref(['1'])
-
-      const { isSelected } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      expect(isSelected('2')).toBe(false)
-    })
-
-    it('returns false for non-existent items', () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1')])
-      const selected = ref(['1'])
-
-      const { isSelected } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      expect(isSelected('999')).toBe(false)
-    })
-
-    it('returns false when no items are selected', () => {
-      const items = ref<TestItem[]>([makeItem('1', 'Item 1')])
-      const selected = ref<string[]>([])
-
-      const { isSelected } = useSelection({
-        items,
-        selected,
-        getKey: (item) => item.id,
-      })
-
-      expect(isSelected('1')).toBe(false)
     })
 
     it('updates when selection changes', () => {
