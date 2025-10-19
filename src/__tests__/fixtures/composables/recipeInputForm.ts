@@ -1,8 +1,9 @@
 import { vi } from 'vitest'
-import { ref, computed, type Ref } from 'vue'
+import { computed, ref, type Ref } from 'vue'
+
 import { createUnwrapProxy } from '@/__tests__/vue-test-helpers'
-import type { RecipeEntry } from '@/types/factory'
 import type { ItemOption } from '@/types/data'
+import type { RecipeEntry } from '@/types/factory'
 
 export const mockSelectedRecipe: Ref<ItemOption | undefined> = ref(undefined)
 export const mockBuildingCount = ref(1)

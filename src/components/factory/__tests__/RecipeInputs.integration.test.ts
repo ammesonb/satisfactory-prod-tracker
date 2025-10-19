@@ -1,11 +1,13 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, vi } from 'vitest'
-import RecipeInputs from '@/components/factory/RecipeInputs.vue'
-import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
-import { recipeDatabase } from '@/__tests__/fixtures/data'
-import type { Material } from '@/types/factory'
-import RecipeLink from '../RecipeLink.vue'
+import { describe, expect, it, vi } from 'vitest'
+
+import { makeMaterial, makeRecipeNode } from '@/__tests__/fixtures/data'
 import { component, element } from '@/__tests__/vue-test-helpers'
+import type { RecipeNode } from '@/logistics/graph-node'
+import type { Material } from '@/types/factory'
+
+import RecipeInputs from '@/components/factory/RecipeInputs.vue'
+import RecipeLink from '@/components/factory/RecipeLink.vue'
 
 // Mock the RecipeLink component since it's auto-imported
 vi.mock('@/components/factory/RecipeLink.vue', () => ({
@@ -38,31 +40,6 @@ describe('RecipeInputs Integration', () => {
     WATER: 'Desc_Water_C',
   } as const
 
-  const createRecipeNode = (recipeName: string): RecipeNode => {
-    const recipe = recipeDatabase[recipeName]
-    if (!recipe) {
-      throw new Error(`Recipe ${recipeName} not found in fixtures`)
-    }
-
-    return newRecipeNode(
-      { name: recipe.name, building: recipe.producedIn[0] || 'Unknown', count: 1 },
-      recipe.ingredients,
-      recipe.products,
-    )
-  }
-
-  const createMaterialLink = (
-    source: string,
-    sink: string,
-    material: string,
-    amount: number,
-  ): Material => ({
-    source,
-    sink,
-    material,
-    amount,
-  })
-
   const createWrapper = (recipe: RecipeNode) => {
     return mount(RecipeInputs, {
       props: {
@@ -72,7 +49,7 @@ describe('RecipeInputs Integration', () => {
   }
 
   it('renders without errors and displays "None" when no inputs on recipe', () => {
-    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const recipe = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
     recipe.inputs = []
     const wrapper = createWrapper(recipe)
 
@@ -84,10 +61,10 @@ describe('RecipeInputs Integration', () => {
   })
 
   it('renders RecipeLink components and does not show "None" when recipe has inputs', () => {
-    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const recipe = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
     recipe.inputs = [
-      createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30),
-      createMaterialLink('Storage', 'Smelting', TEST_ITEMS.IRON_ORE, 15),
+      makeMaterial(TEST_ITEMS.IRON_ORE, 'Mining', 'Smelting', 30),
+      makeMaterial(TEST_ITEMS.IRON_ORE, 'Storage', 'Smelting', 15),
     ]
 
     const wrapper = createWrapper(recipe)
@@ -97,8 +74,8 @@ describe('RecipeInputs Integration', () => {
   })
 
   it('passes correct props to RecipeLink components', () => {
-    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
+    const recipe = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
+    const link = makeMaterial(TEST_ITEMS.IRON_ORE, 'Mining', 'Smelting', 30)
     recipe.inputs = [link]
 
     component(createWrapper(recipe), RecipeLink).assert({
@@ -112,8 +89,8 @@ describe('RecipeInputs Integration', () => {
 
   it('uses linkToString for component keys', async () => {
     const { linkToString } = await import('@/logistics/graph-node')
-    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
+    const recipe = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
+    const link = makeMaterial(TEST_ITEMS.IRON_ORE, 'Mining', 'Smelting', 30)
     recipe.inputs = [link]
 
     createWrapper(recipe)
@@ -122,11 +99,11 @@ describe('RecipeInputs Integration', () => {
   })
 
   it('handles multiple links with different materials', () => {
-    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const recipe = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
     recipe.inputs = [
-      createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30),
-      createMaterialLink('Water_Pump', 'Smelting', TEST_ITEMS.WATER, 45),
-      createMaterialLink('Storage', 'Smelting', TEST_ITEMS.COPPER_ORE, 15),
+      makeMaterial(TEST_ITEMS.IRON_ORE, 'Mining', 'Smelting', 30),
+      makeMaterial(TEST_ITEMS.WATER, 'Water_Pump', 'Smelting', 45),
+      makeMaterial(TEST_ITEMS.COPPER_ORE, 'Storage', 'Smelting', 15),
     ]
 
     const wrapper = createWrapper(recipe)

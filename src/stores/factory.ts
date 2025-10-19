@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia'
 import { h } from 'vue'
-import { type RecipeProduct } from '@/types/data'
-import { type Factory, type Floor } from '@/types/factory'
+
+import { isUserFriendlyError } from '@/errors/type-guards'
+import { ZERO_THRESHOLD } from '@/logistics/constants'
+import { linkToString, type RecipeNode } from '@/logistics/graph-node'
 import { solveRecipeChain } from '@/logistics/graph-solver'
 import { useErrorStore } from '@/stores/errors'
-import { isUserFriendlyError } from '@/errors/type-guards'
-import { linkToString, type RecipeNode } from '@/logistics/graph-node'
+import { type RecipeProduct } from '@/types/data'
+import { type Factory, type Floor } from '@/types/factory'
 
 export const useFactoryStore = defineStore('factory', {
   state: () => ({
@@ -67,6 +69,20 @@ export const useFactoryStore = defineStore('factory', {
 
         // Initialize all recipe links as incomplete (false)
         for (const link of [...recipeNode.inputs, ...recipeNode.outputs]) {
+          recipeLinks[linkToString(link)] = false
+        }
+
+        // Also add leftover products as links (outputs with empty sink)
+        const leftoverProducts = recipeNode.availableProducts
+          .filter((p) => p.amount > ZERO_THRESHOLD)
+          .map((p) => ({
+            source: recipeNode.recipe.name,
+            sink: '',
+            material: p.item,
+            amount: p.amount,
+          }))
+
+        for (const link of leftoverProducts) {
           recipeLinks[linkToString(link)] = false
         }
       }

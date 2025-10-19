@@ -1,19 +1,18 @@
 import { mount, type VueWrapper } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { VSelect, VChip, VExpansionPanel } from 'vuetify/components'
-import { newRecipeNode, type RecipeNode as RecipeNodeType } from '@/logistics/graph-node'
-import { recipeDatabase } from '@/__tests__/fixtures/data'
-import { mockGetStores } from '@/__tests__/fixtures/composables'
-import { mockIsDark } from '@/__tests__/fixtures/composables/themeStore'
-import { createTestRecipe } from '@/__tests__/fixtures/stores/dataStore'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { mockGetEligibleFloors, mockMoveRecipe } from '@/__tests__/fixtures/composables/navigation'
+import { mockIsDark } from '@/__tests__/fixtures/composables/themeStore'
 import {
   mockGetRecipePanelValue,
   mockIsRecipeComplete,
 } from '@/__tests__/fixtures/composables/useRecipeStatus'
+import { makeRecipeNode } from '@/__tests__/fixtures/data'
 import { component, element } from '@/__tests__/vue-test-helpers'
+import type { RecipeNode as RecipeNodeType } from '@/logistics/graph-node'
 
 import RecipeNodeComponent from '@/components/factory/RecipeNode.vue'
+import { VChip, VExpansionPanel, VSelect } from 'vuetify/components'
 
 // Use centralized mock fixtures
 vi.mock('@/composables/useStores', async () => {
@@ -52,26 +51,9 @@ describe('RecipeNode Integration', () => {
     mockIsDark.value = false
   })
 
-  const createRecipeNode = (recipeName: string, batchNumber = 1): RecipeNodeType => {
-    const recipeData = recipeDatabase[recipeName]
-    if (!recipeData) {
-      throw new Error(`Recipe ${recipeName} not found in fixtures`)
-    }
-
-    // Convert RecipeData to Recipe type for the component
-    const recipe = createTestRecipe(recipeData)
-
-    const recipeNode = newRecipeNode(
-      { name: recipe.name, building: recipe.producedIn[0] || 'Unknown', count: 1.5 },
-      recipe.ingredients,
-      recipe.products,
-    )
-    recipeNode.batchNumber = batchNumber
-    return recipeNode
-  }
-
   const createWrapper = (recipe?: RecipeNodeType, customProps = {}) => {
-    const defaultRecipeNode = recipe || createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const defaultRecipeNode =
+      recipe || makeRecipeNode(TEST_RECIPES.IRON_INGOT, 1, { fromDatabase: true, count: 1.5 })
     return mount({
       template: '<v-expansion-panels><RecipeNode v-bind="props" /></v-expansion-panels>',
       components: { RecipeNode: RecipeNodeComponent },
@@ -92,22 +74,30 @@ describe('RecipeNode Integration', () => {
 
   describe('Basic Rendering', () => {
     it('displays recipe display name correctly', async () => {
-      const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+      const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 1, {
+        fromDatabase: true,
+        count: 1.5,
+      })
       const wrapper = createWrapper(recipeNode)
 
       element(wrapper, '.text-h6').assert({ text: TEST_RECIPES.IRON_INGOT })
     })
 
     it('displays recipe count in chip with correct formatting', () => {
-      const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+      const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 1, {
+        fromDatabase: true,
+        count: 1.5,
+      })
       const wrapper = createWrapper(recipeNode)
 
       component(wrapper, VChip).assert({ text: 'x1.50' })
     })
 
     it('formats recipe count correctly for different values', () => {
-      const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-      recipeNode.recipe.count = 2.75
+      const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 1, {
+        fromDatabase: true,
+        count: 2.75,
+      })
 
       const wrapper = createWrapper(recipeNode)
 
@@ -115,12 +105,10 @@ describe('RecipeNode Integration', () => {
     })
 
     it('shows RecipeDetails tooltip when recipe exists in data store', async () => {
-      const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-
-      // Access the centralized mock and set up recipe data
-      const mockDataStore = mockGetStores().dataStore
-      const recipeData = recipeDatabase[TEST_RECIPES.IRON_INGOT]
-      mockDataStore.recipes[TEST_RECIPES.IRON_INGOT] = createTestRecipe(recipeData)
+      const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 1, {
+        fromDatabase: true,
+        count: 1.5,
+      })
 
       const wrapper = createWrapper(recipeNode)
 
@@ -128,7 +116,10 @@ describe('RecipeNode Integration', () => {
     })
 
     it('sets correct ID on expansion panel element', () => {
-      const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT, 2)
+      const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 2, {
+        fromDatabase: true,
+        count: 1.5,
+      })
       const wrapper = createWrapper(recipeNode)
 
       // Check that the expansion panel has the correctly formatted ID
@@ -137,13 +128,19 @@ describe('RecipeNode Integration', () => {
     })
 
     it('handles recipe with no batch number gracefully', () => {
-      const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+      const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 1, {
+        fromDatabase: true,
+        count: 1.5,
+      })
       recipeNode.batchNumber = undefined
-      component(createWrapper(), VExpansionPanel).assert()
+      component(createWrapper(recipeNode), VExpansionPanel).assert()
     })
 
     it('handles multiple ingredients recipe correctly', async () => {
-      const recipeNode = createRecipeNode(TEST_RECIPES.PURE_CATERIUM)
+      const recipeNode = makeRecipeNode(TEST_RECIPES.PURE_CATERIUM, 1, {
+        fromDatabase: true,
+        count: 1.5,
+      })
       const wrapper = createWrapper(recipeNode)
 
       component(wrapper, VChip).assert({ text: 'x1.50' })
@@ -184,36 +181,54 @@ describe('RecipeNode Integration', () => {
   })
 
   it('displays current batch number as selected floor value', () => {
-    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT, 1)
+    const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 1, {
+      fromDatabase: true,
+      count: 1.5,
+    })
     component(createWrapper(recipeNode), VSelect).assert({ props: { modelValue: 1 } })
   })
 
   it('calls getEligibleFloors with correct batch number', () => {
-    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT, 2)
+    const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 2, {
+      fromDatabase: true,
+      count: 1.5,
+    })
     createWrapper(recipeNode)
     expect(mockGetEligibleFloors).toHaveBeenCalledWith(2)
   })
 
   it('calls moveRecipe when floor selection changes', async () => {
-    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT, 1)
+    const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 1, {
+      fromDatabase: true,
+      count: 1.5,
+    })
     await component(createWrapper(recipeNode), VSelect).emit('update:modelValue', 2)
     expect(mockMoveRecipe).toHaveBeenCalledWith(TEST_RECIPES.IRON_INGOT, 1, 2)
   })
 
   it('calls isRecipeComplete to determine completion status', async () => {
-    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 1, {
+      fromDatabase: true,
+      count: 1.5,
+    })
     createWrapper(recipeNode)
     expect(mockIsRecipeComplete).toHaveBeenCalledWith(recipeNode)
   })
 
   it('calls getRecipePanelValue for panel value', async () => {
-    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 1, {
+      fromDatabase: true,
+      count: 1.5,
+    })
     createWrapper(recipeNode)
     expect(mockGetRecipePanelValue).toHaveBeenCalledWith(recipeNode)
   })
 
   it('handles recipe with no batch number gracefully', () => {
-    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 1, {
+      fromDatabase: true,
+      count: 1.5,
+    })
     recipeNode.batchNumber = undefined
     component(createWrapper(recipeNode), VExpansionPanel).assert()
   })
@@ -229,7 +244,10 @@ describe('RecipeNode Integration', () => {
   })
 
   it('handles multiple ingredients recipe correctly', async () => {
-    const recipeNode = createRecipeNode(TEST_RECIPES.PURE_CATERIUM)
+    const recipeNode = makeRecipeNode(TEST_RECIPES.PURE_CATERIUM, 1, {
+      fromDatabase: true,
+      count: 1.5,
+    })
     const wrapper = createWrapper(recipeNode)
 
     component(wrapper, VChip).assert({ exists: true, text: 'x1.50' })
@@ -237,8 +255,10 @@ describe('RecipeNode Integration', () => {
   })
 
   it('formats recipe count correctly for different values', () => {
-    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    recipeNode.recipe.count = 2.75
+    const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 1, {
+      fromDatabase: true,
+      count: 2.75,
+    })
 
     const wrapper = createWrapper(recipeNode)
 

@@ -1,14 +1,15 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
+
+import { ProductNotFoundError, SourceNodeNotFoundError } from '@/errors/processing-errors'
 import {
-  newRecipeNode,
-  getCatalystQuantity,
-  produceRecipe,
   decrementConsumedProducts,
-} from '../graph-node'
-import type { Recipe } from '@/types/factory'
+  getCatalystQuantity,
+  newRecipeNode,
+  produceRecipe,
+} from '@/logistics/graph-node'
 import type { RecipeIngredient, RecipeProduct } from '@/types/data'
-import { SourceNodeNotFoundError, ProductNotFoundError } from '@/errors/processing-errors'
-import { expectErrorWithMessage } from './error-test-helpers'
+import type { Recipe } from '@/types/factory'
+import { expectErrorWithMessage } from '@/logistics/__tests__/error-test-helpers'
 
 describe('graph-node unit tests', () => {
   describe('newRecipeNode', () => {

@@ -1,10 +1,12 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, beforeEach, vi } from 'vitest'
-import { VApp, VLayout, VMain, VChip } from 'vuetify/components'
+import { beforeEach, describe, it, vi } from 'vitest'
+
+import { mockSelectedFactory } from '@/__tests__/fixtures/composables/factoryStore'
+import { component, element } from '@/__tests__/vue-test-helpers'
+
 import AppBar from '@/components/layout/AppBar.vue'
 import ImportExportModal from '@/components/modals/ImportExportModal.vue'
-import { component, element } from '@/__tests__/vue-test-helpers'
-import { mockSelectedFactory } from '@/__tests__/fixtures/composables/factoryStore'
+import { VApp, VChip, VLayout, VMain } from 'vuetify/components'
 
 vi.mock('@/components/modals/ImportExportModal.vue', () => ({
   default: {

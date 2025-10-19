@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import type { Material } from '@/types/factory'
-import type { RecipeNode } from '@/logistics/graph-node'
 import { computed, ref } from 'vue'
-import { useRecipeStatus } from '@/composables/useRecipeStatus'
+
+import { getStores } from '@/composables/useStores'
 import { useLinkData } from '@/composables/useLinkData'
+import { useRecipeStatus } from '@/composables/useRecipeStatus'
+import type { RecipeNode } from '@/logistics/graph-node'
+import type { Material } from '@/types/factory'
+import { useTransport } from '@/composables/useTransport'
+import { BELT_ITEM_NAMES, isFluid, PIPELINE_ITEM_NAMES } from '@/logistics/constants'
 
 const props = defineProps<{
   link: Material
@@ -11,14 +15,24 @@ const props = defineProps<{
   direction: 'input' | 'output'
 }>()
 
+const { dataStore } = getStores()
+
 const { setLinkBuilt, isLinkBuilt } = useRecipeStatus()
 
-const { materialItem, transportIcon } = useLinkData(
+const { materialItem } = useLinkData(
   computed(() => props.link),
   computed(() => props.direction),
 )
+const { minimumUsableTier } = useTransport(props.recipe, props.link, props.direction)
 
 const built = computed(() => isLinkBuilt(props.link))
+const transportIcon = computed(() =>
+  dataStore.getIcon(
+    isFluid(props.link.material)
+      ? PIPELINE_ITEM_NAMES[minimumUsableTier.value]
+      : BELT_ITEM_NAMES[minimumUsableTier.value],
+  ),
+)
 
 const updateBuiltState = (value: boolean) => {
   setLinkBuilt(props.link, value)

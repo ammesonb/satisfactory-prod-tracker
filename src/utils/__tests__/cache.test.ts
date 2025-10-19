@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vitest'
-import { memoize, memoizeSimple } from '../cache'
+import { describe, expect, it, vi } from 'vitest'
+
+import { memoize, memoizeSimple } from '@/utils/cache'
 
 describe('cache utilities', () => {
   // Helper to create a mock function that tracks calls

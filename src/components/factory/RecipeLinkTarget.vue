@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { Material } from '@/types/factory'
+import { computed, ref } from 'vue'
+
 import { useFloorNavigation } from '@/composables/useFloorNavigation'
 import { useLinkData } from '@/composables/useLinkData'
 import { useRecipeStatus } from '@/composables/useRecipeStatus'
+import type { Material } from '@/types/factory'
 
 interface Props {
   link: Material

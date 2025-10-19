@@ -1,6 +1,7 @@
 import { inject, type InjectionKey } from 'vue'
-import { useDataStore, useFactoryStore, useThemeStore, useErrorStore } from '@/stores'
-import type { IDataStore, IFactoryStore, IThemeStore, IErrorStore } from '@/types/stores'
+
+import { useDataStore, useErrorStore, useFactoryStore, useThemeStore } from '@/stores'
+import type { IDataStore, IErrorStore, IFactoryStore, IThemeStore } from '@/types/stores'
 
 // Define injection keys with proper interface typing for better testability
 export const DATA_STORE_KEY: InjectionKey<IDataStore> = Symbol('dataStore')

@@ -2,8 +2,11 @@
   "extends": "./tsconfig.app.json",
   "compilerOptions": {
     "lib": ["ES2020", "DOM"],
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "include": ["src/**/*.vue", "src/**/*.ts"],
+  "include": ["src/**/*.vue", "src/**/*.ts", "src/**/__tests__/**/*"],
   "exclude": []
 }

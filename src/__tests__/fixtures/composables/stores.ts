@@ -1,9 +1,10 @@
 import { vi } from 'vitest'
+
+import { mockErrorStore } from '@/__tests__/fixtures/composables/errorStore'
+import { mockFactoryStore } from '@/__tests__/fixtures/composables/factoryStore'
+import { mockThemeStore } from '@/__tests__/fixtures/composables/themeStore'
 import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
-import type { IDataStore, IFactoryStore, IThemeStore, IErrorStore } from '@/types/stores'
-import { mockFactoryStore } from './factoryStore'
-import { mockThemeStore } from './themeStore'
-import { mockErrorStore } from './errorStore'
+import type { IDataStore, IErrorStore, IFactoryStore, IThemeStore } from '@/types/stores'
 
 // Create stores once to ensure consistency across all getters
 const mockStores = {

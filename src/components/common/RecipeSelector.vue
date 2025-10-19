@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+
 import { getStores } from '@/composables/useStores'
-import { recipesToOptions } from '@/utils/recipes'
-import { type ItemOption } from '@/types/data'
+import type { ItemOption } from '@/types/data'
 import type { DisplayConfig, IconConfig } from '@/types/ui'
+import { recipesToOptions } from '@/utils/recipes'
 
 interface Props {
   modelValue?: ItemOption

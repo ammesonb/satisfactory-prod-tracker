@@ -1,16 +1,18 @@
-import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { h } from 'vue'
-import { VBtn, VIcon, VCard, VCardTitle, VCardText } from 'vuetify/components'
-import ErrorModal from '@/components/modals/ErrorModal.vue'
-import { component, element } from '@/__tests__/vue-test-helpers'
+
 import {
-  mockErrorShow,
-  mockErrorLevel,
-  mockErrorSummary,
   mockErrorBodyContent,
+  mockErrorLevel,
+  mockErrorShow,
+  mockErrorSummary,
   mockHideError,
 } from '@/__tests__/fixtures/composables/errorStore'
+import { component, element } from '@/__tests__/vue-test-helpers'
+import { mount } from '@vue/test-utils'
+
+import ErrorModal from '@/components/modals/ErrorModal.vue'
+import { VBtn, VCard, VCardText, VCardTitle, VIcon } from 'vuetify/components'
 
 vi.mock('@/composables/useStores', async () => {
   const { mockUseStores } = await import('@/__tests__/fixtures/composables')

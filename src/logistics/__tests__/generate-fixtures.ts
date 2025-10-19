@@ -1,13 +1,14 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
+
 import type {
+  Building,
   GameData,
   Item,
   Recipe,
   RecipeIngredient,
   RecipeProduct,
-  Building,
 } from '@/types/data'
 
 function loadGameData(): GameData {

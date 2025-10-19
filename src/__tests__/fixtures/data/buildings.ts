@@ -12,4 +12,6 @@ export const buildingDatabase: Record<string, Building> = {
   Desc_Blender_C: { name: 'Blender', icon: 'desc-blender-c' },
   Desc_ConstructorMk1_C: { name: 'Constructor', icon: 'desc-constructormk1-c' },
   Desc_SmelterMk1_C: { name: 'Smelter', icon: 'desc-smeltermk1-c' },
+  Desc_Pipeline_C: { name: 'Pipeline Mk.1', icon: 'desc-pipeline-c' },
+  Desc_ConveyorBeltMk1_C: { icon: 'desc-conveyorbeltmk1-c', name: 'Conveyor Belt Mk.1' },
 }

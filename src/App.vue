@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useDataStore } from '@/stores/data'
-import { type RecipeProduct } from '@/types/data'
-import { useFactoryStore } from '@/stores/factory'
-import { useRecipeStatus } from '@/composables/useRecipeStatus'
+
 import { useFloorNavigation } from '@/composables/useFloorNavigation'
+import { useRecipeStatus } from '@/composables/useRecipeStatus'
+import { useDataStore } from '@/stores/data'
+import { useFactoryStore } from '@/stores/factory'
+import { type RecipeProduct } from '@/types/data'
 
 const dataStore = useDataStore()
 const factoryStore = useFactoryStore()

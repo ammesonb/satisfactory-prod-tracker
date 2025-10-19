@@ -1,9 +1,9 @@
-import { describe, it, expect, vi } from 'vitest'
-import { isUserFriendlyError } from '@/errors/type-guards'
-import { RecipeFormatError, InvalidBuildingError } from '@/errors/recipe-errors'
+import { describe, expect, it, vi } from 'vitest'
+
 import { RecipeChainError, SourceNodeNotFoundError } from '@/errors/processing-errors'
-import type { ErrorBuilder } from '@/types/errors'
-import type { UserFriendlyError } from '@/types/errors'
+import { InvalidBuildingError, RecipeFormatError } from '@/errors/recipe-errors'
+import { isUserFriendlyError } from '@/errors/type-guards'
+import type { ErrorBuilder, UserFriendlyError } from '@/types/errors'
 
 describe('type-guards', () => {
   describe('isUserFriendlyError', () => {

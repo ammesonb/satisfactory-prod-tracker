@@ -1,17 +1,19 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import ImportTab from '@/components/modals/import-export/ImportTab.vue'
-import FactorySelector from '@/components/common/FactorySelector.vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import {
+  mockFileInput,
+  mockHandleFileImport,
+  mockImportFromClipboard,
+  mockImportFromFile,
+} from '@/__tests__/fixtures/composables/dataShare'
+import { mockImportFactories } from '@/__tests__/fixtures/composables/factoryStore'
 import { component } from '@/__tests__/vue-test-helpers'
 import type { Factory } from '@/types/factory'
 import { parseFactoriesFromJson } from '@/types/factory'
-import {
-  mockImportFromClipboard,
-  mockImportFromFile,
-  mockHandleFileImport,
-  mockFileInput,
-} from '@/__tests__/fixtures/composables/dataShare'
-import { mockImportFactories } from '@/__tests__/fixtures/composables/factoryStore'
+
+import FactorySelector from '@/components/common/FactorySelector.vue'
+import ImportTab from '@/components/modals/import-export/ImportTab.vue'
 import { VBtn, VCard } from 'vuetify/components'
 
 // Mock parseFactoriesFromJson

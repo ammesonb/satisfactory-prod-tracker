@@ -1,16 +1,16 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import type { Item, Recipe, Building } from '@/types/data'
-import type { IDataStore } from '@/types/stores'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { EXTERNAL_RECIPE } from '@/logistics/constants'
+import type { Building, Item, Recipe } from '@/types/data'
+import type { IDataStore } from '@/types/stores'
 
 // Mock fetch
 global.fetch = vi.fn()
 
 // Import the real store implementation directly, bypassing the global mock
 vi.doMock('@/stores/data', async () => {
-  const actual = await vi.importActual('@/stores/data')
-  return actual
+  return await vi.importActual('@/stores/data')
 })
 
 const { useDataStore } = await import('../data')

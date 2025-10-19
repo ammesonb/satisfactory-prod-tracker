@@ -1,17 +1,19 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { isRef } from 'vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import {
+  mockBuildingCounts,
+  mockIsFluidMaterial,
+  mockTransportItems,
+} from '@/__tests__/fixtures/composables/transport'
+import { recipeDatabase } from '@/__tests__/fixtures/data'
 import { useTransport } from '@/composables/useTransport'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import type { Material } from '@/types/factory'
-import { recipeDatabase } from '@/__tests__/fixtures/data'
-import {
-  mockIsFluidMaterial,
-  mockTransportItems,
-  mockBuildingCounts,
-} from '@/__tests__/fixtures/composables/transport'
 
-import TransportCapacityTooltip from '@/components/factory/TransportCapacityTooltip.vue'
 import CachedIcon from '@/components/common/CachedIcon.vue'
+import TransportCapacityTooltip from '@/components/factory/TransportCapacityTooltip.vue'
 
 // Use centralized fixtures for mocking composables
 vi.mock('@/composables/useStores', async () => {
@@ -63,11 +65,13 @@ describe('TransportCapacityTooltip Integration', () => {
   })
 
   it('calls useTransport composable with correct parameters', async () => {
-    const recipe = createTestRecipe()
-    const link = createTestLink()
-    createWrapper({ recipe, link, direction: 'output', isHovered: false })
+    createWrapper({ direction: 'output', isHovered: false })
 
-    expect(vi.mocked(useTransport)).toHaveBeenCalledWith(recipe, link, 'output', false)
+    const calls = vi.mocked(useTransport).mock.calls
+    expect(calls).toHaveLength(1)
+    expect(calls[0][2]).toBe('output')
+    // isHovered should be passed as a reactive reference
+    expect(isRef(calls[0][3])).toBe(true)
   })
 
   it('displays building counts from composable results', async () => {

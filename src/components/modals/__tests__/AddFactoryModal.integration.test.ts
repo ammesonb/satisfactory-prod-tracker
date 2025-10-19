@@ -1,23 +1,25 @@
 import { mount, VueWrapper } from '@vue/test-utils'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import AddFactoryModal from '@/components/modals/AddFactoryModal.vue'
-import RecipeForm from '@/components/modals/add-factory/RecipeForm.vue'
-import ItemSelector from '@/components/common/ItemSelector.vue'
-import ExternalInputSelector from '@/components/modals/add-factory/ExternalInputSelector.vue'
-import { component } from '@/__tests__/vue-test-helpers'
-import { VBtn, VBtnToggle, VTextField, VTextarea } from 'vuetify/components'
-import { itemDatabase } from '@/__tests__/fixtures/data'
-import type { RecipeProduct } from '@/types/data'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import {
-  mockSelectedRecipes,
-  mockSelectedRecipe,
-  mockSelectedBuilding,
-  mockProductionBuildings,
+  mockBuildingCount,
+  mockDisplayError,
   mockErrorMessage,
   mockIsValid,
-  mockDisplayError,
-  mockBuildingCount,
+  mockProductionBuildings,
+  mockSelectedBuilding,
+  mockSelectedRecipe,
+  mockSelectedRecipes,
 } from '@/__tests__/fixtures/composables/recipeInputForm'
+import { itemDatabase } from '@/__tests__/fixtures/data'
+import { component } from '@/__tests__/vue-test-helpers'
+import type { RecipeProduct } from '@/types/data'
+
+import ItemSelector from '@/components/common/ItemSelector.vue'
+import AddFactoryModal from '@/components/modals/AddFactoryModal.vue'
+import ExternalInputSelector from '@/components/modals/add-factory/ExternalInputSelector.vue'
+import RecipeForm from '@/components/modals/add-factory/RecipeForm.vue'
+import { VBtn, VBtnToggle, VTextarea, VTextField } from 'vuetify/components'
 
 vi.mock('@/composables/useStores', async () => {
   const { mockUseStores } = await import('@/__tests__/fixtures/composables')

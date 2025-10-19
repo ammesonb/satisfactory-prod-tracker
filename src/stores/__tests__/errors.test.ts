@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { h } from 'vue'
-import type { VNode } from 'vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { h, type VNode } from 'vue'
+
 import type { ErrorBuilder } from '@/types/errors'
 import type { IErrorStore } from '@/types/stores'
 

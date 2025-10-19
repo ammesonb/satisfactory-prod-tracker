@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { getIconURL } from '@/logistics/images'
+import { computed } from 'vue'
 
 interface Props {
   icon: string

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { type RecipeNode } from '@/logistics/graph-node'
-import { getStores } from '@/composables/useStores'
+
 import { useFloorManagement } from '@/composables/useFloorManagement'
 import { useRecipeStatus } from '@/composables/useRecipeStatus'
+import { getStores } from '@/composables/useStores'
+import { type RecipeNode } from '@/logistics/graph-node'
 import { formatRecipeId } from '@/utils/floors'
 
 const props = defineProps<{

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { getStores } from '@/composables/useStores'
-import { useTheme } from 'vuetify'
 import { watch } from 'vue'
+import { useTheme } from 'vuetify'
+
+import { getStores } from '@/composables/useStores'
 
 const { themeStore } = getStores()
 const theme = useTheme()

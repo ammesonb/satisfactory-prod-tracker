@@ -1,23 +1,24 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { VIcon, VNavigationDrawer, VTextField } from 'vuetify/components'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import {
+  mockFilteredItems,
+  mockSearchInput,
+  mockUpdateSearch,
+} from '@/__tests__/fixtures/composables/dataSearch'
 import {
   mockFactories,
+  mockRemoveFactory,
   mockSelectedFactory,
   mockSetSelectedFactory,
-  mockRemoveFactory,
 } from '@/__tests__/fixtures/composables/factoryStore'
 import { mockInitializeExpansion } from '@/__tests__/fixtures/composables/navigation'
 import { mockIsRecipeComplete } from '@/__tests__/fixtures/composables/useRecipeStatus'
-import {
-  mockSearchInput,
-  mockFilteredItems,
-  mockUpdateSearch,
-} from '@/__tests__/fixtures/composables/dataSearch'
 import { component, element } from '@/__tests__/vue-test-helpers'
 
 import FactoryDrawer from '@/components/layout/FactoryDrawer.vue'
 import FactoryDrawerRow from '@/components/layout/FactoryDrawerRow.vue'
+import { VIcon, VNavigationDrawer, VTextField } from 'vuetify/components'
 
 // Mock composables with centralized fixtures
 vi.mock('@/composables/useStores', async () => {

@@ -1,18 +1,20 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
-import { VBtn, VCard, VCardTitle, VTextField } from 'vuetify/components'
-import FloorEditModal from '@/components/modals/FloorEditModal.vue'
-import ItemSelector from '@/components/common/ItemSelector.vue'
-import { component } from '@/__tests__/vue-test-helpers'
+
 import {
-  mockShowFloorEditor,
-  mockGetFloorFormsTemplate,
-  mockHasFloorFormChanges,
-  mockUpdateFloorsFromForms,
   mockCloseFloorEditor,
   mockGetFloorDisplayName,
+  mockGetFloorFormsTemplate,
+  mockHasFloorFormChanges,
+  mockShowFloorEditor,
+  mockUpdateFloorsFromForms,
 } from '@/__tests__/fixtures/composables/navigation'
+import { component } from '@/__tests__/vue-test-helpers'
+
+import ItemSelector from '@/components/common/ItemSelector.vue'
+import FloorEditModal from '@/components/modals/FloorEditModal.vue'
+import { VBtn, VCard, VCardTitle, VTextField } from 'vuetify/components'
 
 vi.mock('@/composables/useFloorManagement', async () => {
   const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')

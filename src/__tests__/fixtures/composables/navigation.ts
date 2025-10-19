@@ -1,8 +1,9 @@
 import { vi } from 'vitest'
 import { computed, ref } from 'vue'
-import type { Floor } from '@/types/factory'
-import type { RecipeNode } from '@/logistics/graph-node'
+
 import type { FloorFormData } from '@/composables/useFloorManagement'
+import type { RecipeNode } from '@/logistics/graph-node'
+import type { Floor } from '@/types/factory'
 
 // Floor Management mocks
 export const mockShowFloorEditor = ref(false)

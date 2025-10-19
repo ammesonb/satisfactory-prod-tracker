@@ -1,13 +1,13 @@
-import type { Material, Recipe } from '@/types/factory'
-import type { RecipeIngredient, RecipeProduct } from '@/types/data'
+import { ProductNotFoundError, SourceNodeNotFoundError } from '@/errors/processing-errors'
 import {
-  ZERO_THRESHOLD,
-  isNaturalResource,
-  isFluid,
   BELT_CAPACITIES,
   PIPELINE_CAPACITIES,
+  ZERO_THRESHOLD,
+  isFluid,
+  isNaturalResource,
 } from '@/logistics/constants'
-import { SourceNodeNotFoundError, ProductNotFoundError } from '@/errors/processing-errors'
+import type { RecipeIngredient, RecipeProduct } from '@/types/data'
+import type { Material, Recipe } from '@/types/factory'
 
 export interface RecipeNode {
   recipe: Recipe

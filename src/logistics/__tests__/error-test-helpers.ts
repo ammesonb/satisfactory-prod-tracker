@@ -1,4 +1,5 @@
 import { expect, vi } from 'vitest'
+
 import type { UserFriendlyError } from '@/types/errors'
 
 /**

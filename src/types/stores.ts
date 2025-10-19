@@ -1,8 +1,9 @@
-import type { VNode, Ref } from 'vue'
-import type { Item, Recipe, Building, RecipeIngredient, RecipeProduct } from '@/types/data'
-import type { Factory } from '@/types/factory'
+import type { Ref, VNode } from 'vue'
+
 import type { RecipeNode } from '@/logistics/graph-node'
+import type { Building, Item, Recipe, RecipeIngredient, RecipeProduct } from '@/types/data'
 import type { ErrorBuilder } from '@/types/errors'
+import type { Factory } from '@/types/factory'
 
 /**
  * Data Store Interface

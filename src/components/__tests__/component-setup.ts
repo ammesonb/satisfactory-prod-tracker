@@ -1,14 +1,15 @@
-import { vi, beforeEach } from 'vitest'
 import { config } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, vi } from 'vitest'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
-import { createPinia, setActivePinia } from 'pinia'
+
 import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
 import {
   DATA_STORE_KEY,
+  ERROR_STORE_KEY,
   FACTORY_STORE_KEY,
   THEME_STORE_KEY,
-  ERROR_STORE_KEY,
 } from '@/composables/useStores'
 
 // Create a Vuetify instance for testing

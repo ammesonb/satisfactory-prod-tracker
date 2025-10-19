@@ -1,5 +1,6 @@
-import type { ErrorBuilder, UserFriendlyError } from '@/types/errors'
 import { h } from 'vue'
+
+import type { ErrorBuilder, UserFriendlyError } from '@/types/errors'
 
 export class RecipeChainError extends Error implements UserFriendlyError {
   constructor(

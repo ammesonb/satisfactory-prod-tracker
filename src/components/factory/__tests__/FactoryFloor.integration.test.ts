@@ -1,24 +1,25 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import {
-  VExpansionPanel,
-  VExpansionPanelTitle,
-  VExpansionPanelText,
-  VImg,
-  VIcon,
-  VChip,
-  VBtn,
-  VExpansionPanels,
-} from 'vuetify/components'
-import FactoryFloor from '@/components/factory/FactoryFloor.vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { mockUseRecipeStatus } from '@/__tests__/fixtures/composables'
+import { getMockFloorManagement } from '@/__tests__/fixtures/composables/testUtils'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
+import { component } from '@/__tests__/vue-test-helpers'
 import { newRecipeNode } from '@/logistics/graph-node'
 import type { Floor } from '@/types/factory'
-import { getMockFloorManagement } from '@/__tests__/fixtures/composables/testUtils'
-import { mockUseRecipeStatus } from '@/__tests__/fixtures/composables'
-import { component } from '@/__tests__/vue-test-helpers'
 
+import FactoryFloor from '@/components/factory/FactoryFloor.vue'
 import RecipeNode from '@/components/factory/RecipeNode.vue'
+import {
+  VBtn,
+  VChip,
+  VExpansionPanel,
+  VExpansionPanels,
+  VExpansionPanelText,
+  VExpansionPanelTitle,
+  VIcon,
+  VImg,
+} from 'vuetify/components'
 
 vi.mock('@/composables/useStores', async () => {
   const { mockGetStores } = await import('@/__tests__/fixtures/composables')

@@ -1,6 +1,6 @@
-import type { RecipeIngredient } from '@/types/data'
 import { isNaturalResource, ZERO_THRESHOLD } from '@/logistics/constants'
 import { getCatalystQuantity, type RecipeNode } from '@/logistics/graph-node'
+import type { RecipeIngredient } from '@/types/data'
 import type { Material } from '@/types/factory'
 
 /**

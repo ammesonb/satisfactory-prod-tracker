@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { VNode } from 'vue'
+
 import type { ErrorBuilder } from '@/types/errors'
 
 export const useErrorStore = defineStore('error', {

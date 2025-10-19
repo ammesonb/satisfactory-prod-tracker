@@ -9,8 +9,14 @@ export function useRecipeStatus() {
   const isRecipeComplete = (recipe: RecipeNode) => {
     if (!factoryStore.currentFactory || !recipe.built) return false
 
-    return [...recipe.inputs, ...recipe.outputs].every(
-      (link) => !!factoryStore.currentFactory?.recipeLinks[linkToString(link)],
+    const checkLinks = (links: Material[]) => {
+      return links.every((link) => !!factoryStore.currentFactory?.recipeLinks[linkToString(link)])
+    }
+
+    return (
+      checkLinks(recipe.inputs) &&
+      checkLinks(recipe.outputs) &&
+      checkLinks(leftoverProductsAsLinks(recipe))
     )
   }
 

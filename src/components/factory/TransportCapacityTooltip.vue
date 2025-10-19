@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+
 import { useTransport } from '@/composables/useTransport'
 import type { RecipeNode } from '@/logistics/graph-node'
 import type { Material } from '@/types/factory'
@@ -14,7 +16,7 @@ const { buildingCounts, transportItems } = useTransport(
   props.recipe,
   props.link,
   props.direction,
-  props.isHovered,
+  computed(() => props.isHovered),
 )
 </script>
 

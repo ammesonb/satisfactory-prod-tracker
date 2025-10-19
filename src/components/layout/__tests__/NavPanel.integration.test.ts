@@ -1,14 +1,15 @@
 import { mount, VueWrapper } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { VBtn, VTextField, VListItem, VChip, VCard, VCardTitle } from 'vuetify/components'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { mockCurrentFactory } from '@/__tests__/fixtures/composables/factoryStore'
-import { component } from '@/__tests__/vue-test-helpers'
-import { formatFloorId, formatRecipeId } from '@/utils/floors'
 import { mockGetFloorDisplayName } from '@/__tests__/fixtures/composables/navigation'
-import type { Factory, Floor } from '@/types/factory'
+import { component } from '@/__tests__/vue-test-helpers'
 import { newRecipeNode } from '@/logistics/graph-node'
+import type { Factory, Floor } from '@/types/factory'
+import { formatFloorId, formatRecipeId } from '@/utils/floors'
 
 import NavPanel from '@/components/layout/NavPanel.vue'
+import { VBtn, VCard, VCardTitle, VChip, VListItem, VTextField } from 'vuetify/components'
 
 // Mock composables
 vi.mock('@/composables/useStores', async () => {

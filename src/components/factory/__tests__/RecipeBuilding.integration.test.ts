@@ -1,13 +1,15 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { VCard, VCheckbox } from 'vuetify/components'
-import RecipeBuilding from '@/components/factory/RecipeBuilding.vue'
-import CachedIcon from '@/components/common/CachedIcon.vue'
-import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
-import { recipeDatabase } from '@/__tests__/fixtures/data'
-import type { Recipe } from '@/types/factory'
-import { component } from '@/__tests__/vue-test-helpers'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { mockSetRecipeBuilt } from '@/__tests__/fixtures/composables/useRecipeStatus'
+import { recipeDatabase } from '@/__tests__/fixtures/data'
+import { component } from '@/__tests__/vue-test-helpers'
+import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
+import type { Recipe } from '@/types/factory'
+
+import CachedIcon from '@/components/common/CachedIcon.vue'
+import RecipeBuilding from '@/components/factory/RecipeBuilding.vue'
+import { VCard, VCheckbox } from 'vuetify/components'
 
 // Use centralized fixtures for mocking composables
 vi.mock('@/composables/useRecipeStatus', async () => {

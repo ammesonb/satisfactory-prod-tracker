@@ -1,8 +1,8 @@
-import type { Ref, ComputedRef } from 'vue'
-import type { Floor } from '@/types/factory'
+import type { ComputedRef, Ref } from 'vue'
+
 import type { RecipeNode } from '@/logistics/graph-node'
-import type { Material } from '@/types/factory'
 import type { Building, ItemOption } from '@/types/data'
+import type { Floor, Material } from '@/types/factory'
 
 export interface FloorFormData {
   index: number

@@ -1,12 +1,14 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import RecipeOutputs from '@/components/factory/RecipeOutputs.vue'
-import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
-import { recipeDatabase } from '@/__tests__/fixtures/data'
-import type { Material } from '@/types/factory'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { mockLeftoverProductsAsLinks } from '@/__tests__/fixtures/composables/useRecipeStatus'
+import { makeRecipeNode } from '@/__tests__/fixtures/data'
 import { component, element } from '@/__tests__/vue-test-helpers'
-import RecipeLink from '../RecipeLink.vue'
+import type { RecipeNode } from '@/logistics/graph-node'
+import type { Material } from '@/types/factory'
+
+import RecipeLink from '@/components/factory/RecipeLink.vue'
+import RecipeOutputs from '@/components/factory/RecipeOutputs.vue'
 
 // Use centralized fixtures for mocking composables
 vi.mock('@/composables/useStores', async () => {
@@ -50,28 +52,6 @@ describe('RecipeOutputs Integration', () => {
     vi.clearAllMocks()
   })
 
-  const createRecipeNode = (recipeName: string): RecipeNode => {
-    const recipe = recipeDatabase[recipeName]
-    if (!recipe) {
-      throw new Error(`Recipe ${recipeName} not found in fixtures`)
-    }
-
-    const node = newRecipeNode(
-      { name: recipe.name, building: recipe.producedIn[0] || 'Unknown', count: 1 },
-      recipe.ingredients,
-      recipe.products,
-    )
-
-    node.outputs = node.products.map((product) => ({
-      source: node.recipe.name,
-      sink: product.item,
-      material: product.item,
-      amount: product.amount,
-    }))
-
-    return node
-  }
-
   const createWrapper = (recipeNode: RecipeNode) => {
     return mount(RecipeOutputs, {
       props: {
@@ -81,7 +61,7 @@ describe('RecipeOutputs Integration', () => {
   }
 
   it('renders without errors with default recipe', () => {
-    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
     const wrapper = createWrapper(recipeNode)
 
     expect(wrapper.exists()).toBe(true)
@@ -89,13 +69,13 @@ describe('RecipeOutputs Integration', () => {
   })
 
   it('renders RecipeLink components for each output', () => {
-    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
     const recipeLinks = createWrapper(recipeNode).findAllComponents(RecipeLink)
     expect(recipeLinks.length).toBeGreaterThan(0)
   })
 
   it('passes correct props to RecipeLink components', () => {
-    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
     const recipeLinks = createWrapper(recipeNode).findAllComponents(RecipeLink)
     recipeLinks.forEach((link) => {
       expect(link.props('recipe')).toEqual(recipeNode)
@@ -105,7 +85,7 @@ describe('RecipeOutputs Integration', () => {
   })
 
   it('calls leftoverProductsAsLinks composable function', async () => {
-    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
     createWrapper(recipeNode)
     expect(mockLeftoverProductsAsLinks).toHaveBeenCalledWith(recipeNode)
   })
@@ -116,7 +96,7 @@ describe('RecipeOutputs Integration', () => {
     ]
     mockLeftoverProductsAsLinks.mockReturnValueOnce(mockLeftoverProducts)
 
-    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
     const recipeLinks = createWrapper(recipeNode).findAllComponents(RecipeLink)
     expect(recipeLinks.length).toBeGreaterThanOrEqual(recipeNode.outputs.length)
     expect(mockLeftoverProductsAsLinks).toHaveBeenCalledWith(recipeNode)
@@ -126,7 +106,7 @@ describe('RecipeOutputs Integration', () => {
     mockLeftoverProductsAsLinks.mockReturnValueOnce([])
 
     // Create a recipe node with no outputs
-    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
     recipeNode.outputs = []
 
     const wrapper = createWrapper(recipeNode)
@@ -135,7 +115,7 @@ describe('RecipeOutputs Integration', () => {
   })
 
   it('handles recipe with multiple outputs correctly', () => {
-    const recipeNode = createRecipeNode(TEST_RECIPES.PURE_CATERIUM)
+    const recipeNode = makeRecipeNode(TEST_RECIPES.PURE_CATERIUM, 0, { fromDatabase: true })
 
     const wrapper = createWrapper(recipeNode)
 
@@ -145,7 +125,7 @@ describe('RecipeOutputs Integration', () => {
   })
 
   it('uses correct key for v-for loop', () => {
-    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
     const wrapper = createWrapper(recipeNode)
 
     const recipeLinks = wrapper.findAllComponents(RecipeLink)
@@ -157,7 +137,7 @@ describe('RecipeOutputs Integration', () => {
   })
 
   it('integrates outputs from recipe node correctly', () => {
-    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
     const wrapper = createWrapper(recipeNode)
 
     // The component should show outputs based on the recipe node
@@ -174,7 +154,7 @@ describe('RecipeOutputs Integration', () => {
 
     mockLeftoverProductsAsLinks.mockReturnValueOnce(mockLeftoverProducts)
 
-    const recipeNode = createRecipeNode(TEST_RECIPES.IRON_INGOT)
+    const recipeNode = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
     recipeNode.availableProducts = mockLeftoverProducts.map((product) => ({
       item: product.material,
       amount: product.amount,

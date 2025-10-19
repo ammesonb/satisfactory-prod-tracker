@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { getStores } from '@/composables/useStores'
-import { useDataShare } from '@/composables/useDataShare'
 import { ref } from 'vue'
+
+import { useDataShare } from '@/composables/useDataShare'
+import { getStores } from '@/composables/useStores'
 
 const emit = defineEmits<{
   error: [message: string]

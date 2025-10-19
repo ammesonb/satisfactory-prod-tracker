@@ -1,5 +1,5 @@
-import type { Recipe, RecipeIngredient, RecipeProduct } from '@/types/data'
 import { EXTERNAL_RECIPE } from '@/logistics/constants'
+import type { Recipe, RecipeIngredient, RecipeProduct } from '@/types/data'
 
 const scaleAmount = (amount: number, time: number) => amount * (60 / time)
 

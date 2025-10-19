@@ -1,8 +1,10 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect } from 'vitest'
-import { VBtn, VIcon, VCard, VCardTitle, VCardText } from 'vuetify/components'
-import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
+import { describe, expect, it } from 'vitest'
+
 import { component } from '@/__tests__/vue-test-helpers'
+
+import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
+import { VBtn, VCard, VCardText, VCardTitle, VIcon } from 'vuetify/components'
 
 describe('ConfirmationModal Integration', () => {
   const createWrapper = (props = {}) => {

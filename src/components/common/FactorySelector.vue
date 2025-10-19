@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { toRefs } from 'vue'
-import type { Factory } from '@/types/factory'
+
 import { useSelection } from '@/composables/useSelection'
+import type { Factory } from '@/types/factory'
 
 interface Props {
   factories: Factory[]

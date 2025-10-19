@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { watch } from 'vue'
+
+import { useRecipeInputForm } from '@/components/modals/add-factory/composables/useRecipeInputForm'
 import { type RecipeEntry } from '@/types/factory'
-import { useRecipeInputForm } from './composables/useRecipeInputForm'
 
 const emit = defineEmits<{
   change: [value: RecipeEntry[]]
 }>()
 
 const form = useRecipeInputForm()
-console.log(form.recipeKeys.value)
 
 watch(
   () => form.selectedRecipes.value,

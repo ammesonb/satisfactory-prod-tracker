@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+
 import type { Factory } from '@/types/factory'
 import { getIconURL } from '@/logistics/images'
-import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
 
 interface Props {
   factory: Factory

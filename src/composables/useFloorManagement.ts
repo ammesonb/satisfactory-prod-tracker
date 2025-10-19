@@ -1,7 +1,8 @@
 import { computed, ref } from 'vue'
+
 import { getStores } from '@/composables/useStores'
-import type { Floor } from '@/types/factory'
 import type { ItemOption } from '@/types/data'
+import type { Floor } from '@/types/factory'
 
 export interface FloorWithIndex extends Floor {
   originalIndex: number

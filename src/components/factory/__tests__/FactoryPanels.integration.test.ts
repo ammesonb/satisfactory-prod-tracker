@@ -1,10 +1,10 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { recipeDatabase } from '@/__tests__/fixtures/data'
-import { component } from '@/__tests__/vue-test-helpers'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { mockUseFloorNavigation } from '@/__tests__/fixtures/composables'
 import { mockCurrentFactory } from '@/__tests__/fixtures/composables/factoryStore'
-import { VExpansionPanels } from 'vuetify/components'
+import { recipeDatabase } from '@/__tests__/fixtures/data'
+import { component } from '@/__tests__/vue-test-helpers'
 import { newRecipeNode } from '@/logistics/graph-node'
 import type { Factory, Floor } from '@/types/factory'
 
@@ -12,6 +12,7 @@ import FactoryFloor from '@/components/factory/FactoryFloor.vue'
 import FactoryFloorsToolbar from '@/components/factory/FactoryFloorsToolbar.vue'
 import FactoryPanels from '@/components/factory/FactoryPanels.vue'
 import FloorEditModal from '@/components/modals/FloorEditModal.vue'
+import { VExpansionPanels } from 'vuetify/components'
 
 // Use centralized fixtures for mocking composables
 vi.mock('@/composables/useStores', async () => {

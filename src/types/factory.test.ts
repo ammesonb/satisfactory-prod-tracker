@@ -1,5 +1,11 @@
-import { describe, it, expect } from 'vitest'
-import { asFactory, parseFactoriesFromJson, FACTORY_PARSE_ERRORS, type Factory } from './factory'
+import { describe, expect, it } from 'vitest'
+
+import {
+  asFactory,
+  FACTORY_PARSE_ERRORS,
+  parseFactoriesFromJson,
+  type Factory,
+} from '@/types/factory'
 
 describe('asFactory', () => {
   const validFactory: Factory = {

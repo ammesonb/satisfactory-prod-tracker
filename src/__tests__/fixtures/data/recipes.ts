@@ -1,4 +1,5 @@
 import type { RecipeData } from '@/__tests__/fixtures/types/dataStore'
+
 export const recipeDatabase: Record<string, RecipeData> = {
   Recipe_Fake_IronIngot_C: {
     name: 'Recipe_Fake_IronIngot_C',

@@ -1,7 +1,8 @@
 import { ref, computed, type Ref } from 'vue'
 import { refDebounced } from '@vueuse/core'
+
 import type { SearchOptions } from '@/types/ui'
-import { DEFAULT_SEARCH_OPTIONS } from './constants'
+import { DEFAULT_SEARCH_OPTIONS } from '@/composables/constants'
 
 export function useDataSearch<T>(
   items: Ref<T[]>,

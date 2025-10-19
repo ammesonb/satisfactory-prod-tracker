@@ -1,17 +1,16 @@
-import { useDataStore } from '@/stores/data'
-import { parseRecipeString } from '@/logistics/recipe-parser'
+import { RecipeChainError } from '@/errors/processing-errors'
+import { BELT_ITEM_NAMES, EXTERNAL_RECIPE, ZERO_THRESHOLD } from '@/logistics/constants'
 import { groupCircularRecipes, removeRecipesFromGroups } from '@/logistics/dependency-resolver'
+import { getLinksForCircularRecipes, getRecipeLinks } from '@/logistics/graph-linker'
 import {
+  decrementConsumedProducts,
   newRecipeNode,
   produceRecipe,
-  decrementConsumedProducts,
   type RecipeNode,
 } from '@/logistics/graph-node'
-import { getRecipeLinks, getLinksForCircularRecipes } from '@/logistics/graph-linker'
-import { RecipeChainError } from '@/errors/processing-errors'
-import { EXTERNAL_RECIPE, ZERO_THRESHOLD } from '@/logistics/constants'
+import { parseRecipeString } from '@/logistics/recipe-parser'
+import { useDataStore } from '@/stores/data'
 import type { RecipeProduct } from '@/types/data'
-import { BELT_ITEM_NAMES } from '@/logistics/constants'
 
 /**
  * Figures out recipe production chain in graph-style (breadth-first) manner.

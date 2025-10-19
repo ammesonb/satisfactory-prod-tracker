@@ -1,28 +1,29 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { VBtn, VTextField, VAlert } from 'vuetify/components'
-import { component } from '@/__tests__/vue-test-helpers'
-import type { RecipeEntry } from '@/types/factory'
-import type { ItemOption } from '@/types/data'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import {
-  mockSelectedRecipe,
+  mockAddRecipe,
   mockBuildingCount,
-  mockSelectedBuilding,
-  mockProductionBuildings,
+  mockChangeRecipe,
+  mockClearError,
   mockDisplayError,
   mockErrorMessage,
   mockIsValid,
-  mockSelectedRecipes,
-  mockChangeRecipe,
-  mockClearError,
-  mockAddRecipe,
+  mockProductionBuildings,
   mockRemoveRecipe,
+  mockSelectedBuilding,
+  mockSelectedRecipe,
+  mockSelectedRecipes,
 } from '@/__tests__/fixtures/composables/recipeInputForm'
+import { component } from '@/__tests__/vue-test-helpers'
+import type { ItemOption } from '@/types/data'
+import type { RecipeEntry } from '@/types/factory'
 
-import RecipeForm from '@/components/modals/add-factory/RecipeForm.vue'
-import RecipeSelector from '@/components/common/RecipeSelector.vue'
 import BuildingSelector from '@/components/common/BuildingSelector.vue'
+import RecipeSelector from '@/components/common/RecipeSelector.vue'
 import RecipeDisplay from '@/components/modals/add-factory/RecipeDisplay.vue'
+import RecipeForm from '@/components/modals/add-factory/RecipeForm.vue'
+import { VAlert, VBtn, VTextField } from 'vuetify/components'
 
 vi.mock('@/composables/useStores', async () => {
   const { mockUseStores } = await import('@/__tests__/fixtures/composables')

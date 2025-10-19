@@ -1,5 +1,6 @@
-import { DOMWrapper, VueWrapper } from '@vue/test-utils'
 import { expect } from 'vitest'
+
+import { DOMWrapper, VueWrapper } from '@vue/test-utils'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ComponentConstructor = new (...args: any[]) => any

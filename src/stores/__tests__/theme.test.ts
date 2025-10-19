@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import type { IThemeStore } from '@/types/stores'
 
 // Mock fetch for any potential network requests
@@ -7,8 +8,7 @@ global.fetch = vi.fn()
 
 // Import the real store implementation directly, bypassing the global mock
 vi.doMock('@/stores/theme', async () => {
-  const actual = await vi.importActual('@/stores/theme')
-  return actual
+  return await vi.importActual('@/stores/theme')
 })
 
 const { useThemeStore } = await import('../theme')

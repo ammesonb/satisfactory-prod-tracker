@@ -1,11 +1,11 @@
 import type {
   UseFloorManagement,
-  UseRecipeStatus,
   UseFloorNavigation,
+  UseRecipeStatus,
   UseSelection,
   UseTransport,
 } from '@/types/composables'
-import type { IDataStore, IFactoryStore, IThemeStore, IErrorStore } from '@/types/stores'
+import type { IDataStore, IErrorStore, IFactoryStore, IThemeStore } from '@/types/stores'
 
 /**
  * Utility to get the latest mock result from any centralized fixture composable

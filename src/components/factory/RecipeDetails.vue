@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+
+import { getStores } from '@/composables/useStores'
 import { type RecipeNode } from '@/logistics/graph-node'
 import { getIconURL } from '@/logistics/images'
-import { getStores } from '@/composables/useStores'
 
 const props = defineProps<{
   recipe: RecipeNode

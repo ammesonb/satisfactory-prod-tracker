@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Floor } from '@/types/factory'
-import { getIconURL } from '@/logistics/images'
-import { getStores } from '@/composables/useStores'
+
 import { useFloorManagement } from '@/composables/useFloorManagement'
-import { formatFloorId } from '@/utils/floors'
 import { useRecipeStatus } from '@/composables/useRecipeStatus'
+import { getStores } from '@/composables/useStores'
+import { getIconURL } from '@/logistics/images'
+import type { Floor } from '@/types/factory'
+import { formatFloorId } from '@/utils/floors'
 
 interface Props {
   floor: Floor
