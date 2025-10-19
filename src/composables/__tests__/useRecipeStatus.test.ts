@@ -180,6 +180,125 @@ describe('useRecipeStatus', () => {
 
       expect(isRecipeComplete(recipe)).toBe(true)
     })
+
+    it('returns false when leftover products are not consumed', () => {
+      const recipe = makeRecipeNode('Recipe_IronIngot_C', 0, { built: true })
+      const input = makeMaterial('Desc_OreIron_C', 'Desc_OreIron_C', 'Recipe_IronIngot_C')
+      const output = makeMaterial('Desc_IronIngot_C', 'Recipe_IronIngot_C', 'Recipe_IronPlate_C')
+      recipe.inputs = [input]
+      recipe.outputs = [output]
+      recipe.availableProducts = [{ item: 'Desc_IronIngot_C', amount: 30 }]
+
+      mockCurrentFactory.value = makeFactory('Test Factory', [makeFloor([recipe])], {
+        recipeLinks: {
+          [linkToString(input)]: true,
+          [linkToString(output)]: true,
+          // leftover link with empty sink is NOT in recipeLinks
+        },
+      })
+
+      const { isRecipeComplete } = useRecipeStatus()
+
+      expect(isRecipeComplete(recipe)).toBe(false)
+    })
+
+    it('returns true when leftover products are consumed', () => {
+      const recipe = makeRecipeNode('Recipe_IronIngot_C', 0, { built: true })
+      const input = makeMaterial('Desc_OreIron_C', 'Desc_OreIron_C', 'Recipe_IronIngot_C')
+      const output = makeMaterial('Desc_IronIngot_C', 'Recipe_IronIngot_C', 'Recipe_IronPlate_C')
+      recipe.inputs = [input]
+      recipe.outputs = [output]
+      recipe.availableProducts = [{ item: 'Desc_IronIngot_C', amount: 30 }]
+
+      const leftoverLink = makeMaterial('Desc_IronIngot_C', 'Recipe_IronIngot_C', '', 30)
+
+      mockCurrentFactory.value = makeFactory('Test Factory', [makeFloor([recipe])], {
+        recipeLinks: {
+          [linkToString(input)]: true,
+          [linkToString(output)]: true,
+          [linkToString(leftoverLink)]: true,
+        },
+      })
+
+      const { isRecipeComplete } = useRecipeStatus()
+
+      expect(isRecipeComplete(recipe)).toBe(true)
+    })
+
+    it('returns true when leftover products are below ZERO_THRESHOLD', () => {
+      const recipe = makeRecipeNode('Recipe_IronIngot_C', 0, { built: true })
+      const input = makeMaterial('Desc_OreIron_C', 'Desc_OreIron_C', 'Recipe_IronIngot_C')
+      const output = makeMaterial('Desc_IronIngot_C', 'Recipe_IronIngot_C', 'Recipe_IronPlate_C')
+      recipe.inputs = [input]
+      recipe.outputs = [output]
+      recipe.availableProducts = [{ item: 'Desc_IronIngot_C', amount: ZERO_THRESHOLD - 0.001 }]
+
+      mockCurrentFactory.value = makeFactory('Test Factory', [makeFloor([recipe])], {
+        recipeLinks: {
+          [linkToString(input)]: true,
+          [linkToString(output)]: true,
+        },
+      })
+
+      const { isRecipeComplete } = useRecipeStatus()
+
+      expect(isRecipeComplete(recipe)).toBe(true)
+    })
+
+    it('returns false when at least one leftover product is not consumed', () => {
+      const recipe = makeRecipeNode('Recipe_IronIngot_C', 0, { built: true })
+      const input = makeMaterial('Desc_OreIron_C', 'Desc_OreIron_C', 'Recipe_IronIngot_C')
+      const output = makeMaterial('Desc_IronIngot_C', 'Recipe_IronIngot_C', 'Recipe_IronPlate_C')
+      recipe.inputs = [input]
+      recipe.outputs = [output]
+      recipe.availableProducts = [
+        { item: 'Desc_IronIngot_C', amount: 30 },
+        { item: 'Desc_IronPlate_C', amount: 20 },
+      ]
+
+      const leftoverLink1 = makeMaterial('Desc_IronIngot_C', 'Recipe_IronIngot_C', '', 30)
+
+      mockCurrentFactory.value = makeFactory('Test Factory', [makeFloor([recipe])], {
+        recipeLinks: {
+          [linkToString(input)]: true,
+          [linkToString(output)]: true,
+          [linkToString(leftoverLink1)]: true,
+          // second leftover link (IronPlate) is NOT in recipeLinks
+        },
+      })
+
+      const { isRecipeComplete } = useRecipeStatus()
+
+      expect(isRecipeComplete(recipe)).toBe(false)
+    })
+
+    it('returns true when all leftover products are consumed', () => {
+      const recipe = makeRecipeNode('Recipe_IronIngot_C', 0, { built: true })
+      const input = makeMaterial('Desc_OreIron_C', 'Desc_OreIron_C', 'Recipe_IronIngot_C')
+      const output = makeMaterial('Desc_IronIngot_C', 'Recipe_IronIngot_C', 'Recipe_IronPlate_C')
+      recipe.inputs = [input]
+      recipe.outputs = [output]
+      recipe.availableProducts = [
+        { item: 'Desc_IronIngot_C', amount: 30 },
+        { item: 'Desc_IronPlate_C', amount: 20 },
+      ]
+
+      const leftoverLink1 = makeMaterial('Desc_IronIngot_C', 'Recipe_IronIngot_C', '', 30)
+      const leftoverLink2 = makeMaterial('Desc_IronPlate_C', 'Recipe_IronIngot_C', '', 20)
+
+      mockCurrentFactory.value = makeFactory('Test Factory', [makeFloor([recipe])], {
+        recipeLinks: {
+          [linkToString(input)]: true,
+          [linkToString(output)]: true,
+          [linkToString(leftoverLink1)]: true,
+          [linkToString(leftoverLink2)]: true,
+        },
+      })
+
+      const { isRecipeComplete } = useRecipeStatus()
+
+      expect(isRecipeComplete(recipe)).toBe(true)
+    })
   })
 
   describe('setRecipeBuilt', () => {
