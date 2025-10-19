@@ -151,34 +151,6 @@ describe('useTransport', () => {
       expect(buildingCounts.value).toEqual([2, 0, 0])
       expect(mockCalculateTransportCapacity).toHaveBeenCalledWith('Desc_IronPlate_C', 120, 3)
     })
-
-    it('returns empty array when recipe link not found', () => {
-      const recipe = makeRecipeNode('Recipe_Test_C', 0)
-      const link = makeMaterial('Desc_IronIngot_C', 'Source', 'Sink')
-      recipe.inputs = [makeMaterial('Desc_CopperIngot_C', 'Source', 'Sink')]
-
-      const { buildingCounts } = useTransport(recipe, link, 'input', ref(true))
-
-      expect(buildingCounts.value).toEqual([])
-      expect(mockCalculateTransportCapacity).not.toHaveBeenCalled()
-    })
-
-    it('handles multiple inputs and finds correct one', () => {
-      const recipe = makeRecipeNode('Recipe_Test_C', 0, { count: 1 })
-      const targetLink = makeMaterial('Desc_IronIngot_C', 'Source', 'Sink', 30)
-      recipe.inputs = [
-        makeMaterial('Desc_CopperIngot_C', 'Source', 'Sink', 15),
-        targetLink,
-        makeMaterial('Desc_Coal_C', 'Source', 'Sink', 45),
-      ]
-
-      mockCalculateTransportCapacity.mockReturnValue([1, 0])
-
-      const { buildingCounts } = useTransport(recipe, targetLink, 'input', ref(true))
-
-      expect(buildingCounts.value).toEqual([1, 0])
-      expect(mockCalculateTransportCapacity).toHaveBeenCalledWith('Desc_IronIngot_C', 30, 1)
-    })
   })
 
   describe('reactivity', () => {
@@ -212,16 +184,6 @@ describe('useTransport', () => {
   })
 
   describe('edge cases', () => {
-    it('handles recipes with no inputs', () => {
-      const recipe = makeRecipeNode('Recipe_Test_C', 0)
-      const link = makeMaterial('Desc_IronIngot_C', 'Source', 'Sink')
-      recipe.inputs = []
-
-      const { buildingCounts } = useTransport(recipe, link, 'input', ref(true))
-
-      expect(buildingCounts.value).toEqual([])
-    })
-
     it('handles zero amount materials', () => {
       const recipe = makeRecipeNode('Recipe_Test_C', 0, { count: 1 })
       const link = makeMaterial('Desc_IronIngot_C', 'Source', 'Sink', 0)
@@ -370,16 +332,6 @@ describe('useTransport', () => {
       const { minimumUsableTier } = useTransport(recipe, link, 'input')
 
       expect(minimumUsableTier.value).toBe(0)
-    })
-
-    it('returns highest tier when recipe link not found', () => {
-      const recipe = makeRecipeNode('Recipe_Test_C', 0, { count: 1 })
-      const link = makeMaterial('Desc_IronIngot_C', 'Source', 'Sink', 30)
-      recipe.inputs = [] // No inputs - link won't be found
-
-      const { minimumUsableTier } = useTransport(recipe, link, 'input')
-
-      expect(minimumUsableTier.value).toBe(BELT_CAPACITIES.length - 1)
     })
   })
 })

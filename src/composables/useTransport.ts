@@ -28,31 +28,17 @@ export const useTransport = (
     ),
   )
 
-  const recipeLink = computed(() => {
-    return (type === 'input' ? recipe.inputs : recipe.outputs).find(
-      (recipeLink) =>
-        recipeLink.material === link.material &&
-        recipeLink.source === link.source &&
-        recipeLink.sink === link.sink,
-    )
-  })
-
   const buildingCounts = computed(() => {
     // Only calculate when hovered to improve performance
     if (!toValue(isHovered)) return []
 
-    if (!recipeLink.value) return []
-
-    return calculateTransportCapacity(link.material, recipeLink.value.amount, recipe.recipe.count)
+    return calculateTransportCapacity(link.material, link.amount, recipe.recipe.count)
   })
 
   const minimumUsableTier = computed(() => {
-    // If recipe link not found, default to tier 0
-    if (!recipeLink.value) return 0
-
     // Find the minimum tier that can handle this amount
     for (let idx = 0; idx < capacities.value.length; idx++) {
-      if (recipeLink.value.amount <= capacities.value[idx] + ZERO_THRESHOLD) {
+      if (link.amount <= capacities.value[idx] + ZERO_THRESHOLD) {
         return idx
       }
     }
