@@ -1,5 +1,5 @@
+import { BELT_ITEM_NAMES, EXTERNAL_RECIPE } from '@/logistics/constants'
 import type { IDataStore } from '@/types/stores'
-import { EXTERNAL_RECIPE, BELT_ITEM_NAMES } from '@/logistics/constants'
 import { memoize } from '@/utils/cache'
 
 const resolveIconInternal = (dataStore: IDataStore, objectName: string): string => {

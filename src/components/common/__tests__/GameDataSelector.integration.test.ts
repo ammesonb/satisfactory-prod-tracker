@@ -1,19 +1,20 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
-import { VAutocomplete } from 'vuetify/components'
-import { useDataSearch } from '@/composables/useDataSearch'
-import type { SearchOptions, IconConfig, DisplayConfig } from '@/types/ui'
-import type { ItemOption } from '@/types/data'
+
 import {
   mockFilteredItems,
   mockSearchInput,
   mockUpdateSearch,
 } from '@/__tests__/fixtures/composables/dataSearch'
 import { component } from '@/__tests__/vue-test-helpers'
+import { useDataSearch } from '@/composables/useDataSearch'
+import type { ItemOption } from '@/types/data'
+import type { DisplayConfig, IconConfig, SearchOptions } from '@/types/ui'
 
-import GameDataSelector from '@/components/common/GameDataSelector.vue'
 import CachedIcon from '@/components/common/CachedIcon.vue'
+import GameDataSelector from '@/components/common/GameDataSelector.vue'
+import { VAutocomplete } from 'vuetify/components'
 
 vi.mock('@/composables/useDataSearch', async () => {
   const { mockUseDataSearch } = await import('@/__tests__/fixtures/composables/dataSearch')

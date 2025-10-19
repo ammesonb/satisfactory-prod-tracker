@@ -1,12 +1,13 @@
+import { mount, type VueWrapper } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { computed } from 'vue'
+
 import { mockUseLinkData } from '@/__tests__/fixtures/composables'
 import { mockNavigateToRecipe } from '@/__tests__/fixtures/composables/navigation'
 import { makeMaterial, makeRecipeNode } from '@/__tests__/fixtures/data'
 import { component, element } from '@/__tests__/vue-test-helpers'
 import type { Item } from '@/types/data'
 import type { Material } from '@/types/factory'
-import { mount, type VueWrapper } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { computed } from 'vue'
 
 import RecipeLinkTarget from '@/components/factory/RecipeLinkTarget.vue'
 

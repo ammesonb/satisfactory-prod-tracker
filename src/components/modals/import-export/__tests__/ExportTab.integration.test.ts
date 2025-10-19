@@ -1,9 +1,10 @@
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { mockExportToClipboard, mockExportToFile } from '@/__tests__/fixtures/composables/dataShare'
 import { mockExportFactories, mockFactories } from '@/__tests__/fixtures/composables/factoryStore'
 import { component } from '@/__tests__/vue-test-helpers'
 import type { Factory } from '@/types/factory'
-import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import FactorySelector from '@/components/common/FactorySelector.vue'
 import ExportTab from '@/components/modals/import-export/ExportTab.vue'

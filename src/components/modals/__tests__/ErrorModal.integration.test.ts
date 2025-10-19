@@ -1,3 +1,6 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { h } from 'vue'
+
 import {
   mockErrorBodyContent,
   mockErrorLevel,
@@ -7,8 +10,6 @@ import {
 } from '@/__tests__/fixtures/composables/errorStore'
 import { component, element } from '@/__tests__/vue-test-helpers'
 import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { h } from 'vue'
 
 import ErrorModal from '@/components/modals/ErrorModal.vue'
 import { VBtn, VCard, VCardText, VCardTitle, VIcon } from 'vuetify/components'

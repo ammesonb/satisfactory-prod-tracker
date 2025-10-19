@@ -1,6 +1,7 @@
 import { ref } from 'vue'
-import { useFactoryStore } from '@/stores'
+
 import type { RecipeNode } from '@/logistics/graph-node'
+import { useFactoryStore } from '@/stores'
 import {
   ExpandRecipeState,
   formatRecipeId,

@@ -1,3 +1,6 @@
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import {
   mockBuildingCounts,
   mockIsFluidMaterial,
@@ -7,8 +10,6 @@ import { recipeDatabase } from '@/__tests__/fixtures/data'
 import { useTransport } from '@/composables/useTransport'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import type { Material } from '@/types/factory'
-import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import CachedIcon from '@/components/common/CachedIcon.vue'
 import TransportCapacityTooltip from '@/components/factory/TransportCapacityTooltip.vue'

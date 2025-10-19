@@ -1,3 +1,6 @@
+import { mount, VueWrapper } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import {
   mockBuildingCount,
   mockDisplayError,
@@ -11,8 +14,6 @@ import {
 import { itemDatabase } from '@/__tests__/fixtures/data'
 import { component } from '@/__tests__/vue-test-helpers'
 import type { RecipeProduct } from '@/types/data'
-import { mount, VueWrapper } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import ItemSelector from '@/components/common/ItemSelector.vue'
 import AddFactoryModal from '@/components/modals/AddFactoryModal.vue'

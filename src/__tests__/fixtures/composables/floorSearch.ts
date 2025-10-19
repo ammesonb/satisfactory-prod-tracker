@@ -1,5 +1,6 @@
 import { vi } from 'vitest'
 import { ref, type Ref } from 'vue'
+
 import type { Floor } from '@/types/factory'
 
 export const mockSearchInput = ref('')

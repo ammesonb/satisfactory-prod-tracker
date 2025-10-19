@@ -1,8 +1,9 @@
+import { describe, expect, it } from 'vitest'
+
 import { recipeDatabase } from '@/__tests__/fixtures/data'
 import { getRecipeLinks, selectIngredientSources } from '@/logistics/graph-linker'
 import { newRecipeNode } from '@/logistics/graph-node'
 import type { RecipeIngredient } from '@/types/data'
-import { describe, expect, it } from 'vitest'
 
 describe('graph-linker unit tests', () => {
   describe('selectIngredientSources', () => {

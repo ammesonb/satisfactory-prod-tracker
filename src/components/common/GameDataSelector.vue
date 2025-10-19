@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, toRef } from 'vue'
-import type { ItemOption } from '@/types/data'
-import type { SearchOptions, IconConfig, DisplayConfig } from '@/types/ui'
+
 import { useDataSearch } from '@/composables/useDataSearch'
-import type { VAutocomplete } from 'vuetify/components'
+import type { ItemOption } from '@/types/data'
+import type { DisplayConfig, IconConfig, SearchOptions } from '@/types/ui'
 
 interface Props {
   modelValue?: ItemOption

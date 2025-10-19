@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { getStores } from '@/composables/useStores'
 import { useFloorNavigation } from '@/composables/useFloorNavigation'
+import { getStores } from '@/composables/useStores'
 
 const { factoryStore } = getStores()
 const { expandedFloors } = useFloorNavigation()

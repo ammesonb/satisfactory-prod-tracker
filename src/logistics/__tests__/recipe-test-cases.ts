@@ -1,6 +1,7 @@
-import type { Material } from '@/types/factory'
 import { expect } from 'vitest'
-import { RECIPES } from './recipe-input-fixtures'
+
+import type { Material } from '@/types/factory'
+import { RECIPES } from '@/logistics/__tests__/recipe-input-fixtures'
 
 // Basic test cases with simple production chains
 export const BASIC_TEST_CASES = {

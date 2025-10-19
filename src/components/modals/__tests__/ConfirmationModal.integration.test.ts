@@ -1,6 +1,7 @@
-import { component } from '@/__tests__/vue-test-helpers'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
+
+import { component } from '@/__tests__/vue-test-helpers'
 
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
 import { VBtn, VCard, VCardText, VCardTitle, VIcon } from 'vuetify/components'

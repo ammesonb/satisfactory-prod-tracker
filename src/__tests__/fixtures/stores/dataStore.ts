@@ -1,6 +1,7 @@
-import { buildingDatabase, itemDatabase, recipeDatabase } from '@/__tests__/fixtures/data'
 import { vi } from 'vitest'
-import type { Item, Recipe, Building, RecipeIngredient, RecipeProduct } from '@/types/data'
+
+import { buildingDatabase, itemDatabase, recipeDatabase } from '@/__tests__/fixtures/data'
+import type { Building, Item, Recipe, RecipeIngredient, RecipeProduct } from '@/types/data'
 
 /**
  * Creates a complete Recipe object from simplified test data

@@ -1,8 +1,9 @@
+import { describe, expect, it } from 'vitest'
+
 import { findCircularRecipes, groupCircularRecipes } from '@/logistics/dependency-resolver'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import { useDataStore } from '@/stores/data'
 import type { Recipe } from '@/types/factory'
-import { describe, expect, it } from 'vitest'
 
 describe('findCircularRecipes', () => {
   it('should detect self-referential catalyst recipes', () => {

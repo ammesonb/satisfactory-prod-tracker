@@ -1,12 +1,13 @@
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { computed, ref } from 'vue'
+
 import { mockSetLinkBuilt } from '@/__tests__/fixtures/composables/useRecipeStatus'
 import { makeMaterial, makeRecipeNode } from '@/__tests__/fixtures/data'
 import { component } from '@/__tests__/vue-test-helpers'
 import type { RecipeNode } from '@/logistics/graph-node'
 import type { Item } from '@/types/data'
 import type { Material } from '@/types/factory'
-import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { computed, ref } from 'vue'
 
 import CachedIcon from '@/components/common/CachedIcon.vue'
 import RecipeLink from '@/components/factory/RecipeLink.vue'

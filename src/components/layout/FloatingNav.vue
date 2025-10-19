@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+
 import { useFloorNavigation } from '@/composables/useFloorNavigation'
 
 const isOpen = ref(false)

@@ -1,7 +1,9 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, vi } from 'vitest'
-import CachedIcon from '@/components/common/CachedIcon.vue'
+import { describe, expect, it, vi } from 'vitest'
+
 import { component } from '@/__tests__/vue-test-helpers'
+
+import CachedIcon from '@/components/common/CachedIcon.vue'
 import { VImg } from 'vuetify/components'
 
 vi.mock('@/logistics/images', () => ({

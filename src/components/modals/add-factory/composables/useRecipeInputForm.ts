@@ -1,8 +1,9 @@
-import { ref, computed } from 'vue'
-import { type ItemOption } from '@/types/data'
-import { isPositiveNumber } from '@/utils/validation'
-import type { RecipeEntry } from '@/types/factory'
+import { computed, ref } from 'vue'
+
 import { useDataStore } from '@/stores'
+import { type ItemOption } from '@/types/data'
+import type { RecipeEntry } from '@/types/factory'
+import { isPositiveNumber } from '@/utils/validation'
 
 export function useRecipeInputForm() {
   const selectedRecipe = ref<ItemOption | undefined>()

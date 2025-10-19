@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { type RecipeEntry } from '@/types/factory'
+import { computed, ref } from 'vue'
+
 import type { ItemOption, RecipeProduct } from '@/types/data'
+import { type RecipeEntry } from '@/types/factory'
 
 interface Props {
   modelValue: boolean

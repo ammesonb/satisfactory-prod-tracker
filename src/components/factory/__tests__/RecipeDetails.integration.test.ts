@@ -1,10 +1,11 @@
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { getMockStores } from '@/__tests__/fixtures/composables/testUtils'
 import { makeRecipeNode } from '@/__tests__/fixtures/data'
 import { createTestRecipe } from '@/__tests__/fixtures/stores/dataStore'
 import { component } from '@/__tests__/vue-test-helpers'
 import type { RecipeNode } from '@/logistics/graph-node'
-import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import RecipeDetails from '@/components/factory/RecipeDetails.vue'
 import { VCard } from 'vuetify/components'

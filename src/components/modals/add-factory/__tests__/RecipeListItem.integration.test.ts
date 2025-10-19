@@ -1,8 +1,9 @@
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { mockGetStores } from '@/__tests__/fixtures/composables/stores'
 import { component } from '@/__tests__/vue-test-helpers'
 import type { RecipeEntry } from '@/types/factory'
-import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import CachedIcon from '@/components/common/CachedIcon.vue'
 import RecipeListItem from '@/components/modals/add-factory/RecipeListItem.vue'

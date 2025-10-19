@@ -1,7 +1,8 @@
+import { describe, expect, it } from 'vitest'
+
 import { InvalidBuildingError, InvalidRecipeError, RecipeFormatError } from '@/errors/recipe-errors'
 import { isNaturalResource } from '@/logistics/constants'
 import { parseRecipeString } from '@/logistics/recipe-parser'
-import { describe, expect, it } from 'vitest'
 
 // Vitest doesn't have fail globally, let's add it
 const fail = (message: string) => {

@@ -1,5 +1,5 @@
-import type { Recipe, Item, Building } from '@/types/data'
 import { EXTERNAL_RECIPE } from '@/logistics/constants'
+import type { Building, Item, Recipe } from '@/types/data'
 
 export const formatRecipeDisplayName = (recipes: Record<string, Recipe>, recipeName: string) => {
   if (recipeName === EXTERNAL_RECIPE) {

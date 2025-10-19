@@ -12,24 +12,24 @@
  * for processing recipe chains into displayable production networks.
  */
 
-import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-
-import 'vuetify/styles'
-import '@mdi/font/css/materialdesignicons.css'
-import './styles/responsive.css'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import { createApp } from 'vue'
 import { createVuetify } from 'vuetify'
 import { mdi } from 'vuetify/iconsets/mdi'
+import 'vuetify/styles'
+import '@mdi/font/css/materialdesignicons.css'
+
+import './styles/responsive.css'
 
 import App from '@/App.vue'
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import { useThemeStore, useDataStore, useFactoryStore, useErrorStore } from '@/stores'
 import {
   DATA_STORE_KEY,
+  ERROR_STORE_KEY,
   FACTORY_STORE_KEY,
   THEME_STORE_KEY,
-  ERROR_STORE_KEY,
 } from '@/composables/useStores'
+import { useDataStore, useErrorStore, useFactoryStore, useThemeStore } from '@/stores'
 
 const vuetify = createVuetify({
   theme: {

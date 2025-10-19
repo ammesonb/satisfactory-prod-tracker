@@ -1,11 +1,12 @@
+import { createPinia, setActivePinia } from 'pinia'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
+
 import { mockCurrentFactory, mockFactoryStore } from '@/__tests__/fixtures/composables/factoryStore'
 import { makeFactory, makeFloor, makeRecipeNode } from '@/__tests__/fixtures/data'
 import { useFloorNavigation } from '@/composables/useFloorNavigation'
 import type { RecipeNode } from '@/logistics/graph-node'
 import { ExpandRecipeState } from '@/utils/floors'
-import { createPinia, setActivePinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { nextTick } from 'vue'
 
 vi.mock('@/stores', () => ({
   useFactoryStore: vi.fn(() => mockFactoryStore),

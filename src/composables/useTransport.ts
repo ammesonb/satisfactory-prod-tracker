@@ -1,14 +1,15 @@
-import { calculateTransportCapacity, type RecipeNode } from '@/logistics/graph-node'
-import type { Material } from '@/types/factory'
 import { computed } from 'vue'
+
+import { getStores } from '@/composables/useStores'
 import {
-  isFluid,
   BELT_CAPACITIES,
-  PIPELINE_CAPACITIES,
   BELT_ITEM_NAMES,
+  isFluid,
+  PIPELINE_CAPACITIES,
   PIPELINE_ITEM_NAMES,
 } from '@/logistics/constants'
-import { getStores } from '@/composables/useStores'
+import { calculateTransportCapacity, type RecipeNode } from '@/logistics/graph-node'
+import type { Material } from '@/types/factory'
 
 export const useTransport = (
   recipe: RecipeNode,

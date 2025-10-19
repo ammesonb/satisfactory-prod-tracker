@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useDataShare } from '../useDataShare'
+
+import { useDataShare } from '@/composables/useDataShare'
 
 describe('useDataShare', () => {
   let dataShare: ReturnType<typeof useDataShare>

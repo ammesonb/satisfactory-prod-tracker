@@ -1,12 +1,14 @@
 import { mount, VueWrapper } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
-import RecipeSelector from '@/components/common/RecipeSelector.vue'
-import GameDataSelector from '@/components/common/GameDataSelector.vue'
+
 import { component } from '@/__tests__/vue-test-helpers'
-import type { DisplayConfig, IconConfig } from '@/types/ui'
 import type { ItemOption } from '@/types/data'
 import type { IDataStore } from '@/types/stores'
+import type { DisplayConfig, IconConfig } from '@/types/ui'
+
+import GameDataSelector from '@/components/common/GameDataSelector.vue'
+import RecipeSelector from '@/components/common/RecipeSelector.vue'
 
 // Test constants
 const RECIPE_KEYS = {

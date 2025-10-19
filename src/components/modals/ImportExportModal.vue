@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
+
 import { getStores } from '@/composables/useStores'
 
 const { factoryStore } = getStores()

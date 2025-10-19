@@ -1,3 +1,6 @@
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import {
   mockAddRecipe,
   mockBuildingCount,
@@ -15,8 +18,6 @@ import {
 import { component } from '@/__tests__/vue-test-helpers'
 import type { ItemOption } from '@/types/data'
 import type { RecipeEntry } from '@/types/factory'
-import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import BuildingSelector from '@/components/common/BuildingSelector.vue'
 import RecipeSelector from '@/components/common/RecipeSelector.vue'

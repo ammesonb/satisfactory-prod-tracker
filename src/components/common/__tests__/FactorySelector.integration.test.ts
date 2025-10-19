@@ -1,17 +1,19 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
-import { VCheckbox, VListItem, VList, VCard } from 'vuetify/components'
-import FactorySelector from '@/components/common/FactorySelector.vue'
-import type { Factory } from '@/types/factory'
-import { component } from '@/__tests__/vue-test-helpers'
+
 import {
   mockAllSelected,
-  mockSomeSelected,
   mockIsSelected,
+  mockSomeSelected,
   mockToggleAll,
   mockToggleItem,
 } from '@/__tests__/fixtures/composables/selection'
+import { component } from '@/__tests__/vue-test-helpers'
+import type { Factory } from '@/types/factory'
+
+import FactorySelector from '@/components/common/FactorySelector.vue'
+import { VCard, VCheckbox, VList, VListItem } from 'vuetify/components'
 import CachedIcon from '../CachedIcon.vue'
 
 // Mock the useSelection composable

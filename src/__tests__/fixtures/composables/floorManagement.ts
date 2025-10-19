@@ -1,4 +1,5 @@
 import { vi } from 'vitest'
+
 import type { Floor } from '@/types/factory'
 
 export const mockGetFloorDisplayName = vi.fn((index: number, floor: Floor) => {

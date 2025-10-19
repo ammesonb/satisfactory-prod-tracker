@@ -1,8 +1,10 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import ThemeSwitcher from '@/components/common/ThemeSwitcher.vue'
-import type { IThemeStore } from '@/types/stores'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { component } from '@/__tests__/vue-test-helpers'
+import type { IThemeStore } from '@/types/stores'
+
+import ThemeSwitcher from '@/components/common/ThemeSwitcher.vue'
 import { VBtn, VIcon } from 'vuetify/components'
 
 // Mock the useTheme composable from Vuetify

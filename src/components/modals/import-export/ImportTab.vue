@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { getStores } from '@/composables/useStores'
-import { useDataShare } from '@/composables/useDataShare'
-import { parseFactoriesFromJson, type Factory } from '@/types/factory'
 import { ref } from 'vue'
+
+import { useDataShare } from '@/composables/useDataShare'
+import { getStores } from '@/composables/useStores'
+import { parseFactoriesFromJson, type Factory } from '@/types/factory'
 
 const emit = defineEmits<{
   error: [message: string]

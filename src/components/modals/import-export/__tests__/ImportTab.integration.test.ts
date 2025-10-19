@@ -1,3 +1,6 @@
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import {
   mockFileInput,
   mockHandleFileImport,
@@ -8,8 +11,6 @@ import { mockImportFactories } from '@/__tests__/fixtures/composables/factorySto
 import { component } from '@/__tests__/vue-test-helpers'
 import type { Factory } from '@/types/factory'
 import { parseFactoriesFromJson } from '@/types/factory'
-import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import FactorySelector from '@/components/common/FactorySelector.vue'
 import ImportTab from '@/components/modals/import-export/ImportTab.vue'

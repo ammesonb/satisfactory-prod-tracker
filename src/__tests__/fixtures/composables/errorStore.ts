@@ -1,6 +1,7 @@
-import { ref } from 'vue'
 import { vi } from 'vitest'
 import type { VNode } from 'vue'
+import { ref } from 'vue'
+
 import type { ErrorBuilder } from '@/types/errors'
 
 // Create reactive refs that persist across calls for key properties

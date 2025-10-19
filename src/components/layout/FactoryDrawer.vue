@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { getStores } from '@/composables/useStores'
+import { computed, ref } from 'vue'
+
+import { useDataSearch } from '@/composables/useDataSearch'
 import { useFloorNavigation } from '@/composables/useFloorNavigation'
 import { useRecipeStatus } from '@/composables/useRecipeStatus'
-import { useDataSearch } from '@/composables/useDataSearch'
+import { getStores } from '@/composables/useStores'
 import type { Factory } from '@/types/factory'
 
 const collapsed = ref(true)

@@ -1,10 +1,11 @@
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { mockSetRecipeBuilt } from '@/__tests__/fixtures/composables/useRecipeStatus'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
 import { component } from '@/__tests__/vue-test-helpers'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import type { Recipe } from '@/types/factory'
-import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import CachedIcon from '@/components/common/CachedIcon.vue'
 import RecipeBuilding from '@/components/factory/RecipeBuilding.vue'

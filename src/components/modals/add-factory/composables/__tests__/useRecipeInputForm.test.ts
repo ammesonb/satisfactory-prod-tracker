@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { useRecipeInputForm } from '../useRecipeInputForm'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { useRecipeInputForm } from '@/components/modals/add-factory/composables/useRecipeInputForm'
 import type { ItemOption } from '@/types/data'
 import type { RecipeEntry } from '@/types/factory'
 

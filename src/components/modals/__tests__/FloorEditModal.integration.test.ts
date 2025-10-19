@@ -1,3 +1,7 @@
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
+
 import {
   mockCloseFloorEditor,
   mockGetFloorDisplayName,
@@ -7,9 +11,6 @@ import {
   mockUpdateFloorsFromForms,
 } from '@/__tests__/fixtures/composables/navigation'
 import { component } from '@/__tests__/vue-test-helpers'
-import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { nextTick } from 'vue'
 
 import ItemSelector from '@/components/common/ItemSelector.vue'
 import FloorEditModal from '@/components/modals/FloorEditModal.vue'

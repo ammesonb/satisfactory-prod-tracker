@@ -1,3 +1,7 @@
+import * as fs from 'fs'
+import * as path from 'path'
+import { fileURLToPath } from 'url'
+
 import type {
   Building,
   GameData,
@@ -6,9 +10,6 @@ import type {
   RecipeIngredient,
   RecipeProduct,
 } from '@/types/data'
-import * as fs from 'fs'
-import * as path from 'path'
-import { fileURLToPath } from 'url'
 
 function loadGameData(): GameData {
   const dirname = path.dirname(fileURLToPath(import.meta.url))

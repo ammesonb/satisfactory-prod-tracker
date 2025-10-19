@@ -1,6 +1,6 @@
+import type { RecipeNode } from '@/logistics/graph-node'
 import { useDataStore } from '@/stores/data'
 import type { Recipe } from '@/types/factory'
-import type { RecipeNode } from '@/logistics/graph-node'
 
 export const findCircularRecipes = (recipes: Recipe[]): Recipe[] => {
   const data = useDataStore()

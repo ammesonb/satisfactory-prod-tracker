@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import type { Material } from '@/types/factory'
-import type { RecipeNode } from '@/logistics/graph-node'
 import { computed, ref } from 'vue'
-import { useRecipeStatus } from '@/composables/useRecipeStatus'
+
 import { useLinkData } from '@/composables/useLinkData'
+import { useRecipeStatus } from '@/composables/useRecipeStatus'
+import type { RecipeNode } from '@/logistics/graph-node'
+import type { Material } from '@/types/factory'
 
 const props = defineProps<{
   link: Material

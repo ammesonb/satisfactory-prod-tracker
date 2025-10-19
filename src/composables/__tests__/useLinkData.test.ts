@@ -1,3 +1,7 @@
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { computed } from 'vue'
+
 import {
   mockCurrentFactory,
   mockFactoryStore,
@@ -5,12 +9,9 @@ import {
 } from '@/__tests__/fixtures/composables/factoryStore'
 import { makeMaterial, makeRecipeNode } from '@/__tests__/fixtures/data'
 import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
+import { useLinkData } from '@/composables/useLinkData'
 import { EXTERNAL_RECIPE } from '@/logistics/constants'
 import type { Factory } from '@/types/factory'
-import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { computed } from 'vue'
-import { useLinkData } from '../useLinkData'
 
 vi.mock('@/composables/useStores', () => ({
   getStores: vi.fn(() => ({

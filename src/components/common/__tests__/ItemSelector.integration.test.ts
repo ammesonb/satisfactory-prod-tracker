@@ -1,13 +1,14 @@
 import { mount, VueWrapper } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
-import { component } from '@/__tests__/vue-test-helpers'
-import type { DisplayConfig, IconConfig } from '@/types/ui'
-import type { ItemOption, Item, Building } from '@/types/data'
-import type { IDataStore } from '@/types/stores'
 
-import ItemSelector from '@/components/common/ItemSelector.vue'
+import { component } from '@/__tests__/vue-test-helpers'
+import type { Building, Item, ItemOption } from '@/types/data'
+import type { IDataStore } from '@/types/stores'
+import type { DisplayConfig, IconConfig } from '@/types/ui'
+
 import GameDataSelector from '@/components/common/GameDataSelector.vue'
+import ItemSelector from '@/components/common/ItemSelector.vue'
 
 // Mock the useStores composable
 const mockDataStore = {

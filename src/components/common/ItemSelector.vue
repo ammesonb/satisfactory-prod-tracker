@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+
 import { getStores } from '@/composables/useStores'
-import { type ItemOption } from '@/types/data'
-import GameDataSelector from '@/components/common/GameDataSelector.vue'
-import { itemsToOptions } from '@/utils/items'
+import type { ItemOption } from '@/types/data'
+import type { DisplayConfig, IconConfig } from '@/types/ui'
 import { buildingsToOptions } from '@/utils/buildings'
-import type { IconConfig, DisplayConfig } from '@/types/ui'
+import { itemsToOptions } from '@/utils/items'
 
 interface Props {
   modelValue?: ItemOption

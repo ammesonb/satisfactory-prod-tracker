@@ -1,3 +1,6 @@
+import { mount, type VueWrapper } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { mockGetEligibleFloors, mockMoveRecipe } from '@/__tests__/fixtures/composables/navigation'
 import { mockIsDark } from '@/__tests__/fixtures/composables/themeStore'
 import {
@@ -7,8 +10,6 @@ import {
 import { makeRecipeNode } from '@/__tests__/fixtures/data'
 import { component, element } from '@/__tests__/vue-test-helpers'
 import type { RecipeNode as RecipeNodeType } from '@/logistics/graph-node'
-import { mount, type VueWrapper } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import RecipeNodeComponent from '@/components/factory/RecipeNode.vue'
 import { VChip, VExpansionPanel, VSelect } from 'vuetify/components'

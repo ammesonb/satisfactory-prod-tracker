@@ -1,8 +1,9 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
+
 import { mockFactories } from '@/__tests__/fixtures/composables/factoryStore'
 import { component } from '@/__tests__/vue-test-helpers'
 import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { nextTick } from 'vue'
 
 import ImportExportModal from '@/components/modals/ImportExportModal.vue'
 import ExportTab from '@/components/modals/import-export/ExportTab.vue'

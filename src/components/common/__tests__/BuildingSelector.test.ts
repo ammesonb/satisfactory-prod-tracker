@@ -1,13 +1,15 @@
-import { describe, it, expect, beforeEach } from 'vitest'
 import { mount, VueWrapper } from '@vue/test-utils'
-import BuildingSelector from '../BuildingSelector.vue'
+import { beforeEach, describe, expect, it } from 'vitest'
+
 import type { ItemOption } from '@/types/data'
 
 // Import the test setups for real Vue + Pinia environment with fixture data
+import { component } from '@/__tests__/vue-test-helpers'
 import '@/components/__tests__/component-setup'
 import '@/logistics/__tests__/test-setup'
-import { component } from '@/__tests__/vue-test-helpers'
-import GameDataSelector from '../GameDataSelector.vue'
+
+import BuildingSelector from '@/components/common/BuildingSelector.vue'
+import GameDataSelector from '@/components/common/GameDataSelector.vue'
 import { VAutocomplete } from 'vuetify/components'
 
 // Test constants

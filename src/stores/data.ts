@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia'
-import type { Item, Recipe, Building, RecipeIngredient, RecipeProduct } from '@/types/data'
+
 import {
-  formatItemDisplayName,
   formatBuildingDisplayName,
+  formatItemDisplayName,
   formatRecipeDisplayName,
 } from '@/stores/transformers/display-names'
-import { getRecipeIngredients, getRecipeProducts } from '@/stores/transformers/recipe-data'
 import { resolveIcon } from '@/stores/transformers/icon-resolver'
+import { getRecipeIngredients, getRecipeProducts } from '@/stores/transformers/recipe-data'
+import type { Building, Item, Recipe, RecipeIngredient, RecipeProduct } from '@/types/data'
 
 export const useDataStore = defineStore('data', {
   state: () => ({

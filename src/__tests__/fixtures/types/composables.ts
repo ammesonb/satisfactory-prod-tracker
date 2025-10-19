@@ -1,4 +1,5 @@
 import { vi } from 'vitest'
+
 import type { UseRecipeStatus } from '@/types/composables'
 
 export type MockUseRecipeStatus = UseRecipeStatus & {

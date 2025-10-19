@@ -1,8 +1,9 @@
-import type { ItemOption } from '@/types/data'
-import type { SearchOptions } from '@/types/ui'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick, ref, type Ref } from 'vue'
-import { useDataSearch } from '../useDataSearch'
+
+import { useDataSearch } from '@/composables/useDataSearch'
+import type { ItemOption } from '@/types/data'
+import type { SearchOptions } from '@/types/ui'
 
 const IRON_ORE: ItemOption = {
   value: 'Desc_OreIron_C',

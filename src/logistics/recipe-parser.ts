@@ -1,6 +1,6 @@
-import type { Recipe } from '@/types/factory'
+import { InvalidBuildingError, InvalidRecipeError, RecipeFormatError } from '@/errors/recipe-errors'
 import { useDataStore } from '@/stores/data'
-import { RecipeFormatError, InvalidBuildingError, InvalidRecipeError } from '@/errors/recipe-errors'
+import type { Recipe } from '@/types/factory'
 
 export const parseRecipeString = (recipeString: string): Recipe => {
   const dataStore = useDataStore()

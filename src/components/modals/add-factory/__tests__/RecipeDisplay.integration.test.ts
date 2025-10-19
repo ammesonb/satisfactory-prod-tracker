@@ -1,7 +1,8 @@
-import { component, element } from '@/__tests__/vue-test-helpers'
-import type { RecipeEntry } from '@/types/factory'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
+
+import { component, element } from '@/__tests__/vue-test-helpers'
+import type { RecipeEntry } from '@/types/factory'
 
 import RecipeDisplay from '@/components/modals/add-factory/RecipeDisplay.vue'
 import RecipeListItem from '@/components/modals/add-factory/RecipeListItem.vue'

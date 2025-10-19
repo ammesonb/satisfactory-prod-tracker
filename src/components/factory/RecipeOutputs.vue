@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { linkToString, type RecipeNode } from '@/logistics/graph-node'
 import { computed } from 'vue'
+
 import { useRecipeStatus } from '@/composables/useRecipeStatus'
+import { linkToString, type RecipeNode } from '@/logistics/graph-node'
 
 const props = defineProps<{
   recipe: RecipeNode

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { getIconURL } from '../images'
+
+import { getIconURL } from '@/logistics/images'
 
 describe('images', () => {
   describe('getIconURL', () => {

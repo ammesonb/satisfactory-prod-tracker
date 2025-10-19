@@ -1,12 +1,14 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import GettingStarted from '@/components/common/GettingStarted.vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import {
   mockAddFactory,
   mockSetSelectedFactory,
 } from '@/__tests__/fixtures/composables/factoryStore'
 import { component, element } from '@/__tests__/vue-test-helpers'
-import { VBtn, VCard, VCardTitle, VCardText, VAlert } from 'vuetify/components'
+
+import GettingStarted from '@/components/common/GettingStarted.vue'
+import { VAlert, VBtn, VCard, VCardText, VCardTitle } from 'vuetify/components'
 
 // Mock the useStores composable
 vi.mock('@/composables/useStores', async () => {

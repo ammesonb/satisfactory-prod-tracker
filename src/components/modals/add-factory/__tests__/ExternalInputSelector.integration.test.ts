@@ -1,7 +1,8 @@
-import { component, element } from '@/__tests__/vue-test-helpers'
-import type { ItemOption, RecipeProduct } from '@/types/data'
 import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { component, element } from '@/__tests__/vue-test-helpers'
+import type { ItemOption, RecipeProduct } from '@/types/data'
 
 import ItemSelector from '@/components/common/ItemSelector.vue'
 import ExternalInputItem from '@/components/modals/add-factory/ExternalInputItem.vue'

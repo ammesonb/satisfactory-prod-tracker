@@ -1,13 +1,14 @@
 import { computed, type ComputedRef } from 'vue'
-import type { Material } from '@/types/factory'
-import { linkToString, type RecipeNode } from '@/logistics/graph-node'
+
 import { getStores } from '@/composables/useStores'
 import {
-  isFluid,
   BELT_ITEM_NAMES,
-  PIPELINE_ITEM_NAMES,
   EXTERNAL_RECIPE,
+  isFluid,
+  PIPELINE_ITEM_NAMES,
 } from '@/logistics/constants'
+import { linkToString, type RecipeNode } from '@/logistics/graph-node'
+import type { Material } from '@/types/factory'
 
 export function useLinkData(link: ComputedRef<Material>, type: ComputedRef<'input' | 'output'>) {
   const { dataStore, factoryStore } = getStores()

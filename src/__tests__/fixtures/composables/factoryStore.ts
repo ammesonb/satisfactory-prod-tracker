@@ -1,5 +1,6 @@
 import { vi } from 'vitest'
 import { ref } from 'vue'
+
 import type { Factory } from '@/types/factory'
 
 // Create reactive refs that persist across calls for key properties

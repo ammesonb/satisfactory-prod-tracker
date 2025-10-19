@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+
+import { useRecipeStatus } from '@/composables/useRecipeStatus'
 import type { RecipeNode } from '@/logistics/graph-node'
 import { useDataStore } from '@/stores'
-import { useRecipeStatus } from '@/composables/useRecipeStatus'
 
 const props = defineProps<{
   recipe: RecipeNode

@@ -1,10 +1,11 @@
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { mockLeftoverProductsAsLinks } from '@/__tests__/fixtures/composables/useRecipeStatus'
 import { makeRecipeNode } from '@/__tests__/fixtures/data'
 import { component, element } from '@/__tests__/vue-test-helpers'
 import type { RecipeNode } from '@/logistics/graph-node'
 import type { Material } from '@/types/factory'
-import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import RecipeLink from '@/components/factory/RecipeLink.vue'
 import RecipeOutputs from '@/components/factory/RecipeOutputs.vue'

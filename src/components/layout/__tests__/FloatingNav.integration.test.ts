@@ -1,11 +1,12 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { VFab } from 'vuetify/components'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { mockNavigateToElement } from '@/__tests__/fixtures/composables/navigation'
 import { component } from '@/__tests__/vue-test-helpers'
 
 import FloatingNav from '@/components/layout/FloatingNav.vue'
-import NavPanel from '../NavPanel.vue'
+import NavPanel from '@/components/layout/NavPanel.vue'
+import { VFab } from 'vuetify/components'
 
 // Mock the useFloorNavigation composable
 vi.mock('@/composables/useFloorNavigation', async () => {

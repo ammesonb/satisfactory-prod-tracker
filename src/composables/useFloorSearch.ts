@@ -1,9 +1,10 @@
-import type { Floor } from '@/types/factory'
+import { computed, type Ref } from 'vue'
+
 import { useDataSearch } from '@/composables/useDataSearch'
 import { useFloorManagement, type FloorWithIndex } from '@/composables/useFloorManagement'
-import { computed, type Ref } from 'vue'
 import { getStores } from '@/composables/useStores'
 import type { RecipeNode } from '@/logistics/graph-node'
+import type { Floor } from '@/types/factory'
 
 export const useFloorSearch = (floors: Ref<Floor[] | undefined>) => {
   const { dataStore } = getStores()

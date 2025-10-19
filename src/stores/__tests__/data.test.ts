@@ -1,8 +1,9 @@
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { EXTERNAL_RECIPE } from '@/logistics/constants'
 import type { Building, Item, Recipe } from '@/types/data'
 import type { IDataStore } from '@/types/stores'
-import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock fetch
 global.fetch = vi.fn()

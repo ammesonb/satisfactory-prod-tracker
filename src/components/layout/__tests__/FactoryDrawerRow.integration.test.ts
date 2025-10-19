@@ -1,10 +1,12 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { VListItem, VBtn, VImg } from 'vuetify/components'
-import FactoryDrawerRow from '@/components/layout/FactoryDrawerRow.vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { component } from '@/__tests__/vue-test-helpers'
 import type { Factory } from '@/types/factory'
+
+import FactoryDrawerRow from '@/components/layout/FactoryDrawerRow.vue'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
+import { VBtn, VImg, VListItem } from 'vuetify/components'
 
 // Mock composables with centralized fixtures
 vi.mock('@/composables/useStores', async () => {

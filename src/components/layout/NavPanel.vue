@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+
 import { useFloorManagement } from '@/composables/useFloorManagement'
-import { useRecipeStatus } from '@/composables/useRecipeStatus'
 import { useFloorSearch } from '@/composables/useFloorSearch'
+import { useRecipeStatus } from '@/composables/useRecipeStatus'
 import { getStores } from '@/composables/useStores'
 import { getIconURL } from '@/logistics/images'
 import { formatFloorId, formatRecipeId } from '@/utils/floors'

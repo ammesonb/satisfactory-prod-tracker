@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+
 import { getStores } from '@/composables/useStores'
 import { type RecipeEntry } from '@/types/factory'
 

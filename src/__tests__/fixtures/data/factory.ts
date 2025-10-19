@@ -1,7 +1,7 @@
-import type { Factory, Floor, Material } from '@/types/factory'
+import { recipeDatabase } from '@/__tests__/fixtures/data/recipes'
 import type { RecipeNode } from '@/logistics/graph-node'
 import { newRecipeNode } from '@/logistics/graph-node'
-import { recipeDatabase } from './recipes'
+import type { Factory, Floor, Material } from '@/types/factory'
 
 /**
  * Creates a mock RecipeNode for testing

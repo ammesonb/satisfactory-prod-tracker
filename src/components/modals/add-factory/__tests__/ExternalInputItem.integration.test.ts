@@ -1,6 +1,7 @@
-import { component } from '@/__tests__/vue-test-helpers'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
+
+import { component } from '@/__tests__/vue-test-helpers'
 
 import CachedIcon from '@/components/common/CachedIcon.vue'
 import ExternalInputItem from '@/components/modals/add-factory/ExternalInputItem.vue'

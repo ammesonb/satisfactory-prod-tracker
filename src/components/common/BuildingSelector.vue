@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
+
 import { getStores } from '@/composables/useStores'
-import { buildingsToOptions } from '@/utils/buildings'
 import { type ItemOption } from '@/types/data'
-import type { IconConfig, DisplayConfig } from '@/types/ui'
+import type { DisplayConfig, IconConfig } from '@/types/ui'
+import { buildingsToOptions } from '@/utils/buildings'
 
 interface Props {
   modelValue?: ItemOption

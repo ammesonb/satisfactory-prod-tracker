@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
-import { isPositiveNumber } from '../validation'
+import { describe, expect, it } from 'vitest'
+
+import { isPositiveNumber } from '@/utils/validation'
 
 describe('validation utilities', () => {
   // Helper to test multiple cases efficiently

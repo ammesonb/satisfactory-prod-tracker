@@ -1,3 +1,6 @@
+import { mount, type VueWrapper } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import {
   getMockFloorManagement,
   getMockFloorNavigation,
@@ -5,9 +8,6 @@ import {
 } from '@/__tests__/fixtures/composables/testUtils'
 import type { Factory } from '@/types/factory'
 import { ExpandRecipeState } from '@/utils/floors'
-import type { VueWrapper } from '@vue/test-utils'
-import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import FactoryFloorsToolbar from '@/components/factory/FactoryFloorsToolbar.vue'
 import { VBtn, VMenu } from 'vuetify/components'

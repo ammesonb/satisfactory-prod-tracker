@@ -1,6 +1,7 @@
-import type { IThemeStore } from '@/types/stores'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import type { IThemeStore } from '@/types/stores'
 
 // Mock fetch for any potential network requests
 global.fetch = vi.fn()

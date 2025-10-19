@@ -1,11 +1,12 @@
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { mockUseFloorNavigation } from '@/__tests__/fixtures/composables'
 import { mockCurrentFactory } from '@/__tests__/fixtures/composables/factoryStore'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
 import { component } from '@/__tests__/vue-test-helpers'
 import { newRecipeNode } from '@/logistics/graph-node'
 import type { Factory, Floor } from '@/types/factory'
-import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import FactoryFloor from '@/components/factory/FactoryFloor.vue'
 import FactoryFloorsToolbar from '@/components/factory/FactoryFloorsToolbar.vue'
