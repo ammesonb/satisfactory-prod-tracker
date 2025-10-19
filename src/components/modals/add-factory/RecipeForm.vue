@@ -8,7 +8,6 @@ const emit = defineEmits<{
 }>()
 
 const form = useRecipeInputForm()
-console.log(form.recipeKeys.value)
 
 watch(
   () => form.selectedRecipes.value,

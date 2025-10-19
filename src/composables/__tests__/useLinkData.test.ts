@@ -10,11 +10,13 @@ import {
   mockGetRecipeByName,
 } from '@/__tests__/fixtures/composables/factoryStore'
 import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
-import { EXTERNAL_RECIPE, BELT_ITEM_NAMES, PIPELINE_ITEM_NAMES } from '@/logistics/constants'
+import { EXTERNAL_RECIPE } from '@/logistics/constants'
 
-vi.mock('@/stores', () => ({
-  useFactoryStore: vi.fn(() => mockFactoryStore),
-  useDataStore: vi.fn(() => createMockDataStore()),
+vi.mock('@/composables/useStores', () => ({
+  getStores: vi.fn(() => ({
+    dataStore: createMockDataStore(),
+    factoryStore: mockFactoryStore,
+  })),
 }))
 
 const makeMaterial = (material: string, source: string, sink: string): Material => ({
@@ -172,7 +174,7 @@ describe('useLinkData', () => {
       const recipe = makeRecipeNode('Recipe_Fake_IronIngot_C', 2)
       mockCurrentFactory.value = {
         name: 'Test Factory',
-        floors: [{recipes: [recipe]}],
+        floors: [{ recipes: [recipe] }],
       } as unknown as Factory
       mockGetRecipeByName.mockReturnValue(recipe)
 
@@ -190,7 +192,7 @@ describe('useLinkData', () => {
       const recipe = makeRecipeNode('Recipe_Fake_IronIngot_C', 0)
       mockCurrentFactory.value = {
         name: 'Test Factory',
-        floors: [{recipes: [recipe]}],
+        floors: [{ recipes: [recipe] }],
       } as unknown as Factory
       mockGetRecipeByName.mockReturnValue(recipe)
 
