@@ -3,37 +3,14 @@ import { createPinia, setActivePinia } from 'pinia'
 import { ref, type Ref } from 'vue'
 import { useFloorSearch } from '../useFloorSearch'
 import type { Floor } from '@/types/factory'
-import type { RecipeNode } from '@/logistics/graph-node'
 import { mockCurrentFactory, mockFactoryStore } from '@/__tests__/fixtures/composables/factoryStore'
 import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
+import { makeFloor } from '@/__tests__/fixtures/data'
 
 vi.mock('@/stores', () => ({
   useFactoryStore: vi.fn(() => mockFactoryStore),
   useDataStore: vi.fn(() => createMockDataStore()),
 }))
-
-const makeRecipeNode = (recipeName: string): RecipeNode => ({
-  recipe: {
-    name: recipeName,
-    building: 'Desc_SmelterMk1_C',
-    count: 1,
-  },
-  ingredients: [],
-  products: [],
-  availableProducts: [],
-  fullyConsumed: false,
-  built: true,
-  expanded: true,
-  inputs: [],
-  outputs: [],
-  batchNumber: 0,
-})
-
-const makeFloor = (name?: string, recipeNames: string[] = []): Floor => ({
-  name,
-  iconItem: undefined,
-  recipes: recipeNames.map((recipeName) => makeRecipeNode(recipeName)),
-})
 
 describe('useFloorSearch', () => {
   let testFloors: Ref<Floor[] | undefined>
@@ -44,9 +21,9 @@ describe('useFloorSearch', () => {
     mockCurrentFactory.value = null
 
     testFloors = ref<Floor[]>([
-      makeFloor('Smelting', ['Recipe_IronIngot_C', 'Recipe_CopperIngot_C']),
-      makeFloor('Production', ['Recipe_IronPlate_C', 'Recipe_IronRod_C']),
-      makeFloor(undefined, ['Recipe_Cable_C']),
+      makeFloor(['Recipe_IronIngot_C', 'Recipe_CopperIngot_C'], { name: 'Smelting' }),
+      makeFloor(['Recipe_IronPlate_C', 'Recipe_IronRod_C'], { name: 'Production' }),
+      makeFloor(['Recipe_Cable_C']),
     ])
   })
 
@@ -229,7 +206,7 @@ describe('useFloorSearch', () => {
         expect(filteredFloors.value.length).toBeGreaterThan(0)
       })
 
-      testFloors.value = [makeFloor('New Floor', ['Recipe_IronIngot_C'])]
+      testFloors.value = [makeFloor(['Recipe_IronIngot_C'], { name: 'New Floor' })]
 
       await vi.waitFor(() => {
         expect(filteredFloors.value).toHaveLength(1)
@@ -255,7 +232,7 @@ describe('useFloorSearch', () => {
 
   describe('Edge Cases', () => {
     it('handles floors with no recipes', async () => {
-      testFloors.value = [makeFloor('Empty Floor', [])]
+      testFloors.value = [makeFloor([], { name: 'Empty Floor' })]
       const { filteredFloors, updateSearch } = useFloorSearch(testFloors)
 
       updateSearch('empty')
@@ -267,7 +244,7 @@ describe('useFloorSearch', () => {
     })
 
     it('handles floors with no name', async () => {
-      testFloors.value = [makeFloor(undefined, ['Recipe_IronIngot_C'])]
+      testFloors.value = [makeFloor([], { name: 'Floor 1' })]
       const { filteredFloors, updateSearch } = useFloorSearch(testFloors)
 
       updateSearch('floor 1')
@@ -301,7 +278,7 @@ describe('useFloorSearch', () => {
   describe('Result Limiting', () => {
     it('limits results when no search query', () => {
       testFloors.value = Array.from({ length: 50 }, (_, i) =>
-        makeFloor(`Floor ${i}`, ['Recipe_Test_C']),
+        makeFloor(['Recipe_Test_C'], { name: `Floor ${i}` }),
       )
 
       const { filteredFloors } = useFloorSearch(testFloors)

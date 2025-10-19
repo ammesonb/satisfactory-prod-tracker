@@ -1,15 +1,15 @@
-import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ref, computed } from 'vue'
-import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
-import { recipeDatabase } from '@/__tests__/fixtures/data'
 import { mockSetLinkBuilt } from '@/__tests__/fixtures/composables/useRecipeStatus'
-import type { Material } from '@/types/factory'
-import type { Item } from '@/types/data'
+import { makeMaterial, makeRecipeNode } from '@/__tests__/fixtures/data'
 import { component } from '@/__tests__/vue-test-helpers'
+import type { RecipeNode } from '@/logistics/graph-node'
+import type { Item } from '@/types/data'
+import type { Material } from '@/types/factory'
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { computed, ref } from 'vue'
 
-import RecipeLink from '@/components/factory/RecipeLink.vue'
 import CachedIcon from '@/components/common/CachedIcon.vue'
+import RecipeLink from '@/components/factory/RecipeLink.vue'
 import RecipeLinkTarget from '@/components/factory/RecipeLinkTarget.vue'
 import TransportCapacityTooltip from '@/components/factory/TransportCapacityTooltip.vue'
 import { VCard, VCheckbox } from 'vuetify/components'
@@ -66,31 +66,6 @@ describe('RecipeLink Integration', () => {
     })
   })
 
-  const createRecipeNode = (recipeName: string): RecipeNode => {
-    const recipe = recipeDatabase[recipeName]
-    if (!recipe) {
-      throw new Error(`Recipe ${recipeName} not found in fixtures`)
-    }
-
-    return newRecipeNode(
-      { name: recipe.name, building: recipe.producedIn[0] || 'Unknown', count: 1 },
-      recipe.ingredients,
-      recipe.products,
-    )
-  }
-
-  const createMaterialLink = (
-    source: string,
-    sink: string,
-    material: string,
-    amount: number,
-  ): Material => ({
-    source,
-    sink,
-    material,
-    amount,
-  })
-
   const createWrapper = (
     link: Material,
     recipe: RecipeNode,
@@ -106,8 +81,8 @@ describe('RecipeLink Integration', () => {
   }
 
   it('renders without errors and displays material information', () => {
-    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30.5)
+    const recipe = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
+    const link = makeMaterial(TEST_ITEMS.IRON_ORE, 'Mining', 'Smelting', 30.5)
 
     const wrapper = createWrapper(link, recipe, 'input')
 
@@ -118,8 +93,8 @@ describe('RecipeLink Integration', () => {
   })
 
   it('renders child components with correct props', () => {
-    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
+    const recipe = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
+    const link = makeMaterial(TEST_ITEMS.IRON_ORE, 'Mining', 'Smelting', 30)
 
     const wrapper = createWrapper(link, recipe, 'output')
 
@@ -145,8 +120,8 @@ describe('RecipeLink Integration', () => {
   })
 
   it('calls composables with correct parameters', async () => {
-    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
+    const recipe = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
+    const link = makeMaterial(TEST_ITEMS.IRON_ORE, 'Mining', 'Smelting', 30)
 
     createWrapper(link, recipe, 'input')
 
@@ -162,8 +137,8 @@ describe('RecipeLink Integration', () => {
     const { mockIsLinkBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
     mockIsLinkBuilt.mockReturnValueOnce(true)
 
-    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
+    const recipe = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
+    const link = makeMaterial(TEST_ITEMS.IRON_ORE, 'Mining', 'Smelting', 30)
 
     const wrapper = createWrapper(link, recipe)
 
@@ -185,8 +160,8 @@ describe('RecipeLink Integration', () => {
     const { mockIsLinkBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
     mockIsLinkBuilt.mockReturnValueOnce(false)
 
-    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
+    const recipe = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
+    const link = makeMaterial(TEST_ITEMS.IRON_ORE, 'Mining', 'Smelting', 30)
 
     const wrapper = createWrapper(link, recipe)
 
@@ -204,8 +179,8 @@ describe('RecipeLink Integration', () => {
   })
 
   it('toggles built state when card is clicked', async () => {
-    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
+    const recipe = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
+    const link = makeMaterial(TEST_ITEMS.IRON_ORE, 'Mining', 'Smelting', 30)
 
     await component(createWrapper(link, recipe), VCard)
       .match((card) => card.classes().includes('recipe-link'))
@@ -215,8 +190,8 @@ describe('RecipeLink Integration', () => {
   })
 
   it('toggles built state when checkbox is changed', async () => {
-    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    const link = createMaterialLink('Mining', 'Smelting', TEST_ITEMS.IRON_ORE, 30)
+    const recipe = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
+    const link = makeMaterial(TEST_ITEMS.IRON_ORE, 'Mining', 'Smelting', 30)
 
     await component(createWrapper(link, recipe), VCheckbox).emit('update:modelValue', true)
     expect(mockSetLinkBuilt).toHaveBeenCalledWith(link, true)
@@ -225,8 +200,8 @@ describe('RecipeLink Integration', () => {
   it('displays fallback material name when materialItem is not available', () => {
     mockMaterialItemValue.value = null
 
-    const recipe = createRecipeNode(TEST_RECIPES.IRON_INGOT)
-    const link = createMaterialLink('Mining', 'Smelting', 'Unknown_Material', 25)
+    const recipe = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
+    const link = makeMaterial('Unknown_Material', 'Mining', 'Smelting', 25)
     const wrapper = createWrapper(link, recipe)
 
     component(wrapper, VCard).assert({

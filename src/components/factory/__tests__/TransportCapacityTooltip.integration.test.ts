@@ -1,17 +1,17 @@
-import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import {
+  mockBuildingCounts,
+  mockIsFluidMaterial,
+  mockTransportItems,
+} from '@/__tests__/fixtures/composables/transport'
+import { recipeDatabase } from '@/__tests__/fixtures/data'
 import { useTransport } from '@/composables/useTransport'
 import { newRecipeNode, type RecipeNode } from '@/logistics/graph-node'
 import type { Material } from '@/types/factory'
-import { recipeDatabase } from '@/__tests__/fixtures/data'
-import {
-  mockIsFluidMaterial,
-  mockTransportItems,
-  mockBuildingCounts,
-} from '@/__tests__/fixtures/composables/transport'
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import TransportCapacityTooltip from '@/components/factory/TransportCapacityTooltip.vue'
 import CachedIcon from '@/components/common/CachedIcon.vue'
+import TransportCapacityTooltip from '@/components/factory/TransportCapacityTooltip.vue'
 
 // Use centralized fixtures for mocking composables
 vi.mock('@/composables/useStores', async () => {

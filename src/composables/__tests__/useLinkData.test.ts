@@ -2,14 +2,14 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { computed } from 'vue'
 import { useLinkData } from '../useLinkData'
-import type { Factory, Material } from '@/types/factory'
-import type { RecipeNode } from '@/logistics/graph-node'
+import type { Factory } from '@/types/factory'
 import {
   mockCurrentFactory,
   mockFactoryStore,
   mockGetRecipeByName,
 } from '@/__tests__/fixtures/composables/factoryStore'
 import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
+import { makeRecipeNode, makeMaterial } from '@/__tests__/fixtures/data'
 import { EXTERNAL_RECIPE } from '@/logistics/constants'
 
 vi.mock('@/composables/useStores', () => ({
@@ -18,30 +18,6 @@ vi.mock('@/composables/useStores', () => ({
     factoryStore: mockFactoryStore,
   })),
 }))
-
-const makeMaterial = (material: string, source: string, sink: string): Material => ({
-  material,
-  source,
-  sink,
-  amount: 60,
-})
-
-const makeRecipeNode = (recipeName: string, batchNumber: number): RecipeNode => ({
-  recipe: {
-    name: recipeName,
-    building: 'Desc_SmelterMk1_C',
-    count: 1,
-  },
-  ingredients: [],
-  products: [],
-  availableProducts: [],
-  fullyConsumed: false,
-  built: true,
-  expanded: true,
-  inputs: [],
-  outputs: [],
-  batchNumber,
-})
 
 describe('useLinkData', () => {
   beforeEach(() => {

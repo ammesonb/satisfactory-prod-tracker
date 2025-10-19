@@ -1,49 +1,15 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { nextTick } from 'vue'
-import { useFloorNavigation } from '../useFloorNavigation'
-import type { Factory, Floor } from '@/types/factory'
 import type { RecipeNode } from '@/logistics/graph-node'
+import { useFloorNavigation } from '@/composables/useFloorNavigation'
 import { mockCurrentFactory, mockFactoryStore } from '@/__tests__/fixtures/composables/factoryStore'
+import { makeRecipeNode, makeFloor, makeFactory } from '@/__tests__/fixtures/data'
 import { ExpandRecipeState } from '@/utils/floors'
 
 vi.mock('@/stores', () => ({
   useFactoryStore: vi.fn(() => mockFactoryStore),
 }))
-
-const makeRecipeNode = (
-  recipeName: string,
-  batchNumber: number = 0,
-  expanded: boolean = true,
-): RecipeNode => ({
-  recipe: {
-    name: recipeName,
-    building: 'Desc_SmelterMk1_C',
-    count: 1,
-  },
-  ingredients: [],
-  products: [],
-  availableProducts: [],
-  fullyConsumed: false,
-  built: true,
-  expanded,
-  inputs: [],
-  outputs: [],
-  batchNumber,
-})
-
-const makeFloor = (recipeNodes: RecipeNode[], name?: string, iconItem?: string): Floor => ({
-  name,
-  iconItem,
-  recipes: recipeNodes,
-})
-
-const makeFactory = (name: string, floors: Floor[]): Factory => ({
-  name,
-  icon: 'test-icon',
-  floors,
-  recipeLinks: {},
-})
 
 const createMockElement = (
   id: string,
@@ -265,8 +231,8 @@ describe('useFloorNavigation', () => {
     })
 
     it('expands all recipes when affectsCompleted is All', () => {
-      const recipe1 = makeRecipeNode('Recipe_A', 0, false)
-      const recipe2 = makeRecipeNode('Recipe_B', 1, false)
+      const recipe1 = makeRecipeNode('Recipe_A', 0, { expanded: false })
+      const recipe2 = makeRecipeNode('Recipe_B', 1, { expanded: false })
 
       const factory = makeFactory('Test Factory', [makeFloor([recipe1]), makeFloor([recipe2])])
       mockCurrentFactory.value = factory
@@ -281,8 +247,8 @@ describe('useFloorNavigation', () => {
     })
 
     it('collapses all recipes when affectsCompleted is All', () => {
-      const recipe1 = makeRecipeNode('Recipe_A', 0, true)
-      const recipe2 = makeRecipeNode('Recipe_B', 1, true)
+      const recipe1 = makeRecipeNode('Recipe_A', 0, { expanded: true })
+      const recipe2 = makeRecipeNode('Recipe_B', 1, { expanded: true })
 
       const factory = makeFactory('Test Factory', [makeFloor([recipe1]), makeFloor([recipe2])])
       mockCurrentFactory.value = factory
@@ -297,8 +263,8 @@ describe('useFloorNavigation', () => {
     })
 
     it('only expands complete recipes when affectsCompleted is Complete', () => {
-      const recipe1 = makeRecipeNode('Recipe_A', 0, false)
-      const recipe2 = makeRecipeNode('Recipe_B', 1, false)
+      const recipe1 = makeRecipeNode('Recipe_A', 0, { expanded: false })
+      const recipe2 = makeRecipeNode('Recipe_B', 1, { expanded: false })
 
       const factory = makeFactory('Test Factory', [makeFloor([recipe1]), makeFloor([recipe2])])
       mockCurrentFactory.value = factory
@@ -315,8 +281,8 @@ describe('useFloorNavigation', () => {
     })
 
     it('only collapses incomplete recipes when affectsCompleted is Incomplete', () => {
-      const recipe1 = makeRecipeNode('Recipe_A', 0, true)
-      const recipe2 = makeRecipeNode('Recipe_B', 1, true)
+      const recipe1 = makeRecipeNode('Recipe_A', 0, { expanded: true })
+      const recipe2 = makeRecipeNode('Recipe_B', 1, { expanded: true })
 
       const factory = makeFactory('Test Factory', [makeFloor([recipe1]), makeFloor([recipe2])])
       mockCurrentFactory.value = factory
@@ -333,7 +299,7 @@ describe('useFloorNavigation', () => {
     })
 
     it('expands floor when expanding recipes with any expanded', () => {
-      const recipe1 = makeRecipeNode('Recipe_A', 0, false)
+      const recipe1 = makeRecipeNode('Recipe_A', 0, { expanded: false })
 
       const factory = makeFactory('Test Factory', [makeFloor([recipe1])])
       mockCurrentFactory.value = factory
@@ -347,7 +313,7 @@ describe('useFloorNavigation', () => {
     })
 
     it('collapses floor when collapsing recipes with none expanded', () => {
-      const recipe1 = makeRecipeNode('Recipe_A', 0, true)
+      const recipe1 = makeRecipeNode('Recipe_A', 0, { expanded: true })
 
       const factory = makeFactory('Test Factory', [makeFloor([recipe1])])
       mockCurrentFactory.value = factory
@@ -362,8 +328,8 @@ describe('useFloorNavigation', () => {
     })
 
     it('does not collapse floor if some recipes remain expanded', () => {
-      const recipe1 = makeRecipeNode('Recipe_A', 0, true)
-      const recipe2 = makeRecipeNode('Recipe_B', 0, true)
+      const recipe1 = makeRecipeNode('Recipe_A', 0, { expanded: true })
+      const recipe2 = makeRecipeNode('Recipe_B', 0, { expanded: true })
 
       const factory = makeFactory('Test Factory', [makeFloor([recipe1, recipe2])])
       mockCurrentFactory.value = factory

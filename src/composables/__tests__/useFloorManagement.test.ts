@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useFloorManagement } from '../useFloorManagement'
-import type { Factory, Floor } from '@/types/factory'
-import type { RecipeNode } from '@/logistics/graph-node'
 import type { ItemOption } from '@/types/data'
 import {
   createMockDataStore,
@@ -11,6 +9,7 @@ import {
   mockGetRecipeDisplayName,
 } from '@/__tests__/fixtures/stores/dataStore'
 import { mockCurrentFactory, mockFactoryStore } from '@/__tests__/fixtures/composables/factoryStore'
+import { makeFloor, makeFactory } from '@/__tests__/fixtures/data'
 
 vi.mock('@/composables/useStores', () => ({
   getStores: vi.fn(() => ({
@@ -18,36 +17,6 @@ vi.mock('@/composables/useStores', () => ({
     factoryStore: mockFactoryStore,
   })),
 }))
-
-const makeRecipeNode = (recipeName: string, batchNumber: number = 0): RecipeNode => ({
-  recipe: {
-    name: recipeName,
-    building: 'Desc_SmelterMk1_C',
-    count: 1,
-  },
-  ingredients: [],
-  products: [],
-  availableProducts: [],
-  fullyConsumed: false,
-  built: true,
-  expanded: true,
-  inputs: [],
-  outputs: [],
-  batchNumber,
-})
-
-const makeFloor = (name?: string, iconItem?: string, recipeNames: string[] = []): Floor => ({
-  name,
-  iconItem,
-  recipes: recipeNames.map((recipeName) => makeRecipeNode(recipeName)),
-})
-
-const makeFactory = (name: string, floors: Floor[]): Factory => ({
-  name,
-  icon: 'test-icon',
-  floors,
-  recipeLinks: {},
-})
 
 describe('useFloorManagement', () => {
   beforeEach(() => {
@@ -60,21 +29,21 @@ describe('useFloorManagement', () => {
   describe('getFloorDisplayName', () => {
     it('returns floor number only when floor has no name', () => {
       const { getFloorDisplayName } = useFloorManagement()
-      const floor = makeFloor()
+      const floor = makeFloor([])
 
       expect(getFloorDisplayName(1, floor)).toBe('Floor 1')
     })
 
     it('returns floor number with name when floor has name', () => {
       const { getFloorDisplayName } = useFloorManagement()
-      const floor = makeFloor('Smelting')
+      const floor = makeFloor([], { name: 'Smelting' })
 
       expect(getFloorDisplayName(1, floor)).toBe('Floor 1 - Smelting')
     })
 
     it('formats display name for different floor indices', () => {
       const { getFloorDisplayName } = useFloorManagement()
-      const floor = makeFloor('Production')
+      const floor = makeFloor([], { name: 'Production' })
 
       expect(getFloorDisplayName(5, floor)).toBe('Floor 5 - Production')
       expect(getFloorDisplayName(10, floor)).toBe('Floor 10 - Production')
@@ -89,8 +58,8 @@ describe('useFloorManagement', () => {
     })
 
     it('returns floor info for all floors in current factory', () => {
-      const floor1 = makeFloor('Smelting', undefined, ['Recipe_A'])
-      const floor2 = makeFloor('Production', undefined, ['Recipe_B', 'Recipe_C'])
+      const floor1 = makeFloor(['Recipe_A'], { name: 'Smelting' })
+      const floor2 = makeFloor(['Recipe_B', 'Recipe_C'], { name: 'Production' })
       const factory = makeFactory('Test Factory', [floor1, floor2])
 
       mockCurrentFactory.value = factory
@@ -115,7 +84,10 @@ describe('useFloorManagement', () => {
 
   describe('getEligibleFloors', () => {
     it('returns all floors with specified floor disabled', () => {
-      const factory = makeFactory('Test Factory', [makeFloor('A'), makeFloor('B')])
+      const factory = makeFactory('Test Factory', [
+        makeFloor([], { name: 'A' }),
+        makeFloor([], { name: 'B' }),
+      ])
       mockCurrentFactory.value = factory
 
       const { getEligibleFloors } = useFloorManagement()
@@ -137,7 +109,7 @@ describe('useFloorManagement', () => {
 
   describe('updateFloorName', () => {
     it('updates floor name in factory store', () => {
-      const factory = makeFactory('Test Factory', [makeFloor('Old Name')])
+      const factory = makeFactory('Test Factory', [makeFloor([], { name: 'Old Name' })])
       mockCurrentFactory.value = factory
 
       const { updateFloorName } = useFloorManagement()
@@ -147,7 +119,7 @@ describe('useFloorManagement', () => {
     })
 
     it('sets floor name to undefined', () => {
-      const factory = makeFactory('Test Factory', [makeFloor('Old Name')])
+      const factory = makeFactory('Test Factory', [makeFloor([], { name: 'Old Name' })])
       mockCurrentFactory.value = factory
 
       const { updateFloorName } = useFloorManagement()
@@ -163,7 +135,7 @@ describe('useFloorManagement', () => {
     })
 
     it('does nothing when floor index is out of bounds', () => {
-      const factory = makeFactory('Test Factory', [makeFloor()])
+      const factory = makeFactory('Test Factory', [makeFloor([])])
       mockCurrentFactory.value = factory
 
       const { updateFloorName } = useFloorManagement()
@@ -174,7 +146,7 @@ describe('useFloorManagement', () => {
 
   describe('updateFloorIcon', () => {
     it('updates floor icon in factory store', () => {
-      const factory = makeFactory('Test Factory', [makeFloor()])
+      const factory = makeFactory('Test Factory', [makeFloor([])])
       mockCurrentFactory.value = factory
 
       const { updateFloorIcon } = useFloorManagement()
@@ -184,7 +156,7 @@ describe('useFloorManagement', () => {
     })
 
     it('sets floor icon to undefined', () => {
-      const factory = makeFactory('Test Factory', [makeFloor(undefined, 'Desc_IronIngot_C')])
+      const factory = makeFactory('Test Factory', [makeFloor([], { iconItem: 'Desc_IronIngot_C' })])
       mockCurrentFactory.value = factory
 
       const { updateFloorIcon } = useFloorManagement()
@@ -202,7 +174,7 @@ describe('useFloorManagement', () => {
 
   describe('updateFloors', () => {
     it('updates multiple floor properties at once', () => {
-      const factory = makeFactory('Test Factory', [makeFloor(), makeFloor()])
+      const factory = makeFactory('Test Factory', [makeFloor([]), makeFloor([])])
       mockCurrentFactory.value = factory
 
       const { updateFloors } = useFloorManagement()
@@ -218,7 +190,9 @@ describe('useFloorManagement', () => {
     })
 
     it('only updates specified properties', () => {
-      const factory = makeFactory('Test Factory', [makeFloor('Original', 'OriginalIcon')])
+      const factory = makeFactory('Test Factory', [
+        makeFloor([], { name: 'Original', iconItem: 'OriginalIcon' }),
+      ])
       mockCurrentFactory.value = factory
 
       const { updateFloors } = useFloorManagement()
@@ -229,7 +203,7 @@ describe('useFloorManagement', () => {
     })
 
     it('skips invalid floor indices', () => {
-      const factory = makeFactory('Test Factory', [makeFloor()])
+      const factory = makeFactory('Test Factory', [makeFloor([], {})])
       mockCurrentFactory.value = factory
 
       const { updateFloors } = useFloorManagement()
@@ -246,8 +220,8 @@ describe('useFloorManagement', () => {
   describe('moveRecipe', () => {
     it('moves recipe from source floor to target floor', () => {
       const factory = makeFactory('Test Factory', [
-        makeFloor(undefined, undefined, ['Recipe_A', 'Recipe_B']),
-        makeFloor(undefined, undefined, ['Recipe_C']),
+        makeFloor(['Recipe_A', 'Recipe_B']),
+        makeFloor(['Recipe_C']),
       ])
       mockCurrentFactory.value = factory
 
@@ -261,10 +235,7 @@ describe('useFloorManagement', () => {
     })
 
     it('updates recipe batchNumber to target floor index', () => {
-      const factory = makeFactory('Test Factory', [
-        makeFloor(undefined, undefined, ['Recipe_A']),
-        makeFloor(),
-      ])
+      const factory = makeFactory('Test Factory', [makeFloor(['Recipe_A']), makeFloor([])])
       mockCurrentFactory.value = factory
 
       const { moveRecipe } = useFloorManagement()
@@ -274,7 +245,7 @@ describe('useFloorManagement', () => {
     })
 
     it('does nothing when source and target are same', () => {
-      const factory = makeFactory('Test Factory', [makeFloor(undefined, undefined, ['Recipe_A'])])
+      const factory = makeFactory('Test Factory', [makeFloor(['Recipe_A'])])
       mockCurrentFactory.value = factory
 
       const { moveRecipe } = useFloorManagement()
@@ -284,10 +255,7 @@ describe('useFloorManagement', () => {
     })
 
     it('does nothing when recipe not found', () => {
-      const factory = makeFactory('Test Factory', [
-        makeFloor(undefined, undefined, ['Recipe_A']),
-        makeFloor(),
-      ])
+      const factory = makeFactory('Test Factory', [makeFloor(['Recipe_A']), makeFloor([])])
       mockCurrentFactory.value = factory
 
       const { moveRecipe } = useFloorManagement()
@@ -345,8 +313,8 @@ describe('useFloorManagement', () => {
 
     it('returns form for single floor when editFloorIndex is set', () => {
       const factory = makeFactory('Test Factory', [
-        makeFloor('Smelting', 'Desc_IronIngot_C'),
-        makeFloor('Production'),
+        makeFloor([], { name: 'Smelting', iconItem: 'Desc_IronIngot_C' }),
+        makeFloor([], { name: 'Production' }),
       ])
       mockCurrentFactory.value = factory
 
@@ -362,7 +330,10 @@ describe('useFloorManagement', () => {
     })
 
     it('returns forms for all floors when editFloorIndex is null', () => {
-      const factory = makeFactory('Test Factory', [makeFloor('A'), makeFloor('B')])
+      const factory = makeFactory('Test Factory', [
+        makeFloor([], { name: 'A' }),
+        makeFloor([], { name: 'B' }),
+      ])
       mockCurrentFactory.value = factory
 
       const { openFloorEditor, getFloorFormsTemplate } = useFloorManagement()
@@ -376,7 +347,9 @@ describe('useFloorManagement', () => {
     })
 
     it('creates ItemOption with dataStore getters', () => {
-      const factory = makeFactory('Test Factory', [makeFloor('Test', 'TestItem')])
+      const factory = makeFactory('Test Factory', [
+        makeFloor([], { name: 'Test', iconItem: 'TestItem' }),
+      ])
       mockCurrentFactory.value = factory
 
       const { openFloorEditor, getFloorFormsTemplate } = useFloorManagement()
@@ -391,7 +364,7 @@ describe('useFloorManagement', () => {
     })
 
     it('handles floor without icon', () => {
-      const factory = makeFactory('Test Factory', [makeFloor('Test')])
+      const factory = makeFactory('Test Factory', [makeFloor([], { name: 'Test' })])
       mockCurrentFactory.value = factory
 
       const { openFloorEditor, getFloorFormsTemplate } = useFloorManagement()
@@ -486,8 +459,8 @@ describe('useFloorManagement', () => {
 
     it('only updates changed floors', () => {
       const factory = makeFactory('Test Factory', [
-        makeFloor('A', 'ItemA'),
-        makeFloor('B', 'ItemB'),
+        makeFloor([], { name: 'A', iconItem: 'ItemA' }),
+        makeFloor([], { name: 'B', iconItem: 'ItemB' }),
       ])
       mockCurrentFactory.value = factory
 
@@ -517,7 +490,7 @@ describe('useFloorManagement', () => {
     })
 
     it('extracts item value from ItemOption', () => {
-      const factory = makeFactory('Test Factory', [makeFloor()])
+      const factory = makeFactory('Test Factory', [makeFloor([])])
       mockCurrentFactory.value = factory
 
       const { updateFloorsFromForms } = useFloorManagement()
@@ -541,7 +514,7 @@ describe('useFloorManagement', () => {
   describe('floorMatches', () => {
     it('matches by floor display name', () => {
       const { floorMatches } = useFloorManagement()
-      const floor = { ...makeFloor('Smelting'), originalIndex: 0 }
+      const floor = { ...makeFloor([], { name: 'Smelting' }), originalIndex: 0 }
 
       expect(floorMatches(floor, 'smelt')).toBe(true)
       expect(floorMatches(floor, 'FLOOR 1')).toBe(true)
@@ -549,7 +522,7 @@ describe('useFloorManagement', () => {
 
     it('calls getRecipeDisplayName for recipe matching', () => {
       const { floorMatches } = useFloorManagement()
-      const floor = { ...makeFloor(undefined, undefined, ['Recipe_Test']), originalIndex: 0 }
+      const floor = { ...makeFloor(['Recipe_Test']), originalIndex: 0 }
 
       floorMatches(floor, 'something')
 
@@ -558,7 +531,7 @@ describe('useFloorManagement', () => {
 
     it('is case insensitive', () => {
       const { floorMatches } = useFloorManagement()
-      const floor = { ...makeFloor('Test'), originalIndex: 0 }
+      const floor = { ...makeFloor([], { name: 'Test' }), originalIndex: 0 }
 
       expect(floorMatches(floor, 'TEST')).toBe(true)
       expect(floorMatches(floor, 'TeSt')).toBe(true)
@@ -566,7 +539,7 @@ describe('useFloorManagement', () => {
 
     it('returns false when no match', () => {
       const { floorMatches } = useFloorManagement()
-      const floor = { ...makeFloor('Smelting'), originalIndex: 0 }
+      const floor = { ...makeFloor([], { name: 'Smelting' }), originalIndex: 0 }
 
       expect(floorMatches(floor, 'production')).toBe(false)
     })
