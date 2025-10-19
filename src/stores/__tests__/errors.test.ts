@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
-import { h } from 'vue'
-import type { VNode } from 'vue'
 import type { ErrorBuilder } from '@/types/errors'
 import type { IErrorStore } from '@/types/stores'
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { VNode } from 'vue'
+import { h } from 'vue'
 
 // Mock fetch for any potential network requests
 global.fetch = vi.fn()

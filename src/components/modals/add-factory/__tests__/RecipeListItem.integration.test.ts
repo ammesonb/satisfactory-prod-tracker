@@ -1,11 +1,12 @@
-import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import RecipeListItem from '@/components/modals/add-factory/RecipeListItem.vue'
+import { mockGetStores } from '@/__tests__/fixtures/composables/stores'
 import { component } from '@/__tests__/vue-test-helpers'
 import type { RecipeEntry } from '@/types/factory'
-import { VBtn } from 'vuetify/components'
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import CachedIcon from '@/components/common/CachedIcon.vue'
-import { mockGetStores } from '@/__tests__/fixtures/composables/stores'
+import RecipeListItem from '@/components/modals/add-factory/RecipeListItem.vue'
+import { VBtn } from 'vuetify/components'
 
 // Mock composables with centralized fixtures
 vi.mock('@/composables/useStores', async () => {

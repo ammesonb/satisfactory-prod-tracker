@@ -1,5 +1,5 @@
-import { expect } from 'vitest'
 import type { Material } from '@/types/factory'
+import { expect } from 'vitest'
 import { RECIPES } from './recipe-input-fixtures'
 
 // Basic test cases with simple production chains

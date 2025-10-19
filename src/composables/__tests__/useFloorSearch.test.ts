@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { mockCurrentFactory, mockFactoryStore } from '@/__tests__/fixtures/composables/factoryStore'
+import { makeFloor } from '@/__tests__/fixtures/data'
+import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
+import type { Floor } from '@/types/factory'
 import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref, type Ref } from 'vue'
 import { useFloorSearch } from '../useFloorSearch'
-import type { Floor } from '@/types/factory'
-import { mockCurrentFactory, mockFactoryStore } from '@/__tests__/fixtures/composables/factoryStore'
-import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
-import { makeFloor } from '@/__tests__/fixtures/data'
 
 vi.mock('@/stores', () => ({
   useFactoryStore: vi.fn(() => mockFactoryStore),

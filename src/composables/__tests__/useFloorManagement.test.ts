@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
-import { useFloorManagement } from '../useFloorManagement'
-import type { ItemOption } from '@/types/data'
+import { mockCurrentFactory, mockFactoryStore } from '@/__tests__/fixtures/composables/factoryStore'
+import { makeFactory, makeFloor } from '@/__tests__/fixtures/data'
 import {
   createMockDataStore,
   mockGetIcon,
   mockGetItemDisplayName,
   mockGetRecipeDisplayName,
 } from '@/__tests__/fixtures/stores/dataStore'
-import { mockCurrentFactory, mockFactoryStore } from '@/__tests__/fixtures/composables/factoryStore'
-import { makeFloor, makeFactory } from '@/__tests__/fixtures/data'
+import type { ItemOption } from '@/types/data'
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { useFloorManagement } from '../useFloorManagement'
 
 vi.mock('@/composables/useStores', () => ({
   getStores: vi.fn(() => ({

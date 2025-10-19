@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
-import type { Factory } from '@/types/factory'
 import type { RecipeNode } from '@/logistics/graph-node'
 import { useFactoryStore } from '@/stores/factory'
+import type { Factory } from '@/types/factory'
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it } from 'vitest'
 
 describe('useFactoryStore', () => {
   beforeEach(() => {

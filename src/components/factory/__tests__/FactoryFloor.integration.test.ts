@@ -2,7 +2,6 @@ import { mockUseRecipeStatus } from '@/__tests__/fixtures/composables'
 import { getMockFloorManagement } from '@/__tests__/fixtures/composables/testUtils'
 import { recipeDatabase } from '@/__tests__/fixtures/data'
 import { component } from '@/__tests__/vue-test-helpers'
-import FactoryFloor from '@/components/factory/FactoryFloor.vue'
 import { newRecipeNode } from '@/logistics/graph-node'
 import type { Floor } from '@/types/factory'
 import { mount } from '@vue/test-utils'
@@ -18,6 +17,7 @@ import {
   VImg,
 } from 'vuetify/components'
 
+import FactoryFloor from '@/components/factory/FactoryFloor.vue'
 import RecipeNode from '@/components/factory/RecipeNode.vue'
 
 vi.mock('@/composables/useStores', async () => {

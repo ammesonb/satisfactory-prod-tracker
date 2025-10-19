@@ -1,9 +1,10 @@
-import { mount } from '@vue/test-utils'
-import { describe, it, expect, vi } from 'vitest'
-import ExternalInputItem from '@/components/modals/add-factory/ExternalInputItem.vue'
-import CachedIcon from '@/components/common/CachedIcon.vue'
-import { VChip, VBadge } from 'vuetify/components'
 import { component } from '@/__tests__/vue-test-helpers'
+import { mount } from '@vue/test-utils'
+import { describe, expect, it, vi } from 'vitest'
+
+import CachedIcon from '@/components/common/CachedIcon.vue'
+import ExternalInputItem from '@/components/modals/add-factory/ExternalInputItem.vue'
+import { VBadge, VChip } from 'vuetify/components'
 
 // Mock composables with centralized fixtures
 vi.mock('@/composables/useStores', async () => {

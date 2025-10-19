@@ -1,13 +1,13 @@
-import { describe, it, expect } from 'vitest'
-import {
-  newRecipeNode,
-  getCatalystQuantity,
-  produceRecipe,
-  decrementConsumedProducts,
-} from '../graph-node'
-import type { Recipe } from '@/types/factory'
+import { ProductNotFoundError, SourceNodeNotFoundError } from '@/errors/processing-errors'
 import type { RecipeIngredient, RecipeProduct } from '@/types/data'
-import { SourceNodeNotFoundError, ProductNotFoundError } from '@/errors/processing-errors'
+import type { Recipe } from '@/types/factory'
+import { describe, expect, it } from 'vitest'
+import {
+  decrementConsumedProducts,
+  getCatalystQuantity,
+  newRecipeNode,
+  produceRecipe,
+} from '../graph-node'
 import { expectErrorWithMessage } from './error-test-helpers'
 
 describe('graph-node unit tests', () => {

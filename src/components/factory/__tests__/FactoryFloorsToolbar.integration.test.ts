@@ -3,12 +3,13 @@ import {
   getMockFloorNavigation,
   getMockRecipeStatus,
 } from '@/__tests__/fixtures/composables/testUtils'
-import FactoryFloorsToolbar from '@/components/factory/FactoryFloorsToolbar.vue'
 import type { Factory } from '@/types/factory'
 import { ExpandRecipeState } from '@/utils/floors'
 import type { VueWrapper } from '@vue/test-utils'
 import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import FactoryFloorsToolbar from '@/components/factory/FactoryFloorsToolbar.vue'
 import { VBtn, VMenu } from 'vuetify/components'
 
 vi.mock('@/composables/useStores', async () => {

@@ -1,12 +1,12 @@
-import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { nextTick } from 'vue'
-import { VBtn, VCard, VCardTitle, VAlert, VTab, VWindow } from 'vuetify/components'
-import { component } from '@/__tests__/vue-test-helpers'
 import { mockFactories } from '@/__tests__/fixtures/composables/factoryStore'
+import { component } from '@/__tests__/vue-test-helpers'
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
 
 import ImportExportModal from '@/components/modals/ImportExportModal.vue'
 import ExportTab from '@/components/modals/import-export/ExportTab.vue'
+import { VAlert, VBtn, VCard, VCardTitle, VTab, VWindow } from 'vuetify/components'
 
 vi.mock('@/composables/useStores', async () => {
   const { mockUseStores } = await import('@/__tests__/fixtures/composables')

@@ -1,11 +1,12 @@
 import { makeMaterial, makeRecipeNode } from '@/__tests__/fixtures/data'
 import { component, element } from '@/__tests__/vue-test-helpers'
-import RecipeInputs from '@/components/factory/RecipeInputs.vue'
 import type { RecipeNode } from '@/logistics/graph-node'
 import type { Material } from '@/types/factory'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
-import RecipeLink from '../RecipeLink.vue'
+
+import RecipeInputs from '@/components/factory/RecipeInputs.vue'
+import RecipeLink from '@/components/factory/RecipeLink.vue'
 
 // Mock the RecipeLink component since it's auto-imported
 vi.mock('@/components/factory/RecipeLink.vue', () => ({

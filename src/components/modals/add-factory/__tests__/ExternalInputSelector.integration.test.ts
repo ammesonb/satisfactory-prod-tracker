@@ -1,19 +1,19 @@
-import { mount } from '@vue/test-utils'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import {
-  VExpansionPanels,
-  VExpansionPanel,
-  VBtn,
-  VTextField,
-  VChip,
-  VIcon,
-} from 'vuetify/components'
 import { component, element } from '@/__tests__/vue-test-helpers'
-import type { RecipeProduct, ItemOption } from '@/types/data'
+import type { ItemOption, RecipeProduct } from '@/types/data'
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import ExternalInputSelector from '@/components/modals/add-factory/ExternalInputSelector.vue'
 import ItemSelector from '@/components/common/ItemSelector.vue'
 import ExternalInputItem from '@/components/modals/add-factory/ExternalInputItem.vue'
+import ExternalInputSelector from '@/components/modals/add-factory/ExternalInputSelector.vue'
+import {
+  VBtn,
+  VChip,
+  VExpansionPanel,
+  VExpansionPanels,
+  VIcon,
+  VTextField,
+} from 'vuetify/components'
 
 // Mock composables with centralized fixtures
 vi.mock('@/composables/useStores', async () => {

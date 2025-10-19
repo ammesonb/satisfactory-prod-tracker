@@ -1,5 +1,5 @@
-import { expect, vi } from 'vitest'
 import type { UserFriendlyError } from '@/types/errors'
+import { expect, vi } from 'vitest'
 
 /**
  * Helper function to test error throwing with detailed assertions

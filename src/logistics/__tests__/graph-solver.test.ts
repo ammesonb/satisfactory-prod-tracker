@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { RECIPES } from './recipe-input-fixtures'
-import { BASIC_TEST_CASES, COMPLEX_TEST_CASES } from './recipe-test-cases'
+import { RecipeChainError } from '@/errors/processing-errors'
 import type { RecipeNode } from '@/logistics/graph-node'
 import { solveRecipeChain } from '@/logistics/graph-solver'
 import type { RecipeProduct } from '@/types/data'
 import type { Material } from '@/types/factory'
-import { RecipeChainError } from '@/errors/processing-errors'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { expectErrorWithMessage } from './error-test-helpers'
+import { RECIPES } from './recipe-input-fixtures'
+import { BASIC_TEST_CASES, COMPLEX_TEST_CASES } from './recipe-test-cases'
 
 // Helper function to test complete recipe chain solving
 const testRecipeChain = (
