@@ -16,6 +16,10 @@ export interface FloorFormData {
   originalItem: ItemOption | undefined
 }
 
+// Shared state outside the composable so all instances share the same refs
+const showFloorEditor = ref(false)
+const editFloorIndex = ref<number | null>(null)
+
 export function useFloorManagement() {
   const { factoryStore, dataStore } = getStores()
 
@@ -88,10 +92,7 @@ export function useFloorManagement() {
     toFloor.recipes.push(recipe)
   }
 
-  // Floor editor modal state
-  const showFloorEditor = ref(false)
-  const editFloorIndex = ref<number | null>(null)
-
+  // Floor editor modal functions
   const openFloorEditor = (floorIndex?: number) => {
     editFloorIndex.value = floorIndex ?? null
     showFloorEditor.value = true
