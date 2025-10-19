@@ -1,4 +1,5 @@
 import { mount } from '@vue/test-utils'
+import { isRef } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
@@ -64,11 +65,13 @@ describe('TransportCapacityTooltip Integration', () => {
   })
 
   it('calls useTransport composable with correct parameters', async () => {
-    const recipe = createTestRecipe()
-    const link = createTestLink()
-    createWrapper({ recipe, link, direction: 'output', isHovered: false })
+    createWrapper({ direction: 'output', isHovered: false })
 
-    expect(vi.mocked(useTransport)).toHaveBeenCalledWith(recipe, link, 'output', false)
+    const calls = vi.mocked(useTransport).mock.calls
+    expect(calls).toHaveLength(1)
+    expect(calls[0][2]).toBe('output')
+    // isHovered should be passed as a reactive reference
+    expect(isRef(calls[0][3])).toBe(true)
   })
 
   it('displays building counts from composable results', async () => {

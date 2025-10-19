@@ -227,28 +227,4 @@ describe('useLinkData', () => {
       expect(displayName.value).toBe(EXTERNAL_RECIPE)
     })
   })
-
-  describe('transportIcon', () => {
-    it('returns belt icon for solid materials', () => {
-      const link = computed(() =>
-        makeMaterial('Desc_IronIngot_C', 'Recipe_IronIngot_C', 'Recipe_IronPlate_C'),
-      )
-      const type = computed(() => 'input' as const)
-
-      const { transportIcon } = useLinkData(link, type)
-
-      expect(transportIcon.value).toBe('desc-conveyorbeltmk1-c')
-    })
-
-    it('returns pipeline icon for fluid materials', () => {
-      const link = computed(() =>
-        makeMaterial('Desc_Water_C', 'Desc_Water_C', 'Recipe_IronIngot_C'),
-      )
-      const type = computed(() => 'input' as const)
-
-      const { transportIcon } = useLinkData(link, type)
-
-      expect(transportIcon.value).toBe('desc-pipeline-c')
-    })
-  })
 })

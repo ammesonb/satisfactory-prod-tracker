@@ -1,4 +1,5 @@
 import { createPinia, setActivePinia } from 'pinia'
+import { computed, ref } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { makeMaterial, makeRecipeNode } from '@/__tests__/fixtures/data'
@@ -98,7 +99,7 @@ describe('useTransport', () => {
     const testCases = [
       {
         name: 'returns empty array when not hovered',
-        isHovered: false,
+        isHovered: ref(false),
         shouldCalculate: false,
       },
       {
@@ -132,7 +133,7 @@ describe('useTransport', () => {
 
       mockCalculateTransportCapacity.mockReturnValue([1, 0, 0])
 
-      const { buildingCounts } = useTransport(recipe, link, 'input', true)
+      const { buildingCounts } = useTransport(recipe, link, 'input', ref(true))
 
       expect(buildingCounts.value).toEqual([1, 0, 0])
       expect(mockCalculateTransportCapacity).toHaveBeenCalledWith('Desc_IronIngot_C', 60, 2)
@@ -145,7 +146,7 @@ describe('useTransport', () => {
 
       mockCalculateTransportCapacity.mockReturnValue([2, 0, 0])
 
-      const { buildingCounts } = useTransport(recipe, link, 'output', true)
+      const { buildingCounts } = useTransport(recipe, link, 'output', ref(true))
 
       expect(buildingCounts.value).toEqual([2, 0, 0])
       expect(mockCalculateTransportCapacity).toHaveBeenCalledWith('Desc_IronPlate_C', 120, 3)
@@ -156,7 +157,7 @@ describe('useTransport', () => {
       const link = makeMaterial('Desc_IronIngot_C', 'Source', 'Sink')
       recipe.inputs = [makeMaterial('Desc_CopperIngot_C', 'Source', 'Sink')]
 
-      const { buildingCounts } = useTransport(recipe, link, 'input', true)
+      const { buildingCounts } = useTransport(recipe, link, 'input', ref(true))
 
       expect(buildingCounts.value).toEqual([])
       expect(mockCalculateTransportCapacity).not.toHaveBeenCalled()
@@ -173,7 +174,7 @@ describe('useTransport', () => {
 
       mockCalculateTransportCapacity.mockReturnValue([1, 0])
 
-      const { buildingCounts } = useTransport(recipe, targetLink, 'input', true)
+      const { buildingCounts } = useTransport(recipe, targetLink, 'input', ref(true))
 
       expect(buildingCounts.value).toEqual([1, 0])
       expect(mockCalculateTransportCapacity).toHaveBeenCalledWith('Desc_IronIngot_C', 30, 1)
@@ -216,7 +217,7 @@ describe('useTransport', () => {
       const link = makeMaterial('Desc_IronIngot_C', 'Source', 'Sink')
       recipe.inputs = []
 
-      const { buildingCounts } = useTransport(recipe, link, 'input', true)
+      const { buildingCounts } = useTransport(recipe, link, 'input', ref(true))
 
       expect(buildingCounts.value).toEqual([])
     })
@@ -229,7 +230,7 @@ describe('useTransport', () => {
 
       mockCalculateTransportCapacity.mockReturnValue([0])
 
-      const { buildingCounts } = useTransport(recipe, link, 'input', true)
+      const { buildingCounts } = useTransport(recipe, link, 'input', ref(true))
 
       expect(buildingCounts.value).toEqual([0])
       expect(mockCalculateTransportCapacity).toHaveBeenCalledWith('Desc_IronIngot_C', 0, 1)
@@ -243,10 +244,142 @@ describe('useTransport', () => {
 
       mockCalculateTransportCapacity.mockReturnValue([2, 1, 0])
 
-      const { buildingCounts } = useTransport(recipe, link, 'input', true)
+      const { buildingCounts } = useTransport(recipe, link, 'input', ref(true))
 
       expect(buildingCounts.value).toEqual([2, 1, 0])
       expect(mockCalculateTransportCapacity).toHaveBeenCalledWith('Desc_IronIngot_C', 100, 2.5)
+    })
+  })
+
+  describe('reactivity with isHovered', () => {
+    it('recalculates buildingCounts when isHovered changes', () => {
+      const recipe = makeRecipeNode('Recipe_Test_C', 0, { count: 1 })
+      const link = makeMaterial('Desc_IronIngot_C', 'Source', 'Sink', 30)
+      recipe.inputs = [link]
+
+      const isHovered = ref(false)
+      mockCalculateTransportCapacity.mockReturnValue([1, 0])
+
+      const { buildingCounts } = useTransport(recipe, link, 'input', isHovered)
+
+      expect(buildingCounts.value).toEqual([])
+      expect(mockCalculateTransportCapacity).not.toHaveBeenCalled()
+
+      isHovered.value = true
+
+      expect(buildingCounts.value).toEqual([1, 0])
+      expect(mockCalculateTransportCapacity).toHaveBeenCalledWith('Desc_IronIngot_C', 30, 1)
+    })
+
+    it('works with computed refs', () => {
+      const recipe = makeRecipeNode('Recipe_Test_C', 0, { count: 1 })
+      const link = makeMaterial('Desc_IronIngot_C', 'Source', 'Sink', 45)
+      recipe.inputs = [link]
+
+      const baseHover = ref(false)
+      const isHovered = computed(() => baseHover.value)
+      mockCalculateTransportCapacity.mockReturnValue([1, 1, 0])
+
+      const { buildingCounts } = useTransport(recipe, link, 'input', isHovered)
+
+      expect(buildingCounts.value).toEqual([])
+
+      baseHover.value = true
+
+      expect(buildingCounts.value).toEqual([1, 1, 0])
+      expect(mockCalculateTransportCapacity).toHaveBeenCalledWith('Desc_IronIngot_C', 45, 1)
+    })
+  })
+
+  describe('minimumUsableTier', () => {
+    it('returns tier 0 for amounts within MK1 belt capacity (60)', () => {
+      const recipe = makeRecipeNode('Recipe_Test_C', 0, { count: 1 })
+      const link = makeMaterial('Desc_IronIngot_C', 'Source', 'Sink', 30)
+      recipe.inputs = [link]
+
+      const { minimumUsableTier } = useTransport(recipe, link, 'input')
+
+      expect(minimumUsableTier.value).toBe(0)
+    })
+
+    it('returns tier 1 for amounts exceeding MK1 but within MK2 belt capacity (120)', () => {
+      const recipe = makeRecipeNode('Recipe_Test_C', 0, { count: 1 })
+      const link = makeMaterial('Desc_IronIngot_C', 'Source', 'Sink', 100)
+      recipe.inputs = [link]
+
+      const { minimumUsableTier } = useTransport(recipe, link, 'input')
+
+      expect(minimumUsableTier.value).toBe(1)
+    })
+
+    it('returns tier 2 for amounts exceeding MK2 but within MK3 belt capacity (270)', () => {
+      const recipe = makeRecipeNode('Recipe_Test_C', 0, { count: 1 })
+      const link = makeMaterial('Desc_IronIngot_C', 'Source', 'Sink', 240)
+      recipe.inputs = [link]
+
+      const { minimumUsableTier } = useTransport(recipe, link, 'input')
+
+      expect(minimumUsableTier.value).toBe(2)
+    })
+
+    it('returns highest tier for amounts exceeding all capacities', () => {
+      const recipe = makeRecipeNode('Recipe_Test_C', 0, { count: 1 })
+      const link = makeMaterial('Desc_IronIngot_C', 'Source', 'Sink', 1500)
+      recipe.inputs = [link]
+
+      const { minimumUsableTier } = useTransport(recipe, link, 'input')
+
+      expect(minimumUsableTier.value).toBe(BELT_CAPACITIES.length - 1)
+    })
+
+    it('returns tier 0 for amounts within MK1 pipeline capacity (300)', () => {
+      const recipe = makeRecipeNode('Recipe_Test_C', 0, { count: 1 })
+      const link = makeMaterial('Desc_Water_C', 'Source', 'Sink', 150)
+      recipe.inputs = [link]
+
+      const { minimumUsableTier } = useTransport(recipe, link, 'input')
+
+      expect(minimumUsableTier.value).toBe(0)
+    })
+
+    it('returns tier 1 for amounts exceeding MK1 but within MK2 pipeline capacity (600)', () => {
+      const recipe = makeRecipeNode('Recipe_Test_C', 0, { count: 1 })
+      const link = makeMaterial('Desc_Water_C', 'Source', 'Sink', 450)
+      recipe.inputs = [link]
+
+      const { minimumUsableTier } = useTransport(recipe, link, 'input')
+
+      expect(minimumUsableTier.value).toBe(1)
+    })
+
+    it('returns highest tier for fluids exceeding all pipeline capacities', () => {
+      const recipe = makeRecipeNode('Recipe_Test_C', 0, { count: 1 })
+      const link = makeMaterial('Desc_Water_C', 'Source', 'Sink', 700)
+      recipe.inputs = [link]
+
+      const { minimumUsableTier } = useTransport(recipe, link, 'input')
+
+      expect(minimumUsableTier.value).toBe(PIPELINE_CAPACITIES.length - 1)
+    })
+
+    it('handles edge case at exact capacity boundary', () => {
+      const recipe = makeRecipeNode('Recipe_Test_C', 0, { count: 1 })
+      const link = makeMaterial('Desc_IronIngot_C', 'Source', 'Sink', 60)
+      recipe.inputs = [link]
+
+      const { minimumUsableTier } = useTransport(recipe, link, 'input')
+
+      expect(minimumUsableTier.value).toBe(0)
+    })
+
+    it('returns highest tier when recipe link not found', () => {
+      const recipe = makeRecipeNode('Recipe_Test_C', 0, { count: 1 })
+      const link = makeMaterial('Desc_IronIngot_C', 'Source', 'Sink', 30)
+      recipe.inputs = [] // No inputs - link won't be found
+
+      const { minimumUsableTier } = useTransport(recipe, link, 'input')
+
+      expect(minimumUsableTier.value).toBe(BELT_CAPACITIES.length - 1)
     })
   })
 })

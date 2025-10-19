@@ -1,12 +1,7 @@
 import { computed, type ComputedRef } from 'vue'
 
 import { getStores } from '@/composables/useStores'
-import {
-  BELT_ITEM_NAMES,
-  EXTERNAL_RECIPE,
-  isFluid,
-  PIPELINE_ITEM_NAMES,
-} from '@/logistics/constants'
+import { EXTERNAL_RECIPE } from '@/logistics/constants'
 import { linkToString, type RecipeNode } from '@/logistics/graph-node'
 import type { Material } from '@/types/factory'
 
@@ -54,11 +49,6 @@ export function useLinkData(link: ComputedRef<Material>, type: ComputedRef<'inpu
     formatLinkDisplayName(linkTarget.value, targetRecipe.value, type.value),
   )
 
-  const transportIcon = computed(() => {
-    const transport = isFluid(link.value.material) ? PIPELINE_ITEM_NAMES[0] : BELT_ITEM_NAMES[0]
-    return dataStore.buildings[transport]?.icon ?? ''
-  })
-
   return {
     linkId,
     materialItem,
@@ -66,6 +56,5 @@ export function useLinkData(link: ComputedRef<Material>, type: ComputedRef<'inpu
     isRecipe,
     targetRecipe,
     displayName,
-    transportIcon,
   }
 }
