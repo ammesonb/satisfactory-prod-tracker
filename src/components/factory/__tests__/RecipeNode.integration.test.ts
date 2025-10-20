@@ -1,7 +1,10 @@
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { mockGetEligibleFloors, mockMoveRecipe } from '@/__tests__/fixtures/composables/navigation'
+import {
+  mockGetEligibleFloors,
+  mockMoveRecipe,
+} from '@/__tests__/fixtures/composables/floorManagement'
 import { mockIsDark } from '@/__tests__/fixtures/composables/themeStore'
 import {
   mockGetRecipePanelValue,

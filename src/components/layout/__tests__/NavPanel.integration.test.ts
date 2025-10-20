@@ -2,7 +2,7 @@ import { mount, VueWrapper } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { mockCurrentFactory } from '@/__tests__/fixtures/composables/factoryStore'
-import { mockGetFloorDisplayName } from '@/__tests__/fixtures/composables/navigation'
+import { mockGetFloorDisplayName } from '@/__tests__/fixtures/composables/floorManagement'
 import { component } from '@/__tests__/vue-test-helpers'
 import { newRecipeNode } from '@/logistics/graph-node'
 import type { Factory, Floor } from '@/types/factory'

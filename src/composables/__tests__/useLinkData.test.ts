@@ -147,11 +147,11 @@ describe('useLinkData', () => {
       expect(displayName.value).toBe('')
     })
 
-    it('formats recipe names with floor number', () => {
+    it('formats recipe names with floor number based on floor index', () => {
       const recipe = makeRecipeNode('Recipe_Fake_IronIngot_C', 2)
       mockCurrentFactory.value = {
         name: 'Test Factory',
-        floors: [{ recipes: [recipe] }],
+        floors: [{ recipes: [] }, { recipes: [] }, { recipes: [recipe] }],
       } as unknown as Factory
       mockGetRecipeByName.mockReturnValue(recipe)
 
@@ -165,7 +165,7 @@ describe('useLinkData', () => {
       expect(displayName.value).toBe('Recipe_Fake_IronIngot_C (Floor 3)')
     })
 
-    it('calculates floor number as batchNumber + 1', () => {
+    it('calculates floor number as floor index + 1', () => {
       const recipe = makeRecipeNode('Recipe_Fake_IronIngot_C', 0)
       mockCurrentFactory.value = {
         name: 'Test Factory',
@@ -225,6 +225,62 @@ describe('useLinkData', () => {
       const { displayName } = useLinkData(link, type)
 
       expect(displayName.value).toBe(EXTERNAL_RECIPE)
+    })
+
+    it('uses floor index instead of batch number when they differ', () => {
+      // Recipe with batchNumber 0 but on floor index 2
+      const recipe = makeRecipeNode('Recipe_Fake_IronIngot_C', 0)
+      mockCurrentFactory.value = {
+        name: 'Test Factory',
+        floors: [{ recipes: [] }, { recipes: [] }, { recipes: [recipe] }],
+      } as unknown as Factory
+      mockGetRecipeByName.mockReturnValue(recipe)
+
+      const link = computed(() =>
+        makeMaterial('Desc_IronIngot_C', 'Recipe_Fake_IronIngot_C', 'Recipe_IronPlate_C'),
+      )
+      const type = computed(() => 'input' as const)
+
+      const { displayName } = useLinkData(link, type)
+
+      // Should show Floor 3 (index 2 + 1), not Floor 1 (batchNumber 0 + 1)
+      expect(displayName.value).toBe('Recipe_Fake_IronIngot_C (Floor 3)')
+    })
+
+    it('returns item display name when recipe not found in factory', () => {
+      const recipe = makeRecipeNode('Recipe_Fake_IronIngot_C', 2)
+      mockCurrentFactory.value = {
+        name: 'Test Factory',
+        floors: [{ recipes: [] }], // Recipe not in any floor
+      } as unknown as Factory
+      mockGetRecipeByName.mockReturnValue(recipe)
+
+      const link = computed(() =>
+        makeMaterial('Desc_IronIngot_C', 'Recipe_Fake_IronIngot_C', 'Recipe_IronPlate_C'),
+      )
+      const type = computed(() => 'input' as const)
+
+      const { displayName } = useLinkData(link, type)
+
+      // Should fall back to item name with resource suffix since it's not in factory
+      expect(displayName.value).toBe('Recipe_Fake_IronIngot_C (Resource)')
+    })
+
+    it('handles null targetRecipe gracefully', () => {
+      mockCurrentFactory.value = {
+        name: 'Test Factory',
+        floors: [{ recipes: [] }],
+      } as unknown as Factory
+      mockGetRecipeByName.mockReturnValue(null)
+
+      const link = computed(() =>
+        makeMaterial('Desc_IronIngot_C', 'Recipe_Fake_IronIngot_C', 'Recipe_IronPlate_C'),
+      )
+      const type = computed(() => 'input' as const)
+
+      const { displayName } = useLinkData(link, type)
+
+      expect(displayName.value).toBe('Recipe_Fake_IronIngot_C (Resource)')
     })
   })
 })

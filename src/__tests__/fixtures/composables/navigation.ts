@@ -1,48 +1,7 @@
 import { vi } from 'vitest'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 
-import type { FloorFormData } from '@/composables/useFloorManagement'
 import type { RecipeNode } from '@/logistics/graph-node'
-import type { Floor } from '@/types/factory'
-
-// Floor Management mocks
-export const mockShowFloorEditor = ref(false)
-export const mockEditFloorIndex = ref<number | null>(null)
-
-export const mockGetEligibleFloors = vi.fn(() => [
-  { title: 'Ground Floor', value: 0, disabled: false },
-  { title: 'Floor 1', value: 1, disabled: false },
-  { title: 'Floor 2', value: 2, disabled: false },
-])
-export const mockMoveRecipe = vi.fn()
-export const mockGetFloorDisplayName = vi.fn(
-  (floorNumber: number, floor?: Floor) =>
-    `Floor ${floorNumber}` + (floor?.name ? ` - ${floor.name}` : ''),
-)
-export const mockOpenFloorEditor = vi.fn((floorIndex?: number) => {
-  mockEditFloorIndex.value = floorIndex ?? null
-  mockShowFloorEditor.value = true
-})
-export const mockCloseFloorEditor = vi.fn(() => {
-  mockShowFloorEditor.value = false
-  mockEditFloorIndex.value = null
-})
-export const mockGetFloorFormsTemplate = vi.fn((): FloorFormData[] => [])
-export const mockHasFloorFormChanges = vi.fn(() => false)
-export const mockUpdateFloorsFromForms = vi.fn()
-
-export const mockUseFloorManagement = vi.fn(() => ({
-  showFloorEditor: mockShowFloorEditor,
-  editFloorIndex: mockEditFloorIndex,
-  getEligibleFloors: mockGetEligibleFloors,
-  moveRecipe: mockMoveRecipe,
-  getFloorDisplayName: mockGetFloorDisplayName,
-  openFloorEditor: mockOpenFloorEditor,
-  closeFloorEditor: mockCloseFloorEditor,
-  getFloorFormsTemplate: mockGetFloorFormsTemplate,
-  hasFloorFormChanges: mockHasFloorFormChanges,
-  updateFloorsFromForms: mockUpdateFloorsFromForms,
-}))
 
 // Floor Navigation mocks
 export const mockExpandedFloors = vi.fn(() => [])
