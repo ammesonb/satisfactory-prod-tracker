@@ -89,7 +89,7 @@ describe('RecipeLink Integration', () => {
 
     component(wrapper, VCard).assert({
       exists: true,
-      text: ['Iron Ore', '30.50/min'],
+      text: ['Iron Ore', '30.5/min'],
     })
   })
 
@@ -206,7 +206,7 @@ describe('RecipeLink Integration', () => {
     const wrapper = createWrapper(link, recipe)
 
     component(wrapper, VCard).assert({
-      text: ['Unknown_Material', '25.00/min'],
+      text: ['Unknown_Material', '25.0/min'],
     })
   })
 })
