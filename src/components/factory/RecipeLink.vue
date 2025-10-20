@@ -46,29 +46,31 @@ const cardStyles = computed(() => {
   }
 })
 
+const amountStyles = computed(() => {
+  return {
+    'link-amount': true,
+    'text-black': built,
+    'text-medium-emphasis': !built.value,
+  }
+})
+
 const isTransportHovered = ref(false)
 </script>
 
 <template>
   <v-card class="recipe-link mb-1" hover @click="updateBuiltState(!built)" :class="cardStyles">
     <v-card-text class="pa-2">
-      <!-- Row 1: Icon + Material Name with Amount -->
-      <v-row no-gutters class="mb-1">
+      <!-- Row 1: Icon + Material Name -->
+      <v-row no-gutters dense>
         <v-col cols="auto" class="pr-2 d-flex justify-center align-center">
           <CachedIcon v-if="materialItem?.icon" :icon="materialItem.icon" :size="32" />
         </v-col>
-        <v-col class="d-flex justify-start">
-          <div
-            class="text-body-2 font-weight-medium d-flex flex-column align-center"
-            :class="{ 'text-black': built }"
-          >
+        <v-col class="d-flex align-center">
+          <div class="text-body-2 font-weight-medium" :class="{ 'text-black': built }">
             {{ materialItem?.name || link.material }}
-            <div class="text-caption" :class="built ? 'text-black' : 'text-medium-emphasis'">
-              {{ link.amount.toFixed(2) }}/min
-            </div>
           </div>
         </v-col>
-        <v-col cols="auto" class="d-flex justify-end align-start">
+        <v-col cols="auto" class="d-flex justify-end align-center">
           <v-tooltip
             location="top"
             content-class="pa-0"
@@ -92,9 +94,31 @@ const isTransportHovered = ref(false)
         </v-col>
       </v-row>
 
-      <!-- Row 2: Checkbox + Source/Sink -->
-      <v-row no-gutters>
-        <v-col cols="auto" class="pr-2 d-flex justify-center">
+      <!-- Row 2: Double Arrow + Total Rate -->
+      <v-row no-gutters class="amount-row">
+        <v-col cols="auto" class="pr-2 d-flex justify-center align-center" style="width: 48px">
+          <span style="font-size: 1.125rem">⇉</span>
+        </v-col>
+        <v-col class="d-flex align-center">
+          <span :class="amountStyles"> Total: {{ link.amount.toFixed(1) }}/min </span>
+        </v-col>
+      </v-row>
+
+      <!-- Row 3: Single Arrow + Per-Factory Rate -->
+      <v-row no-gutters class="amount-row">
+        <v-col cols="auto" class="pr-2 d-flex justify-center align-center" style="width: 48px">
+          <span style="font-size: 1.125rem">→</span>
+        </v-col>
+        <v-col class="d-flex align-center">
+          <span :class="amountStyles">
+            Each: {{ (link.amount / Math.ceil(recipe.recipe.count)).toFixed(1) }}/min
+          </span>
+        </v-col>
+      </v-row>
+
+      <!-- Row 4: Checkbox + Source/Sink -->
+      <v-row no-gutters dense>
+        <v-col cols="auto" class="pr-2 d-flex justify-center align-center" style="width: 48px">
           <v-checkbox
             :model-value="built"
             @update:model-value="(value: boolean | null) => updateBuiltState(value ?? false)"
@@ -115,5 +139,16 @@ const isTransportHovered = ref(false)
 .recipe-link {
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.link-amount {
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+.amount-row {
+  min-height: 0;
+  margin-top: -0.25rem;
+  margin-bottom: -0.5rem;
 }
 </style>

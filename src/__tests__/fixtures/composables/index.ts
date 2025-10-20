@@ -2,10 +2,10 @@
 export { mockUseDataSearch } from './dataSearch'
 export { mockUseDataShare } from './dataShare'
 export { mockUseFloorSearch } from './floorSearch'
+export { mockUseFloorManagement } from './floorManagement'
 export {
   mockFormatFloorId,
   mockFormatRecipeId,
-  mockUseFloorManagement,
   mockUseFloorNavigation,
   mockUseLinkData,
 } from './navigation'

@@ -20,12 +20,28 @@ export interface Material {
   amount: number
 }
 
+/**
+ * Represents a physical floor in the factory for organizational purposes.
+ *
+ * IMPORTANT: Floor position (array index in Factory.floors[]) is INDEPENDENT of recipe batch numbers.
+ * - Floor index = organizational position chosen by user
+ * - Recipe.batchNumber = logical production tier from graph solver
+ *
+ * Floors can be inserted, removed, or reordered without affecting batch numbers.
+ */
 export interface Floor {
   name?: string
   iconItem?: string
   recipes: RecipeNode[]
 }
 
+/**
+ * Represents a complete factory with multiple floors.
+ *
+ * NOTE: When importing recipes via addFactory(), floors are initially created based on batch numbers
+ * (floor[i] contains recipes with batchNumber === i). However, users can freely reorganize recipes
+ * across floors afterward, breaking this alignment. Code should NOT assume floor index === batch number.
+ */
 export interface Factory {
   name: string
   icon: string

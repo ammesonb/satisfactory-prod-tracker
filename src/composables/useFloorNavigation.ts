@@ -76,10 +76,10 @@ export function useFloorNavigation() {
     }
   }
 
-  const navigateToElement = (elementId: string) => {
+  const navigateToElement = (elementId: string, floorIndex?: number) => {
     if (isFloorIdentifier(elementId)) {
-      const floorIndex = getFloorIndexFromIdentifier(elementId)
-      expandFloor(floorIndex)
+      const floorIdx = getFloorIndexFromIdentifier(elementId)
+      expandFloor(floorIdx)
 
       // Scroll to element after a delay to ensure expansion
       setTimeout(() => {
@@ -91,9 +91,10 @@ export function useFloorNavigation() {
         }
       }, 100)
     } else if (isRecipeIdentifier(elementId)) {
-      const parts = elementId.split('-')
-      const floorIndex = parseInt(parts[1])
-      expandFloor(floorIndex)
+      // Floor index must be provided for recipe navigation since IDs no longer contain it
+      if (floorIndex !== undefined) {
+        expandFloor(floorIndex)
+      }
 
       // Scroll to element after a delay to ensure expansion
       setTimeout(() => {
@@ -108,8 +109,10 @@ export function useFloorNavigation() {
   }
 
   const navigateToRecipe = (recipe: RecipeNode) => {
-    if (recipe.batchNumber === undefined) return
-    navigateToElement(formatRecipeId(recipe.batchNumber, recipe.recipe.name))
+    const floorIndex = factoryStore.getFloorIndexForRecipe(recipe)
+    if (floorIndex === -1) return
+
+    navigateToElement(formatRecipeId(recipe.recipe.name), floorIndex)
   }
 
   return {

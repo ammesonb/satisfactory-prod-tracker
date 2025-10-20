@@ -211,7 +211,7 @@ describe('FactoryFloor Integration', () => {
 
     expect(innerExpansionPanels).toBeTruthy()
 
-    const expectedExpandedValues = ['0-Recipe_IngotIron_C'] // Only first recipe is expanded
+    const expectedExpandedValues = ['Recipe_IngotIron_C'] // Only first recipe is expanded (now uses recipe name only)
     expect(innerExpansionPanels!.props('modelValue')).toEqual(expectedExpandedValues)
 
     // Should render all RecipeNode components regardless of expansion state

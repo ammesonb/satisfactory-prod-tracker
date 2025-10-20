@@ -6,7 +6,7 @@ import { mockCurrentFactory, mockFactoryStore } from '@/__tests__/fixtures/compo
 import { makeFactory, makeFloor, makeRecipeNode } from '@/__tests__/fixtures/data'
 import { useFloorNavigation } from '@/composables/useFloorNavigation'
 import type { RecipeNode } from '@/logistics/graph-node'
-import { ExpandRecipeState } from '@/utils/floors'
+import { ExpandRecipeState, formatRecipeId } from '@/utils/floors'
 
 vi.mock('@/stores', () => ({
   useFactoryStore: vi.fn(() => mockFactoryStore),
@@ -382,7 +382,9 @@ describe('useFloorNavigation', () => {
     })
 
     it('expands floor and scrolls to recipe element', async () => {
-      const mockElement = createMockElement('recipe-1-Recipe_IronIngot_C', { top: 300 })
+      const recipeName = 'Recipe_IronIngot_C'
+      const floorIndex = 1
+      const mockElement = createMockElement(formatRecipeId(recipeName), { top: 300 })
       document.body.appendChild(mockElement)
 
       const scrollToSpy = vi.fn()
@@ -391,9 +393,9 @@ describe('useFloorNavigation', () => {
 
       const { expandedFloors, navigateToElement } = useFloorNavigation()
 
-      navigateToElement('recipe-1-Recipe_IronIngot_C')
+      navigateToElement(formatRecipeId(recipeName), floorIndex)
 
-      expect(expandedFloors.value).toEqual([1])
+      expect(expandedFloors.value).toEqual([floorIndex])
 
       vi.advanceTimersByTime(250)
       await nextTick()
@@ -427,11 +429,13 @@ describe('useFloorNavigation', () => {
     })
 
     it('handles recipe identifiers with complex recipe names', () => {
+      const recipeName = 'Recipe_Alternate_ComplexName_C'
+      const floorIndex = 3
       const { expandedFloors, navigateToElement } = useFloorNavigation()
 
-      navigateToElement('recipe-3-Recipe_Alternate_ComplexName_C')
+      navigateToElement(formatRecipeId(recipeName), floorIndex)
 
-      expect(expandedFloors.value).toEqual([3])
+      expect(expandedFloors.value).toEqual([floorIndex])
     })
 
     it('does nothing for invalid identifiers', () => {
@@ -453,19 +457,30 @@ describe('useFloorNavigation', () => {
     })
 
     it('navigates to recipe element', async () => {
-      const mockElement = createMockElement('recipe-2-Recipe_Test_C', { top: 400 })
+      const recipeName = 'Recipe_Test_C'
+      const floorIndex = 2
+      const recipe = makeRecipeNode(recipeName, floorIndex)
+
+      // Set up factory with the recipe on the floor
+      const factory = makeFactory('Test Factory', [
+        makeFloor([]),
+        makeFloor([]),
+        makeFloor([recipeName]),
+      ])
+      mockCurrentFactory.value = factory
+
+      const mockElement = createMockElement(formatRecipeId(recipeName), { top: 400 })
       document.body.appendChild(mockElement)
 
       const scrollToSpy = vi.fn()
       window.scrollTo = scrollToSpy
       window.pageYOffset = 0
 
-      const recipe = makeRecipeNode('Recipe_Test_C', 2)
       const { expandedFloors, navigateToRecipe } = useFloorNavigation()
 
       navigateToRecipe(recipe)
 
-      expect(expandedFloors.value).toEqual([2])
+      expect(expandedFloors.value).toEqual([floorIndex])
 
       vi.advanceTimersByTime(250)
       await nextTick()
@@ -493,19 +508,26 @@ describe('useFloorNavigation', () => {
     })
 
     it('handles recipe with batchNumber 0', async () => {
-      const mockElement = createMockElement('recipe-0-Recipe_Zero_C', { top: 200 })
+      const recipeName = 'Recipe_Zero_C'
+      const floorIndex = 0
+      const recipe = makeRecipeNode(recipeName, floorIndex)
+
+      // Set up factory with the recipe on floor 0
+      const factory = makeFactory('Test Factory', [makeFloor([recipeName])])
+      mockCurrentFactory.value = factory
+
+      const mockElement = createMockElement(formatRecipeId(recipeName), { top: 200 })
       document.body.appendChild(mockElement)
 
       const scrollToSpy = vi.fn()
       window.scrollTo = scrollToSpy
       window.pageYOffset = 0
 
-      const recipe = makeRecipeNode('Recipe_Zero_C', 0)
       const { expandedFloors, navigateToRecipe } = useFloorNavigation()
 
       navigateToRecipe(recipe)
 
-      expect(expandedFloors.value).toEqual([0])
+      expect(expandedFloors.value).toEqual([floorIndex])
 
       vi.advanceTimersByTime(250)
       await nextTick()

@@ -33,8 +33,14 @@ export function useRecipeStatus() {
     factoryStore.setLinkBuiltState(linkToString(link), built)
   }
 
+  /**
+   * Get a unique identifier for a recipe panel in the expansion panels.
+   *
+   * NOTE: Recipe names are unique within a factory, so we don't need batchNumber anymore.
+   * This decouples panel values from batch numbers, allowing flexible floor organization.
+   */
   const getRecipePanelValue = (recipe: RecipeNode) => {
-    return `${recipe.batchNumber}-${recipe.recipe.name}`
+    return recipe.recipe.name
   }
 
   const leftoverProductsAsLinks = (recipe: RecipeNode): Material[] =>

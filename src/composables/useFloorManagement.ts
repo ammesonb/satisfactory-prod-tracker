@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 
 import { getStores } from '@/composables/useStores'
+import type { RecipeNode } from '@/logistics/graph-node'
 import type { ItemOption } from '@/types/data'
 import type { Floor } from '@/types/factory'
 
@@ -15,6 +16,12 @@ export interface FloorFormData {
   originalName: string | undefined
   originalItem: ItemOption | undefined
 }
+
+const unnamedFloorRegex = /^Floor (\d+)$/i
+
+// Shared state outside the composable so all instances share the same refs
+const showFloorEditor = ref(false)
+const editFloorIndex = ref<number | null>(null)
 
 export function useFloorManagement() {
   const { factoryStore, dataStore } = getStores()
@@ -83,15 +90,10 @@ export function useFloorManagement() {
 
     const recipe = fromFloor.recipes.splice(recipeIndex, 1)[0]
 
-    recipe.batchNumber = toFloorIndex
-
     toFloor.recipes.push(recipe)
   }
 
-  // Floor editor modal state
-  const showFloorEditor = ref(false)
-  const editFloorIndex = ref<number | null>(null)
-
+  // Floor editor modal functions
   const openFloorEditor = (floorIndex?: number) => {
     editFloorIndex.value = floorIndex ?? null
     showFloorEditor.value = true
@@ -165,6 +167,104 @@ export function useFloorManagement() {
         .includes(query.toLowerCase()),
     )
 
+  /**
+   * Get the floor index for a given recipe by searching through floors.
+   * Delegates to the factory store implementation.
+   */
+  const getFloorIndexForRecipe = (recipe: RecipeNode) => {
+    return factoryStore.getFloorIndexForRecipe(recipe)
+  }
+
+  /**
+   * Insert a new empty floor at the specified index.
+   * Updates floor names that reference numeric positions >= atIndex.
+   *
+   * @param atIndex - The index where the new floor should be inserted (0-based)
+   */
+  const insertFloor = (atIndex: number) => {
+    if (!factoryStore.currentFactory) return
+
+    const newFloor: Floor = { recipes: [] }
+    factoryStore.currentFactory.floors.splice(atIndex, 0, newFloor)
+
+    // Update floor names that reference numeric positions >= atIndex
+    updateFloorNamesAfterInsertion(atIndex)
+  }
+
+  const getUnnamedFloorsAfterIndex = (
+    index: number,
+  ): { floor: Floor; nameMatch?: RegExpMatchArray | null }[] =>
+    factoryStore.currentFactory?.floors
+      .slice(index)
+      .map((floor) => ({ floor, nameMatch: floor.name?.match(unnamedFloorRegex) || undefined }))
+      .filter((floor) => floor.nameMatch) || []
+
+  /**
+   * Update floor names after inserting a floor.
+   * Increments numeric floor names (e.g., "Floor 3" → "Floor 4") for floors after the insertion point.
+   */
+  const updateFloorNamesAfterInsertion = (insertedIndex: number) => {
+    if (!factoryStore.currentFactory) return
+
+    for (const { floor, nameMatch } of getUnnamedFloorsAfterIndex(insertedIndex + 1)) {
+      if (!nameMatch) continue // Type guard, though filter should prevent this
+
+      const oldNumber = parseInt(nameMatch[1], 10)
+      if (oldNumber > insertedIndex) {
+        floor.name = `Floor ${oldNumber + 1}`
+      }
+    }
+  }
+
+  /**
+   * Remove a floor at the specified index if it's empty.
+   * Updates floor names that reference numeric positions > floorIndex.
+   *
+   * @param floorIndex - The index of the floor to remove (0-based)
+   * @throws Error if floor is not empty
+   */
+  const removeFloor = (floorIndex: number) => {
+    if (!factoryStore.currentFactory) return
+
+    const floor = factoryStore.currentFactory.floors[floorIndex]
+    if (!floor || floor.recipes.length > 0) {
+      throw new Error('Cannot remove floor with recipes')
+    }
+
+    factoryStore.currentFactory.floors.splice(floorIndex, 1)
+
+    // Update floor names that reference numeric positions > floorIndex
+    updateFloorNamesAfterRemoval(floorIndex)
+  }
+
+  /**
+   * Update floor names after removing a floor.
+   * Decrements numeric floor names (e.g., "Floor 4" → "Floor 3") for floors after the removal point.
+   */
+  const updateFloorNamesAfterRemoval = (removedIndex: number) => {
+    if (!factoryStore.currentFactory) return
+
+    for (const { floor, nameMatch } of getUnnamedFloorsAfterIndex(removedIndex)) {
+      if (!nameMatch) continue // Type guard, though filter should prevent this
+
+      const oldNumber = parseInt(nameMatch[1], 10)
+      if (oldNumber > removedIndex + 1) {
+        floor.name = `Floor ${oldNumber - 1}`
+      }
+    }
+  }
+
+  /**
+   * Check if a floor can be removed (i.e., it's empty).
+   *
+   * @param floorIndex - The index of the floor to check (0-based)
+   * @returns true if the floor exists and has no recipes, false otherwise
+   */
+  const canRemoveFloor = (floorIndex: number): boolean => {
+    const floor = factoryStore.currentFactory?.floors[floorIndex]
+    return !!floor && floor.recipes.length === 0
+  }
+
   return {
     showFloorEditor,
     editFloorIndex,
@@ -181,5 +281,9 @@ export function useFloorManagement() {
     hasFloorFormChanges,
     updateFloorsFromForms,
     floorMatches,
+    getFloorIndexForRecipe,
+    insertFloor,
+    removeFloor,
+    canRemoveFloor,
   }
 }

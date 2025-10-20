@@ -35,8 +35,11 @@ export function useLinkData(link: ComputedRef<Material>, type: ComputedRef<'inpu
     // only empty for terminal states, where there is no input/output
     if (target === '') return ''
 
-    if (targetRecipe?.batchNumber != null) {
-      return dataStore.getRecipeDisplayName(target) + ` (Floor ${targetRecipe.batchNumber + 1})`
+    if (targetRecipe) {
+      const floorIndex = factoryStore.getFloorIndexForRecipe(targetRecipe)
+      if (floorIndex !== -1) {
+        return dataStore.getRecipeDisplayName(target) + ` (Floor ${floorIndex + 1})`
+      }
     }
 
     // otherwise, it is an item which:

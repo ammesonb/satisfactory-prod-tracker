@@ -113,6 +113,27 @@ export const useFactoryStore = defineStore('factory', {
       }
       return null
     },
+    /**
+     * Find the floor index that contains the given recipe.
+     *
+     * Note: this may seem inefficient, but at the scale of thousands of recipes attempting to sync
+     * an ordered list of recipes to a hashable data structure introduces more complexity than it saves.
+     *
+     * @param recipe The recipe node to search for
+     * @returns The floor index (0-based), or -1 if not found
+     */
+    getFloorIndexForRecipe(recipe: RecipeNode): number {
+      if (!this.currentFactory) return -1
+
+      for (let i = 0; i < this.currentFactory.floors.length; i++) {
+        if (
+          this.currentFactory.floors[i].recipes.some((r) => r.recipe.name === recipe.recipe.name)
+        ) {
+          return i
+        }
+      }
+      return -1
+    },
     exportFactories(factoryNames?: string[]) {
       const factoriesToExport: Record<string, Factory> = {}
 

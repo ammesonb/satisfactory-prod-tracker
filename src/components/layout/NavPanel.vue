@@ -28,7 +28,7 @@ const handleFloorClick = (floorIndex: number) => {
 }
 
 const handleRecipeClick = (floorIndex: number, recipeName: string) => {
-  emit('navigate', formatRecipeId(floorIndex, recipeName))
+  emit('navigate', formatRecipeId(recipeName))
 }
 
 onMounted(() => {

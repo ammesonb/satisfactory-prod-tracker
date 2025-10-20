@@ -5,9 +5,7 @@ export const mockSetRecipeBuilt = vi.fn()
 export const mockSetLinkBuilt = vi.fn()
 export const mockIsRecipeComplete = vi.fn((recipe) => recipe.built === true)
 export const mockIsLinkBuilt = vi.fn(() => false)
-export const mockGetRecipePanelValue = vi.fn(
-  (recipe) => `${recipe.batchNumber || 0}-${recipe.recipe.name}`,
-)
+export const mockGetRecipePanelValue = vi.fn((recipe) => recipe.recipe.name)
 export const mockLeftoverProductsAsLinks = vi.fn(() => [
   { source: 'test-recipe', sink: '', material: 'test-material', amount: 1 },
 ])

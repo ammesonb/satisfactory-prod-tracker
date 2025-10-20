@@ -1,7 +1,10 @@
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { mockGetEligibleFloors, mockMoveRecipe } from '@/__tests__/fixtures/composables/navigation'
+import {
+  mockGetEligibleFloors,
+  mockMoveRecipe,
+} from '@/__tests__/fixtures/composables/floorManagement'
 import { mockIsDark } from '@/__tests__/fixtures/composables/themeStore'
 import {
   mockGetRecipePanelValue,
@@ -13,6 +16,7 @@ import type { RecipeNode as RecipeNodeType } from '@/logistics/graph-node'
 
 import RecipeNodeComponent from '@/components/factory/RecipeNode.vue'
 import { VChip, VExpansionPanel, VSelect } from 'vuetify/components'
+import { formatRecipeId } from '@/utils/floors'
 
 // Use centralized mock fixtures
 vi.mock('@/composables/useStores', async () => {
@@ -124,7 +128,7 @@ describe('RecipeNode Integration', () => {
 
       // Check that the expansion panel has the correctly formatted ID
       const expansionPanel = wrapper.findComponent(VExpansionPanel)
-      expect(expansionPanel.attributes('id')).toBe(`recipe-2-${TEST_RECIPES.IRON_INGOT}`)
+      expect(expansionPanel.attributes('id')).toBe(formatRecipeId(TEST_RECIPES.IRON_INGOT))
     })
 
     it('handles recipe with no batch number gracefully', () => {

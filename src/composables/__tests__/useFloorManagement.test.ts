@@ -235,14 +235,16 @@ describe('useFloorManagement', () => {
       expect(mockCurrentFactory.value!.floors[1].recipes[1].recipe.name).toBe('Recipe_A')
     })
 
-    it('updates recipe batchNumber to target floor index', () => {
+    it('does not modify recipe batchNumber (batch numbers are immutable)', () => {
       const factory = makeFactory('Test Factory', [makeFloor(['Recipe_A']), makeFloor([])])
       mockCurrentFactory.value = factory
+      const originalBatchNumber = factory.floors[0].recipes[0].batchNumber
 
       const { moveRecipe } = useFloorManagement()
       moveRecipe('Recipe_A', 0, 1)
 
-      expect(mockCurrentFactory.value!.floors[1].recipes[0].batchNumber).toBe(1)
+      // batchNumber should remain unchanged - it represents logical dependency order
+      expect(mockCurrentFactory.value!.floors[1].recipes[0].batchNumber).toBe(originalBatchNumber)
     })
 
     it('does nothing when source and target are same', () => {
@@ -543,6 +545,174 @@ describe('useFloorManagement', () => {
       const floor = { ...makeFloor([], { name: 'Smelting' }), originalIndex: 0 }
 
       expect(floorMatches(floor, 'production')).toBe(false)
+    })
+  })
+
+  describe('canRemoveFloor', () => {
+    it.each([
+      { scenario: 'floor is empty', floors: [makeFloor([])], index: 0, expected: true },
+      {
+        scenario: 'floor has recipes',
+        floors: [makeFloor(['Recipe_A'])],
+        index: 0,
+        expected: false,
+      },
+      {
+        scenario: 'floor index is out of bounds',
+        floors: [makeFloor([])],
+        index: 5,
+        expected: false,
+      },
+    ])('returns $expected when $scenario', ({ floors, index, expected }) => {
+      const factory = makeFactory('Test Factory', floors)
+      mockCurrentFactory.value = factory
+
+      const { canRemoveFloor } = useFloorManagement()
+
+      expect(canRemoveFloor(index)).toBe(expected)
+    })
+
+    it('returns false when no factory exists', () => {
+      mockCurrentFactory.value = null
+
+      const { canRemoveFloor } = useFloorManagement()
+
+      expect(canRemoveFloor(0)).toBe(false)
+    })
+  })
+
+  describe('removeFloor', () => {
+    it('removes empty floor from factory', () => {
+      const factory = makeFactory('Test Factory', [makeFloor([]), makeFloor([]), makeFloor([])])
+      mockCurrentFactory.value = factory
+
+      const { removeFloor } = useFloorManagement()
+      removeFloor(1)
+
+      expect(mockCurrentFactory.value!.floors).toHaveLength(2)
+    })
+
+    it('throws error when trying to remove floor with recipes', () => {
+      const factory = makeFactory('Test Factory', [makeFloor(['Recipe_A'])])
+      mockCurrentFactory.value = factory
+
+      const { removeFloor } = useFloorManagement()
+
+      expect(() => removeFloor(0)).toThrow('Cannot remove floor with recipes')
+    })
+
+    it('updates auto-named floors after removal', () => {
+      const factory = makeFactory('Test Factory', [
+        makeFloor([]),
+        makeFloor([], { name: 'Floor 2' }),
+        makeFloor([], { name: 'Floor 3' }),
+      ])
+      mockCurrentFactory.value = factory
+
+      const { removeFloor } = useFloorManagement()
+      removeFloor(0)
+
+      expect(mockCurrentFactory.value!.floors[0].name).toBe('Floor 1')
+      expect(mockCurrentFactory.value!.floors[1].name).toBe('Floor 2')
+    })
+
+    it('does not update custom-named floors after removal', () => {
+      const factory = makeFactory('Test Factory', [
+        makeFloor([]),
+        makeFloor([], { name: 'Custom Name' }),
+        makeFloor([], { name: 'Floor 3' }),
+      ])
+      mockCurrentFactory.value = factory
+
+      const { removeFloor } = useFloorManagement()
+      removeFloor(0)
+
+      expect(mockCurrentFactory.value!.floors[0].name).toBe('Custom Name')
+      expect(mockCurrentFactory.value!.floors[1].name).toBe('Floor 2')
+    })
+
+    it('does nothing when factory does not exist', () => {
+      mockCurrentFactory.value = null
+
+      const { removeFloor } = useFloorManagement()
+
+      expect(() => removeFloor(0)).not.toThrow()
+    })
+  })
+
+  describe('insertFloor', () => {
+    it.each([
+      {
+        scenario: 'at beginning',
+        initialFloors: [makeFloor(['Recipe_A'])],
+        insertIndex: 0,
+        expectedLength: 2,
+        emptyFloorIndex: 0,
+      },
+      {
+        scenario: 'in middle',
+        initialFloors: [makeFloor(['Recipe_A']), makeFloor(['Recipe_B'])],
+        insertIndex: 1,
+        expectedLength: 3,
+        emptyFloorIndex: 1,
+      },
+      {
+        scenario: 'at end',
+        initialFloors: [makeFloor(['Recipe_A'])],
+        insertIndex: 1,
+        expectedLength: 2,
+        emptyFloorIndex: 1,
+      },
+    ])(
+      'inserts empty floor $scenario',
+      ({ initialFloors, insertIndex, expectedLength, emptyFloorIndex }) => {
+        const factory = makeFactory('Test Factory', initialFloors)
+        mockCurrentFactory.value = factory
+
+        const { insertFloor } = useFloorManagement()
+        insertFloor(insertIndex)
+
+        expect(mockCurrentFactory.value!.floors).toHaveLength(expectedLength)
+        expect(mockCurrentFactory.value!.floors[emptyFloorIndex].recipes).toHaveLength(0)
+      },
+    )
+
+    it('updates auto-named floors after insertion', () => {
+      const factory = makeFactory('Test Factory', [
+        makeFloor([], { name: 'Floor 1' }),
+        makeFloor([], { name: 'Floor 2' }),
+      ])
+      mockCurrentFactory.value = factory
+
+      const { insertFloor } = useFloorManagement()
+      insertFloor(1)
+
+      expect(mockCurrentFactory.value!.floors[0].name).toBe('Floor 1')
+      expect(mockCurrentFactory.value!.floors[1].name).toBeUndefined()
+      expect(mockCurrentFactory.value!.floors[2].name).toBe('Floor 3')
+    })
+
+    it('does not update custom-named floors after insertion', () => {
+      const factory = makeFactory('Test Factory', [
+        makeFloor([], { name: 'Floor 1' }),
+        makeFloor([], { name: 'Custom Name' }),
+      ])
+      mockCurrentFactory.value = factory
+
+      const { insertFloor } = useFloorManagement()
+      insertFloor(1)
+
+      expect(mockCurrentFactory.value!.floors[0].name).toBe('Floor 1')
+      expect(mockCurrentFactory.value!.floors[1].name).toBeUndefined()
+      expect(mockCurrentFactory.value!.floors[2].name).toBe('Custom Name')
+    })
+
+    it('does nothing when factory does not exist', () => {
+      mockCurrentFactory.value = null
+
+      const { insertFloor } = useFloorManagement()
+
+      expect(() => insertFloor(0)).not.toThrow()
     })
   })
 })
