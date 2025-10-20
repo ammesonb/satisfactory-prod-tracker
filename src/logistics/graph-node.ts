@@ -9,8 +9,19 @@ import {
 import type { RecipeIngredient, RecipeProduct } from '@/types/data'
 import type { Material, Recipe } from '@/types/factory'
 
+/**
+ * Represents a recipe in the production chain with its dependencies and products.
+ *
+ * IMPORTANT: batchNumber represents LOGICAL production tier (dependency order), NOT physical floor position.
+ * - batchNumber is assigned by the graph solver based on recipe dependencies, showing which can be processed in parallel
+ * - note that inputs and outputs are initialized to the same reference, but on browser refresh are NOT re-linked.
+ */
 export interface RecipeNode {
   recipe: Recipe
+  /**
+   * Logical production tier from graph solver (0 = first batch, 1 = second batch, etc.)
+   * Represents dependency order, NOT floor position.
+   */
   batchNumber?: number
   ingredients: RecipeIngredient[]
   products: RecipeProduct[]
@@ -64,8 +75,6 @@ export const produceRecipe = (recipe: RecipeNode, batchNumber: number, inputs: M
     amount: product.amount * recipe.recipe.count,
   }))
   recipe.batchNumber = batchNumber
-  // assign by reference here, so same object is used in both places
-  // TODO: if this is restored from session storage, then the input/output will reference different objects
   recipe.inputs = inputs
 }
 

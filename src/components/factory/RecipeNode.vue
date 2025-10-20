@@ -36,7 +36,7 @@ const handleMoveRecipe = (targetFloorIndex: number) => {
   <v-expansion-panel
     :class="panelBgClass"
     :value="getRecipePanelValue(recipe)"
-    :id="formatRecipeId(props.recipe.batchNumber!, props.recipe.recipe.name)"
+    :id="formatRecipeId(props.recipe.recipe.name)"
   >
     <v-expansion-panel-title :class="titleBgClass">
       <div class="d-flex justify-space-between align-center w-100">

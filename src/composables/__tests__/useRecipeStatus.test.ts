@@ -403,28 +403,28 @@ describe('useRecipeStatus', () => {
   })
 
   describe('getRecipePanelValue', () => {
-    it('returns formatted string with batchNumber and recipe name', () => {
+    it('returns recipe name as unique identifier', () => {
       const recipe = makeRecipeNode('Recipe_IronIngot_C', 2)
 
       const { getRecipePanelValue } = useRecipeStatus()
 
-      expect(getRecipePanelValue(recipe)).toBe('2-Recipe_IronIngot_C')
+      expect(getRecipePanelValue(recipe)).toBe('Recipe_IronIngot_C')
     })
 
-    it('handles batchNumber 0', () => {
+    it('returns recipe name regardless of batchNumber', () => {
       const recipe = makeRecipeNode('Recipe_IronIngot_C', 0)
 
       const { getRecipePanelValue } = useRecipeStatus()
 
-      expect(getRecipePanelValue(recipe)).toBe('0-Recipe_IronIngot_C')
+      expect(getRecipePanelValue(recipe)).toBe('Recipe_IronIngot_C')
     })
 
-    it('handles large batchNumbers', () => {
+    it('works with any batchNumber value', () => {
       const recipe = makeRecipeNode('Recipe_IronIngot_C', 99)
 
       const { getRecipePanelValue } = useRecipeStatus()
 
-      expect(getRecipePanelValue(recipe)).toBe('99-Recipe_IronIngot_C')
+      expect(getRecipePanelValue(recipe)).toBe('Recipe_IronIngot_C')
     })
 
     it('handles recipe names with special characters', () => {
@@ -432,7 +432,7 @@ describe('useRecipeStatus', () => {
 
       const { getRecipePanelValue } = useRecipeStatus()
 
-      expect(getRecipePanelValue(recipe)).toBe('1-Recipe_Alternate_Iron-Ingot_C')
+      expect(getRecipePanelValue(recipe)).toBe('Recipe_Alternate_Iron-Ingot_C')
     })
   })
 

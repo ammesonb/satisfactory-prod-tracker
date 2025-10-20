@@ -235,14 +235,16 @@ describe('useFloorManagement', () => {
       expect(mockCurrentFactory.value!.floors[1].recipes[1].recipe.name).toBe('Recipe_A')
     })
 
-    it('updates recipe batchNumber to target floor index', () => {
+    it('does not modify recipe batchNumber (batch numbers are immutable)', () => {
       const factory = makeFactory('Test Factory', [makeFloor(['Recipe_A']), makeFloor([])])
       mockCurrentFactory.value = factory
+      const originalBatchNumber = factory.floors[0].recipes[0].batchNumber
 
       const { moveRecipe } = useFloorManagement()
       moveRecipe('Recipe_A', 0, 1)
 
-      expect(mockCurrentFactory.value!.floors[1].recipes[0].batchNumber).toBe(1)
+      // batchNumber should remain unchanged - it represents logical dependency order
+      expect(mockCurrentFactory.value!.floors[1].recipes[0].batchNumber).toBe(originalBatchNumber)
     })
 
     it('does nothing when source and target are same', () => {

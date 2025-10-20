@@ -204,13 +204,13 @@ describe('NavPanel Integration', () => {
       const recipeItems = getRecipeItems(wrapper)
 
       await recipeItems[0].trigger('click')
-      expect(wrapper.emitted('navigate')?.[0]).toEqual([formatRecipeId(0, 'Recipe_IronIngot_C')])
+      expect(wrapper.emitted('navigate')?.[0]).toEqual([formatRecipeId('Recipe_IronIngot_C')])
 
       await recipeItems[1].trigger('click')
-      expect(wrapper.emitted('navigate')?.[1]).toEqual([formatRecipeId(0, 'Recipe_IronPlate_C')])
+      expect(wrapper.emitted('navigate')?.[1]).toEqual([formatRecipeId('Recipe_IronPlate_C')])
 
       await recipeItems[2].trigger('click')
-      expect(wrapper.emitted('navigate')?.[2]).toEqual([formatRecipeId(1, 'Recipe_CopperIngot_C')])
+      expect(wrapper.emitted('navigate')?.[2]).toEqual([formatRecipeId('Recipe_CopperIngot_C')])
     })
   })
 

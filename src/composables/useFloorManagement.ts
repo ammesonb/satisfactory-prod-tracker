@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 
 import { getStores } from '@/composables/useStores'
+import type { RecipeNode } from '@/logistics/graph-node'
 import type { ItemOption } from '@/types/data'
 import type { Floor } from '@/types/factory'
 
@@ -87,8 +88,6 @@ export function useFloorManagement() {
 
     const recipe = fromFloor.recipes.splice(recipeIndex, 1)[0]
 
-    recipe.batchNumber = toFloorIndex
-
     toFloor.recipes.push(recipe)
   }
 
@@ -166,6 +165,14 @@ export function useFloorManagement() {
         .includes(query.toLowerCase()),
     )
 
+  /**
+   * Get the floor index for a given recipe by searching through floors.
+   * Delegates to the factory store implementation.
+   */
+  const getFloorIndexForRecipe = (recipe: RecipeNode) => {
+    return factoryStore.getFloorIndexForRecipe(recipe)
+  }
+
   return {
     showFloorEditor,
     editFloorIndex,
@@ -182,5 +189,6 @@ export function useFloorManagement() {
     hasFloorFormChanges,
     updateFloorsFromForms,
     floorMatches,
+    getFloorIndexForRecipe,
   }
 }

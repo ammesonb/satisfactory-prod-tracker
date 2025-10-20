@@ -14,6 +14,19 @@ export const mockSetSelectedFactory = vi.fn()
 export const mockRemoveFactory = vi.fn()
 export const mockSetLinkBuiltState = vi.fn()
 export const mockGetRecipeByName = vi.fn()
+export const mockGetFloorIndexForRecipe = vi.fn((recipe) => {
+  // Search through current factory's floors to find the recipe
+  if (!mockCurrentFactory.value) return -1
+
+  for (let i = 0; i < mockCurrentFactory.value.floors.length; i++) {
+    if (
+      mockCurrentFactory.value.floors[i].recipes.some((r) => r.recipe.name === recipe.recipe.name)
+    ) {
+      return i
+    }
+  }
+  return -1
+})
 export const mockExportFactories = vi.fn()
 export const mockImportFactories = vi.fn()
 
@@ -38,6 +51,7 @@ export const mockFactoryStore = {
   removeFactory: mockRemoveFactory,
   setLinkBuiltState: mockSetLinkBuiltState,
   getRecipeByName: mockGetRecipeByName,
+  getFloorIndexForRecipe: mockGetFloorIndexForRecipe,
   exportFactories: mockExportFactories,
   importFactories: mockImportFactories,
 }
