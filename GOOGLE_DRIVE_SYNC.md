@@ -46,6 +46,9 @@ interface CloudSyncState {
     selectedFactories: string[]  // Factory names to auto-backup
   }
 
+  // Prevent auto-save during bulk operations (namespace changes, etc.)
+  autoSyncSuspended: boolean
+
   // Sync status tracking (per factory)
   // CLAUDE: this should be a real type, referenced here
   factoryStatus: Record<string, {
@@ -90,8 +93,7 @@ actions: {
   // Backup/Restore operations
   backupFactory(namespace: string, factoryName: string): Promise<void>
   restoreFactory(namespace: string, filename: string, importAlias?: string): Promise<void>
-  // default to currently-configured namespace
-  listBackups(namespace?: string): Promise<CloudFile[]>
+  listBackups(namespace?: string): Promise<CloudFile[]>  // default to currently-configured namespace
   deleteBackup(namespace: string, filename: string): Promise<void>
 
   // Sync operations
@@ -191,7 +193,7 @@ const DEBOUNCE_MS = 10000
 const RETRY_DELAY_MS = [500, 2000, 5000, 10000, 20000]
 
 factoryStore.$subscribe((mutation, state) => {
-  if (!autoSync.enabled || !isAuthenticated) return
+  if (!autoSync.enabled || !isAuthenticated || autoSyncSuspended) return
 
   // Determine which factories changed
   const changedFactories = detectChangedFactories(mutation)
@@ -213,43 +215,112 @@ factoryStore.$subscribe((mutation, state) => {
 
 **Retry Logic**:
 ```typescript
+async function performAutoSave(): Promise<void> {
+  // Guard against executing if conditions changed
+  if (!autoSync.enabled || !isAuthenticated || conflicts.length > 0 || autoSyncSuspended) {
+    return
+  }
+
+  const dirtyFactories = Object.entries(factoryStatus)
+    .filter(([name, status]) =>
+      status.status === 'dirty' &&
+      autoSync.selectedFactories.includes(name)
+    )
+    .map(([name, _]) => name)
+
+  for (const factoryName of dirtyFactories) {
+    await performAutoSaveWithRetry(factoryName, 0)
+  }
+}
+
 async function performAutoSaveWithRetry(
   factoryName: string,
-  attempt: number = 1
+  attempt: number = 0
 ): Promise<void> {
   try {
+    // Check for conflicts before saving
+    const conflictInfo = await detectConflict(autoSync.namespace, factoryName)
+    if (conflictInfo) {
+      // Conflict detected - disable auto-sync and add to conflicts
+      conflicts.push({
+        factoryName,
+        cloudTimestamp: conflictInfo.cloudTimestamp,
+        cloudInstanceId: conflictInfo.cloudInstanceId,
+        cloudDisplayId: conflictInfo.cloudDisplayId,
+        localTimestamp: factoryStatus[factoryName]?.lastSynced || 'never'
+      })
+      setFactoryStatus(factoryName, 'conflict')
+      disableAutoSync()
+      showConflictResolutionModal()
+      return
+    }
+
     setFactoryStatus(factoryName, 'saving')
-    await backupFactory(factoryName, autoSync.namespace)
+    await backupFactory(autoSync.namespace, factoryName)
     setFactoryStatus(factoryName, 'clean')
   } catch (error) {
-    if (attempt < MAX_RETRY_ATTEMPTS) {
-      // Exponential backoff
-      await delay(RETRY_DELAY_MS * attempt)
+    if (attempt < RETRY_DELAY_MS.length) {
+      // Retry with backoff
+      await delay(RETRY_DELAY_MS[attempt])
       return performAutoSaveWithRetry(factoryName, attempt + 1)
     }
 
-    // Max retries exceeded - check if enough time has passed
-    const timeSinceFirstAttempt = Date.now() - retryStartTime
-    if (timeSinceFirstAttempt >= MIN_ERROR_THRESHOLD_MS) {
-      // Store error and disable auto-sync
-      lastGlobalError = {
-        message: `Failed to auto-save ${factoryName}: ${error.message}`,
-        timestamp: new Date().toISOString()
-      }
-      setFactoryStatus(factoryName, 'error')
-      disableAutoSync()
-
-      // Show error modal
-      errorStore.error()
-        .title('Auto-Sync Failed')
-        .body(() => h('p', lastGlobalError.message))
-        .show()
+    // Max retries exhausted - store error and disable auto-sync
+    finalGlobalError = {
+      message: `Failed to auto-save ${factoryName}: ${error.message}`,
+      timestamp: new Date().toISOString()
     }
+    setFactoryStatus(factoryName, 'error')
+    disableAutoSync()
+
+    // Show error modal
+    errorStore.error()
+      .title('Auto-Sync Failed')
+      .body(() => h('p', finalGlobalError.message))
+      .show()
   }
 }
 ```
 
 ### 5. Conflict Detection
+
+**Unified Conflict Detection Helper**:
+```typescript
+interface ConflictInfo {
+  cloudTimestamp: string
+  cloudInstanceId: string
+  cloudDisplayId: string
+}
+
+async function detectConflict(
+  namespace: string,
+  factoryName: string
+): Promise<ConflictInfo | null> {
+  const cloudFile = await findCloudFile(namespace, factoryName)
+  if (!cloudFile) return null  // No conflict if no cloud file exists
+
+  const cloudData = await downloadFile(cloudFile.id)
+  const parsed: SptrakFile = JSON.parse(cloudData)
+  const localLastSync = factoryStatus[factoryName]?.lastSynced
+
+  // No conflict if cloud file is from this instance
+  if (parsed.metadata.instanceId === instanceId) {
+    return null
+  }
+
+  // Conflict if cloud is newer than our last sync (or we never synced)
+  if (!localLastSync ||
+      new Date(parsed.metadata.lastModified) > new Date(localLastSync)) {
+    return {
+      cloudTimestamp: parsed.metadata.lastModified,
+      cloudInstanceId: parsed.metadata.instanceId,
+      cloudDisplayId: parsed.metadata.displayId
+    }
+  }
+
+  return null
+}
+```
 
 **On App Load**:
 ```typescript
@@ -257,28 +328,17 @@ async function checkForConflictsOnLoad(): Promise<void> {
   if (!isAuthenticated || !autoSync.enabled) return
 
   for (const factoryName of autoSync.selectedFactories) {
-    const cloudFile = await findCloudFile(factoryName, autoSync.namespace)
-    if (!cloudFile) continue
+    const conflictInfo = await detectConflict(autoSync.namespace, factoryName)
 
-    const cloudData = await downloadFile(cloudFile.id)
-    const parsed: SptrakFile = JSON.parse(cloudData)
-
-    // Conflict if: different instanceId AND cloud is newer
-    const localFactory = factoryStore.factories[factoryName]
-    const localTimestamp = factoryStatus[factoryName]?.lastSynced
-
-    if (parsed.metadata.instanceId !== instanceId) {
-      if (!localTimestamp ||
-          new Date(parsed.metadata.lastModified) > new Date(localTimestamp)) {
-        // Conflict detected
-        conflicts.push({
-          factoryName,
-          cloudTimestamp: parsed.metadata.lastModified,
-          cloudInstanceId: parsed.metadata.instanceId,
-          localTimestamp: localTimestamp || 'never'
-        })
-        setFactoryStatus(factoryName, 'conflict')
-      }
+    if (conflictInfo) {
+      conflicts.push({
+        factoryName,
+        cloudTimestamp: conflictInfo.cloudTimestamp,
+        cloudInstanceId: conflictInfo.cloudInstanceId,
+        cloudDisplayId: conflictInfo.cloudDisplayId,
+        localTimestamp: factoryStatus[factoryName]?.lastSynced || 'never'
+      })
+      setFactoryStatus(factoryName, 'conflict')
     }
   }
 
@@ -288,30 +348,6 @@ async function checkForConflictsOnLoad(): Promise<void> {
     // Show conflict modal
     showConflictResolutionModal()
   }
-}
-```
-
-**Before Auto-Save**:
-```typescript
-async function checkConflictBeforeSave(factoryName: string): Promise<boolean> {
-  // CLAUDE: as an implementation detail, see if the parsed details and last sync timestamp can be returned from a helper like `getCloudFactoryMetadata` or similar. May not be optimal, decide when implementing
-  const cloudFile = await findCloudFile(factoryName, autoSync.namespace)
-  if (!cloudFile) return false  // No conflict if no cloud file
-
-  const metadata = await getFileMetadata(cloudFile.id)
-  const cloudData = await downloadFile(cloudFile.id)
-  const parsed: SptrakFile = JSON.parse(cloudData)
-
-  const lastKnownSync = factoryStatus[factoryName]?.lastSynced
-
-  // Conflict if cloud was modified by different instance after our last sync
-  if (parsed.metadata.instanceId !== instanceId &&
-      lastKnownSync &&
-      new Date(parsed.metadata.lastModified) > new Date(lastKnownSync)) {
-    return true  // Conflict detected
-  }
-
-  return false
 }
 ```
 
@@ -336,9 +372,10 @@ async function changeNamespace(newNamespace: string): Promise<void> {
     if (!confirmed) return
   }
 
-  // Disable auto-sync
+  // Disable auto-sync and suspend auto-save
   const wasEnabled = autoSync.enabled
   disableAutoSync()
+  autoSyncSuspended = true
 
   // Cancel any pending saves
   if (saveTimer) {
@@ -368,7 +405,7 @@ async function changeNamespace(newNamespace: string): Promise<void> {
 
       // Load all factories from new namespace
       for (const backup of availableBackups) {
-        await restoreFactory(backup.name, newNamespace)
+        await restoreFactory(newNamespace, backup.name)
       }
     }
   }
@@ -378,6 +415,9 @@ async function changeNamespace(newNamespace: string): Promise<void> {
 
   // Clear all status (fresh start in new namespace)
   factoryStatus = {}
+
+  // Re-enable auto-save
+  autoSyncSuspended = false
 
   // Re-enable auto-sync if it was enabled
   // CLAUDE: won't selected factories here be out of sync with the namespace?
@@ -855,7 +895,7 @@ async promptAddFactoryToAutoSync(factoryName: string): Promise<void> {
   if (confirmed) {
     this.addFactoryToAutoSync(factoryName)
     // Immediately trigger backup
-    await this.backupFactory(factoryName, this.autoSync.namespace)
+    await this.backupFactory(this.autoSync.namespace, factoryName)
   }
 }
 ```
