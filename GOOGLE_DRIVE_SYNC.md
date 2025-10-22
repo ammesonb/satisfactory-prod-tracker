@@ -956,82 +956,205 @@ const nameConflictMessage = computed(() => {
 
 ## Implementation Phases
 
-### Phase 1: Core Infrastructure (Week 1)
-- [ ] Create `cloudSync` store with state structure
-- [ ] Implement `useGoogleDrive` composable with OAuth
-- [ ] Create `.sptrak` file format serialization/deserialization
-- [ ] Add `NamespaceSelector` component
-- [ ] Setup Google Drive folder structure (`SatisProdTrak/`)
+Implementation is broken into logical phases that build on each other. Tests should be written alongside implementation, not deferred to the end.
 
-**Testing**:
-- Manual OAuth flow
-- File upload/download to Drive
-- Folder creation and navigation
+**Testing Classification**:
+- **Unit Tests**: Pure logic tests without HTML rendering (stores, composables, utilities)
+- **Integration Tests**: Component tests requiring full Vue interactions and HTML rendering
 
-### Phase 2: Manual Backup/Restore (Week 2)
-- [ ] Create `CloudSyncTab.vue` component
-- [ ] Implement manual backup functionality
-- [ ] Implement restore with conflict detection (rename)
-- [ ] Add backup file listing and deletion
-- [ ] Add namespace browsing
+NOTE: integration tests should NOT be fully testing store/composable capabilities, e.g. "each status".
+Just test ONE status, and leave that to the unit tests.
 
-**Testing**:
-- Backup single/multiple factories
-- Restore with rename
-- Delete backups
-- Switch between namespaces
+### Phase 1: Base Data Structures & Store
 
-### Phase 3: Auto-Sync Core (Week 3)
-- [ ] Implement store watcher with debouncing
-- [ ] Add per-factory status tracking
-- [ ] Implement retry logic with exponential backoff
-- [ ] Create auto-sync configuration UI
-- [ ] Add error handling and modal
+**Goal**: Set up foundational state management and data formats.
 
-**Testing**:
-- Enable/disable auto-sync
-- Verify debounced saves
-- Test retry on network errors
-- Verify error modal after max retries
+**Implementation**:
+- [ ] Create `cloudSync` store with complete state structure (TypeScript interfaces - no full function definitions yet)
+- [ ] Add store getters for computed state (isAuthenticated, aggregated status, etc.)
+- [ ] Create `.sptrak` file format serialization/deserialization utilities
+- [ ] Add UUID instance tracking (generate on first use, persist)
+- [ ] Implement per-factory status tracking in store
 
-### Phase 4: Conflict Detection (Week 4)
-- [ ] Implement UUID instance tracking
-- [ ] Add conflict detection on app load
-- [ ] Add conflict detection before save
-- [ ] Create conflict resolution modal
-- [ ] Implement namespace change flow with unsaved warning
-
-**Testing**:
-- Multi-device conflict scenarios
-- Namespace switching with dirty state
-- Conflict resolution (cloud/local)
-- UUID verification in files
-
-### Phase 5: Visual Indicators (Week 5)
-- [ ] Add header sync status icon
-- [ ] Add factory drawer status badges
-- [ ] Implement status icon animations (spinning, etc.)
+**Visual Indicators** (easy wins, implement early):
+- [ ] Add header sync status icon with color/state computed from store
+- [ ] Add factory drawer status badges (reuse same status logic)
 - [ ] Add tooltips for all status states
-- [ ] Add new factory prompt for auto-sync inclusion
+- [ ] Implement status icon animations (spinning for "saving", etc.)
 
-**Testing**:
-- All status states display correctly
-- Animations work smoothly
-- Badges show on collapsed drawer
-- New factory prompts appear
+**Unit Tests** (write alongside - no HTML rendering):
+- [ ] Store state initialization and TypeScript types
+- [ ] Status tracking logic and aggregation
+- [ ] File serialization/deserialization with validation
+- [ ] UUID generation and persistence
+- [ ] Store getters return correct computed values
 
-### Phase 6: Polish & Testing (Week 6)
-- [ ] Comprehensive integration testing
-- [ ] Error handling edge cases
-- [ ] Performance optimization (rate limiting, caching)
-- [ ] Documentation updates
+**Integration Tests** (component tests with Vue):
+- [ ] Header sync indicator component renders correct icon/color based on store state (NOTE: for this and following tests, as mentioned above, just test one state. Leave full "correctness" of conflict = danager, error = x, etc tests to unit tests.)
+- [ ] Factory drawer badges render correctly
+- [ ] Tooltips display proper text for each status
+
+---
+
+### Phase 2: Google Drive Integration
+
+**Goal**: Establish connection to Google Drive with OAuth and basic file operations.
+
+**Implementation**:
+- [ ] Implement `useGoogleDrive` composable (pure API layer, no business logic)
+- [ ] Add OAuth authentication flow (initGoogleAuth, signInWithGoogle, signOut)
+- [ ] Implement file operations (uploadFile, downloadFile, deleteFile, listFiles, getFileMetadata)
+- [ ] Implement folder operations (createFolder, findOrCreateFolder)
+- [ ] Setup Google Drive folder structure (`SatisProdTrak/namespaces/`)
+- [ ] Add `NamespaceSelector` component with autocomplete
+
+**Store Actions** (connect composable to store):
+- [ ] authenticate(), refreshToken(), signOut()
+- [ ] Store authentication state (accessToken, tokenExpiry)
+
+**Unit Tests** (write alongside - no HTML rendering):
+- [ ] useGoogleDrive composable with mocked Google API responses
+- [ ] File upload/download/delete logic with mocks
+- [ ] Folder creation and navigation logic
+- [ ] OAuth error handling
+- [ ] Store authentication actions update state correctly
+
+**Integration Tests** (component tests with Vue):
+- [ ] NamespaceSelector component validation and autocomplete
+- [ ] NamespaceSelector displays existing namespaces from store
+- [ ] OAuth flow updates UI state correctly
+
+**Manual Testing**:
+- [ ] OAuth flow completes successfully in browser
+- [ ] Namespace autocomplete shows existing namespaces
+- [ ] Can create new namespaces
+- [ ] Files upload/download correctly to/from Drive
+
+---
+
+### Phase 3: Manual Backup & Restore
+
+**Goal**: Enable users to manually backup and restore factories without auto-sync complexity.
+
+**Implementation**:
+- [ ] Create `CloudSyncTab.vue` component in Import/Export modal (3rd tab)
+- [ ] Implement manual backup functionality (single/multiple factories)
+- [ ] Implement namespace browsing and selection
+- [ ] Add backup file listing and metadata display
+- [ ] Implement restore functionality with factory selection UI (reuse FactorySelector)
+- [ ] Add name conflict detection on restore (prompt for rename if factory exists)
+- [ ] Implement backup deletion
+
+**Store Actions**:
+- [ ] backupFactory(namespace, factoryName)
+- [ ] restoreFactory(namespace, filename, importAlias?)
+- [ ] listBackups(namespace)
+- [ ] deleteBackup(namespace, filename)
+
+**Unit Tests** (write alongside - no HTML rendering):
+- [ ] Store backup/restore actions with mocked Drive operations
+- [ ] Name conflict detection logic
+- [ ] File listing and filtering logic
+- [ ] Backup deletion validation
+
+**Integration Tests** (component tests with Vue):
+- [ ] CloudSyncTab component renders and handles user interactions
+- [ ] Factory selection for backup (reuses FactorySelector component)
+- [ ] Factory selection for restore with name conflict prompts
+- [ ] File listing displays correctly with metadata
+- [ ] Delete confirmation modal works
+
+**Manual Testing**:
+- [ ] Backup single/multiple factories to Drive
+- [ ] Restore prompts for rename on conflict
+- [ ] Delete backups from Drive
+- [ ] Switch between namespaces
+- [ ] Factory data integrity after restore
+
+---
+
+### Phase 4: Auto-Sync & Conflict Resolution
+
+**Goal**: Add automatic syncing with multi-device conflict detection.
+
+**Implementation**:
+- [ ] Implement factory store watcher with debouncing (10s default)
+- [ ] Add auto-sync configuration UI in CloudSyncTab (enable/disable, factory selection)
+- [ ] Implement `performAutoSave()` with guard conditions (enabled, authenticated, no conflicts, not suspended)
+- [ ] Add retry logic with exponential backoff on network errors
+- [ ] Implement `autoSyncSuspended` flag for bulk operations
+- [ ] Add conflict detection on app load (compare timestamps + instanceId)
+- [ ] Add conflict detection before save (check cloud file metadata)
+- [ ] Create conflict resolution modal/UI
+- [ ] Implement namespace change flow with dirty state warning
+- [ ] Add "include in auto-sync" prompt when creating new factory
+
+**Store Actions**:
+- [ ] enableAutoSync(namespace, factories)
+- [ ] disableAutoSync()
+- [ ] changeNamespace(newNamespace) with orchestration
+- [ ] addFactoryToAutoSync(factoryName)
+- [ ] removeFactoryFromAutoSync(factoryName)
+- [ ] performAutoSave() with retry logic
+- [ ] detectConflicts() and resolveConflict()
+
+**Unit Tests** (write alongside - no HTML rendering):
+- [ ] Debouncing logic for auto-save
+- [ ] Guard conditions prevent invalid saves
+- [ ] Retry logic with exponential backoff
+- [ ] Conflict detection algorithms (timestamp + UUID comparison)
+- [ ] Namespace change orchestration (suspend → load → clear status → resume)
+- [ ] autoSyncSuspended flag behavior during bulk operations
+
+**Integration Tests** (component tests with Vue):
+- [ ] Auto-sync enable/disable UI in CloudSyncTab
+- [ ] Factory selection for auto-sync
+- [ ] Conflict resolution modal displays correctly
+- [ ] Namespace change warning modal
+- [ ] New factory prompt for auto-sync inclusion
+- [ ] Status indicators update reactively during auto-save cycle
+
+**Manual Testing**:
+- [ ] Enable/disable auto-sync
+- [ ] Debouncing prevents excessive saves (verify Drive API calls)
+- [ ] Retry logic works on simulated network failure
+- [ ] Error modal shows after max retries
+- [ ] Conflict detection on app load (multi-device scenario)
+- [ ] Conflict detection before save
+- [ ] Namespace change warns about unsaved changes
+- [ ] New factory prompt appears when auto-sync enabled
+- [ ] Status indicators update in real-time (dirty → saving → clean)
+
+---
+
+### Phase 5: Polish & Performance
+
+**Goal**: Optimize, handle edge cases, and prepare for production.
+
+**Implementation**:
+- [ ] Performance optimization (rate limiting, caching namespace list, abort controllers)
+- [ ] Error handling edge cases (quota exceeded, auth expired, network offline)
+- [ ] Add loading states and animations polish
+- [ ] Documentation updates (JSDoc comments, README)
 - [ ] User guide/wiki article
 
-**Testing**:
-- Full end-to-end workflow
-- Stress testing (many factories, rapid changes)
-- Network failure scenarios
-- Multi-device coordination
+**Unit Tests**:
+- [ ] Rate limiting logic
+- [ ] Cache invalidation strategies
+- [ ] Abort controller cleanup
+
+**Integration Tests** (comprehensive):
+- [ ] All components work together smoothly
+- [ ] Error states display helpful messages
+- [ ] Loading states provide user feedback
+
+**Manual Testing** (stress & edge cases):
+- [ ] Stress testing (many factories, rapid changes)
+- [ ] Network failure scenarios (offline mode, timeouts, interrupted uploads)
+- [ ] Multi-device coordination stress test
+- [ ] Rate limit handling (Google Drive quotas)
+- [ ] Full end-to-end workflow verification
+- [ ] Performance is acceptable with large datasets
 
 ## Testing Strategy
 
