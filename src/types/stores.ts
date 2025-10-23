@@ -2,6 +2,7 @@ import type { Ref, VNode } from 'vue'
 
 import type { RecipeNode } from '@/logistics/graph-node'
 import type { Building, Item, Recipe, RecipeIngredient, RecipeProduct } from '@/types/data'
+import type { GoogleDriveFile } from '@/types/cloudSync'
 import type { ErrorBuilder } from '@/types/errors'
 import type { Factory } from '@/types/factory'
 
@@ -87,4 +88,50 @@ export interface IErrorStore {
   warning: () => ErrorBuilder
   info: () => ErrorBuilder
   hide: () => void
+}
+
+/**
+ * Cloud Sync Store Interface
+ * Manages Google Drive sync state and operations
+ */
+export interface ICloudSyncStore {
+  // State
+  accessToken: string | null
+  tokenExpiry: number | null
+  instanceId: string
+  displayId?: string
+  autoSync: {
+    enabled: boolean
+    namespace: string
+    selectedFactories: string[]
+  }
+  autoSyncSuspended: boolean
+  finalGlobalError: { message: string; timestamp: string } | null
+
+  // Getters
+  isAuthenticated: boolean
+  isConfigured: boolean
+  isFactoryAutoSynced: (factoryName: string) => boolean
+
+  // Actions
+  authenticate: () => Promise<void>
+  refreshToken: () => Promise<void>
+  signOut: () => void
+  enableAutoSync: (namespace: string, factories: string[]) => void
+  disableAutoSync: () => void
+  changeNamespace: (newNamespace: string) => Promise<void>
+  addFactoryToAutoSync: (factoryName: string) => void
+  removeFactoryFromAutoSync: (factoryName: string) => void
+  backupFactory: (namespace: string, factoryName: string) => Promise<void>
+  restoreFactory: (namespace: string, filename: string, importAlias?: string) => Promise<void>
+  listBackups: (namespace?: string) => Promise<GoogleDriveFile[]>
+  deleteBackup: (namespace: string, filename: string) => Promise<void>
+  performAutoSave: () => Promise<void>
+  checkForConflicts: () => Promise<void>
+  resolveConflict: (factoryName: string, resolution: 'cloud' | 'local') => Promise<void>
+  setGlobalError: (message: string) => void
+  clearGlobalError: () => void
+  suspendAutoSync: () => void
+  resumeAutoSync: () => void
+  setDisplayId: (displayId: string) => void
 }

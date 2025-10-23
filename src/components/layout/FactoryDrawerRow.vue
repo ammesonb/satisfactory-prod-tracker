@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import type { Factory } from '@/types/factory'
 import { getIconURL } from '@/logistics/images'
+import type { Factory } from '@/types/factory'
 
 interface Props {
   factory: Factory
@@ -31,7 +31,9 @@ const confirmDelete = () => {
     :active="props.selected"
   >
     <template #prepend>
-      <v-img :src="getIconURL(props.factory.icon, 64)" width="32" height="32" class="mr-1" />
+      <FactorySyncBadge :factory="props.factory" :rail="props.rail">
+        <v-img :src="getIconURL(props.factory.icon, 64)" width="32" height="32" class="mr-1" />
+      </FactorySyncBadge>
     </template>
     <template #append>
       <v-btn

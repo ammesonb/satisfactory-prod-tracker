@@ -1,3 +1,4 @@
+export { useCloudSyncStore } from './cloudSync'
 export { useDataStore } from './data'
 export { useErrorStore } from './errors'
 export { useFactoryStore } from './factory'

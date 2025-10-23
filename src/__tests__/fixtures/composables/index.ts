@@ -12,6 +12,7 @@ export {
 export { mockUseRecipeInputForm } from './recipeInputForm'
 export { mockUseSelection } from './selection'
 export {
+  mockGetCloudSyncStore,
   mockGetDataStore,
   mockGetErrorStore,
   mockGetFactoryStore,

@@ -24,6 +24,7 @@ declare module 'vue' {
     FactoryFloorsToolbar: typeof import('./src/components/factory/FactoryFloorsToolbar.vue')['default']
     FactoryPanels: typeof import('./src/components/factory/FactoryPanels.vue')['default']
     FactorySelector: typeof import('./src/components/common/FactorySelector.vue')['default']
+    FactorySyncBadge: typeof import('./src/components/common/FactorySyncBadge.vue')['default']
     FloatingNav: typeof import('./src/components/layout/FloatingNav.vue')['default']
     FloorEditModal: typeof import('./src/components/modals/FloorEditModal.vue')['default']
     GameDataSelector: typeof import('./src/components/common/GameDataSelector.vue')['default']

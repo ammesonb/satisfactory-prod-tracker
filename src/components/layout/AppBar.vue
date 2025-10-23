@@ -1,10 +1,32 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import { getStores } from '@/composables/useStores'
+import {
+  getGlobalSyncStatus,
+  getGlobalSyncTooltip,
+  getSyncStatusColor,
+  getSyncStatusIcon,
+} from '@/utils/cloudSync'
 
-const { factoryStore } = getStores()
+const { factoryStore, cloudSyncStore } = getStores()
 const showImportExport = ref(false)
+
+const syncBadge = computed(() => {
+  const status = getGlobalSyncStatus(factoryStore.factories)
+  const isAuthenticated = cloudSyncStore.isAuthenticated
+
+  return {
+    color: getSyncStatusColor(status),
+    icon: getSyncStatusIcon(status),
+    tooltip: getGlobalSyncTooltip(status, isAuthenticated),
+    show: isAuthenticated,
+  }
+})
+
+const handleSyncIconClick = () => {
+  showImportExport.value = true
+}
 </script>
 
 <template>
@@ -20,6 +42,28 @@ const showImportExport = ref(false)
     </v-app-bar-title>
 
     <v-spacer></v-spacer>
+
+    <!-- Cloud Sync Indicator -->
+    <v-tooltip :text="syncBadge.tooltip" location="bottom">
+      <template v-slot:activator="{ props }">
+        <v-btn icon v-bind="props" @click="handleSyncIconClick" class="me-2">
+          <!-- Not authenticated: Google icon -->
+          <v-icon v-if="!syncBadge.show">mdi-google-drive</v-icon>
+
+          <!-- Authenticated: Cloud with status indicator -->
+          <v-badge
+            v-else
+            :color="syncBadge.color"
+            :icon="syncBadge.icon"
+            overlap
+            offset-x="8"
+            offset-y="8"
+          >
+            <v-icon>mdi-cloud</v-icon>
+          </v-badge>
+        </v-btn>
+      </template>
+    </v-tooltip>
 
     <v-btn
       @click="showImportExport = true"

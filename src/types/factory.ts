@@ -1,4 +1,5 @@
 import type { RecipeNode } from '@/logistics/graph-node'
+import type { ConflictInfo, FactoryStatus } from '@/types/cloudSync'
 
 export interface Recipe {
   name: string
@@ -47,6 +48,8 @@ export interface Factory {
   icon: string
   floors: Floor[]
   recipeLinks: Record<string, boolean>
+  syncStatus?: FactoryStatus
+  conflict?: ConflictInfo
 }
 
 // Error message constants

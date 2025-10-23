@@ -7,6 +7,7 @@ import { linkToString, type RecipeNode } from '@/logistics/graph-node'
 import { solveRecipeChain } from '@/logistics/graph-solver'
 import { useErrorStore } from '@/stores/errors'
 import { type RecipeProduct } from '@/types/data'
+import { FactorySyncStatus, type ConflictInfo } from '@/types/cloudSync'
 import { type Factory, type Floor } from '@/types/factory'
 
 export const useFactoryStore = defineStore('factory', {
@@ -155,6 +156,70 @@ export const useFactoryStore = defineStore('factory', {
       for (const [factoryName, factoryData] of Object.entries(factories)) {
         this.factories[factoryName] = factoryData
       }
+    },
+
+    // ========================================
+    // Sync Status Management (Cloud Sync Phase 1)
+    // ========================================
+
+    setSyncStatus(factoryName: string, status: FactorySyncStatus): void {
+      const factory = this.factories[factoryName]
+      if (!factory) return
+
+      factory.syncStatus = {
+        lastSynced: null,
+        ...factory.syncStatus,
+        status,
+        lastError:
+          // if sync state is not error, clear error message
+          status !== FactorySyncStatus.ERROR ? null : (factory.syncStatus?.lastError ?? null),
+      }
+    },
+
+    markDirty(factoryName: string): void {
+      this.setSyncStatus(factoryName, FactorySyncStatus.DIRTY)
+    },
+
+    markSynced(factoryName: string, timestamp?: string): void {
+      const factory = this.factories[factoryName]
+      if (!factory) return
+
+      this.setSyncStatus(factoryName, FactorySyncStatus.CLEAN)
+      if (factory.syncStatus) {
+        factory.syncStatus.lastSynced = timestamp || new Date().toISOString()
+      }
+    },
+
+    setSyncError(factoryName: string, errorMessage: string): void {
+      const factory = this.factories[factoryName]
+      if (!factory) return
+
+      this.setSyncStatus(factoryName, FactorySyncStatus.ERROR)
+      if (factory.syncStatus) {
+        factory.syncStatus.lastError = errorMessage
+      }
+    },
+
+    clearSyncError(factoryName: string): void {
+      const factory = this.factories[factoryName]
+      if (!factory || !factory.syncStatus) return
+
+      factory.syncStatus.lastError = null
+    },
+
+    setSyncConflict(factoryName: string, conflict: ConflictInfo): void {
+      const factory = this.factories[factoryName]
+      if (!factory) return
+
+      factory.conflict = conflict
+      this.setSyncStatus(factoryName, FactorySyncStatus.CONFLICT)
+    },
+
+    clearSyncConflict(factoryName: string): void {
+      const factory = this.factories[factoryName]
+      if (!factory) return
+
+      factory.conflict = undefined
     },
   },
   persist: true,
