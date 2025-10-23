@@ -1,7 +1,7 @@
-import type { Factory } from '@/types/factory'
 import { FactorySyncStatus } from '@/types/cloudSync'
+import type { Factory } from '@/types/factory'
 
-const STATUS_COLORS: Record<FactorySyncStatus, string> = {
+export const STATUS_COLORS: Record<FactorySyncStatus, string> = {
   [FactorySyncStatus.CLEAN]: 'success',
   [FactorySyncStatus.DIRTY]: 'purple',
   [FactorySyncStatus.SAVING]: 'info',
@@ -9,7 +9,7 @@ const STATUS_COLORS: Record<FactorySyncStatus, string> = {
   [FactorySyncStatus.ERROR]: 'error',
 }
 
-const STATUS_ICONS: Record<FactorySyncStatus, string> = {
+export const STATUS_ICONS: Record<FactorySyncStatus, string> = {
   [FactorySyncStatus.CLEAN]: 'mdi-check',
   [FactorySyncStatus.DIRTY]: 'mdi-circle',
   [FactorySyncStatus.SAVING]: 'mdi-loading',
@@ -17,7 +17,7 @@ const STATUS_ICONS: Record<FactorySyncStatus, string> = {
   [FactorySyncStatus.ERROR]: 'mdi-close',
 }
 
-const GLOBAL_STATUS_TOOLTIPS: Record<FactorySyncStatus, string> = {
+export const GLOBAL_STATUS_TOOLTIPS: Record<FactorySyncStatus, string> = {
   [FactorySyncStatus.CLEAN]: 'All factories synced',
   [FactorySyncStatus.DIRTY]: 'Changes pending backup',
   [FactorySyncStatus.SAVING]: 'Syncing to Google Drive...',
@@ -25,7 +25,7 @@ const GLOBAL_STATUS_TOOLTIPS: Record<FactorySyncStatus, string> = {
   [FactorySyncStatus.ERROR]: 'Sync error - click for details',
 }
 
-const FACTORY_STATUS_TOOLTIPS: Record<FactorySyncStatus, string> = {
+export const FACTORY_STATUS_TOOLTIPS: Record<FactorySyncStatus, string> = {
   [FactorySyncStatus.CLEAN]: 'Synced',
   [FactorySyncStatus.DIRTY]: 'Changes pending',
   [FactorySyncStatus.SAVING]: 'Syncing...',

@@ -1,6 +1,7 @@
 import { recipeDatabase } from '@/__tests__/fixtures/data/recipes'
 import type { RecipeNode } from '@/logistics/graph-node'
 import { newRecipeNode } from '@/logistics/graph-node'
+import { FactorySyncStatus } from '@/types/cloudSync'
 import type { Factory, Floor, Material } from '@/types/factory'
 
 /**
@@ -106,12 +107,16 @@ export const makeFactory = (
   options: {
     icon?: string
     recipeLinks?: Record<string, boolean>
+    syncStatus?: Factory['syncStatus']
+    conflict?: Factory['conflict']
   } = {},
 ): Factory => ({
   name,
   icon: options.icon ?? 'test-icon',
   floors,
   recipeLinks: options.recipeLinks ?? {},
+  syncStatus: options.syncStatus,
+  conflict: options.conflict,
 })
 
 /**
@@ -127,4 +132,27 @@ export const makeMaterial = (
   source,
   sink,
   amount,
+})
+
+/**
+ * Helper to create sync status objects for testing
+ */
+export const makeSyncStatus = (
+  status: FactorySyncStatus,
+  options: { lastSynced?: string | null; lastError?: string | null } = {},
+): Factory['syncStatus'] => ({
+  status,
+  lastSynced: options.lastSynced ?? null,
+  lastError: options.lastError ?? null,
+})
+
+/**
+ * Helper to create conflict info for testing
+ */
+export const makeConflict = (options: Partial<Factory['conflict']> = {}): Factory['conflict'] => ({
+  factoryName: options.factoryName ?? 'Test Factory',
+  cloudTimestamp: options.cloudTimestamp ?? new Date().toISOString(),
+  cloudInstanceId: options.cloudInstanceId ?? 'other-device',
+  cloudDisplayId: options.cloudDisplayId ?? 'Other Device',
+  localTimestamp: options.localTimestamp ?? new Date().toISOString(),
 })

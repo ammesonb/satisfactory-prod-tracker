@@ -1,5 +1,5 @@
-import { ref } from 'vue'
 import { vi } from 'vitest'
+import { ref } from 'vue'
 
 // Create reactive refs that persist across calls for key properties
 export const mockIsAuthenticated = ref(false)

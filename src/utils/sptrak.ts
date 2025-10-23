@@ -1,6 +1,6 @@
-import { asFactory, type Factory } from '@/types/factory'
 import type { SptrakFile } from '@/types/cloudSync'
 import { CLOUD_SYNC_ERRORS } from '@/types/cloudSync'
+import { asFactory, type Factory } from '@/types/factory'
 
 const SPTRAK_VERSION = '1.0'
 
@@ -94,9 +94,9 @@ export function isCompatibleVersion(sptrakFile: SptrakFile): boolean {
  */
 export function generateSptrakFilename(factoryName: string): string {
   const sanitized = factoryName
+    .trim()
     .replace(/[/\\?%*:|"<>]/g, '-')
     .replace(/\s+/g, '_')
-    .trim()
 
   return `${sanitized}.sptrak`
 }
