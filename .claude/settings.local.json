@@ -15,7 +15,6 @@
       "WebFetch(domain:vitest.dev)",
       "Bash(find:*)",
       "Bash(npm run type-check:test:*)",
-      "Bash(cat:*)",
       "Bash(npm run fix+test:*)",
       "Read(//c/Users/ammes/code/OpenMemory/backend/src/**)",
       "Bash(curl http://localhost:8080/memory/all -H \"Authorization: Bearer claude-code-satisfactory-tracker\")",

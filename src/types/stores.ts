@@ -96,8 +96,6 @@ export interface IErrorStore {
  */
 export interface ICloudSyncStore {
   // State
-  accessToken: string | null
-  tokenExpiry: number | null
   instanceId: string
   displayId?: string
   autoSync: {
@@ -106,7 +104,6 @@ export interface ICloudSyncStore {
     selectedFactories: string[]
   }
   autoSyncSuspended: boolean
-  finalGlobalError: { message: string; timestamp: string } | null
 
   // Getters
   isAuthenticated: boolean
@@ -115,7 +112,7 @@ export interface ICloudSyncStore {
 
   // Actions
   authenticate: () => Promise<void>
-  refreshToken: () => Promise<void>
+  refreshAuth: () => Promise<void>
   signOut: () => void
   enableAutoSync: (namespace: string, factories: string[]) => void
   disableAutoSync: () => void
@@ -134,4 +131,5 @@ export interface ICloudSyncStore {
   suspendAutoSync: () => void
   resumeAutoSync: () => void
   setDisplayId: (displayId: string) => void
+  initializeInstanceId: () => void
 }

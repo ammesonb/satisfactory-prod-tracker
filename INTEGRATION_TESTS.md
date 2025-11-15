@@ -189,6 +189,7 @@ import { mockNavigateToFloor } from '@/__tests__/fixtures/composables/navigation
 
 // Basic setup with sensible defaults
 vi.mock('@/composables/useFloorNavigation', async () => {
+  // You may ONLY use `await import` inside vi.mock calls
   const { mockUseFloorNavigation } = await import('@/__tests__/fixtures/composables')
   return { useFloorNavigation: mockUseFloorNavigation }
 })

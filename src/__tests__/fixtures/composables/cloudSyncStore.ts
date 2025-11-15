@@ -12,17 +12,13 @@ export const mockIsFactoryAutoSynced = vi.fn((factoryName: string) => {
   return mockSelectedFactories.value.includes(factoryName)
 })
 export const mockAuthenticate = vi.fn()
-export const mockRefreshToken = vi.fn()
+export const mockRefreshAuth = vi.fn()
 export const mockSignOut = vi.fn()
 export const mockEnableAutoSync = vi.fn()
 export const mockDisableAutoSync = vi.fn()
 export const mockChangeNamespace = vi.fn()
 export const mockAddFactoryToAutoSync = vi.fn()
 export const mockRemoveFactoryFromAutoSync = vi.fn()
-export const mockBackupFactory = vi.fn()
-export const mockRestoreFactory = vi.fn()
-export const mockListBackups = vi.fn()
-export const mockDeleteBackup = vi.fn()
 export const mockPerformAutoSave = vi.fn()
 export const mockCheckForConflicts = vi.fn()
 export const mockResolveConflict = vi.fn()
@@ -31,6 +27,7 @@ export const mockClearGlobalError = vi.fn()
 export const mockSuspendAutoSync = vi.fn()
 export const mockResumeAutoSync = vi.fn()
 export const mockSetDisplayId = vi.fn()
+export const mockInitializeInstanceId = vi.fn()
 
 export const mockCloudSyncStore = {
   // Getters
@@ -43,8 +40,6 @@ export const mockCloudSyncStore = {
   isFactoryAutoSynced: mockIsFactoryAutoSynced,
 
   // State
-  accessToken: null,
-  tokenExpiry: null,
   instanceId: 'test-instance-id',
   displayId: 'Test Device',
   autoSync: {
@@ -57,17 +52,13 @@ export const mockCloudSyncStore = {
 
   // Actions
   authenticate: mockAuthenticate,
-  refreshToken: mockRefreshToken,
+  refreshAuth: mockRefreshAuth,
   signOut: mockSignOut,
   enableAutoSync: mockEnableAutoSync,
   disableAutoSync: mockDisableAutoSync,
   changeNamespace: mockChangeNamespace,
   addFactoryToAutoSync: mockAddFactoryToAutoSync,
   removeFactoryFromAutoSync: mockRemoveFactoryFromAutoSync,
-  backupFactory: mockBackupFactory,
-  restoreFactory: mockRestoreFactory,
-  listBackups: mockListBackups,
-  deleteBackup: mockDeleteBackup,
   performAutoSave: mockPerformAutoSave,
   checkForConflicts: mockCheckForConflicts,
   resolveConflict: mockResolveConflict,
@@ -76,4 +67,5 @@ export const mockCloudSyncStore = {
   suspendAutoSync: mockSuspendAutoSync,
   resumeAutoSync: mockResumeAutoSync,
   setDisplayId: mockSetDisplayId,
+  initializeInstanceId: mockInitializeInstanceId,
 }

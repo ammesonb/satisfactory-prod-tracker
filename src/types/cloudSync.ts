@@ -77,12 +77,11 @@ export interface GoogleDriveFile {
 
 /**
  * Cloud sync state for the store
+ *
+ * NOTE: Platform-agnostic - does not store provider-specific tokens.
+ * Authentication state is checked via the cloud provider composable (e.g., useGoogleDrive).
  */
 export interface CloudSyncState {
-  // Authentication
-  accessToken: string | null
-  tokenExpiry: number | null
-
   // Instance identification
   instanceId: string
   displayId?: string

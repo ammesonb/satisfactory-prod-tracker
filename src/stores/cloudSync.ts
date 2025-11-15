@@ -1,16 +1,13 @@
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
 
-import type { CloudSyncState, GoogleDriveFile } from '@/types/cloudSync'
+import { useGoogleDrive } from '@/composables/useGoogleDrive'
+import type { CloudSyncState } from '@/types/cloudSync'
 
 export const useCloudSyncStore = defineStore('cloudSync', {
   state: (): CloudSyncState => ({
-    // Authentication
-    accessToken: null,
-    tokenExpiry: null,
-
-    // Instance identification - generate UUID on first initialization
-    instanceId: uuidv4(),
+    // Instance identification - will be set on first initialization or loaded from persistence
+    instanceId: '',
     displayId: undefined,
 
     // Auto-sync configuration
@@ -29,20 +26,19 @@ export const useCloudSyncStore = defineStore('cloudSync', {
 
   getters: {
     /**
-     * Check if user is authenticated based on token presence and validity
+     * Check if user is authenticated with the cloud provider
+     * Platform-agnostic - delegates to the cloud provider composable
      */
-    isAuthenticated: (state): boolean => {
-      if (!state.accessToken || !state.tokenExpiry) {
-        return false
-      }
-      return Date.now() < state.tokenExpiry
+    isAuthenticated: (): boolean => {
+      const googleDrive = useGoogleDrive()
+      return googleDrive.isAuthenticated()
     },
 
     /**
      * Check if cloud sync is fully configured (authenticated and has instance ID)
      */
-    isConfigured: (state): boolean => {
-      return !!state.accessToken && !!state.instanceId
+    isConfigured(): boolean {
+      return this.isAuthenticated && !!this.instanceId
     },
 
     /**
@@ -64,18 +60,31 @@ export const useCloudSyncStore = defineStore('cloudSync', {
     // ========================================
 
     async authenticate(): Promise<void> {
-      // To be implemented in Phase 2
-      throw new Error('Not implemented')
+      // Ensure instance ID is set before any cloud operations
+      this.initializeInstanceId()
+
+      const googleDrive = useGoogleDrive()
+
+      // Initialize Google API client (only needs to be done once)
+      await googleDrive.initGoogleAuth()
+
+      // Sign in with Google OAuth
+      // Token is managed by gapi internally, no need to store it
+      await googleDrive.signInWithGoogle()
     },
 
-    async refreshToken(): Promise<void> {
-      // To be implemented in Phase 2
-      throw new Error('Not implemented')
+    async refreshAuth(): Promise<void> {
+      const googleDrive = useGoogleDrive()
+
+      // Refresh token via gapi (managed internally)
+      await googleDrive.refreshToken()
     },
 
-    signOut(): void {
-      this.accessToken = null
-      this.tokenExpiry = null
+    async signOut(): Promise<void> {
+      const googleDrive = useGoogleDrive()
+
+      // Sign out via gapi (clears token internally)
+      await googleDrive.signOut()
     },
 
     // ========================================
@@ -110,38 +119,6 @@ export const useCloudSyncStore = defineStore('cloudSync', {
       if (index !== -1) {
         this.autoSync.selectedFactories.splice(index, 1)
       }
-    },
-
-    // ========================================
-    // Backup/Restore Operations (Phase 3)
-    // ========================================
-
-    // CLAUDE: these actually seem stateless, right? just interactions with factory store or cloud stores
-    // CLAUDE: that means they really should be a composable, right?
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async backupFactory(namespace: string, factoryName: string): Promise<void> {
-      // To be implemented in Phase 3
-      // CLAUDE: most of the functionality for this probably belong on the factory and/or in a utility
-      throw new Error('Not implemented')
-    },
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async restoreFactory(namespace: string, filename: string, importAlias?: string): Promise<void> {
-      // To be implemented in Phase 3
-      // CLAUDE: most of the functionality for this probably belong on the factory and/or in a utility
-      throw new Error('Not implemented')
-    },
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async listBackups(namespace?: string): Promise<GoogleDriveFile[]> {
-      // To be implemented in Phase 3
-      throw new Error('Not implemented')
-    },
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async deleteBackup(namespace: string, filename: string): Promise<void> {
-      // To be implemented in Phase 3
-      throw new Error('Not implemented')
     },
 
     // ========================================
@@ -191,6 +168,16 @@ export const useCloudSyncStore = defineStore('cloudSync', {
 
     setDisplayId(displayId: string): void {
       this.displayId = displayId
+    },
+
+    /**
+     * Initialize instance ID if not already set
+     * Should be called once when the app starts
+     */
+    initializeInstanceId(): void {
+      if (!this.instanceId) {
+        this.instanceId = uuidv4()
+      }
     },
   },
 

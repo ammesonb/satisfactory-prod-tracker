@@ -258,6 +258,10 @@ class ComponentHelper<T extends ComponentConstructor> {
   getComponents(): VueWrapper<InstanceType<T>>[] {
     return this.findAll()
   }
+
+  vm(): InstanceType<T> {
+    return this.wrapper.vm
+  }
 }
 
 export function element(wrapper: VueWrapper, selector: string): ElementHelper {
