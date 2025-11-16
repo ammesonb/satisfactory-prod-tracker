@@ -3,6 +3,7 @@ import { createPinia, setActivePinia } from 'pinia'
 
 import { useCloudBackup } from '@/composables/useCloudBackup'
 import { CLOUD_SYNC_ERRORS, FactorySyncStatus } from '@/types/cloudSync'
+import type { GoogleDriveFile } from '@/types/cloudSync'
 import type { Factory } from '@/types/factory'
 
 // Mock the dependencies
@@ -13,24 +14,18 @@ vi.mock('@/composables/useGoogleDrive', async () => {
   }
 })
 
-vi.mock('@/stores/cloudSync', async () => {
-  const { mockCloudSyncStore } = await import('@/__tests__/fixtures/composables/cloudSyncStore')
+vi.mock('@/composables/useStores', async () => {
+  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
   return {
-    useCloudSyncStore: () => mockCloudSyncStore,
-  }
-})
-
-vi.mock('@/stores/factory', async () => {
-  const { mockFactoryStore } = await import('@/__tests__/fixtures/composables/factoryStore')
-  return {
-    useFactoryStore: () => mockFactoryStore,
+    getStores: mockGetStores,
   }
 })
 
 // Import mocks after setting up mocks
 import { mockUseGoogleDrive } from '@/__tests__/fixtures/composables/useGoogleDrive'
-import { mockCloudSyncStore, mockIsAuthenticated } from '@/__tests__/fixtures/composables/cloudSyncStore'
-import { mockFactoryStore, mockFactories } from '@/__tests__/fixtures/composables/factoryStore'
+import { mockCloudSyncStore } from '@/__tests__/fixtures/composables/cloudSyncStore'
+import { mockFactories } from '@/__tests__/fixtures/composables/factoryStore'
+import { mockIsAuthenticated } from '@/__tests__/fixtures/composables/googleAuthStore'
 
 describe('useCloudBackup', () => {
   beforeEach(() => {
@@ -38,7 +33,7 @@ describe('useCloudBackup', () => {
     vi.clearAllMocks()
 
     // Reset mock state
-    mockIsAuthenticated.value = true
+    mockIsAuthenticated.mockReturnValue(true)
     mockFactories.value = {}
     mockCloudSyncStore.instanceId = 'test-instance-123'
     mockCloudSyncStore.displayId = 'Test Device'
@@ -46,7 +41,7 @@ describe('useCloudBackup', () => {
 
   describe('backupFactory', () => {
     it('throws error when not authenticated', async () => {
-      mockIsAuthenticated.value = false
+      mockIsAuthenticated.mockReturnValue(false)
       const cloudBackup = useCloudBackup()
 
       await expect(cloudBackup.backupFactory('Save1', 'MyFactory')).rejects.toThrow(
@@ -107,35 +102,14 @@ describe('useCloudBackup', () => {
       const cloudBackup = useCloudBackup()
       await cloudBackup.backupFactory('Save1', 'MyFactory')
 
-      expect(mockUseGoogleDrive.updateFile).toHaveBeenCalledWith('existing-file-789', expect.any(String))
-      expect(mockUseGoogleDrive.uploadFile).not.toHaveBeenCalled()
-    })
-
-    // CLAUDE: if this is true, then we should check it wherever applicable in other tests instead?
-    it('always sets sync status after backup', async () => {
-      const factory: Factory = {
-        name: 'MyFactory',
-        icon: 'icon.png',
-        floors: [],
-        recipeLinks: {},
-        // No syncStatus initially
-      }
-      mockFactories.value = { MyFactory: factory }
-      mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
-      mockUseGoogleDrive.listFiles.mockResolvedValue([])
-      mockUseGoogleDrive.uploadFile.mockResolvedValue('file-456')
-
-      const cloudBackup = useCloudBackup()
-      await cloudBackup.backupFactory('Save1', 'MyFactory')
-
-      expect(factory.syncStatus).toBeDefined()
       expect(factory.syncStatus?.status).toBe(FactorySyncStatus.CLEAN)
+      expect(factory.syncStatus?.lastSynced).toBeTruthy()
     })
   })
 
   describe('restoreFactory', () => {
     it('throws error when not authenticated', async () => {
-      mockIsAuthenticated.value = false
+      mockIsAuthenticated.mockReturnValue(false)
       const cloudBackup = useCloudBackup()
 
       await expect(cloudBackup.restoreFactory('Save1', 'test.sptrak')).rejects.toThrow(
@@ -157,7 +131,7 @@ describe('useCloudBackup', () => {
     it('throws error when factory name already exists', async () => {
       mockFactories.value = { ExistingFactory: {} as Factory }
       mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
-      mockUseGoogleDrive.listFiles.mockResolvedValue([{ id: 'file-123' } as any])
+      mockUseGoogleDrive.listFiles.mockResolvedValue([{ id: 'file-123' } as GoogleDriveFile])
       mockUseGoogleDrive.downloadFile.mockResolvedValue(
         JSON.stringify({
           metadata: {
@@ -183,42 +157,10 @@ describe('useCloudBackup', () => {
       )
     })
 
-    // CLAUDE: same with this, just check sync status elsewhere?
-    it('restores factory with correct sync status', async () => {
-      mockFactories.value = {}
-      mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
-      mockUseGoogleDrive.listFiles.mockResolvedValue([{ id: 'file-123' } as any])
-      mockUseGoogleDrive.downloadFile.mockResolvedValue(
-        JSON.stringify({
-          metadata: {
-            version: '1.0',
-            instanceId: 'other-instance',
-            lastModified: '2023-01-01T00:00:00Z',
-            factoryName: 'RestoredFactory',
-            namespace: 'Save1',
-          },
-          factory: {
-            name: 'RestoredFactory',
-            icon: 'icon.png',
-            floors: [],
-            recipeLinks: {},
-          },
-        }),
-      )
-
-      const cloudBackup = useCloudBackup()
-      await cloudBackup.restoreFactory('Save1', 'test.sptrak')
-
-      const restored = mockFactories.value.RestoredFactory
-      expect(restored).toBeDefined()
-      expect(restored.syncStatus?.status).toBe(FactorySyncStatus.CLEAN)
-      expect(restored.syncStatus?.lastSynced).toBe('2023-01-01T00:00:00Z')
-    })
-
     it('uses importAlias when provided', async () => {
       mockFactories.value = {}
       mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
-      mockUseGoogleDrive.listFiles.mockResolvedValue([{ id: 'file-123' } as any])
+      mockUseGoogleDrive.listFiles.mockResolvedValue([{ id: 'file-123' } as GoogleDriveFile])
       mockUseGoogleDrive.downloadFile.mockResolvedValue(
         JSON.stringify({
           metadata: {
@@ -240,15 +182,18 @@ describe('useCloudBackup', () => {
       const cloudBackup = useCloudBackup()
       await cloudBackup.restoreFactory('Save1', 'test.sptrak', 'NewName')
 
-      expect(mockFactories.value.NewName).toBeDefined()
-      expect(mockFactories.value.OriginalName).toBeUndefined()
-      expect(mockFactories.value.NewName.name).toBe('NewName')
+      const factories = mockFactories.value as Record<string, Factory>
+      expect(factories.NewName).toBeDefined()
+      expect(factories.OriginalName).toBeUndefined()
+      expect(factories.NewName.name).toBe('NewName')
+      expect(factories.NewName.syncStatus?.status).toBe(FactorySyncStatus.CLEAN)
+      expect(factories.NewName.syncStatus?.lastSynced).toBe('2023-01-01T00:00:00Z')
     })
   })
 
   describe('listBackups', () => {
     it('throws error when not authenticated', async () => {
-      mockIsAuthenticated.value = false
+      mockIsAuthenticated.mockReturnValue(false)
       const cloudBackup = useCloudBackup()
 
       await expect(cloudBackup.listBackups('Save1')).rejects.toThrow(
@@ -296,7 +241,10 @@ describe('useCloudBackup', () => {
       const result = await cloudBackup.listBackups('Save1')
 
       expect(result).toEqual(mockFiles)
-      expect(mockUseGoogleDrive.listFiles).toHaveBeenCalledWith('folder-123', "name contains '.sptrak'")
+      expect(mockUseGoogleDrive.listFiles).toHaveBeenCalledWith(
+        'folder-123',
+        "name contains '.sptrak'",
+      )
     })
 
     it('uses auto-sync namespace when not provided', async () => {
@@ -316,7 +264,7 @@ describe('useCloudBackup', () => {
 
   describe('deleteBackup', () => {
     it('throws error when not authenticated', async () => {
-      mockIsAuthenticated.value = false
+      mockIsAuthenticated.mockReturnValue(false)
       const cloudBackup = useCloudBackup()
 
       await expect(cloudBackup.deleteBackup('Save1', 'test.sptrak')).rejects.toThrow(
@@ -337,7 +285,7 @@ describe('useCloudBackup', () => {
 
     it('deletes file successfully', async () => {
       mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
-      mockUseGoogleDrive.listFiles.mockResolvedValue([{ id: 'file-789' } as any])
+      mockUseGoogleDrive.listFiles.mockResolvedValue([{ id: 'file-789' } as GoogleDriveFile])
       mockUseGoogleDrive.deleteFile.mockResolvedValue(undefined)
 
       const cloudBackup = useCloudBackup()

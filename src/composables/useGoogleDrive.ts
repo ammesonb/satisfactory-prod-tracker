@@ -1,126 +1,30 @@
 import {
-  CONTENT_TYPES,
-  GOOGLE_DRIVE_API_URLS,
   GOOGLE_DRIVE_FIELDS,
   GOOGLE_DRIVE_MIME_TYPES,
   GOOGLE_DRIVE_QUERY_OPERATORS,
-  GOOGLE_DRIVE_SCOPES,
-  HTTP_HEADERS,
 } from '@/constants/googleDrive'
+import { googleApiClient } from '@/services/googleApiClient'
+import { useGoogleAuthStore } from '@/stores/googleAuth'
 import type { GoogleDriveFile } from '@/types/cloudSync'
-
-/**
- * Google API configuration from environment variables
- */
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
-const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY
-
-/**
- * Global reference to gapi (loaded via script tag in index.html)
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const gapi: any
 
 /**
  * Pure Google Drive API composable
  *
- * This composable is a thin wrapper around the Google Drive API.
- * It handles OAuth authentication and basic file/folder operations.
+ * This composable is a thin wrapper around the Google Drive API for file/folder operations.
+ *
+ * Authentication is handled by googleAuthStore (call googleAuthStore.initialize() at app startup).
+ * This composable only provides Drive file and folder operations.
  */
 export function useGoogleDrive() {
-  // ========================================
-  // Google API Client Initialization
-  // ========================================
+  const googleAuthStore = useGoogleAuthStore()
 
-  /**
-   * Initialize the Google API client
-   * Must be called before any other operations
-   */
-  async function initGoogleAuth(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      gapi.load('client:auth2', async () => {
-        try {
-          await gapi.client.init({
-            apiKey: GOOGLE_API_KEY,
-            clientId: GOOGLE_CLIENT_ID,
-            discoveryDocs: [GOOGLE_DRIVE_API_URLS.DISCOVERY_DOC],
-            scope: GOOGLE_DRIVE_SCOPES.DRIVE_FILE,
-          })
-          resolve()
-        } catch (error) {
-          reject(error)
-        }
-      })
-    })
+  // Ensure the API client has the current access token if available
+  if (googleAuthStore.accessToken && googleAuthStore.isAuthenticated) {
+    googleApiClient.setAccessToken(googleAuthStore.accessToken)
   }
 
-  // ========================================
-  // Authentication
-  // ========================================
-
-  /**
-   * Check if user is currently authenticated
-   *
-   * @returns True if user is signed in with valid token
-   */
-  function isAuthenticated(): boolean {
-    try {
-      if (typeof gapi === 'undefined' || !gapi.auth2) {
-        return false
-      }
-      const authInstance = gapi.auth2.getAuthInstance()
-      return authInstance && authInstance.isSignedIn.get()
-    } catch {
-      return false
-    }
-  }
-
-  /**
-   * Sign in with Google OAuth
-   * Opens OAuth consent flow in popup/redirect
-   *
-   * @returns Access token and expiry timestamp
-   */
-  async function signInWithGoogle(): Promise<{
-    accessToken: string
-    expiresAt: number
-  }> {
-    const authInstance = gapi.auth2.getAuthInstance()
-    const user = await authInstance.signIn()
-    const authResponse = user.getAuthResponse(true)
-
-    return {
-      accessToken: authResponse.access_token,
-      expiresAt: authResponse.expires_at,
-    }
-  }
-
-  /**
-   * Sign out from Google OAuth
-   * Revokes access token
-   */
-  async function signOut(): Promise<void> {
-    const authInstance = gapi.auth2.getAuthInstance()
-    await authInstance.signOut()
-  }
-
-  /**
-   * Refresh the access token
-   *
-   * @returns New access token and expiry timestamp
-   */
-  async function refreshToken(): Promise<{
-    accessToken: string
-    expiresAt: number
-  }> {
-    const authInstance = gapi.auth2.getAuthInstance()
-    const user = authInstance.currentUser.get()
-    const authResponse = await user.reloadAuthResponse()
-
-    return {
-      accessToken: authResponse.access_token,
-      expiresAt: authResponse.expires_at,
-    }
+  const getDriveClient = () => {
+    return googleApiClient.getDriveClient()
   }
 
   // ========================================
@@ -145,24 +49,18 @@ export function useGoogleDrive() {
       metadata.parents = [folderId]
     }
 
-    const form = new FormData()
-    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: CONTENT_TYPES.JSON }))
-    form.append('file', new Blob([content], { type: CONTENT_TYPES.JSON }))
-
-    const response = await fetch(`${GOOGLE_DRIVE_API_URLS.UPLOAD_BASE}?uploadType=multipart`, {
-      method: 'POST',
-      headers: {
-        Authorization: HTTP_HEADERS.AUTHORIZATION_BEARER(gapi.auth.getToken().access_token),
-      },
-      body: form,
+    // Create empty file with metadata first
+    const createResponse = await getDriveClient().files.create({
+      resource: metadata,
+      fields: GOOGLE_DRIVE_FIELDS.FILE_ID_ONLY,
     })
 
-    if (!response.ok) {
-      throw new Error(`Upload failed: ${response.statusText}`)
-    }
+    const fileId = createResponse.result.id
 
-    const result = await response.json()
-    return result.id
+    // Then update it with content
+    await updateFile(fileId, content)
+
+    return fileId
   }
 
   /**
@@ -172,7 +70,7 @@ export function useGoogleDrive() {
    * @returns File content as string
    */
   async function downloadFile(fileId: string): Promise<string> {
-    const response = await gapi.client.drive.files.get({
+    const response = await getDriveClient().files.get({
       fileId,
       alt: 'media',
     })
@@ -185,7 +83,7 @@ export function useGoogleDrive() {
    * @param fileId - Google Drive file ID
    */
   async function deleteFile(fileId: string): Promise<void> {
-    await gapi.client.drive.files.delete({
+    await getDriveClient().files.delete({
       fileId,
     })
   }
@@ -208,7 +106,7 @@ export function useGoogleDrive() {
       queries.push(GOOGLE_DRIVE_QUERY_OPERATORS.IN_PARENTS(folderId))
     }
 
-    const response = await gapi.client.drive.files.list({
+    const response = await getDriveClient().files.list({
       q: GOOGLE_DRIVE_QUERY_OPERATORS.AND(...queries),
       fields: GOOGLE_DRIVE_FIELDS.FILE_LIST_BASIC,
       pageSize: 1000,
@@ -231,7 +129,7 @@ export function useGoogleDrive() {
    * @returns File metadata
    */
   async function getFileMetadata(fileId: string): Promise<GoogleDriveFile> {
-    const response = await gapi.client.drive.files.get({
+    const response = await getDriveClient().files.get({
       fileId,
       fields: GOOGLE_DRIVE_FIELDS.FILE_BASIC,
     })
@@ -254,20 +152,27 @@ export function useGoogleDrive() {
    * @param content - New file content as string
    */
   async function updateFile(fileId: string, content: string): Promise<void> {
+    if (!googleAuthStore.accessToken) {
+      throw new Error('Not authenticated. Sign in first.')
+    }
+
+    // Use fetch with simple upload (uploadType=media in URL query string)
+    // gapi.client doesn't handle media uploads properly in browser
     const response = await fetch(
-      `${GOOGLE_DRIVE_API_URLS.UPLOAD_BASE}/${fileId}?uploadType=media`,
+      `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,
       {
         method: 'PATCH',
         headers: {
-          Authorization: HTTP_HEADERS.AUTHORIZATION_BEARER(gapi.auth.getToken().access_token),
-          [HTTP_HEADERS.CONTENT_TYPE]: CONTENT_TYPES.JSON,
+          'Content-Type': GOOGLE_DRIVE_MIME_TYPES.JSON,
+          Authorization: `Bearer ${googleAuthStore.accessToken}`,
         },
         body: content,
       },
     )
 
     if (!response.ok) {
-      throw new Error(`Update failed: ${response.statusText}`)
+      const errorText = await response.text()
+      throw new Error(`Failed to update file: ${response.statusText} - ${errorText}`)
     }
   }
 
@@ -292,7 +197,7 @@ export function useGoogleDrive() {
       metadata.parents = [parentId]
     }
 
-    const response = await gapi.client.drive.files.create({
+    const response = await getDriveClient().files.create({
       resource: metadata,
       fields: GOOGLE_DRIVE_FIELDS.FILE_ID_ONLY,
     })
@@ -318,7 +223,7 @@ export function useGoogleDrive() {
       queries.push(GOOGLE_DRIVE_QUERY_OPERATORS.IN_PARENTS(parentId))
     }
 
-    const response = await gapi.client.drive.files.list({
+    const response = await getDriveClient().files.list({
       q: GOOGLE_DRIVE_QUERY_OPERATORS.AND(...queries),
       fields: 'files(id)',
       pageSize: 1,
@@ -371,15 +276,6 @@ export function useGoogleDrive() {
   // ========================================
 
   return {
-    // Initialization
-    initGoogleAuth,
-
-    // Authentication
-    isAuthenticated,
-    signInWithGoogle,
-    signOut,
-    refreshToken,
-
     // File operations
     uploadFile,
     downloadFile,

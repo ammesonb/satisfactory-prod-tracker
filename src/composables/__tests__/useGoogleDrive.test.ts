@@ -1,133 +1,72 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
 
-const mockGapi = {
-  load: vi.fn(),
-  client: {
-    init: vi.fn(),
-    drive: {
-      files: {
-        get: vi.fn(),
-        list: vi.fn(),
-        create: vi.fn(),
-        delete: vi.fn(),
-      },
-    },
-  },
-  auth2: {
-    getAuthInstance: vi.fn(),
-  },
-  auth: {
-    getToken: vi.fn(),
-  },
-}
+// Mock the googleApiClient module
+vi.mock('@/services/googleApiClient', async () => {
+  const { mockGoogleApiClient } = await import('@/__tests__/fixtures/services/googleApiClient')
+  return {
+    googleApiClient: mockGoogleApiClient,
+  }
+})
 
-const mockAuthInstance = {
-  isSignedIn: { get: vi.fn() },
-  signIn: vi.fn(),
-  signOut: vi.fn(),
-  currentUser: { get: vi.fn() },
-}
-
-const mockUser = {
-  getAuthResponse: vi.fn(),
-  reloadAuthResponse: vi.fn(),
-}
-
-declare global {
-  var gapi: typeof mockGapi
-}
+// Setup global Google API mocks
+import { mockGapi, mockTokenClient, mockGoogleAuth } from '@/__tests__/fixtures/services/googleApi'
+import { mockGoogleApiClient } from '@/__tests__/fixtures/services/googleApiClient'
 
 global.gapi = mockGapi
+global.google = { accounts: { oauth2: mockGoogleAuth } }
 global.fetch = vi.fn()
 
 import { useGoogleDrive } from '@/composables/useGoogleDrive'
+import { useGoogleAuthStore } from '@/stores/googleAuth'
 
 describe('useGoogleDrive', () => {
   beforeEach(() => {
+    setActivePinia(createPinia())
     vi.clearAllMocks()
-    mockGapi.load.mockImplementation((_apis, callback) => callback())
-    mockGapi.client.init.mockResolvedValue(undefined)
-    mockGapi.auth2.getAuthInstance.mockReturnValue(mockAuthInstance)
-    mockAuthInstance.isSignedIn.get.mockReturnValue(false)
-    mockGapi.auth.getToken.mockReturnValue({ access_token: 'test-token' })
+
+    // Setup default mock returns for googleApiClient
+    mockGoogleApiClient.initialize.mockResolvedValue(undefined)
+    mockGoogleApiClient.getTokenClient.mockReturnValue(mockTokenClient)
+    mockGoogleApiClient.getDriveClient.mockReturnValue(mockGapi.client.drive)
+    mockGoogleApiClient.getGoogleAuth.mockReturnValue(mockGoogleAuth)
+    mockGoogleApiClient.getIsInitialized.mockReturnValue(true)
+    mockGoogleApiClient.setAccessToken.mockReturnValue(undefined)
+    mockTokenClient.callback = null
+
+    // Setup googleAuthStore with mock token
+    const googleAuthStore = useGoogleAuthStore()
+    googleAuthStore.setToken('mock-token', Date.now() + 3600000)
   })
 
-  describe('initGoogleAuth', () => {
-    it('should initialize and load gapi', async () => {
-      const googleDrive = useGoogleDrive()
-      await googleDrive.initGoogleAuth()
-
-      expect(mockGapi.load).toHaveBeenCalledWith('client:auth2', expect.any(Function))
-      expect(mockGapi.client.init).toHaveBeenCalled()
-    })
-
-    it('should reject on initialization failure', async () => {
-      mockGapi.client.init.mockRejectedValue(new Error('Init failed'))
-      const googleDrive = useGoogleDrive()
-
-      await expect(googleDrive.initGoogleAuth()).rejects.toThrow('Init failed')
-    })
-  })
-
-  describe('isAuthenticated', () => {
-    it('should return true when user is signed in', () => {
-      mockAuthInstance.isSignedIn.get.mockReturnValue(true)
-      const googleDrive = useGoogleDrive()
-
-      expect(googleDrive.isAuthenticated()).toBe(true)
-    })
-
-    it('should return false when not signed in', () => {
-      mockAuthInstance.isSignedIn.get.mockReturnValue(false)
-      const googleDrive = useGoogleDrive()
-
-      expect(googleDrive.isAuthenticated()).toBe(false)
-    })
-
-    it('should handle missing gapi gracefully', () => {
-      const orig = global.gapi
-      // @ts-expect-error - Testing undefined case
-      global.gapi = undefined
-      const googleDrive = useGoogleDrive()
-
-      expect(googleDrive.isAuthenticated()).toBe(false)
-      global.gapi = orig
-    })
-  })
-
-  describe('signInWithGoogle', () => {
-    it('should return access token on successful sign in', async () => {
-      mockUser.getAuthResponse.mockReturnValue({
-        access_token: 'token123',
-        expires_at: 999999,
-      })
-      mockAuthInstance.signIn.mockResolvedValue(mockUser)
-      const googleDrive = useGoogleDrive()
-
-      const result = await googleDrive.signInWithGoogle()
-
-      expect(result.accessToken).toBe('token123')
-      expect(result.expiresAt).toBe(999999)
-    })
-  })
 
   describe('uploadFile', () => {
-    it('should upload and return file ID', async () => {
+    it('should create file and update with content', async () => {
+      // Mock file creation
+      mockGapi.client.drive.files.create.mockResolvedValue({
+        result: { id: 'file-abc' },
+      })
+      // Mock file update (fetch)
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
-        json: async () => ({ id: 'file-abc' }),
       } as Response)
       const googleDrive = useGoogleDrive()
 
       const fileId = await googleDrive.uploadFile('test.sptrak', '{}')
 
       expect(fileId).toBe('file-abc')
+      expect(mockGapi.client.drive.files.create).toHaveBeenCalled()
+      expect(fetch).toHaveBeenCalled()
     })
 
-    it('should throw on upload failure', async () => {
+    it('should throw on update failure', async () => {
+      mockGapi.client.drive.files.create.mockResolvedValue({
+        result: { id: 'file-abc' },
+      })
       vi.mocked(fetch).mockResolvedValue({
         ok: false,
         statusText: 'Forbidden',
+        text: async () => 'Error details',
       } as Response)
       const googleDrive = useGoogleDrive()
 
@@ -157,32 +96,6 @@ describe('useGoogleDrive', () => {
 
       expect(files).toHaveLength(1)
       expect(files[0].name).toBe('test.sptrak')
-    })
-  })
-
-  describe('signOut', () => {
-    it('should call auth instance signOut', async () => {
-      const googleDrive = useGoogleDrive()
-
-      await googleDrive.signOut()
-
-      expect(mockAuthInstance.signOut).toHaveBeenCalled()
-    })
-  })
-
-  describe('refreshToken', () => {
-    it('should reload auth response and return new token', async () => {
-      mockUser.reloadAuthResponse.mockResolvedValue({
-        access_token: 'new-token-789',
-        expires_at: 777777,
-      })
-      mockAuthInstance.currentUser.get.mockReturnValue(mockUser)
-      const googleDrive = useGoogleDrive()
-
-      const result = await googleDrive.refreshToken()
-
-      expect(result.accessToken).toBe('new-token-789')
-      expect(result.expiresAt).toBe(777777)
     })
   })
 
@@ -251,6 +164,7 @@ describe('useGoogleDrive', () => {
       vi.mocked(fetch).mockResolvedValue({
         ok: false,
         statusText: 'Not Found',
+        text: async () => 'File not found',
       } as Response)
       const googleDrive = useGoogleDrive()
 

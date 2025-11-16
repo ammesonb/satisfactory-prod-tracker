@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
-  mockIsAuthenticated,
   mockIsFactoryAutoSynced,
   mockSelectedFactories,
 } from '@/__tests__/fixtures/composables/cloudSyncStore'
+import { mockIsAuthenticated } from '@/__tests__/fixtures/composables/googleAuthStore'
 import { makeConflict, makeFactory, makeSyncStatus } from '@/__tests__/fixtures/data/factory'
 import { component, element } from '@/__tests__/vue-test-helpers'
 import { FactorySyncStatus } from '@/types/cloudSync'
@@ -54,7 +54,7 @@ describe('FactorySyncBadge', () => {
   }
 
   beforeEach(() => {
-    mockIsAuthenticated.value = false
+    mockIsAuthenticated.mockReturnValue(false)
     mockSelectedFactories.value = []
     mockIsFactoryAutoSynced.mockImplementation((factoryName: string) =>
       mockSelectedFactories.value.includes(factoryName),
@@ -63,7 +63,7 @@ describe('FactorySyncBadge', () => {
 
   describe('visibility', () => {
     it('shows badge when authenticated and factory is auto-synced', () => {
-      mockIsAuthenticated.value = true
+      mockIsAuthenticated.mockReturnValue(true)
       mockSelectedFactories.value = [TEST_FACTORIES.clean.name]
 
       const wrapper = createWrapper(TEST_FACTORIES.clean)
@@ -72,7 +72,7 @@ describe('FactorySyncBadge', () => {
     })
 
     it('hides badge when not authenticated', () => {
-      mockIsAuthenticated.value = false
+      mockIsAuthenticated.mockReturnValue(false)
       mockSelectedFactories.value = [TEST_FACTORIES.clean.name]
 
       const wrapper = createWrapper(TEST_FACTORIES.clean)
@@ -81,7 +81,7 @@ describe('FactorySyncBadge', () => {
     })
 
     it('hides badge when factory is not auto-synced', () => {
-      mockIsAuthenticated.value = true
+      mockIsAuthenticated.mockReturnValue(true)
       mockSelectedFactories.value = []
 
       const wrapper = createWrapper(TEST_FACTORIES.clean)
@@ -90,7 +90,7 @@ describe('FactorySyncBadge', () => {
     })
 
     it('renders slot content when badge is hidden', () => {
-      mockIsAuthenticated.value = false
+      mockIsAuthenticated.mockReturnValue(false)
 
       const wrapper = createWrapper(TEST_FACTORIES.clean)
 
@@ -98,7 +98,7 @@ describe('FactorySyncBadge', () => {
     })
 
     it('wraps slot content with badge when badge is shown', () => {
-      mockIsAuthenticated.value = true
+      mockIsAuthenticated.mockReturnValue(true)
       mockSelectedFactories.value = [TEST_FACTORIES.clean.name]
 
       const wrapper = createWrapper(TEST_FACTORIES.clean)
@@ -110,7 +110,7 @@ describe('FactorySyncBadge', () => {
 
   describe('badge appearance', () => {
     beforeEach(() => {
-      mockIsAuthenticated.value = true
+      mockIsAuthenticated.mockReturnValue(true)
     })
 
     it('passes color from utility function to badge', () => {
@@ -148,7 +148,7 @@ describe('FactorySyncBadge', () => {
 
   describe('tooltip', () => {
     it('enables tooltip when badge is visible', () => {
-      mockIsAuthenticated.value = true
+      mockIsAuthenticated.mockReturnValue(true)
       mockSelectedFactories.value = [TEST_FACTORIES.clean.name]
 
       const wrapper = createWrapper(TEST_FACTORIES.clean)
@@ -158,7 +158,7 @@ describe('FactorySyncBadge', () => {
     })
 
     it('disables tooltip when badge is hidden', () => {
-      mockIsAuthenticated.value = false
+      mockIsAuthenticated.mockReturnValue(false)
 
       const wrapper = createWrapper(TEST_FACTORIES.clean)
 
@@ -167,7 +167,7 @@ describe('FactorySyncBadge', () => {
     })
 
     it('passes tooltip text from utility function', () => {
-      mockIsAuthenticated.value = true
+      mockIsAuthenticated.mockReturnValue(true)
       mockSelectedFactories.value = [TEST_FACTORIES.clean.name]
 
       const wrapper = createWrapper(TEST_FACTORIES.clean)

@@ -1,6 +1,5 @@
 import { useGoogleDrive } from '@/composables/useGoogleDrive'
-import { useCloudSyncStore } from '@/stores/cloudSync'
-import { useFactoryStore } from '@/stores/factory'
+import { getStores } from '@/composables/useStores'
 import { CLOUD_SYNC_ERRORS, FactorySyncStatus, type GoogleDriveFile } from '@/types/cloudSync'
 import {
   deserializeSptrak,
@@ -18,8 +17,7 @@ import {
  * - Composable orchestrates operations (backup, restore, list, delete)
  */
 export function useCloudBackup() {
-  const cloudSyncStore = useCloudSyncStore()
-  const factoryStore = useFactoryStore()
+  const { cloudSyncStore, factoryStore, googleAuthStore } = getStores()
   const googleDrive = useGoogleDrive()
 
   /**
@@ -29,7 +27,7 @@ export function useCloudBackup() {
    * @param factoryName - Name of the factory to backup
    */
   async function backupFactory(namespace: string, factoryName: string): Promise<void> {
-    if (!cloudSyncStore.isAuthenticated) {
+    if (!googleAuthStore.isAuthenticated) {
       throw new Error(CLOUD_SYNC_ERRORS.NOT_AUTHENTICATED)
     }
 
@@ -85,7 +83,7 @@ export function useCloudBackup() {
     filename: string,
     importAlias?: string,
   ): Promise<void> {
-    if (!cloudSyncStore.isAuthenticated) {
+    if (!googleAuthStore.isAuthenticated) {
       throw new Error(CLOUD_SYNC_ERRORS.NOT_AUTHENTICATED)
     }
 
@@ -135,7 +133,7 @@ export function useCloudBackup() {
    * @param namespace - Optional namespace to list (defaults to current auto-sync namespace)
    */
   async function listBackups(namespace?: string): Promise<GoogleDriveFile[]> {
-    if (!cloudSyncStore.isAuthenticated) {
+    if (!googleAuthStore.isAuthenticated) {
       throw new Error(CLOUD_SYNC_ERRORS.NOT_AUTHENTICATED)
     }
 
@@ -150,7 +148,8 @@ export function useCloudBackup() {
       const folderId = await googleDrive.ensureFolderPath(['SatisProdTrak', targetNamespace])
       const files = await googleDrive.listFiles(folderId, "name contains '.sptrak'")
       return files
-    } catch {
+    } catch (error) {
+      console.error('[CloudBackup] Error listing backups:', error)
       return []
     }
   }
@@ -162,7 +161,7 @@ export function useCloudBackup() {
    * @param filename - Name of the .sptrak file to delete
    */
   async function deleteBackup(namespace: string, filename: string): Promise<void> {
-    if (!cloudSyncStore.isAuthenticated) {
+    if (!googleAuthStore.isAuthenticated) {
       throw new Error(CLOUD_SYNC_ERRORS.NOT_AUTHENTICATED)
     }
 

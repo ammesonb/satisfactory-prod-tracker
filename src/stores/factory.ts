@@ -101,6 +101,20 @@ export const useFactoryStore = defineStore('factory', {
       }
       delete this.factories[name]
     },
+    renameFactory(oldName: string, newName: string) {
+      const factory = this.factories[oldName]
+      if (!factory) return
+
+      factory.name = newName
+
+      this.factories[newName] = factory
+      delete this.factories[oldName]
+
+      // Keep selected current if it was renamed
+      if (this.selected === oldName) {
+        this.selected = newName
+      }
+    },
     setLinkBuiltState(linkId: string, built: boolean) {
       if (!this.currentFactory) return
       this.currentFactory.recipeLinks[linkId] = built

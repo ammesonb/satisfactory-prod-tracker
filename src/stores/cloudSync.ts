@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
 
-import { useGoogleDrive } from '@/composables/useGoogleDrive'
 import type { CloudSyncState } from '@/types/cloudSync'
+import { useGoogleAuthStore } from '@/stores/googleAuth'
 
 export const useCloudSyncStore = defineStore('cloudSync', {
   state: (): CloudSyncState => ({
@@ -26,22 +26,6 @@ export const useCloudSyncStore = defineStore('cloudSync', {
 
   getters: {
     /**
-     * Check if user is authenticated with the cloud provider
-     * Platform-agnostic - delegates to the cloud provider composable
-     */
-    isAuthenticated: (): boolean => {
-      const googleDrive = useGoogleDrive()
-      return googleDrive.isAuthenticated()
-    },
-
-    /**
-     * Check if cloud sync is fully configured (authenticated and has instance ID)
-     */
-    isConfigured(): boolean {
-      return this.isAuthenticated && !!this.instanceId
-    },
-
-    /**
      * Check if a specific factory is selected for auto-sync
      */
     isFactoryAutoSynced: (state) => {
@@ -63,28 +47,24 @@ export const useCloudSyncStore = defineStore('cloudSync', {
       // Ensure instance ID is set before any cloud operations
       this.initializeInstanceId()
 
-      const googleDrive = useGoogleDrive()
-
-      // Initialize Google API client (only needs to be done once)
-      await googleDrive.initGoogleAuth()
+      const googleAuthStore = useGoogleAuthStore()
 
       // Sign in with Google OAuth
-      // Token is managed by gapi internally, no need to store it
-      await googleDrive.signInWithGoogle()
+      await googleAuthStore.signIn()
     },
 
     async refreshAuth(): Promise<void> {
-      const googleDrive = useGoogleDrive()
+      const googleAuthStore = useGoogleAuthStore()
 
-      // Refresh token via gapi (managed internally)
-      await googleDrive.refreshToken()
+      // Refresh token via googleAuthStore
+      await googleAuthStore.refreshToken()
     },
 
     async signOut(): Promise<void> {
-      const googleDrive = useGoogleDrive()
+      const googleAuthStore = useGoogleAuthStore()
 
-      // Sign out via gapi (clears token internally)
-      await googleDrive.signOut()
+      // Sign out via googleAuthStore (clears token and user info)
+      await googleAuthStore.signOut()
     },
 
     // ========================================

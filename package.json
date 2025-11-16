@@ -30,6 +30,7 @@
   "dependencies": {
     "@mdi/font": "^7.4.47",
     "@vueuse/core": "^13.8.0",
+    "googleapis": "^166.0.0",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.4.1",
     "uuid": "^13.0.0",

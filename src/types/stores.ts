@@ -2,7 +2,6 @@ import type { Ref, VNode } from 'vue'
 
 import type { RecipeNode } from '@/logistics/graph-node'
 import type { Building, Item, Recipe, RecipeIngredient, RecipeProduct } from '@/types/data'
-import type { GoogleDriveFile } from '@/types/cloudSync'
 import type { ErrorBuilder } from '@/types/errors'
 import type { Factory } from '@/types/factory'
 
@@ -47,6 +46,7 @@ export interface IFactoryStore {
   setSelectedFactory: (factoryName: string) => void
   addFactory: (name: string, icon: string, recipes: string, externalInputs: RecipeProduct[]) => void
   removeFactory: (name: string) => void
+  renameFactory: (oldName: string, newName: string) => void
   setLinkBuiltState: (linkId: string, built: boolean) => void
   getFloorIndexForRecipe: (recipe: RecipeNode) => number
   getRecipeByName: (recipeName: string) => RecipeNode | null
@@ -91,6 +91,26 @@ export interface IErrorStore {
 }
 
 /**
+ * Google Auth Store Interface
+ * Manages Google OAuth authentication state
+ */
+export interface IGoogleAuthStore {
+  // State
+  accessToken: string | null
+  expiresAt: number | null
+  userEmail: string | null
+
+  // Getters
+  isAuthenticated: boolean
+  isTokenExpired: boolean
+
+  // Actions
+  setToken: (accessToken: string, expiresAt: number) => void
+  setUserEmail: (email: string) => void
+  clearToken: () => void
+}
+
+/**
  * Cloud Sync Store Interface
  * Manages Google Drive sync state and operations
  */
@@ -106,8 +126,6 @@ export interface ICloudSyncStore {
   autoSyncSuspended: boolean
 
   // Getters
-  isAuthenticated: boolean
-  isConfigured: boolean
   isFactoryAutoSynced: (factoryName: string) => boolean
 
   // Actions
@@ -119,10 +137,6 @@ export interface ICloudSyncStore {
   changeNamespace: (newNamespace: string) => Promise<void>
   addFactoryToAutoSync: (factoryName: string) => void
   removeFactoryFromAutoSync: (factoryName: string) => void
-  backupFactory: (namespace: string, factoryName: string) => Promise<void>
-  restoreFactory: (namespace: string, filename: string, importAlias?: string) => Promise<void>
-  listBackups: (namespace?: string) => Promise<GoogleDriveFile[]>
-  deleteBackup: (namespace: string, filename: string) => Promise<void>
   performAutoSave: () => Promise<void>
   checkForConflicts: () => Promise<void>
   resolveConflict: (factoryName: string, resolution: 'cloud' | 'local') => Promise<void>

@@ -20,4 +20,5 @@ export {
   mockGetThemeStore,
   mockUseStores,
 } from './stores'
+export { mockUseCloudBackup } from './useCloudBackup'
 export { mockUseRecipeStatus } from './useRecipeStatus'

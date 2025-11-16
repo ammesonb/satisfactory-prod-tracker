@@ -9,22 +9,34 @@ import {
   getSyncStatusIcon,
 } from '@/utils/cloudSync'
 
-const { factoryStore, cloudSyncStore } = getStores()
+const { factoryStore, googleAuthStore, cloudSyncStore } = getStores()
 const showImportExport = ref(false)
+const initialTab = ref<'export' | 'import' | 'cloud'>('export')
 
 const syncBadge = computed(() => {
   const status = getGlobalSyncStatus(factoryStore.factories)
-  const isAuthenticated = cloudSyncStore.isAuthenticated
+  const isAuthenticated = googleAuthStore.isAuthenticated
+  const autoSyncEnabled = cloudSyncStore.autoSync.enabled
 
   return {
-    color: getSyncStatusColor(status),
+    color: autoSyncEnabled ? getSyncStatusColor(status) : 'info',
     icon: getSyncStatusIcon(status),
-    tooltip: getGlobalSyncTooltip(status, isAuthenticated),
+    tooltip: isAuthenticated
+      ? autoSyncEnabled
+        ? getGlobalSyncTooltip(status, isAuthenticated)
+        : 'Signed in - configure backups in Cloud Sync tab'
+      : 'Connect to Google Drive',
     show: isAuthenticated,
   }
 })
 
 const handleSyncIconClick = () => {
+  initialTab.value = 'cloud'
+  showImportExport.value = true
+}
+
+const handleImportExportClick = () => {
+  initialTab.value = 'export'
   showImportExport.value = true
 }
 </script>
@@ -51,14 +63,7 @@ const handleSyncIconClick = () => {
           <v-icon v-if="!syncBadge.show">mdi-google-drive</v-icon>
 
           <!-- Authenticated: Cloud with status indicator -->
-          <v-badge
-            v-else
-            :color="syncBadge.color"
-            :icon="syncBadge.icon"
-            overlap
-            offset-x="8"
-            offset-y="8"
-          >
+          <v-badge v-else :color="syncBadge.color" dot offset-x="6" offset-y="6">
             <v-icon>mdi-cloud</v-icon>
           </v-badge>
         </v-btn>
@@ -66,7 +71,7 @@ const handleSyncIconClick = () => {
     </v-tooltip>
 
     <v-btn
-      @click="showImportExport = true"
+      @click="handleImportExportClick"
       variant="outlined"
       class="me-2 show-import-export"
       color="secondary"
@@ -77,6 +82,6 @@ const handleSyncIconClick = () => {
 
     <ThemeSwitcher />
 
-    <ImportExportModal v-model="showImportExport" />
+    <ImportExportModal v-model="showImportExport" :initial-tab="initialTab" />
   </v-app-bar>
 </template>

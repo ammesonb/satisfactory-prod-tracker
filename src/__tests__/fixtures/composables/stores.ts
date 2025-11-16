@@ -3,6 +3,7 @@ import { vi } from 'vitest'
 import { mockCloudSyncStore } from '@/__tests__/fixtures/composables/cloudSyncStore'
 import { mockErrorStore } from '@/__tests__/fixtures/composables/errorStore'
 import { mockFactoryStore } from '@/__tests__/fixtures/composables/factoryStore'
+import { mockGoogleAuthStore } from '@/__tests__/fixtures/composables/googleAuthStore'
 import { mockThemeStore } from '@/__tests__/fixtures/composables/themeStore'
 import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
 import type {
@@ -10,6 +11,7 @@ import type {
   IDataStore,
   IErrorStore,
   IFactoryStore,
+  IGoogleAuthStore,
   IThemeStore,
 } from '@/types/stores'
 
@@ -20,6 +22,7 @@ const mockStores = {
   factoryStore: mockFactoryStore as IFactoryStore,
   themeStore: mockThemeStore as IThemeStore,
   errorStore: mockErrorStore as IErrorStore,
+  googleAuthStore: mockGoogleAuthStore as IGoogleAuthStore,
 }
 
 // Main stores mock
@@ -31,6 +34,7 @@ export const mockGetDataStore = vi.fn(() => mockStores.dataStore)
 export const mockGetFactoryStore = vi.fn(() => mockStores.factoryStore)
 export const mockGetThemeStore = vi.fn(() => mockStores.themeStore)
 export const mockGetErrorStore = vi.fn(() => mockStores.errorStore)
+export const mockGetGoogleAuthStore = vi.fn(() => mockStores.googleAuthStore)
 
 // Complete useStores mock - use this for full mocking
 export const mockUseStores = {
@@ -40,4 +44,5 @@ export const mockUseStores = {
   getFactoryStore: mockGetFactoryStore,
   getThemeStore: mockGetThemeStore,
   getErrorStore: mockGetErrorStore,
+  getGoogleAuthStore: mockGetGoogleAuthStore,
 }

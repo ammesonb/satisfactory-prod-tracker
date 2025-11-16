@@ -11,9 +11,11 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits(['select', 'delete'])
+const emit = defineEmits(['select', 'delete', 'rename'])
 
 const showDeleteConfirm = ref(false)
+const isEditingName = ref(false)
+const editedName = ref('')
 
 const handleDelete = () => {
   showDeleteConfirm.value = true
@@ -22,12 +24,30 @@ const handleDelete = () => {
 const confirmDelete = () => {
   emit('delete', props.factory.name)
 }
+
+const startEdit = () => {
+  editedName.value = props.factory.name
+  isEditingName.value = true
+}
+
+const finishEdit = () => {
+  const trimmed = editedName.value.trim()
+  if (trimmed && trimmed !== props.factory.name) {
+    emit('rename', props.factory.name, trimmed)
+  }
+  isEditingName.value = false
+}
+
+const cancelEdit = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    isEditingName.value = false
+  }
+}
 </script>
 
 <template>
   <v-list-item
-    @click="emit('select')"
-    :title="props.rail ? undefined : props.factory.name"
+    @click="!isEditingName && emit('select')"
     :active="props.selected"
   >
     <template #prepend>
@@ -35,7 +55,30 @@ const confirmDelete = () => {
         <v-img :src="getIconURL(props.factory.icon, 64)" width="32" height="32" class="mr-1" />
       </FactorySyncBadge>
     </template>
+
+    <template #title v-if="!props.rail">
+      <v-text-field
+        v-if="isEditingName"
+        v-model="editedName"
+        density="compact"
+        hide-details
+        autofocus
+        @blur="finishEdit"
+        @keydown.enter="finishEdit"
+        @keydown.esc="cancelEdit"
+        @click.stop
+      />
+      <span v-else>{{ props.factory.name }}</span>
+    </template>
+
     <template #append>
+      <v-btn
+        icon="mdi-pencil"
+        size="small"
+        variant="text"
+        color="secondary"
+        @click.stop="startEdit"
+      />
       <v-btn
         icon="mdi-delete"
         size="small"

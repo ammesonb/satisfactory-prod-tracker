@@ -15,11 +15,11 @@ const props = withDefaults(defineProps<Props>(), {
   rail: false,
 })
 
-const { cloudSyncStore } = getStores()
+const { cloudSyncStore, googleAuthStore } = getStores()
 
 const syncBadge = computed(() => {
   const status = props.factory.syncStatus?.status || FactorySyncStatus.CLEAN
-  const isAuthenticated = cloudSyncStore.isAuthenticated
+  const isAuthenticated = googleAuthStore.isAuthenticated
   const isAutoSynced = cloudSyncStore.isFactoryAutoSynced(props.factory.name)
 
   return {

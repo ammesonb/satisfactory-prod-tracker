@@ -83,7 +83,7 @@ describe('NamespaceSelector', () => {
 
     const combobox = wrapper.findComponent(VCombobox)
     const rules = combobox.props('rules') as Array<(v: string) => string | boolean>
-    
+
     expect(rules).toHaveLength(5)
     expect(rules[0]('')).toBe('Namespace is required')
     expect(rules[1]('.')).toBe('Invalid folder name')

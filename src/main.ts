@@ -24,12 +24,21 @@ import './styles/responsive.css'
 
 import App from '@/App.vue'
 import {
+  CLOUD_SYNC_STORE_KEY,
   DATA_STORE_KEY,
   ERROR_STORE_KEY,
   FACTORY_STORE_KEY,
+  GOOGLE_AUTH_STORE_KEY,
   THEME_STORE_KEY,
 } from '@/composables/useStores'
-import { useDataStore, useErrorStore, useFactoryStore, useThemeStore } from '@/stores'
+import {
+  useCloudSyncStore,
+  useDataStore,
+  useErrorStore,
+  useFactoryStore,
+  useGoogleAuthStore,
+  useThemeStore,
+} from '@/stores'
 
 const vuetify = createVuetify({
   theme: {
@@ -71,19 +80,28 @@ app.use(pinia)
 app.use(vuetify)
 
 // Initialize stores
+const cloudSyncStore = useCloudSyncStore()
 const dataStore = useDataStore()
 const factoryStore = useFactoryStore()
 const themeStore = useThemeStore()
 const errorStore = useErrorStore()
+const googleAuthStore = useGoogleAuthStore()
 
 // Provide stores for dependency injection
+app.provide(CLOUD_SYNC_STORE_KEY, cloudSyncStore)
 app.provide(DATA_STORE_KEY, dataStore)
 app.provide(FACTORY_STORE_KEY, factoryStore)
 app.provide(THEME_STORE_KEY, themeStore)
 app.provide(ERROR_STORE_KEY, errorStore)
+app.provide(GOOGLE_AUTH_STORE_KEY, googleAuthStore)
 
 // Initialize theme store to sync with Vuetify
 app.mount('#app')
 
 // Set initial theme after mount
 themeStore.setTheme(themeStore.isDark)
+
+// Initialize Google API client
+googleAuthStore.initialize().catch((err) => {
+  console.error('Failed to initialize Google API client:', err)
+})

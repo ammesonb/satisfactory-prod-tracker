@@ -21,13 +21,22 @@ export const GOOGLE_DRIVE_SCOPES = {
 } as const
 
 /**
- * Google Drive API URLs
+ * Google OAuth 2.0 User Info Scopes
+ * @see https://developers.google.com/identity/protocols/oauth2/scopes#google-sign-in
  */
-export const GOOGLE_DRIVE_API_URLS = {
+export const GOOGLE_USER_SCOPES = {
+  /** User's email address */
+  EMAIL: 'https://www.googleapis.com/auth/userinfo.email',
+} as const
+
+/**
+ * Google API URLs
+ */
+export const GOOGLE_API_URLS = {
   /** Discovery document for Drive v3 API */
-  DISCOVERY_DOC: 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
-  /** Base upload URL for multipart uploads */
-  UPLOAD_BASE: 'https://www.googleapis.com/upload/drive/v3/files',
+  DRIVE_DISCOVERY_DOC: 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
+  /** User info endpoint */
+  USER_INFO: 'https://www.googleapis.com/oauth2/v2/userinfo',
 } as const
 
 /**

@@ -2,16 +2,29 @@ import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref, type Ref } from 'vue'
 
-import { mockCurrentFactory, mockFactoryStore } from '@/__tests__/fixtures/composables/factoryStore'
+import { mockCurrentFactory } from '@/__tests__/fixtures/composables/factoryStore'
+import {
+  mockFloorMatches,
+  mockGetFloorDisplayName,
+} from '@/__tests__/fixtures/composables/floorManagement'
 import { makeFloor } from '@/__tests__/fixtures/data'
-import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
 import { useFloorSearch } from '@/composables/useFloorSearch'
 import type { Floor } from '@/types/factory'
+import type { FloorWithIndex } from '@/composables/useFloorManagement'
 
-vi.mock('@/stores', () => ({
-  useFactoryStore: vi.fn(() => mockFactoryStore),
-  useDataStore: vi.fn(() => createMockDataStore()),
-}))
+vi.mock('@/composables/useStores', async () => {
+  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
+  return {
+    getStores: mockGetStores,
+  }
+})
+
+vi.mock('@/composables/useFloorManagement', async () => {
+  const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
+  return {
+    useFloorManagement: mockUseFloorManagement,
+  }
+})
 
 describe('useFloorSearch', () => {
   let testFloors: Ref<Floor[] | undefined>
@@ -26,6 +39,22 @@ describe('useFloorSearch', () => {
       makeFloor(['Recipe_IronPlate_C', 'Recipe_IronRod_C'], { name: 'Production' }),
       makeFloor(['Recipe_Cable_C']),
     ])
+
+    // Set up mock return values
+    mockGetFloorDisplayName.mockImplementation((index: number, floor: Floor) => {
+      return floor.name ? `Floor ${index} - ${floor.name}` : `Floor ${index}`
+    })
+
+    mockFloorMatches.mockImplementation((floor: FloorWithIndex, query: string) => {
+      const floorName = mockGetFloorDisplayName(floor.originalIndex + 1, floor).toLowerCase()
+      if (floorName.includes(query.toLowerCase())) {
+        return true
+      }
+      // Check if any recipe matches
+      return floor.recipes.some((recipe) =>
+        recipe.recipe.name.toLowerCase().includes(query.toLowerCase()),
+      )
+    })
   })
 
   describe('Initial State', () => {

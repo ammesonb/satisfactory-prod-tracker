@@ -38,6 +38,7 @@ export const mockSetSyncError = vi.fn()
 export const mockClearSyncError = vi.fn()
 export const mockSetSyncConflict = vi.fn()
 export const mockClearSyncConflict = vi.fn()
+export const mockRenameFactory = vi.fn()
 
 export const mockFactoryStore = {
   get selected() {
@@ -70,4 +71,5 @@ export const mockFactoryStore = {
   clearSyncError: mockClearSyncError,
   setSyncConflict: mockSetSyncConflict,
   clearSyncConflict: mockClearSyncConflict,
+  renameFactory: mockRenameFactory,
 }

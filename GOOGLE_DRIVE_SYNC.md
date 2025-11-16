@@ -89,6 +89,7 @@ actions: {
   changeNamespace(newNamespace: string): Promise<void>
   addFactoryToAutoSync(factoryName: string): void
   removeFactoryFromAutoSync(factoryName: string): void
+  handleFactoryRename(oldName: string, newName: string): void
 
   // Backup/Restore operations
   backupFactory(namespace: string, factoryName: string): Promise<void>
@@ -427,6 +428,111 @@ async function changeNamespace(newNamespace: string): Promise<void> {
   }
 }
 ```
+
+### 7. Factory Rename Flow
+
+**Challenge**: Auto-sync is keyed by factory name. When a factory is renamed, the cloud sync system needs to:
+1. Update the cloud file to reflect the new name
+2. Update internal tracking (selectedFactories, factoryStatus)
+3. Delete the old cloud file (optional, to avoid orphaned backups)
+
+**Strategy**: Hook into the factory store's rename action to coordinate cloud sync updates.
+
+```typescript
+// In cloudSync store
+async handleFactoryRename(oldName: string, newName: string): Promise<void> {
+  // Guard: only proceed if auto-sync is enabled and factory was being tracked
+  if (!autoSync.enabled || !autoSync.selectedFactories.includes(oldName)) {
+    return
+  }
+
+  // Suspend auto-save to prevent race conditions during rename
+  autoSyncSuspended = true
+
+  try {
+    // 1. Update selectedFactories list (rename in tracking)
+    const index = autoSync.selectedFactories.indexOf(oldName)
+    if (index !== -1) {
+      autoSync.selectedFactories[index] = newName
+    }
+
+    // 2. Migrate factoryStatus tracking
+    if (factoryStatus[oldName]) {
+      factoryStatus[newName] = {
+        ...factoryStatus[oldName],
+        status: 'dirty' // Mark as dirty to trigger re-upload
+      }
+      delete factoryStatus[oldName]
+    } else {
+      // Factory wasn't tracked yet, initialize as dirty
+      factoryStatus[newName] = {
+        status: 'dirty',
+        lastSynced: null,
+        lastError: null
+      }
+    }
+
+    // 3. Delete old cloud file (if it exists)
+    //    This prevents orphaned backups with old names
+    const oldCloudFile = await findCloudFile(autoSync.namespace, oldName)
+    if (oldCloudFile) {
+      await deleteBackup(autoSync.namespace, `${oldName}.sptrak`)
+    }
+
+    // 4. Mark new file as dirty to trigger auto-save
+    //    The debounced auto-save will upload the renamed factory
+    markFactoryDirty(newName)
+
+  } catch (error) {
+    // Non-fatal error: log and continue
+    // The factory is renamed locally; cloud will sync on next change
+    console.error(`Cloud sync rename failed for ${oldName} -> ${newName}:`, error)
+
+    // Show non-blocking notification
+    errorStore.warning()
+      .title('Cloud Sync Warning')
+      .body(() => h('p', `Factory renamed locally, but cloud sync encountered an error. Changes will sync on next edit.`))
+      .show()
+  } finally {
+    // Re-enable auto-save
+    autoSyncSuspended = false
+  }
+}
+```
+
+**Integration with Factory Store**:
+
+```typescript
+// In factory store (src/stores/factory.ts)
+renameFactory(oldName: string, newName: string): void {
+  // ... existing rename logic (update factories map, persist, etc.) ...
+
+  // Notify cloud sync of the rename
+  const cloudSyncStore = useCloudSyncStore()
+  cloudSyncStore.handleFactoryRename(oldName, newName)
+}
+```
+
+**Edge Cases**:
+
+1. **Rename while dirty**: The old file is deleted, and the new file will be uploaded on next auto-save with the new name.
+
+2. **Rename while saving**: The `autoSyncSuspended` flag prevents conflicts. The in-flight save completes with the old name, then the rename updates tracking and deletes the old file.
+
+3. **Rename to existing name**: The factory store's rename validation should prevent this (same validation as RestoreFactoryModal). If it somehow occurs, the cloud file will be overwritten (since it's the same factory data, just renamed).
+
+4. **Network failure during rename**: The rename succeeds locally. The old cloud file remains until next successful sync. On next auto-save, the new file is uploaded, and the old file can be manually deleted by the user if needed.
+
+5. **Multi-device rename conflict**: If Device A renames Factory X to Y while Device B still has Factory X:
+   - Device A: Uploads `Y.sptrak`, deletes `X.sptrak`
+   - Device B: On next load, sees `Y.sptrak` (new factory) and misses `X.sptrak` (conflict detection)
+   - This is an inherent multi-device complexity. The conflict resolution modal can help users understand what happened.
+
+**Alternative Strategies Considered**:
+
+- **Keep both files**: Don't delete the old file. Problem: clutters Drive with duplicate data, confuses users about which file is current.
+- **Rename cloud file directly**: Google Drive doesn't support atomic rename. Would require download, re-upload with new name, delete old. More error-prone.
+- **Current approach (delete old, upload new)**: Simpler, more explicit, and auto-save handles the new upload naturally.
 
 ## Component Implementation
 
@@ -900,59 +1006,17 @@ async promptAddFactoryToAutoSync(factoryName: string): Promise<void> {
 }
 ```
 
-### 6. Restore Factory Modal (`src/components/modals/RestoreFactoryModal.vue`)
+### 6. Cloud Restore with Rename
 
-```vue
-<template>
-  <v-dialog v-model="show" max-width="500">
-    <v-card>
-      <v-card-title>Restore Factory</v-card-title>
+**Note**: There is no separate RestoreFactoryModal component. Instead, the restore flow uses the existing import tab components with name conflict detection integrated into the CloudSyncTab.
 
-      <v-card-text>
-        <p class="mb-4">
-          Restoring: <strong>{{ cloudFileName }}</strong>
-        </p>
+When restoring a factory that conflicts with an existing local factory name:
+1. The `restoreFactory()` action detects the name conflict
+2. Shows an inline text field in CloudSyncTab for the user to provide an alias
+3. Uses the `importAlias` parameter to rename during restore
+4. Validation logic (same as factory rename feature) prevents duplicate names
 
-        <v-text-field
-          v-model="newFactoryName"
-          label="Factory Name"
-          :error="hasNameConflict"
-          :error-messages="nameConflictMessage"
-          hint="Rename if a factory with this name already exists"
-          persistent-hint
-        />
-      </v-card-text>
-
-      <v-card-actions>
-        <v-spacer />
-        <v-btn @click="show = false">Cancel</v-btn>
-        <v-btn
-          color="primary"
-          @click="handleRestore"
-          :disabled="hasNameConflict || !newFactoryName"
-        >
-          Restore
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
-</template>
-
-<script setup lang="ts">
-const hasNameConflict = computed(() => {
-  return (
-    newFactoryName.value !== originalName &&
-    factoryStore.factories[newFactoryName.value] !== undefined
-  )
-})
-
-const nameConflictMessage = computed(() => {
-  return hasNameConflict.value
-    ? `A factory named "${newFactoryName.value}" already exists`
-    : ''
-})
-</script>
-```
+This approach reuses existing import/export UI patterns and keeps cloud sync integrated into the Import/Export modal rather than creating separate dialogs.
 
 ## Implementation Phases
 
@@ -1088,6 +1152,7 @@ Just test ONE status, and leave that to the unit tests.
 - [ ] Create conflict resolution modal/UI
 - [ ] Implement namespace change flow with dirty state warning
 - [ ] Add "include in auto-sync" prompt when creating new factory
+- [ ] Implement factory rename handler (updates tracking, deletes old cloud file, uploads new)
 
 **Store Actions**:
 - [ ] enableAutoSync(namespace, factories)
@@ -1097,6 +1162,7 @@ Just test ONE status, and leave that to the unit tests.
 - [ ] removeFactoryFromAutoSync(factoryName)
 - [ ] performAutoSave() with retry logic
 - [ ] detectConflicts() and resolveConflict()
+- [ ] handleFactoryRename(oldName, newName)
 
 **Unit Tests** (write alongside - no HTML rendering):
 - [ ] Debouncing logic for auto-save
@@ -1105,6 +1171,9 @@ Just test ONE status, and leave that to the unit tests.
 - [ ] Conflict detection algorithms (timestamp + UUID comparison)
 - [ ] Namespace change orchestration (suspend → load → clear status → resume)
 - [ ] autoSyncSuspended flag behavior during bulk operations
+- [ ] Factory rename updates selectedFactories and factoryStatus tracking
+- [ ] Factory rename deletes old cloud file and marks new as dirty
+- [ ] Factory rename handles edge cases (not in auto-sync, network failure)
 
 **Integration Tests** (component tests with Vue):
 - [ ] Auto-sync enable/disable UI in CloudSyncTab
@@ -1124,6 +1193,9 @@ Just test ONE status, and leave that to the unit tests.
 - [ ] Namespace change warns about unsaved changes
 - [ ] New factory prompt appears when auto-sync enabled
 - [ ] Status indicators update in real-time (dirty → saving → clean)
+- [ ] Renaming factory updates cloud file correctly
+- [ ] Renaming factory while dirty works without data loss
+- [ ] Old cloud file is deleted after successful rename
 
 ---
 
@@ -1166,6 +1238,7 @@ Just test ONE status, and leave that to the unit tests.
 - Status tracking logic
 - Conflict detection algorithms
 - Namespace validation
+- Factory rename tracking updates
 
 **useGoogleDrive Composable**:
 - Mock Google API responses
@@ -1175,8 +1248,7 @@ Just test ONE status, and leave that to the unit tests.
 
 **Components**:
 - `NamespaceSelector` validation
-- `CloudSyncTab` user interactions
-- `RestoreFactoryModal` conflict detection
+- `CloudSyncTab` user interactions (restore with rename inline)
 
 ### Integration Tests
 
@@ -1209,6 +1281,15 @@ Just test ONE status, and leave that to the unit tests.
 4. Device A: Reload, detect conflicts
 5. Resolve conflicts
 
+**Factory Rename Flow**:
+1. Enable auto-sync for factory "Old Name"
+2. Verify factory is marked clean after initial sync
+3. Rename factory to "New Name"
+4. Verify tracking updated (selectedFactories, factoryStatus)
+5. Verify old cloud file deleted
+6. Verify new cloud file uploaded with correct metadata
+7. Test rename while factory is dirty (has unsaved changes)
+
 ### Manual Testing Checklist
 
 - [ ] OAuth flow completes successfully
@@ -1229,6 +1310,9 @@ Just test ONE status, and leave that to the unit tests.
 - [ ] Header icon shows correct state
 - [ ] Factory badges show correct state
 - [ ] Collapsed drawer shows colored dots
+- [ ] Factory rename updates cloud sync tracking
+- [ ] Factory rename deletes old cloud file and uploads new
+- [ ] Factory rename during dirty state works correctly
 
 ## Dependencies
 

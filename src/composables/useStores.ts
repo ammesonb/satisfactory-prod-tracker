@@ -5,6 +5,7 @@ import {
   useDataStore,
   useErrorStore,
   useFactoryStore,
+  useGoogleAuthStore,
   useThemeStore,
 } from '@/stores'
 import type {
@@ -12,6 +13,7 @@ import type {
   IDataStore,
   IErrorStore,
   IFactoryStore,
+  IGoogleAuthStore,
   IThemeStore,
 } from '@/types/stores'
 
@@ -21,6 +23,7 @@ export const FACTORY_STORE_KEY: InjectionKey<IFactoryStore> = Symbol('factorySto
 export const THEME_STORE_KEY: InjectionKey<IThemeStore> = Symbol('themeStore')
 export const ERROR_STORE_KEY: InjectionKey<IErrorStore> = Symbol('errorStore')
 export const CLOUD_SYNC_STORE_KEY: InjectionKey<ICloudSyncStore> = Symbol('cloudSyncStore')
+export const GOOGLE_AUTH_STORE_KEY: InjectionKey<IGoogleAuthStore> = Symbol('googleAuthStore')
 
 /**
  * Get injected stores with fallbacks to direct store usage
@@ -46,6 +49,10 @@ export function getErrorStore(): IErrorStore {
   return inject(ERROR_STORE_KEY) || useErrorStore()
 }
 
+export function getGoogleAuthStore(): IGoogleAuthStore {
+  return inject(GOOGLE_AUTH_STORE_KEY) || useGoogleAuthStore()
+}
+
 /**
  * Convenience function for components that need multiple stores
  * Returns all stores - let the component destructure what it needs
@@ -56,6 +63,7 @@ export function getStores(): {
   factoryStore: IFactoryStore
   themeStore: IThemeStore
   errorStore: IErrorStore
+  googleAuthStore: IGoogleAuthStore
 } {
   return {
     cloudSyncStore: getCloudSyncStore(),
@@ -63,5 +71,6 @@ export function getStores(): {
     factoryStore: getFactoryStore(),
     themeStore: getThemeStore(),
     errorStore: getErrorStore(),
+    googleAuthStore: getGoogleAuthStore(),
   }
 }

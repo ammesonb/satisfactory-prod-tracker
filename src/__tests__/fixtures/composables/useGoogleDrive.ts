@@ -1,11 +1,6 @@
 import { vi } from 'vitest'
 
-// Mock functions for useGoogleDrive composable
-export const mockInitGoogleAuth = vi.fn()
-export const mockIsAuthenticated = vi.fn(() => false)
-export const mockSignInWithGoogle = vi.fn()
-export const mockSignOut = vi.fn()
-export const mockRefreshToken = vi.fn()
+// Mock functions for useGoogleDrive composable (Drive operations only)
 export const mockUploadFile = vi.fn()
 export const mockDownloadFile = vi.fn()
 export const mockDeleteFile = vi.fn()
@@ -18,11 +13,6 @@ export const mockEnsureFolderPath = vi.fn()
 export const mockListFolders = vi.fn()
 
 export const mockUseGoogleDrive = {
-  initGoogleAuth: mockInitGoogleAuth,
-  isAuthenticated: mockIsAuthenticated,
-  signInWithGoogle: mockSignInWithGoogle,
-  signOut: mockSignOut,
-  refreshToken: mockRefreshToken,
   uploadFile: mockUploadFile,
   downloadFile: mockDownloadFile,
   deleteFile: mockDeleteFile,

@@ -2,7 +2,6 @@ import { vi } from 'vitest'
 import { ref } from 'vue'
 
 // Create reactive refs that persist across calls for key properties
-export const mockIsAuthenticated = ref(false)
 export const mockAutoSyncEnabled = ref(false)
 export const mockAutoSyncNamespace = ref('')
 export const mockSelectedFactories = ref<string[]>([])
@@ -31,12 +30,6 @@ export const mockInitializeInstanceId = vi.fn()
 
 export const mockCloudSyncStore = {
   // Getters
-  get isAuthenticated() {
-    return mockIsAuthenticated.value
-  },
-  get isConfigured() {
-    return mockIsAuthenticated.value
-  },
   isFactoryAutoSynced: mockIsFactoryAutoSynced,
 
   // State

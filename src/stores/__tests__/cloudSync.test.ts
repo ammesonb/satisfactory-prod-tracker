@@ -11,36 +11,36 @@ describe('useCloudSyncStore', () => {
   describe('instance ID management', () => {
     it('starts with empty instance ID', () => {
       const store = useCloudSyncStore()
-      
+
       expect(store.instanceId).toBe('')
     })
 
     it('generates instance ID when initialized', () => {
       const store = useCloudSyncStore()
-      
+
       store.initializeInstanceId()
-      
+
       expect(store.instanceId).toMatch(/^[0-9a-f-]{36}$/i)
     })
 
     it('does not overwrite existing instance ID', () => {
       const store = useCloudSyncStore()
-      
+
       store.initializeInstanceId()
       const firstId = store.instanceId
-      
+
       store.initializeInstanceId()
-      
+
       expect(store.instanceId).toBe(firstId)
     })
 
     it('persists same ID within same store instance', () => {
       const store = useCloudSyncStore()
-      
+
       store.initializeInstanceId()
       const id1 = store.instanceId
       const id2 = store.instanceId
-      
+
       expect(id1).toBe(id2)
     })
   })

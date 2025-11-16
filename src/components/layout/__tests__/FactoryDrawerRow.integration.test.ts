@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import { mount, VueWrapper } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { component } from '@/__tests__/vue-test-helpers'
@@ -6,7 +6,7 @@ import type { Factory } from '@/types/factory'
 
 import FactoryDrawerRow from '@/components/layout/FactoryDrawerRow.vue'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
-import { VBtn, VImg, VListItem } from 'vuetify/components'
+import { VBtn, VImg, VListItem, VListItemTitle } from 'vuetify/components'
 
 // Mock composables with centralized fixtures
 vi.mock('@/composables/useStores', async () => {
@@ -23,6 +23,10 @@ vi.mock('@/components/modals/ConfirmationModal.vue', () => ({
     template: '<div data-testid="confirmation-modal">Mock Modal</div>',
   },
 }))
+
+const getDeleteBtn = (wrapper: VueWrapper) => {
+  return component(wrapper, VBtn).match((btn) => btn.props('icon') === 'mdi-delete')
+}
 
 describe('FactoryDrawerRow Integration', () => {
   const TEST_FACTORY: Factory = {
@@ -61,16 +65,16 @@ describe('FactoryDrawerRow Integration', () => {
     it('renders factory name as title when not in rail mode', () => {
       const wrapper = createWrapper({ rail: false })
 
-      component(wrapper, VListItem).assert({
+      component(wrapper, VListItemTitle).assert({
         exists: true,
-        props: { title: 'Steel Production Plant' },
+        text: 'Steel Production Plant',
       })
     })
 
     it('does not show title when in rail mode', () => {
       const wrapper = createWrapper({ rail: true })
 
-      component(wrapper, VListItem).assert({ props: { title: undefined } })
+      component(wrapper, VListItemTitle).assert({ exists: false })
     })
 
     it('displays factory icon in prepend slot', () => {
@@ -119,14 +123,14 @@ describe('FactoryDrawerRow Integration', () => {
     it('calls select handler when list item is clicked', async () => {
       const wrapper = createWrapper()
 
-      await component(wrapper, VListItem).click()
+      await component(wrapper, VListItemTitle).click()
       expect(wrapper.vm.onSelect).toHaveBeenCalled()
     })
 
     it('shows confirmation modal when delete button is clicked', async () => {
       const wrapper = createWrapper()
 
-      await component(wrapper, VBtn).click()
+      await getDeleteBtn(wrapper).click()
 
       component(wrapper, ConfirmationModal).assert({
         exists: true,
@@ -144,7 +148,7 @@ describe('FactoryDrawerRow Integration', () => {
     it('prevents event propagation when delete button is clicked', async () => {
       const wrapper = createWrapper()
 
-      await component(wrapper, VBtn).click()
+      await getDeleteBtn(wrapper).click()
       // Select handler should not be called when delete button is clicked
       expect(wrapper.vm.onSelect).not.toHaveBeenCalled()
     })
@@ -155,7 +159,7 @@ describe('FactoryDrawerRow Integration', () => {
       const wrapper = createWrapper()
 
       // Open confirmation modal
-      await component(wrapper, VBtn).click()
+      await getDeleteBtn(wrapper).click()
 
       // Confirm deletion
       await component(wrapper, ConfirmationModal).emit('confirm')
@@ -166,7 +170,7 @@ describe('FactoryDrawerRow Integration', () => {
       const wrapper = createWrapper()
 
       // Open confirmation modal
-      await component(wrapper, VBtn).click()
+      await getDeleteBtn(wrapper).click()
       component(wrapper, ConfirmationModal).assert({ props: { show: true } })
 
       // Cancel deletion
@@ -190,7 +194,7 @@ describe('FactoryDrawerRow Integration', () => {
 
       const wrapper = createWrapper({ factory: customFactory })
 
-      component(wrapper, VListItem).assert({ props: { title: factoryName } })
+      component(wrapper, VListItemTitle).assert({ text: factoryName })
 
       const img = component(wrapper, VImg)
         .assert({
@@ -217,7 +221,7 @@ describe('FactoryDrawerRow Integration', () => {
 
       const wrapper = createWrapper({ factory: specialFactory })
 
-      component(wrapper, VListItem).assert({ props: { title: factoryName } })
+      component(wrapper, VListItemTitle).assert({ text: factoryName })
       component(wrapper, ConfirmationModal).assert({
         props: {
           message: `Are you sure you want to delete '${factoryName}'? This action cannot be undone.`,
