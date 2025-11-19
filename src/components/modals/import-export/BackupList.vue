@@ -52,7 +52,7 @@ const formatTimestamp = (timestamp: string) => {
         </v-list-item>
       </v-list>
 
-      <div v-else class="pa-4 text-center text-medium-emphasis">
+      <div v-else class="pa-4 text-center text-medium-emphasis no-backups">
         No backups found in this namespace
       </div>
     </v-card>

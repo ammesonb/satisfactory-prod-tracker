@@ -79,22 +79,23 @@ const handleSignOut = () => {
 
 <template>
   <div class="mt-3">
+    <!-- Error Alert (shown for both authenticated and unauthenticated states) -->
+    <v-alert
+      v-if="error"
+      type="error"
+      variant="tonal"
+      class="mb-3"
+      closable
+      @click:close="error = null"
+    >
+      {{ error }}
+    </v-alert>
+
     <!-- Authentication Section -->
     <CloudAuth v-if="!googleAuthStore.isAuthenticated" @authenticate="handleAuthenticate" />
 
     <!-- Signed In User Section -->
     <span v-else>
-      <!-- Error Alert -->
-      <v-alert
-        v-if="error"
-        type="error"
-        variant="tonal"
-        class="mb-3"
-        closable
-        @click:close="error = null"
-      >
-        {{ error }}
-      </v-alert>
 
       <v-card variant="outlined" class="mb-3">
         <v-card-text class="d-flex align-center justify-space-between">
