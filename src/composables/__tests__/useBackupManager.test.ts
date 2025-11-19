@@ -176,6 +176,7 @@ describe('useBackupManager', () => {
       expect(mockUseCloudBackup.restoreFactory).toHaveBeenCalledWith(
         'TestNamespace',
         'Factory1.sptrak',
+        undefined,
       )
     })
   })

@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { vi } from 'vitest'
 
 // Mock googleApiClient singleton with default implementations
 export const mockGoogleApiClient = {
@@ -22,4 +22,4 @@ export const mockGoogleApiClient = {
     expiresAt: Date.now() + 3600000,
   }),
   getUserInfo: vi.fn().mockResolvedValue({ email: 'test@example.com' }),
-};
+}

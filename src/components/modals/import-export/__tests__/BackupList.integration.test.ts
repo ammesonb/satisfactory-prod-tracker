@@ -1,11 +1,17 @@
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { component, element } from '@/__tests__/vue-test-helpers'
 import type { GoogleDriveFile } from '@/types/cloudSync'
 
 import BackupList from '@/components/modals/import-export/BackupList.vue'
-import { VBtn, VList, VListItem } from 'vuetify/components'
+import FactoryBackupEntry from '@/components/modals/import-export/FactoryBackupEntry.vue'
+import { VBtn, VList } from 'vuetify/components'
+
+vi.mock('@/composables/useStores', async () => {
+  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
+  return mockUseStores
+})
 
 describe('BackupList Integration', () => {
   const mockBackups: GoogleDriveFile[] = [
@@ -35,6 +41,10 @@ describe('BackupList Integration', () => {
     })
   }
 
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   describe('Rendering', () => {
     it('displays empty state when no backups exist', () => {
       const wrapper = createWrapper({ backups: [] })
@@ -46,7 +56,7 @@ describe('BackupList Integration', () => {
     it('displays correct number of backup items', () => {
       const wrapper = createWrapper({ backups: mockBackups })
 
-      component(wrapper, VListItem).assert({ count: 2 })
+      component(wrapper, FactoryBackupEntry).assert({ count: 2 })
     })
   })
 
@@ -79,46 +89,42 @@ describe('BackupList Integration', () => {
         .assert({ props: { loading: true } })
     })
 
-    it('emits restore event with backup data when restore button clicked', async () => {
+    it('emits restore event with backup and importAlias when entry emits restore', async () => {
       const wrapper = createWrapper({ backups: mockBackups })
 
-      // Get the first list item's restore button
-      const firstListItem = wrapper.findAllComponents(VListItem)[0]
-      const restoreButton = firstListItem
-        .findAllComponents(VBtn)
-        .find((btn) => btn.text().includes('Restore'))
-      await restoreButton!.trigger('click')
+      const firstEntry = component(wrapper, FactoryBackupEntry).getComponents()[0]
+      await firstEntry.vm.$emit('restore', 'New Name')
 
       expect(wrapper.emitted('restore')).toHaveLength(1)
-      expect(wrapper.emitted('restore')?.[0]).toEqual([mockBackups[0]])
+      expect(wrapper.emitted('restore')?.[0]).toEqual([mockBackups[0], 'New Name'])
     })
 
-    it('emits delete event with backup data when delete button clicked', async () => {
+    it('emits restore event without alias when no rename', async () => {
       const wrapper = createWrapper({ backups: mockBackups })
 
-      // Get the first list item's delete button
-      const firstListItem = wrapper.findAllComponents(VListItem)[0]
-      const deleteButton = firstListItem
-        .findAllComponents(VBtn)
-        .find((btn) => btn.find('.mdi-delete').exists())
-      await deleteButton!.trigger('click')
+      const firstEntry = component(wrapper, FactoryBackupEntry).getComponents()[0]
+      await firstEntry.vm.$emit('restore', undefined)
+
+      expect(wrapper.emitted('restore')).toHaveLength(1)
+      expect(wrapper.emitted('restore')?.[0]).toEqual([mockBackups[0], undefined])
+    })
+
+    it('emits delete event with backup data when entry emits delete', async () => {
+      const wrapper = createWrapper({ backups: mockBackups })
+
+      const firstEntry = component(wrapper, FactoryBackupEntry).getComponents()[0]
+      await firstEntry.vm.$emit('delete')
 
       expect(wrapper.emitted('delete')).toHaveLength(1)
       expect(wrapper.emitted('delete')?.[0]).toEqual([mockBackups[0]])
     })
 
-    it('each backup has its own restore and delete buttons', () => {
+    it('passes correct backup to each entry', () => {
       const wrapper = createWrapper({ backups: mockBackups })
 
-      const restoreButtons = wrapper
-        .findAllComponents(VBtn)
-        .filter((btn) => btn.text().includes('Restore'))
-      const deleteButtons = wrapper
-        .findAllComponents(VBtn)
-        .filter((btn) => btn.find('.mdi-delete').exists())
-
-      expect(restoreButtons).toHaveLength(2)
-      expect(deleteButtons).toHaveLength(2)
+      const entries = component(wrapper, FactoryBackupEntry).getComponents()
+      expect(entries[0].props('backup')).toEqual(mockBackups[0])
+      expect(entries[1].props('backup')).toEqual(mockBackups[1])
     })
   })
 
@@ -126,7 +132,7 @@ describe('BackupList Integration', () => {
     it('handles single backup correctly', () => {
       const wrapper = createWrapper({ backups: [mockBackups[0]] })
 
-      component(wrapper, VListItem).assert({ count: 1 })
+      component(wrapper, FactoryBackupEntry).assert({ count: 1 })
     })
 
     it('handles many backups', () => {
@@ -140,7 +146,7 @@ describe('BackupList Integration', () => {
 
       const wrapper = createWrapper({ backups: manyBackups })
 
-      component(wrapper, VListItem).assert({ count: 20 })
+      component(wrapper, FactoryBackupEntry).assert({ count: 20 })
     })
   })
 })

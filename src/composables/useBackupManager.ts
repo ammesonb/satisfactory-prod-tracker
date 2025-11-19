@@ -49,8 +49,8 @@ export function useBackupManager() {
   // Restore Operations
   // ========================================
 
-  async function restoreBackup(backup: GoogleDriveFile): Promise<void> {
-    await cloudBackup.restoreFactory(cloudSyncStore.autoSync.namespace, backup.name)
+  async function restoreBackup(backup: GoogleDriveFile, importAlias?: string): Promise<void> {
+    await cloudBackup.restoreFactory(cloudSyncStore.autoSync.namespace, backup.name, importAlias)
   }
 
   // ========================================

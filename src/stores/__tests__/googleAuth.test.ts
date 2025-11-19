@@ -135,7 +135,9 @@ describe('useGoogleAuthStore', () => {
         accessToken: 'token-without-email',
         expiresAt,
       })
-      vi.spyOn(googleApiClient, 'getUserInfo').mockRejectedValue(new Error('Failed to fetch user info'))
+      vi.spyOn(googleApiClient, 'getUserInfo').mockRejectedValue(
+        new Error('Failed to fetch user info'),
+      )
 
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
       const store = useGoogleAuthStore()

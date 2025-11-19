@@ -214,7 +214,7 @@ describe('CloudSyncTab Integration', () => {
       await component(wrapper, BackupList).emit('restore', mockBackup)
       await flushPromises()
 
-      expect(mockRestoreBackup).toHaveBeenCalledWith(mockBackup)
+      expect(mockRestoreBackup).toHaveBeenCalledWith(mockBackup, undefined)
     })
 
     it('calls deleteBackup when BackupList emits delete and user confirms', async () => {

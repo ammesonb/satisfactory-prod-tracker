@@ -46,7 +46,13 @@ const drawerWidth = computed(() => {
 </script>
 
 <template>
-  <v-navigation-drawer expand-on-hover permanent v-model:rail="collapsed" :rail-width="64" :width="drawerWidth">
+  <v-navigation-drawer
+    expand-on-hover
+    permanent
+    v-model:rail="collapsed"
+    :rail-width="64"
+    :width="drawerWidth"
+  >
     <div v-if="factoryStore.hasFactories" class="pa-3 pb-2">
       <v-text-field
         v-if="!collapsed"

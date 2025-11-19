@@ -39,7 +39,6 @@ describe('useGoogleDrive', () => {
     googleAuthStore.setToken('mock-token', Date.now() + 3600000)
   })
 
-
   describe('uploadFile', () => {
     it('should create file and update with content', async () => {
       // Mock file creation

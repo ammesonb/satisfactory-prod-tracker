@@ -46,10 +46,7 @@ const cancelEdit = (event: KeyboardEvent) => {
 </script>
 
 <template>
-  <v-list-item
-    @click="!isEditingName && emit('select')"
-    :active="props.selected"
-  >
+  <v-list-item @click="!isEditingName && emit('select')" :active="props.selected">
     <template #prepend>
       <FactorySyncBadge :factory="props.factory" :rail="props.rail">
         <v-img :src="getIconURL(props.factory.icon, 64)" width="32" height="32" class="mr-1" />

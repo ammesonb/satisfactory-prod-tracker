@@ -40,9 +40,9 @@ const handleBackup = async () => {
   }
 }
 
-const handleRestore = async (backup: GoogleDriveFile) => {
+const handleRestore = async (backup: GoogleDriveFile, importAlias?: string) => {
   try {
-    await backupManager.restoreBackup(backup)
+    await backupManager.restoreBackup(backup, importAlias)
   } catch (err) {
     error.value = `Restore failed: ${err instanceof Error ? err.message : 'Unknown error'}`
   }
@@ -96,7 +96,6 @@ const handleSignOut = () => {
 
     <!-- Signed In User Section -->
     <span v-else>
-
       <v-card variant="outlined" class="mb-3">
         <v-card-text class="d-flex align-center justify-space-between">
           <div class="d-flex align-center">
