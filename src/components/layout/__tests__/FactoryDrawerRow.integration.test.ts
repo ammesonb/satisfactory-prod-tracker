@@ -1,12 +1,13 @@
-import { mount, VueWrapper } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { component } from '@/__tests__/vue-test-helpers'
 import type { Factory } from '@/types/factory'
 
+import FactoryName from '@/components/factory/FactoryName.vue'
 import FactoryDrawerRow from '@/components/layout/FactoryDrawerRow.vue'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
-import { VBtn, VImg, VListItem, VListItemTitle } from 'vuetify/components'
+import { VImg, VListItem } from 'vuetify/components'
 
 // Mock composables with centralized fixtures
 vi.mock('@/composables/useStores', async () => {
@@ -24,9 +25,16 @@ vi.mock('@/components/modals/ConfirmationModal.vue', () => ({
   },
 }))
 
-const getDeleteBtn = (wrapper: VueWrapper) => {
-  return component(wrapper, VBtn).match((btn) => btn.props('icon') === 'mdi-delete')
-}
+// Mock FactoryName component for testing
+vi.mock('@/components/factory/FactoryName.vue', () => ({
+  default: {
+    name: 'FactoryName',
+    props: ['name'],
+    emits: ['rename', 'delete'],
+    template:
+      '<div class="factory-name"><span>{{ name }}</span><button class="edit-btn" @click="$emit(\'rename\', name, \'New Name\')">Edit</button><button class="delete-btn" @click="$emit(\'delete\')">Delete</button></div>',
+  },
+}))
 
 describe('FactoryDrawerRow Integration', () => {
   const TEST_FACTORY: Factory = {
@@ -45,13 +53,14 @@ describe('FactoryDrawerRow Integration', () => {
 
     return mount({
       template:
-        '<v-list><FactoryDrawerRow v-bind="props" @select="onSelect" @delete="onDelete" /></v-list>',
+        '<v-list><FactoryDrawerRow v-bind="props" @select="onSelect" @delete="onDelete" @rename="onRename" /></v-list>',
       components: { FactoryDrawerRow },
       setup() {
         return {
           props: { ...defaultProps, ...props },
           onSelect: vi.fn(),
           onDelete: vi.fn(),
+          onRename: vi.fn(),
         }
       },
     })
@@ -62,19 +71,21 @@ describe('FactoryDrawerRow Integration', () => {
   })
 
   describe('Component Rendering', () => {
-    it('renders factory name as title when not in rail mode', () => {
+    it('renders FactoryName component when not in rail mode', () => {
       const wrapper = createWrapper({ rail: false })
 
-      component(wrapper, VListItemTitle).assert({
+      component(wrapper, FactoryName).assert({
         exists: true,
-        text: 'Steel Production Plant',
+        props: {
+          name: 'Steel Production Plant',
+        },
       })
     })
 
-    it('does not show title when in rail mode', () => {
+    it('does not show FactoryName component when in rail mode', () => {
       const wrapper = createWrapper({ rail: true })
 
-      component(wrapper, VListItemTitle).assert({ exists: false })
+      component(wrapper, FactoryName).assert({ exists: false })
     })
 
     it('displays factory icon in prepend slot', () => {
@@ -90,20 +101,6 @@ describe('FactoryDrawerRow Integration', () => {
         })
         .getComponent()
       expect(image.props('src')).toContain('Desc-SteelIngot-C')
-    })
-
-    it('shows delete button in append slot', () => {
-      const wrapper = createWrapper()
-
-      component(wrapper, VBtn).assert({
-        exists: true,
-        props: {
-          icon: 'mdi-delete',
-          size: 'small',
-          variant: 'text',
-          color: 'error',
-        },
-      })
     })
 
     it('applies active state correctly when selected', () => {
@@ -123,14 +120,21 @@ describe('FactoryDrawerRow Integration', () => {
     it('calls select handler when list item is clicked', async () => {
       const wrapper = createWrapper()
 
-      await component(wrapper, VListItemTitle).click()
+      await component(wrapper, VListItem).click()
       expect(wrapper.vm.onSelect).toHaveBeenCalled()
     })
 
-    it('shows confirmation modal when delete button is clicked', async () => {
+    it('forwards rename event from FactoryName component', async () => {
       const wrapper = createWrapper()
 
-      await getDeleteBtn(wrapper).click()
+      await component(wrapper, FactoryName).emit('rename', 'Steel Production Plant', 'New Name')
+      expect(wrapper.vm.onRename).toHaveBeenCalledWith('Steel Production Plant', 'New Name')
+    })
+
+    it('shows confirmation modal when FactoryName delete is triggered', async () => {
+      const wrapper = createWrapper()
+
+      await component(wrapper, FactoryName).emit('delete')
 
       component(wrapper, ConfirmationModal).assert({
         exists: true,
@@ -144,33 +148,25 @@ describe('FactoryDrawerRow Integration', () => {
         },
       })
     })
-
-    it('prevents event propagation when delete button is clicked', async () => {
-      const wrapper = createWrapper()
-
-      await getDeleteBtn(wrapper).click()
-      // Select handler should not be called when delete button is clicked
-      expect(wrapper.vm.onSelect).not.toHaveBeenCalled()
-    })
   })
 
   describe('Delete Confirmation Flow', () => {
     it('calls delete handler when deletion is confirmed', async () => {
       const wrapper = createWrapper()
 
-      // Open confirmation modal
-      await getDeleteBtn(wrapper).click()
+      // Trigger delete from FactoryName
+      await component(wrapper, FactoryName).emit('delete')
 
       // Confirm deletion
       await component(wrapper, ConfirmationModal).emit('confirm')
       expect(wrapper.vm.onDelete).toHaveBeenCalledWith('Steel Production Plant')
     })
 
-    it('shows modal when delete button is clicked and hides when cancelled', async () => {
+    it('shows modal when delete is triggered and hides when cancelled', async () => {
       const wrapper = createWrapper()
 
-      // Open confirmation modal
-      await getDeleteBtn(wrapper).click()
+      // Trigger delete from FactoryName
+      await component(wrapper, FactoryName).emit('delete')
       component(wrapper, ConfirmationModal).assert({ props: { show: true } })
 
       // Cancel deletion
@@ -194,7 +190,9 @@ describe('FactoryDrawerRow Integration', () => {
 
       const wrapper = createWrapper({ factory: customFactory })
 
-      component(wrapper, VListItemTitle).assert({ text: factoryName })
+      component(wrapper, FactoryName).assert({
+        props: { name: factoryName },
+      })
 
       const img = component(wrapper, VImg)
         .assert({
@@ -221,7 +219,9 @@ describe('FactoryDrawerRow Integration', () => {
 
       const wrapper = createWrapper({ factory: specialFactory })
 
-      component(wrapper, VListItemTitle).assert({ text: factoryName })
+      component(wrapper, FactoryName).assert({
+        props: { name: factoryName },
+      })
       component(wrapper, ConfirmationModal).assert({
         props: {
           message: `Are you sure you want to delete '${factoryName}'? This action cannot be undone.`,
