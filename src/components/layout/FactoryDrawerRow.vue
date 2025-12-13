@@ -37,11 +37,7 @@ const handleRename = (oldName: string, newName: string) => {
     </template>
 
     <template #title v-if="!props.rail">
-      <FactoryName
-        :name="props.factory.name"
-        @rename="handleRename"
-        @delete="handleDelete"
-      />
+      <FactoryName :name="props.factory.name" @rename="handleRename" @delete="handleDelete" />
     </template>
   </v-list-item>
 
