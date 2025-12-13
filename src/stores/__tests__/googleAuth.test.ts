@@ -92,6 +92,8 @@ describe('useGoogleAuthStore', () => {
     it('stores token when callback is invoked by googleApiClient', async () => {
       let capturedCallback: ((accessToken: string, expiresIn: number) => void) | null = null
 
+      // callback is a messy type, so just pass it through
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.spyOn(googleApiClient, 'initialize').mockImplementation(async (cb: any) => {
         capturedCallback = cb
       })

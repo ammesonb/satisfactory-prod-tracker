@@ -260,7 +260,9 @@ class ComponentHelper<T extends ComponentConstructor> {
   }
 
   vm(): InstanceType<T> {
-    return this.wrapper.vm
+    // vm is a nasty complicated type which cannot be explicitly defined it seems
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.wrapper.vm as any
   }
 }
 

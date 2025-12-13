@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import type { RecipeNode } from '@/logistics/graph-node'
 import { useFactoryStore } from '@/stores/factory'
 import type { Factory } from '@/types/factory'
+import { type ConflictInfo, FactorySyncStatus } from '@/types/cloudSync'
 
 describe('useFactoryStore', () => {
   beforeEach(() => {
@@ -666,10 +667,10 @@ describe('useFactoryStore', () => {
           },
         }
 
-        store.setSyncStatus('Factory A', 'clean' as any)
+        store.setSyncStatus('Factory A', FactorySyncStatus.CLEAN)
 
         expect(store.factories['Factory A'].syncStatus).toBeDefined()
-        expect(store.factories['Factory A'].syncStatus?.status).toBe('clean')
+        expect(store.factories['Factory A'].syncStatus?.status).toBe(FactorySyncStatus.CLEAN)
       })
 
       it('should preserve existing syncStatus fields', () => {
@@ -682,16 +683,16 @@ describe('useFactoryStore', () => {
             floors: [],
             recipeLinks: {},
             syncStatus: {
-              status: 'dirty' as any,
+              status: FactorySyncStatus.DIRTY,
               lastSynced: timestamp,
               lastError: null,
             },
           },
         }
 
-        store.setSyncStatus('Factory A', 'saving' as any)
+        store.setSyncStatus('Factory A', FactorySyncStatus.SAVING)
 
-        expect(store.factories['Factory A'].syncStatus?.status).toBe('saving')
+        expect(store.factories['Factory A'].syncStatus?.status).toBe(FactorySyncStatus.SAVING)
         expect(store.factories['Factory A'].syncStatus?.lastSynced).toBe(timestamp)
       })
 
@@ -704,14 +705,14 @@ describe('useFactoryStore', () => {
             floors: [],
             recipeLinks: {},
             syncStatus: {
-              status: 'error' as any,
+              status: FactorySyncStatus.CLEAN,
               lastSynced: null,
               lastError: 'Previous error',
             },
           },
         }
 
-        store.setSyncStatus('Factory A', 'clean' as any)
+        store.setSyncStatus('Factory A', FactorySyncStatus.CLEAN)
 
         expect(store.factories['Factory A'].syncStatus?.lastError).toBeNull()
       })
@@ -725,14 +726,14 @@ describe('useFactoryStore', () => {
             floors: [],
             recipeLinks: {},
             syncStatus: {
-              status: 'dirty' as any,
+              status: FactorySyncStatus.DIRTY,
               lastSynced: null,
               lastError: 'Some error',
             },
           },
         }
 
-        store.setSyncStatus('Factory A', 'error' as any)
+        store.setSyncStatus('Factory A', FactorySyncStatus.ERROR)
 
         expect(store.factories['Factory A'].syncStatus?.lastError).toBe('Some error')
       })
@@ -741,7 +742,7 @@ describe('useFactoryStore', () => {
         const store = useFactoryStore()
         store.factories = {}
 
-        store.setSyncStatus('Nonexistent', 'clean' as any)
+        store.setSyncStatus('Nonexistent', FactorySyncStatus.CLEAN)
 
         expect(store.factories['Nonexistent']).toBeUndefined()
       })
@@ -761,7 +762,7 @@ describe('useFactoryStore', () => {
 
         store.markDirty('Factory A')
 
-        expect(store.factories['Factory A'].syncStatus?.status).toBe('dirty')
+        expect(store.factories['Factory A'].syncStatus?.status).toBe(FactorySyncStatus.DIRTY)
       })
     })
 
@@ -854,7 +855,7 @@ describe('useFactoryStore', () => {
             floors: [],
             recipeLinks: {},
             syncStatus: {
-              status: 'error' as any,
+              status: FactorySyncStatus.ERROR,
               lastSynced: null,
               lastError: 'Previous error',
             },
@@ -903,23 +904,25 @@ describe('useFactoryStore', () => {
             recipeLinks: {},
           },
         }
-        const conflict: any = {
-          localVersion: '1',
-          remoteVersion: '2',
-          lastSynced: '2025-01-15T12:00:00Z',
+        const conflict: ConflictInfo = {
+          factoryName: 'Factory A',
+          cloudInstanceId: '123',
+          cloudDisplayId: 'Display A',
+          cloudTimestamp: '2023-01-02T00:00:00Z',
+          localTimestamp: '2023-01-01T00:00:00Z',
         }
 
         store.setSyncConflict('Factory A', conflict)
 
         expect(store.factories['Factory A'].conflict).toEqual(conflict)
-        expect(store.factories['Factory A'].syncStatus?.status).toBe('conflict')
+        expect(store.factories['Factory A'].syncStatus?.status).toBe(FactorySyncStatus.CONFLICT)
       })
 
       it('should do nothing if factory does not exist', () => {
         const store = useFactoryStore()
         store.factories = {}
 
-        store.setSyncConflict('Nonexistent', {} as any)
+        store.setSyncConflict('Nonexistent', {} as ConflictInfo)
 
         expect(store.factories['Nonexistent']).toBeUndefined()
       })
@@ -935,10 +938,12 @@ describe('useFactoryStore', () => {
             floors: [],
             recipeLinks: {},
             conflict: {
-              localVersion: '1',
-              remoteVersion: '2',
-              lastSynced: '2025-01-15T12:00:00Z',
-            } as any,
+              factoryName: 'Factory A',
+              cloudInstanceId: '123',
+              cloudDisplayId: 'Display A',
+              cloudTimestamp: '2023-01-02T00:00:00Z',
+              localTimestamp: '2023-01-01T00:00:00Z',
+            } as ConflictInfo,
           },
         }
 
