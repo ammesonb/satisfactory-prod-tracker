@@ -1,5 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+// Mock import.meta.env BEFORE importing the module
+// This must be done at the top level before any imports that use these values
+vi.mock('@/services/googleApiClient', async (importOriginal) => {
+  // Stub env vars before the module loads
+  vi.stubEnv('VITE_GOOGLE_CLIENT_ID', 'test-client-id')
+  vi.stubEnv('VITE_GOOGLE_API_KEY', 'test-api-key')
+  return importOriginal()
+})
+
 // Setup global mocks before importing googleApiClient
 const mockGapi = {
   load: vi.fn(),
@@ -31,7 +40,7 @@ global.gapi = mockGapi as never
 global.google = { accounts: { oauth2: mockGoogleAuth } } as never
 global.fetch = vi.fn()
 
-// Import after setting up globals
+// Import after setting up globals and env mocks
 import { googleApiClient } from '@/services/googleApiClient'
 
 describe('googleApiClient', () => {
