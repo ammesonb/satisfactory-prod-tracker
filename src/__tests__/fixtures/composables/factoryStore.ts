@@ -30,6 +30,16 @@ export const mockGetFloorIndexForRecipe = vi.fn((recipe) => {
 export const mockExportFactories = vi.fn()
 export const mockImportFactories = vi.fn()
 
+// Sync status management mocks (Cloud Sync Phase 1)
+export const mockSetSyncStatus = vi.fn()
+export const mockMarkDirty = vi.fn()
+export const mockMarkSynced = vi.fn()
+export const mockSetSyncError = vi.fn()
+export const mockClearSyncError = vi.fn()
+export const mockSetSyncConflict = vi.fn()
+export const mockClearSyncConflict = vi.fn()
+export const mockRenameFactory = vi.fn()
+
 export const mockFactoryStore = {
   get selected() {
     return mockSelectedFactory.value
@@ -54,4 +64,12 @@ export const mockFactoryStore = {
   getFloorIndexForRecipe: mockGetFloorIndexForRecipe,
   exportFactories: mockExportFactories,
   importFactories: mockImportFactories,
+  setSyncStatus: mockSetSyncStatus,
+  markDirty: mockMarkDirty,
+  markSynced: mockMarkSynced,
+  setSyncError: mockSetSyncError,
+  clearSyncError: mockClearSyncError,
+  setSyncConflict: mockSetSyncConflict,
+  clearSyncConflict: mockClearSyncConflict,
+  renameFactory: mockRenameFactory,
 }

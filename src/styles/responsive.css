@@ -146,3 +146,17 @@
     font-size: 1.25rem;
   }
 }
+
+/* Cloud sync loading spinner animation */
+@keyframes mdi-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
+}
+
+.v-badge .v-icon.mdi-loading {
+  animation: mdi-spin 2s infinite linear;
+}

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import type { Factory } from '@/types/factory'
 import { getIconURL } from '@/logistics/images'
+import type { Factory } from '@/types/factory'
 
 interface Props {
   factory: Factory
@@ -11,7 +11,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits(['select', 'delete'])
+const emit = defineEmits(['select', 'delete', 'rename'])
 
 const showDeleteConfirm = ref(false)
 
@@ -22,25 +22,22 @@ const handleDelete = () => {
 const confirmDelete = () => {
   emit('delete', props.factory.name)
 }
+
+const handleRename = (oldName: string, newName: string) => {
+  emit('rename', oldName, newName)
+}
 </script>
 
 <template>
-  <v-list-item
-    @click="emit('select')"
-    :title="props.rail ? undefined : props.factory.name"
-    :active="props.selected"
-  >
+  <v-list-item @click="emit('select')" :active="props.selected">
     <template #prepend>
-      <v-img :src="getIconURL(props.factory.icon, 64)" width="32" height="32" class="mr-1" />
+      <FactorySyncBadge :factory="props.factory" :rail="props.rail">
+        <v-img :src="getIconURL(props.factory.icon, 64)" width="32" height="32" class="mr-1" />
+      </FactorySyncBadge>
     </template>
-    <template #append>
-      <v-btn
-        icon="mdi-delete"
-        size="small"
-        variant="text"
-        color="error"
-        @click.stop="handleDelete"
-      />
+
+    <template #title v-if="!props.rail">
+      <FactoryName :name="props.factory.name" @rename="handleRename" @delete="handleDelete" />
     </template>
   </v-list-item>
 

@@ -143,3 +143,50 @@ The project uses `@/` as an alias for the `src/` directory for cleaner imports.
 
 - **Node.js**: ^20.19.0 || >=22.12.0
 - Package manager: npm (lockfile present)
+
+## OpenMemory Integration
+
+
+**Server:** `http://localhost:8080`
+**API Key:** `claude-code-satisfactory-tracker`
+**Project ID:** `satisfactory-prod-tracker`
+
+### Quick Reference
+
+**IMPORTANT:** All memory operations MUST include `"metadata": {"project": "satisfactory-prod-tracker"}` to isolate this project's memories.
+
+```bash
+# Query memories (ALWAYS include metadata filter)
+curl -X POST http://localhost:8080/memory/query \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer claude-code-satisfactory-tracker" \
+  -d '{
+    "query": "your question here",
+    "k": 3,
+    "metadata": {"project": "satisfactory-prod-tracker"}
+  }'
+
+# Add memory (ALWAYS include metadata and tags)
+curl -X POST http://localhost:8080/memory/add \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer claude-code-satisfactory-tracker" \
+  -d '{
+    "content": "Your memory content here",
+    "tags": ["relevant", "tags"],
+    "metadata": {"project": "satisfactory-prod-tracker"}
+  }'
+
+# List project memories
+curl "http://localhost:8080/memory/all?metadata.project=satisfactory-prod-tracker" \
+  -H "Authorization: Bearer claude-code-satisfactory-tracker"
+```
+
+### Memory Quality Guidelines
+
+Capture the **WHY** not the **WHAT**:
+
+✅ **Good:** "autoSyncSuspended flag prevents race conditions during bulk operations by disabling auto-save temporarily"
+
+❌ **Bad:** "Function uses parameter order (namespace, factoryName)" (obvious from code)
+
+The code shows WHAT is implemented. Memories should explain WHY design decisions were made.

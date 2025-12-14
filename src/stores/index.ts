@@ -1,4 +1,6 @@
+export { useCloudSyncStore } from './cloudSync'
 export { useDataStore } from './data'
 export { useErrorStore } from './errors'
 export { useFactoryStore } from './factory'
+export { useGoogleAuthStore } from './googleAuth'
 export { useThemeStore } from './theme'

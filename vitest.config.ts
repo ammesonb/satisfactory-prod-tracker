@@ -12,8 +12,12 @@ export default defineConfig({
       extensions: ['vue'],
       dts: true,
       resolvers: [Vuetify3Resolver()],
-    })
+    }),
   ],
+  define: {
+    'import.meta.env.VITE_GOOGLE_CLIENT_ID': JSON.stringify('test-client-id'),
+    'import.meta.env.VITE_GOOGLE_API_KEY': JSON.stringify('test-api-key'),
+  },
   test: {
     environment: 'happy-dom',
     globals: true,

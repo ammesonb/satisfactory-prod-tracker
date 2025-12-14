@@ -1,14 +1,28 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import { getStores } from '@/composables/useStores'
 
+const props = defineProps<{
+  initialTab?: 'export' | 'import' | 'cloud'
+}>()
+
 const { factoryStore } = getStores()
 const isOpen = defineModel<boolean>({ default: false })
-const activeTab = ref<'export' | 'import'>('export')
+const activeTab = ref<'export' | 'import' | 'cloud'>('export')
 const error = ref('')
 
 const defaultTab = computed(() => (factoryStore.hasFactories ? 'export' : 'import'))
+
+// When modal opens with initialTab prop, switch to that tab
+watch(
+  () => isOpen.value,
+  (newValue) => {
+    if (newValue && props.initialTab) {
+      activeTab.value = props.initialTab
+    }
+  },
+)
 
 const clearError = () => {
   error.value = ''
@@ -68,6 +82,10 @@ const handleModalChange = (value: boolean) => {
           <v-icon icon="mdi-import" class="me-2" />
           Import
         </v-tab>
+        <v-tab value="cloud">
+          <v-icon icon="mdi-cloud" class="me-2" />
+          Cloud Sync
+        </v-tab>
       </v-tabs>
 
       <v-card-text class="pt-0">
@@ -80,6 +98,11 @@ const handleModalChange = (value: boolean) => {
           <!-- Import Tab -->
           <v-window-item value="import">
             <ImportTab @error="handleError" @success="handleImportSuccess" class="mt-3" />
+          </v-window-item>
+
+          <!-- Cloud Sync Tab -->
+          <v-window-item value="cloud">
+            <CloudSyncTab @error="handleError" />
           </v-window-item>
         </v-window>
       </v-card-text>

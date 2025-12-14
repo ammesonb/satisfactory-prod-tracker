@@ -258,6 +258,12 @@ class ComponentHelper<T extends ComponentConstructor> {
   getComponents(): VueWrapper<InstanceType<T>>[] {
     return this.findAll()
   }
+
+  vm(): InstanceType<T> {
+    // vm is a nasty complicated type which cannot be explicitly defined it seems
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.wrapper.vm as any
+  }
 }
 
 export function element(wrapper: VueWrapper, selector: string): ElementHelper {

@@ -46,6 +46,7 @@ export interface IFactoryStore {
   setSelectedFactory: (factoryName: string) => void
   addFactory: (name: string, icon: string, recipes: string, externalInputs: RecipeProduct[]) => void
   removeFactory: (name: string) => void
+  renameFactory: (oldName: string, newName: string) => void
   setLinkBuiltState: (linkId: string, built: boolean) => void
   getFloorIndexForRecipe: (recipe: RecipeNode) => number
   getRecipeByName: (recipeName: string) => RecipeNode | null
@@ -87,4 +88,62 @@ export interface IErrorStore {
   warning: () => ErrorBuilder
   info: () => ErrorBuilder
   hide: () => void
+}
+
+/**
+ * Google Auth Store Interface
+ * Manages Google OAuth authentication state
+ */
+export interface IGoogleAuthStore {
+  // State
+  accessToken: string | null
+  expiresAt: number | null
+  userEmail: string | null
+
+  // Getters
+  isAuthenticated: boolean
+  isTokenExpired: boolean
+
+  // Actions
+  setToken: (accessToken: string, expiresAt: number) => void
+  setUserEmail: (email: string) => void
+  clearToken: () => void
+}
+
+/**
+ * Cloud Sync Store Interface
+ * Manages Google Drive sync state and operations
+ */
+export interface ICloudSyncStore {
+  // State
+  instanceId: string
+  displayId?: string
+  autoSync: {
+    enabled: boolean
+    namespace: string
+    selectedFactories: string[]
+  }
+  autoSyncSuspended: boolean
+
+  // Getters
+  isFactoryAutoSynced: (factoryName: string) => boolean
+
+  // Actions
+  authenticate: () => Promise<void>
+  refreshAuth: () => Promise<void>
+  signOut: () => void
+  enableAutoSync: (namespace: string, factories: string[]) => void
+  disableAutoSync: () => void
+  changeNamespace: (newNamespace: string) => Promise<void>
+  addFactoryToAutoSync: (factoryName: string) => void
+  removeFactoryFromAutoSync: (factoryName: string) => void
+  performAutoSave: () => Promise<void>
+  checkForConflicts: () => Promise<void>
+  resolveConflict: (factoryName: string, resolution: 'cloud' | 'local') => Promise<void>
+  setGlobalError: (message: string) => void
+  clearGlobalError: () => void
+  suspendAutoSync: () => void
+  resumeAutoSync: () => void
+  setDisplayId: (displayId: string) => void
+  initializeInstanceId: () => void
 }

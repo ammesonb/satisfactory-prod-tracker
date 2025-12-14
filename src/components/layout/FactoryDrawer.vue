@@ -27,10 +27,32 @@ const selectFactory = (factory: Factory) => {
   factoryStore.setSelectedFactory(factory.name)
   initializeExpansion(isRecipeComplete)
 }
+
+// Dynamic drawer width based on longest factory name
+const drawerWidth = computed(() => {
+  if (factoryList.value.length === 0) return 280 // Default minimum
+
+  const longestName = factoryList.value.reduce(
+    (max, factory) => Math.max(max, factory.name.length),
+    0,
+  )
+
+  // Rough estimate: 8px per character + 160px for icon/buttons/padding
+  const calculated = longestName * 8 + 160
+
+  // Clamp between min (280px) and max (400px)
+  return Math.min(Math.max(calculated, 280), 400)
+})
 </script>
 
 <template>
-  <v-navigation-drawer expand-on-hover permanent v-model:rail="collapsed" :rail-width="64">
+  <v-navigation-drawer
+    expand-on-hover
+    permanent
+    v-model:rail="collapsed"
+    :rail-width="64"
+    :width="drawerWidth"
+  >
     <div v-if="factoryStore.hasFactories" class="pa-3 pb-2">
       <v-text-field
         v-if="!collapsed"
@@ -55,6 +77,7 @@ const selectFactory = (factory: Factory) => {
         :rail="collapsed"
         :selected="factoryStore.selected === factory.name"
         @select="selectFactory(factory)"
+        @rename="(oldName: string, newName: string) => factoryStore.renameFactory(oldName, newName)"
         @delete="factoryStore.removeFactory"
       />
     </v-list>

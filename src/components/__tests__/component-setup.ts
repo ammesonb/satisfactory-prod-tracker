@@ -5,10 +5,14 @@ import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 
 import { createMockDataStore } from '@/__tests__/fixtures/stores/dataStore'
+import { mockCloudSyncStore } from '@/__tests__/fixtures/composables/cloudSyncStore'
+import { mockGoogleAuthStore } from '@/__tests__/fixtures/composables/googleAuthStore'
 import {
+  CLOUD_SYNC_STORE_KEY,
   DATA_STORE_KEY,
   ERROR_STORE_KEY,
   FACTORY_STORE_KEY,
+  GOOGLE_AUTH_STORE_KEY,
   THEME_STORE_KEY,
 } from '@/composables/useStores'
 
@@ -30,6 +34,8 @@ config.global.provide = {
   [FACTORY_STORE_KEY as symbol]: mockFactoryStore,
   [THEME_STORE_KEY as symbol]: mockThemeStore,
   [ERROR_STORE_KEY as symbol]: mockErrorStore,
+  [CLOUD_SYNC_STORE_KEY as symbol]: mockCloudSyncStore,
+  [GOOGLE_AUTH_STORE_KEY as symbol]: mockGoogleAuthStore,
 }
 
 // Reset Pinia stores before each test by creating a fresh instance

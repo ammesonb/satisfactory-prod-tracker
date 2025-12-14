@@ -14,6 +14,12 @@ vi.mock('@/composables/useFloorNavigation', async () => {
   return { useFloorNavigation: mockUseFloorNavigation }
 })
 
+// Mock the useStores composable
+vi.mock('@/composables/useStores', async () => {
+  const { mockUseStores } = await import('@/__tests__/fixtures/composables/stores')
+  return mockUseStores
+})
+
 describe('FloatingNav Integration', () => {
   const createWrapper = () => {
     return mount(FloatingNav)

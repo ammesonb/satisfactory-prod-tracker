@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import type { RecipeNode } from '@/logistics/graph-node'
 import { useFactoryStore } from '@/stores/factory'
 import type { Factory } from '@/types/factory'
+import { type ConflictInfo, FactorySyncStatus } from '@/types/cloudSync'
 
 describe('useFactoryStore', () => {
   beforeEach(() => {
@@ -494,6 +495,470 @@ describe('useFactoryStore', () => {
         store.importFactories({ 'Factory A': newFactory })
 
         expect(store.factories['Factory A']).toEqual(newFactory)
+      })
+    })
+
+    describe('renameFactory', () => {
+      it('should rename a factory', () => {
+        const store = useFactoryStore()
+        const factory: Factory = {
+          name: 'Old Name',
+          icon: 'icon',
+          floors: [],
+          recipeLinks: {},
+        }
+        store.selected = 'Another Factory'
+        store.factories = { 'Old Name': factory }
+
+        store.renameFactory('Old Name', 'New Name')
+
+        expect(store.factories['Old Name']).toBeUndefined()
+        expect(store.factories['New Name']).toBeDefined()
+        expect(store.factories['New Name'].name).toBe('New Name')
+        expect(store.selected).toEqual('Another Factory')
+      })
+
+      it('should do nothing if factory does not exist', () => {
+        const store = useFactoryStore()
+        const factory: Factory = {
+          name: 'Factory A',
+          icon: 'icon',
+          floors: [],
+          recipeLinks: {},
+        }
+        store.factories = { 'Factory A': factory }
+
+        store.renameFactory('Nonexistent', 'New Name')
+
+        expect(store.factories['Factory A']).toBeDefined()
+        expect(store.factories['New Name']).toBeUndefined()
+        expect(store.factories['Nonexistent']).toBeUndefined()
+      })
+
+      it('should update selected factory name if renamed', () => {
+        const store = useFactoryStore()
+        const factory: Factory = {
+          name: 'Old Name',
+          icon: 'icon',
+          floors: [],
+          recipeLinks: {},
+        }
+        store.factories = { 'Old Name': factory }
+        store.selected = 'Old Name'
+
+        store.renameFactory('Old Name', 'New Name')
+
+        expect(store.selected).toBe('New Name')
+      })
+    })
+
+    describe('getFloorIndexForRecipe', () => {
+      it('should return the floor index for a recipe', () => {
+        const store = useFactoryStore()
+        const recipe1: RecipeNode = {
+          recipe: { name: 'Recipe_A', building: 'Building_A', count: 1 },
+          batchNumber: 0,
+          ingredients: [],
+          products: [],
+          inputs: [],
+          outputs: [],
+          availableProducts: [],
+          fullyConsumed: false,
+          built: false,
+          expanded: true,
+        }
+        const recipe2: RecipeNode = {
+          recipe: { name: 'Recipe_B', building: 'Building_B', count: 1 },
+          batchNumber: 1,
+          ingredients: [],
+          products: [],
+          inputs: [],
+          outputs: [],
+          availableProducts: [],
+          fullyConsumed: false,
+          built: false,
+          expanded: true,
+        }
+
+        store.factories = {
+          'Test Factory': {
+            name: 'Test Factory',
+            icon: 'icon',
+            floors: [{ recipes: [recipe1] }, { recipes: [recipe2] }],
+            recipeLinks: {},
+          },
+        }
+        store.selected = 'Test Factory'
+
+        expect(store.getFloorIndexForRecipe(recipe1)).toBe(0)
+        expect(store.getFloorIndexForRecipe(recipe2)).toBe(1)
+      })
+
+      it('should return -1 when no factory is selected', () => {
+        const store = useFactoryStore()
+        const recipe: RecipeNode = {
+          recipe: { name: 'Recipe_A', building: 'Building_A', count: 1 },
+          batchNumber: 0,
+          ingredients: [],
+          products: [],
+          inputs: [],
+          outputs: [],
+          availableProducts: [],
+          fullyConsumed: false,
+          built: false,
+          expanded: true,
+        }
+
+        expect(store.getFloorIndexForRecipe(recipe)).toBe(-1)
+      })
+
+      it('should return -1 when recipe is not found', () => {
+        const store = useFactoryStore()
+        const existingRecipe: RecipeNode = {
+          recipe: { name: 'Recipe_A', building: 'Building_A', count: 1 },
+          batchNumber: 0,
+          ingredients: [],
+          products: [],
+          inputs: [],
+          outputs: [],
+          availableProducts: [],
+          fullyConsumed: false,
+          built: false,
+          expanded: true,
+        }
+        const missingRecipe: RecipeNode = {
+          recipe: { name: 'Recipe_B', building: 'Building_B', count: 1 },
+          batchNumber: 1,
+          ingredients: [],
+          products: [],
+          inputs: [],
+          outputs: [],
+          availableProducts: [],
+          fullyConsumed: false,
+          built: false,
+          expanded: true,
+        }
+
+        store.factories = {
+          'Test Factory': {
+            name: 'Test Factory',
+            icon: 'icon',
+            floors: [{ recipes: [existingRecipe] }],
+            recipeLinks: {},
+          },
+        }
+        store.selected = 'Test Factory'
+
+        expect(store.getFloorIndexForRecipe(missingRecipe)).toBe(-1)
+      })
+    })
+  })
+
+  describe('sync status management', () => {
+    describe('setSyncStatus', () => {
+      it('should set sync status for a factory', () => {
+        const store = useFactoryStore()
+        store.factories = {
+          'Factory A': {
+            name: 'Factory A',
+            icon: 'icon',
+            floors: [],
+            recipeLinks: {},
+          },
+        }
+
+        store.setSyncStatus('Factory A', FactorySyncStatus.CLEAN)
+
+        expect(store.factories['Factory A'].syncStatus).toBeDefined()
+        expect(store.factories['Factory A'].syncStatus?.status).toBe(FactorySyncStatus.CLEAN)
+      })
+
+      it('should preserve existing syncStatus fields', () => {
+        const store = useFactoryStore()
+        const timestamp = '2025-01-15T12:00:00Z'
+        store.factories = {
+          'Factory A': {
+            name: 'Factory A',
+            icon: 'icon',
+            floors: [],
+            recipeLinks: {},
+            syncStatus: {
+              status: FactorySyncStatus.DIRTY,
+              lastSynced: timestamp,
+              lastError: null,
+            },
+          },
+        }
+
+        store.setSyncStatus('Factory A', FactorySyncStatus.SAVING)
+
+        expect(store.factories['Factory A'].syncStatus?.status).toBe(FactorySyncStatus.SAVING)
+        expect(store.factories['Factory A'].syncStatus?.lastSynced).toBe(timestamp)
+      })
+
+      it('should clear lastError when status is not error', () => {
+        const store = useFactoryStore()
+        store.factories = {
+          'Factory A': {
+            name: 'Factory A',
+            icon: 'icon',
+            floors: [],
+            recipeLinks: {},
+            syncStatus: {
+              status: FactorySyncStatus.CLEAN,
+              lastSynced: null,
+              lastError: 'Previous error',
+            },
+          },
+        }
+
+        store.setSyncStatus('Factory A', FactorySyncStatus.CLEAN)
+
+        expect(store.factories['Factory A'].syncStatus?.lastError).toBeNull()
+      })
+
+      it('should preserve lastError when status is error', () => {
+        const store = useFactoryStore()
+        store.factories = {
+          'Factory A': {
+            name: 'Factory A',
+            icon: 'icon',
+            floors: [],
+            recipeLinks: {},
+            syncStatus: {
+              status: FactorySyncStatus.DIRTY,
+              lastSynced: null,
+              lastError: 'Some error',
+            },
+          },
+        }
+
+        store.setSyncStatus('Factory A', FactorySyncStatus.ERROR)
+
+        expect(store.factories['Factory A'].syncStatus?.lastError).toBe('Some error')
+      })
+
+      it('should do nothing if factory does not exist', () => {
+        const store = useFactoryStore()
+        store.factories = {}
+
+        store.setSyncStatus('Nonexistent', FactorySyncStatus.CLEAN)
+
+        expect(store.factories['Nonexistent']).toBeUndefined()
+      })
+    })
+
+    describe('markDirty', () => {
+      it('should set factory status to dirty', () => {
+        const store = useFactoryStore()
+        store.factories = {
+          'Factory A': {
+            name: 'Factory A',
+            icon: 'icon',
+            floors: [],
+            recipeLinks: {},
+          },
+        }
+
+        store.markDirty('Factory A')
+
+        expect(store.factories['Factory A'].syncStatus?.status).toBe(FactorySyncStatus.DIRTY)
+      })
+    })
+
+    describe('markSynced', () => {
+      it('should set factory status to clean with provided timestamp', () => {
+        const store = useFactoryStore()
+        const timestamp = '2025-01-15T12:00:00Z'
+        store.factories = {
+          'Factory A': {
+            name: 'Factory A',
+            icon: 'icon',
+            floors: [],
+            recipeLinks: {},
+          },
+        }
+
+        store.markSynced('Factory A', timestamp)
+
+        expect(store.factories['Factory A'].syncStatus?.status).toBe('clean')
+        expect(store.factories['Factory A'].syncStatus?.lastSynced).toBe(timestamp)
+      })
+
+      it('should set factory status to clean with auto-generated timestamp', () => {
+        const store = useFactoryStore()
+        store.factories = {
+          'Factory A': {
+            name: 'Factory A',
+            icon: 'icon',
+            floors: [],
+            recipeLinks: {},
+          },
+        }
+
+        const beforeCall = new Date().toISOString()
+        store.markSynced('Factory A')
+        const afterCall = new Date().toISOString()
+
+        expect(store.factories['Factory A'].syncStatus?.status).toBe('clean')
+        const timestamp = store.factories['Factory A'].syncStatus?.lastSynced
+        expect(timestamp).toBeDefined()
+        expect(timestamp! >= beforeCall).toBe(true)
+        expect(timestamp! <= afterCall).toBe(true)
+      })
+
+      it('should do nothing if factory does not exist', () => {
+        const store = useFactoryStore()
+        store.factories = {}
+
+        store.markSynced('Nonexistent')
+
+        expect(store.factories['Nonexistent']).toBeUndefined()
+      })
+    })
+
+    describe('setSyncError', () => {
+      it('should set factory status to error with error message', () => {
+        const store = useFactoryStore()
+        store.factories = {
+          'Factory A': {
+            name: 'Factory A',
+            icon: 'icon',
+            floors: [],
+            recipeLinks: {},
+          },
+        }
+
+        store.setSyncError('Factory A', 'Network error')
+
+        expect(store.factories['Factory A'].syncStatus?.status).toBe('error')
+        expect(store.factories['Factory A'].syncStatus?.lastError).toBe('Network error')
+      })
+
+      it('should do nothing if factory does not exist', () => {
+        const store = useFactoryStore()
+        store.factories = {}
+
+        store.setSyncError('Nonexistent', 'Some error')
+
+        expect(store.factories['Nonexistent']).toBeUndefined()
+      })
+    })
+
+    describe('clearSyncError', () => {
+      it('should clear error message from syncStatus', () => {
+        const store = useFactoryStore()
+        store.factories = {
+          'Factory A': {
+            name: 'Factory A',
+            icon: 'icon',
+            floors: [],
+            recipeLinks: {},
+            syncStatus: {
+              status: FactorySyncStatus.ERROR,
+              lastSynced: null,
+              lastError: 'Previous error',
+            },
+          },
+        }
+
+        store.clearSyncError('Factory A')
+
+        expect(store.factories['Factory A'].syncStatus?.lastError).toBeNull()
+      })
+
+      it('should do nothing if factory does not exist', () => {
+        const store = useFactoryStore()
+        store.factories = {}
+
+        store.clearSyncError('Nonexistent')
+
+        expect(store.factories['Nonexistent']).toBeUndefined()
+      })
+
+      it('should do nothing if syncStatus does not exist', () => {
+        const store = useFactoryStore()
+        store.factories = {
+          'Factory A': {
+            name: 'Factory A',
+            icon: 'icon',
+            floors: [],
+            recipeLinks: {},
+          },
+        }
+
+        store.clearSyncError('Factory A')
+
+        expect(store.factories['Factory A'].syncStatus).toBeUndefined()
+      })
+    })
+
+    describe('setSyncConflict', () => {
+      it('should set factory conflict and status', () => {
+        const store = useFactoryStore()
+        store.factories = {
+          'Factory A': {
+            name: 'Factory A',
+            icon: 'icon',
+            floors: [],
+            recipeLinks: {},
+          },
+        }
+        const conflict: ConflictInfo = {
+          factoryName: 'Factory A',
+          cloudInstanceId: '123',
+          cloudDisplayId: 'Display A',
+          cloudTimestamp: '2023-01-02T00:00:00Z',
+          localTimestamp: '2023-01-01T00:00:00Z',
+        }
+
+        store.setSyncConflict('Factory A', conflict)
+
+        expect(store.factories['Factory A'].conflict).toEqual(conflict)
+        expect(store.factories['Factory A'].syncStatus?.status).toBe(FactorySyncStatus.CONFLICT)
+      })
+
+      it('should do nothing if factory does not exist', () => {
+        const store = useFactoryStore()
+        store.factories = {}
+
+        store.setSyncConflict('Nonexistent', {} as ConflictInfo)
+
+        expect(store.factories['Nonexistent']).toBeUndefined()
+      })
+    })
+
+    describe('clearSyncConflict', () => {
+      it('should clear conflict from factory', () => {
+        const store = useFactoryStore()
+        store.factories = {
+          'Factory A': {
+            name: 'Factory A',
+            icon: 'icon',
+            floors: [],
+            recipeLinks: {},
+            conflict: {
+              factoryName: 'Factory A',
+              cloudInstanceId: '123',
+              cloudDisplayId: 'Display A',
+              cloudTimestamp: '2023-01-02T00:00:00Z',
+              localTimestamp: '2023-01-01T00:00:00Z',
+            } as ConflictInfo,
+          },
+        }
+
+        store.clearSyncConflict('Factory A')
+
+        expect(store.factories['Factory A'].conflict).toBeUndefined()
+      })
+
+      it('should do nothing if factory does not exist', () => {
+        const store = useFactoryStore()
+        store.factories = {}
+
+        store.clearSyncConflict('Nonexistent')
+
+        expect(store.factories['Nonexistent']).toBeUndefined()
       })
     })
   })
