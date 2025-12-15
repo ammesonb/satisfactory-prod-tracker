@@ -46,7 +46,7 @@ const toggleFactory = (factoryName: string) => toggleItem(factoryName)
           @click="toggleFactory(factory.name)"
         >
           <template v-slot:prepend>
-            <div class="d-flex align-center">
+            <div class="d-flex align-center mr-2">
               <v-checkbox
                 :model-value="isSelected(factory.name)"
                 @click.stop="toggleFactory(factory.name)"
@@ -56,6 +56,12 @@ const toggleFactory = (factoryName: string) => toggleItem(factoryName)
             </div>
           </template>
           <v-list-item-title>{{ factory.name }}</v-list-item-title>
+          <v-list-item-subtitle v-if="$slots.subtitle">
+            <slot name="subtitle" :factory="factory" />
+          </v-list-item-subtitle>
+          <template #append>
+            <slot name="row-actions" :factory="factory" :selected="isSelected(factory.name)" />
+          </template>
         </v-list-item>
       </v-list>
     </v-card>

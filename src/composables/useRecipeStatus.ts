@@ -22,7 +22,12 @@ export function useRecipeStatus() {
 
   const setRecipeBuilt = (recipeName: string, built: boolean) => {
     const recipe = factoryStore.getRecipeByName(recipeName)
-    if (recipe) recipe.built = built
+    if (recipe) {
+      recipe.built = built
+      if (factoryStore.currentFactory) {
+        factoryStore.markDirty(factoryStore.currentFactory.name)
+      }
+    }
   }
 
   const isLinkBuilt = (link: Material) => {

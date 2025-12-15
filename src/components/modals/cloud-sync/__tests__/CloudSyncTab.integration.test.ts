@@ -4,25 +4,26 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { component } from '@/__tests__/vue-test-helpers'
 import {
   mockBackupFiles,
-  mockCanBackup,
   mockDeleteBackup,
   mockLoadingBackups,
-  mockPerformBackup,
   mockRefreshBackupList,
   mockRestoreBackup,
-  mockSelectedFactoriesForBackup,
 } from '@/__tests__/fixtures/composables/useBackupManager'
+import { mockCanSync } from '@/__tests__/fixtures/composables/useCloudBackup'
 import type { GoogleDriveFile } from '@/types/cloudSync'
 
-import CloudAuth from '@/components/modals/import-export/CloudAuth.vue'
-import CloudSyncTab from '@/components/modals/import-export/CloudSyncTab.vue'
-import BackupList from '@/components/modals/import-export/BackupList.vue'
-import ManualBackup from '@/components/modals/import-export/ManualBackup.vue'
+import CloudAuth from '@/components/modals/cloud-sync/CloudAuth.vue'
+import CloudSyncTab from '@/components/modals/cloud-sync/CloudSyncTab.vue'
+import BackupList from '@/components/modals/cloud-sync/BackupList.vue'
+import SignedInUser from '@/components/modals/cloud-sync/SignedInUser.vue'
+import FactorySelector from '@/components/common/FactorySelector.vue'
 import NamespaceSelector from '@/components/common/NamespaceSelector.vue'
-import { VAlert, VBtn } from 'vuetify/components'
+import { VAlert, VSwitch } from 'vuetify/components'
 
 const mockAuthenticate = vi.fn()
 const mockSignOut = vi.fn()
+const mockEnableAutoSync = vi.fn()
+const mockDisableAutoSync = vi.fn()
 
 const mockGoogleAuthStore = {
   isAuthenticated: false,
@@ -32,13 +33,20 @@ const mockGoogleAuthStore = {
 const mockCloudSyncStore = {
   autoSync: {
     namespace: '',
+    enabled: false,
+    selectedFactories: [] as string[],
   },
   authenticate: mockAuthenticate,
   signOut: mockSignOut,
+  enableAutoSync: mockEnableAutoSync,
+  disableAutoSync: mockDisableAutoSync,
 }
 
 const mockFactoryStore = {
-  factoryList: [],
+  factoryList: [
+    { name: 'Iron Factory', icon: 'Desc_IronIngot_C', floors: [], recipeLinks: {} },
+    { name: 'Steel Factory', icon: 'Desc_SteelIngot_C', floors: [], recipeLinks: {} },
+  ],
 }
 
 vi.mock('@/composables/useStores', () => ({
@@ -54,7 +62,11 @@ vi.mock('@/composables/useBackupManager', async () => {
   return { useBackupManager: mockUseBackupManager }
 })
 
-// Mock window.confirm
+vi.mock('@/composables/useCloudBackup', async () => {
+  const { mockUseCloudBackup } = await import('@/__tests__/fixtures/composables/useCloudBackup')
+  return { useCloudBackup: mockUseCloudBackup }
+})
+
 global.confirm = vi.fn(() => true)
 
 describe('CloudSyncTab Integration', () => {
@@ -68,10 +80,11 @@ describe('CloudSyncTab Integration', () => {
     mockGoogleAuthStore.isAuthenticated = false
     mockGoogleAuthStore.userEmail = ''
     mockCloudSyncStore.autoSync.namespace = ''
+    mockCloudSyncStore.autoSync.enabled = false
+    mockCloudSyncStore.autoSync.selectedFactories = []
     mockBackupFiles.value = []
     mockLoadingBackups.value = false
-    mockCanBackup.value = false
-    mockSelectedFactoriesForBackup.value = []
+    mockCanSync.value = false
   })
 
   describe('Authentication State', () => {
@@ -83,25 +96,14 @@ describe('CloudSyncTab Integration', () => {
       component(wrapper, CloudAuth).assert()
     })
 
-    it('shows signed in section when authenticated', () => {
+    it('shows SignedInUser when authenticated', () => {
       mockGoogleAuthStore.isAuthenticated = true
       mockGoogleAuthStore.userEmail = 'test@example.com'
 
       const wrapper = createWrapper()
 
-      expect(wrapper.text()).toContain('Signed in as')
-      expect(wrapper.text()).toContain('test@example.com')
+      component(wrapper, SignedInUser).assert({ props: { email: 'test@example.com' } })
       component(wrapper, CloudAuth).assert({ exists: false })
-    })
-
-    it('shows sign out button when authenticated', () => {
-      mockGoogleAuthStore.isAuthenticated = true
-
-      const wrapper = createWrapper()
-
-      component(wrapper, VBtn)
-        .match((btn) => btn.text().includes('Sign Out'))
-        .assert()
     })
   })
 
@@ -117,16 +119,27 @@ describe('CloudSyncTab Integration', () => {
       expect(mockAuthenticate).toHaveBeenCalled()
     })
 
-    it('calls signOut when sign out button clicked', async () => {
+    it('calls signOut when SignedInUser emits sign-out', async () => {
       mockGoogleAuthStore.isAuthenticated = true
 
       const wrapper = createWrapper()
 
-      await component(wrapper, VBtn)
-        .match((btn) => btn.text().includes('Sign Out'))
-        .click()
+      await component(wrapper, SignedInUser).emit('signOut')
 
       expect(mockSignOut).toHaveBeenCalled()
+    })
+
+    it('displays error when authentication fails', async () => {
+      mockGoogleAuthStore.isAuthenticated = false
+      mockAuthenticate.mockRejectedValue(new Error('Auth failed'))
+
+      const wrapper = createWrapper()
+
+      await component(wrapper, CloudAuth).emit('authenticate')
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('Authentication failed: Auth failed')
+      component(wrapper, VAlert).assert()
     })
 
     it('displays error when sign out fails', async () => {
@@ -137,12 +150,9 @@ describe('CloudSyncTab Integration', () => {
 
       const wrapper = createWrapper()
 
-      await component(wrapper, VBtn)
-        .match((btn) => btn.text().includes('Sign Out'))
-        .click()
+      await component(wrapper, SignedInUser).emit('signOut')
 
       expect(wrapper.text()).toContain('Sign out failed: Sign out failed')
-      component(wrapper, VAlert).assert()
     })
   })
 
@@ -155,49 +165,103 @@ describe('CloudSyncTab Integration', () => {
       component(wrapper, NamespaceSelector).assert()
     })
 
-    it('shows info alert when no namespace selected', () => {
+    it('shows info alert when canSync is false', () => {
       mockGoogleAuthStore.isAuthenticated = true
-      mockCloudSyncStore.autoSync.namespace = ''
+      mockCanSync.value = false
 
       const wrapper = createWrapper()
 
-      expect(wrapper.text()).toContain('Please select or create a namespace')
+      expect(wrapper.text()).toContain('Select a namespace to configure sync')
     })
 
-    it('hides backup components when no namespace selected', () => {
+    it('hides sync components when canSync is false', () => {
       mockGoogleAuthStore.isAuthenticated = true
-      mockCloudSyncStore.autoSync.namespace = ''
+      mockCanSync.value = false
 
       const wrapper = createWrapper()
 
       component(wrapper, BackupList).assert({ exists: false })
-      component(wrapper, ManualBackup).assert({ exists: false })
+      component(wrapper, FactorySelector).assert({ exists: false })
     })
 
-    it('shows backup components when namespace is selected', () => {
+    it('shows sync components when canSync is true', () => {
       mockGoogleAuthStore.isAuthenticated = true
-      mockCloudSyncStore.autoSync.namespace = 'test-namespace'
+      mockCanSync.value = true
 
       const wrapper = createWrapper()
 
       component(wrapper, BackupList).assert()
-      component(wrapper, ManualBackup).assert()
+      component(wrapper, FactorySelector).assert()
+    })
+
+    it('calls refreshBackups when namespace selector loses focus', async () => {
+      mockGoogleAuthStore.isAuthenticated = true
+
+      const wrapper = createWrapper()
+
+      await component(wrapper, NamespaceSelector).emit('blur')
+      await flushPromises()
+
+      expect(mockRefreshBackupList).toHaveBeenCalled()
+    })
+  })
+
+  describe('Auto-Sync Toggle', () => {
+    beforeEach(() => {
+      mockGoogleAuthStore.isAuthenticated = true
+      mockCanSync.value = true
+    })
+
+    it('shows auto-sync toggle when canSync is true', () => {
+      const wrapper = createWrapper()
+
+      component(wrapper, VSwitch).assert()
+    })
+
+    it('disables toggle when no factories selected', () => {
+      mockCloudSyncStore.autoSync.selectedFactories = []
+
+      const wrapper = createWrapper()
+
+      component(wrapper, VSwitch).assert({ props: { disabled: true } })
+    })
+
+    it('enables toggle when factories are selected', () => {
+      mockCloudSyncStore.autoSync.selectedFactories = ['Iron Factory']
+
+      const wrapper = createWrapper()
+
+      component(wrapper, VSwitch).assert({ props: { disabled: false } })
+    })
+
+    it('calls enableAutoSync when toggle turned on', async () => {
+      mockCloudSyncStore.autoSync.selectedFactories = ['Iron Factory']
+      mockCloudSyncStore.autoSync.namespace = 'test-namespace'
+
+      const wrapper = createWrapper()
+
+      await component(wrapper, VSwitch).emit('update:modelValue', true)
+      await flushPromises()
+
+      expect(mockEnableAutoSync).toHaveBeenCalledWith('test-namespace', ['Iron Factory'])
+    })
+
+    it('calls disableAutoSync when toggle turned off', async () => {
+      mockCloudSyncStore.autoSync.selectedFactories = ['Iron Factory']
+
+      const wrapper = createWrapper()
+
+      await component(wrapper, VSwitch).emit('update:modelValue', false)
+      await flushPromises()
+
+      expect(mockDisableAutoSync).toHaveBeenCalled()
     })
   })
 
   describe('Backup Operations', () => {
     beforeEach(() => {
       mockGoogleAuthStore.isAuthenticated = true
-      mockCloudSyncStore.autoSync.namespace = 'test-namespace'
-    })
-
-    it('calls performBackup when ManualBackup emits backup', async () => {
-      const wrapper = createWrapper()
-
-      await component(wrapper, ManualBackup).emit('backup')
-      await flushPromises()
-
-      expect(mockPerformBackup).toHaveBeenCalled()
+      mockCanSync.value = true
     })
 
     it('calls restoreBackup when BackupList emits restore', async () => {
@@ -255,19 +319,10 @@ describe('CloudSyncTab Integration', () => {
       expect(mockDeleteBackup).not.toHaveBeenCalled()
     })
 
-    it('calls refreshBackupList when BackupList emits refresh', async () => {
+    it('calls refreshBackups when BackupList emits refresh', async () => {
       const wrapper = createWrapper()
 
       await component(wrapper, BackupList).emit('refresh')
-      await flushPromises()
-
-      expect(mockRefreshBackupList).toHaveBeenCalled()
-    })
-
-    it('calls refreshBackupList when namespace selector loses focus', async () => {
-      const wrapper = createWrapper()
-
-      await component(wrapper, NamespaceSelector).emit('blur')
       await flushPromises()
 
       expect(mockRefreshBackupList).toHaveBeenCalled()
@@ -277,31 +332,7 @@ describe('CloudSyncTab Integration', () => {
   describe('Error Handling', () => {
     beforeEach(() => {
       mockGoogleAuthStore.isAuthenticated = true
-      mockCloudSyncStore.autoSync.namespace = 'test-namespace'
-    })
-
-    it('displays error when authentication fails', async () => {
-      mockGoogleAuthStore.isAuthenticated = false
-      mockAuthenticate.mockRejectedValue(new Error('Auth failed'))
-
-      const wrapper = createWrapper()
-
-      await component(wrapper, CloudAuth).emit('authenticate')
-      await flushPromises()
-
-      expect(wrapper.text()).toContain('Authentication failed: Auth failed')
-      component(wrapper, VAlert).assert()
-    })
-
-    it('displays error when backup fails', async () => {
-      mockPerformBackup.mockRejectedValue(new Error('Backup failed'))
-
-      const wrapper = createWrapper()
-
-      await component(wrapper, ManualBackup).emit('backup')
-      await flushPromises()
-
-      expect(wrapper.text()).toContain('Backup failed: Backup failed')
+      mockCanSync.value = true
     })
 
     it('displays error when restore fails', async () => {
@@ -353,11 +384,11 @@ describe('CloudSyncTab Integration', () => {
     })
 
     it('can close error alert', async () => {
-      mockPerformBackup.mockRejectedValue(new Error('Test error'))
+      mockRefreshBackupList.mockRejectedValue(new Error('Test error'))
 
       const wrapper = createWrapper()
 
-      await component(wrapper, ManualBackup).emit('backup')
+      await component(wrapper, BackupList).emit('refresh')
       await flushPromises()
 
       component(wrapper, VAlert).assert()

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import { component } from '@/__tests__/vue-test-helpers'
 
-import CloudAuth from '@/components/modals/import-export/CloudAuth.vue'
+import CloudAuth from '@/components/modals/cloud-sync/CloudAuth.vue'
 import { VBtn } from 'vuetify/components'
 
 describe('CloudAuth Integration', () => {

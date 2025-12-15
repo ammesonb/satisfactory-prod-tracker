@@ -40,8 +40,9 @@ const syncBadge = computed(() => {
         :icon="syncBadge.icon"
         :dot="rail"
         overlap
-        offset-x="8"
-        offset-y="8"
+        offset-y="4"
+        :width="rail ? undefined : '24'"
+        :height="rail ? undefined : '24'"
         v-bind="tooltipProps"
       >
         <slot />

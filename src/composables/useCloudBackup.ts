@@ -1,3 +1,5 @@
+import { computed } from 'vue'
+
 import { useGoogleDrive } from '@/composables/useGoogleDrive'
 import { getStores } from '@/composables/useStores'
 import {
@@ -25,6 +27,10 @@ import {
 export function useCloudBackup() {
   const { cloudSyncStore, factoryStore, googleAuthStore } = getStores()
   const googleDrive = useGoogleDrive()
+
+  const canSync = computed(
+    () => googleAuthStore.isAuthenticated && !!cloudSyncStore.autoSync.namespace,
+  )
 
   /**
    * Backup a factory to Google Drive
@@ -302,6 +308,7 @@ export function useCloudBackup() {
   }
 
   return {
+    canSync,
     backupFactory,
     restoreFactory,
     listBackups,

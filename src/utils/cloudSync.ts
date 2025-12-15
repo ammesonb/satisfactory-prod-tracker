@@ -11,7 +11,7 @@ export const STATUS_COLORS: Record<FactorySyncStatus, string> = {
 
 export const STATUS_ICONS: Record<FactorySyncStatus, string> = {
   [FactorySyncStatus.CLEAN]: 'mdi-check',
-  [FactorySyncStatus.DIRTY]: 'mdi-circle',
+  [FactorySyncStatus.DIRTY]: 'mdi-asterisk-circle-outline',
   [FactorySyncStatus.SAVING]: 'mdi-loading',
   [FactorySyncStatus.CONFLICT]: 'mdi-alert',
   [FactorySyncStatus.ERROR]: 'mdi-close',

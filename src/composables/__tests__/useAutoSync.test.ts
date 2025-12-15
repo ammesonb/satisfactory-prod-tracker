@@ -7,7 +7,7 @@ import { FactorySyncStatus } from '@/types/cloudSync'
 vi.mock('@/composables/useCloudBackup', async () => {
   const { mockUseCloudBackup } = await import('@/__tests__/fixtures/composables/useCloudBackup')
   return {
-    useCloudBackup: () => mockUseCloudBackup,
+    useCloudBackup: mockUseCloudBackup,
   }
 })
 
@@ -18,7 +18,10 @@ vi.mock('@/composables/useStores', async () => {
   }
 })
 
-import { mockUseCloudBackup } from '@/__tests__/fixtures/composables/useCloudBackup'
+import {
+  mockBackupFactory,
+  mockDetectConflict,
+} from '@/__tests__/fixtures/composables/useCloudBackup'
 import { mockCloudSyncStore } from '@/__tests__/fixtures/composables/cloudSyncStore'
 import { mockIsAuthenticated } from '@/__tests__/fixtures/composables/googleAuthStore'
 import {
@@ -63,8 +66,8 @@ describe('useAutoSync', () => {
 
     mockFactories.value = {}
 
-    mockUseCloudBackup.backupFactory.mockResolvedValue(undefined)
-    mockUseCloudBackup.detectConflict.mockResolvedValue(null)
+    mockBackupFactory.mockResolvedValue(undefined)
+    mockDetectConflict.mockResolvedValue(null)
   })
 
   afterEach(() => {
@@ -84,7 +87,7 @@ describe('useAutoSync', () => {
 
       vi.advanceTimersByTime(15000)
 
-      expect(mockUseCloudBackup.backupFactory).not.toHaveBeenCalled()
+      expect(mockBackupFactory).not.toHaveBeenCalled()
     })
 
     it('does not schedule save when auto-sync is suspended', () => {
@@ -99,7 +102,7 @@ describe('useAutoSync', () => {
 
       vi.advanceTimersByTime(15000)
 
-      expect(mockUseCloudBackup.backupFactory).not.toHaveBeenCalled()
+      expect(mockBackupFactory).not.toHaveBeenCalled()
     })
 
     it('does not schedule save when not authenticated', () => {
@@ -114,7 +117,7 @@ describe('useAutoSync', () => {
 
       vi.advanceTimersByTime(15000)
 
-      expect(mockUseCloudBackup.backupFactory).not.toHaveBeenCalled()
+      expect(mockBackupFactory).not.toHaveBeenCalled()
     })
 
     it('does not schedule save when namespace is empty', () => {
@@ -129,7 +132,7 @@ describe('useAutoSync', () => {
 
       vi.advanceTimersByTime(15000)
 
-      expect(mockUseCloudBackup.backupFactory).not.toHaveBeenCalled()
+      expect(mockBackupFactory).not.toHaveBeenCalled()
     })
   })
 
@@ -147,8 +150,8 @@ describe('useAutoSync', () => {
 
       await vi.advanceTimersByTimeAsync(15000)
 
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledTimes(1)
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledWith('TestNamespace', 'Factory1')
+      expect(mockBackupFactory).toHaveBeenCalledTimes(1)
+      expect(mockBackupFactory).toHaveBeenCalledWith('TestNamespace', 'Factory1')
     })
 
     it('only saves factories with DIRTY status', async () => {
@@ -165,8 +168,8 @@ describe('useAutoSync', () => {
 
       await vi.advanceTimersByTimeAsync(15000)
 
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledTimes(1)
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledWith('TestNamespace', 'Factory1')
+      expect(mockBackupFactory).toHaveBeenCalledTimes(1)
+      expect(mockBackupFactory).toHaveBeenCalledWith('TestNamespace', 'Factory1')
     })
 
     it('does not save when no factories are dirty', async () => {
@@ -181,7 +184,7 @@ describe('useAutoSync', () => {
 
       await vi.advanceTimersByTimeAsync(15000)
 
-      expect(mockUseCloudBackup.backupFactory).not.toHaveBeenCalled()
+      expect(mockBackupFactory).not.toHaveBeenCalled()
     })
   })
 
@@ -203,7 +206,7 @@ describe('useAutoSync', () => {
 
       await vi.advanceTimersByTimeAsync(15000)
 
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledTimes(1)
+      expect(mockBackupFactory).toHaveBeenCalledTimes(1)
     })
 
     it('waits full debounce period after last call', async () => {
@@ -217,10 +220,10 @@ describe('useAutoSync', () => {
       autoSync.scheduleSave()
 
       vi.advanceTimersByTime(9000)
-      expect(mockUseCloudBackup.backupFactory).not.toHaveBeenCalled()
+      expect(mockBackupFactory).not.toHaveBeenCalled()
 
       await vi.advanceTimersByTimeAsync(2000)
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledTimes(1)
+      expect(mockBackupFactory).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -237,8 +240,8 @@ describe('useAutoSync', () => {
 
       await vi.advanceTimersByTimeAsync(15000)
 
-      expect(mockUseCloudBackup.detectConflict).toHaveBeenCalledWith('TestNamespace', 'Factory1')
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalled()
+      expect(mockDetectConflict).toHaveBeenCalledWith('TestNamespace', 'Factory1')
+      expect(mockBackupFactory).toHaveBeenCalled()
     })
 
     it('sets conflict state and skips save when conflict detected', async () => {
@@ -249,7 +252,7 @@ describe('useAutoSync', () => {
         cloudDisplayId: 'Other Device',
         localTimestamp: '2024-01-01T00:00:00Z',
       }
-      mockUseCloudBackup.detectConflict.mockResolvedValue(conflictInfo)
+      mockDetectConflict.mockResolvedValue(conflictInfo)
 
       mockCloudSyncStore.autoSync.selectedFactories = ['Factory1']
       mockFactories.value = {
@@ -264,7 +267,7 @@ describe('useAutoSync', () => {
 
       expect(mockSetSyncConflict).toHaveBeenCalledWith('Factory1', conflictInfo)
       expect(mockCloudSyncStore.setGlobalError).toHaveBeenCalled()
-      expect(mockUseCloudBackup.backupFactory).not.toHaveBeenCalled()
+      expect(mockBackupFactory).not.toHaveBeenCalled()
     })
 
     it('skips conflict check if recently synced', async () => {
@@ -280,14 +283,14 @@ describe('useAutoSync', () => {
 
       await vi.advanceTimersByTimeAsync(15000)
 
-      expect(mockUseCloudBackup.detectConflict).not.toHaveBeenCalled()
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalled()
+      expect(mockDetectConflict).not.toHaveBeenCalled()
+      expect(mockBackupFactory).toHaveBeenCalled()
     })
   })
 
   describe('retry logic', () => {
     it('retries on failure with exponential backoff', async () => {
-      mockUseCloudBackup.backupFactory
+      mockBackupFactory
         .mockRejectedValueOnce(new Error('Network error'))
         .mockRejectedValueOnce(new Error('Network error'))
         .mockResolvedValueOnce(undefined)
@@ -303,19 +306,19 @@ describe('useAutoSync', () => {
 
       // Initial debounce
       await vi.advanceTimersByTimeAsync(10000)
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledTimes(1)
+      expect(mockBackupFactory).toHaveBeenCalledTimes(1)
 
       // First retry after 500ms
       await vi.advanceTimersByTimeAsync(500)
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledTimes(2)
+      expect(mockBackupFactory).toHaveBeenCalledTimes(2)
 
       // Second retry after 2000ms
       await vi.advanceTimersByTimeAsync(2000)
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledTimes(3)
+      expect(mockBackupFactory).toHaveBeenCalledTimes(3)
     })
 
     it('sets error state after max retries', async () => {
-      mockUseCloudBackup.backupFactory.mockRejectedValue(new Error('Persistent error'))
+      mockBackupFactory.mockRejectedValue(new Error('Persistent error'))
 
       mockCloudSyncStore.autoSync.selectedFactories = ['Factory1']
       mockFactories.value = {
@@ -334,7 +337,7 @@ describe('useAutoSync', () => {
       await vi.advanceTimersByTimeAsync(10000) // retry 4
       await vi.advanceTimersByTimeAsync(20000) // retry 5
 
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledTimes(6)
+      expect(mockBackupFactory).toHaveBeenCalledTimes(6)
       expect(mockSetSyncError).toHaveBeenCalledWith('Factory1', 'Persistent error')
       expect(mockCloudSyncStore.setGlobalError).toHaveBeenCalled()
     })
@@ -356,7 +359,7 @@ describe('useAutoSync', () => {
 
       await vi.advanceTimersByTimeAsync(15000)
 
-      expect(mockUseCloudBackup.backupFactory).not.toHaveBeenCalled()
+      expect(mockBackupFactory).not.toHaveBeenCalled()
     })
   })
 
@@ -375,22 +378,10 @@ describe('useAutoSync', () => {
 
       await vi.advanceTimersByTimeAsync(15000)
 
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledTimes(3)
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenNthCalledWith(
-        1,
-        'TestNamespace',
-        'Factory1',
-      )
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenNthCalledWith(
-        2,
-        'TestNamespace',
-        'Factory2',
-      )
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenNthCalledWith(
-        3,
-        'TestNamespace',
-        'Factory3',
-      )
+      expect(mockBackupFactory).toHaveBeenCalledTimes(3)
+      expect(mockBackupFactory).toHaveBeenNthCalledWith(1, 'TestNamespace', 'Factory1')
+      expect(mockBackupFactory).toHaveBeenNthCalledWith(2, 'TestNamespace', 'Factory2')
+      expect(mockBackupFactory).toHaveBeenNthCalledWith(3, 'TestNamespace', 'Factory3')
     })
 
     it('stops saving if auto-sync becomes disabled mid-save', async () => {
@@ -401,7 +392,7 @@ describe('useAutoSync', () => {
         Factory3: createTestFactory('Factory3', FactorySyncStatus.DIRTY),
       }
 
-      mockUseCloudBackup.backupFactory.mockImplementation(async () => {
+      mockBackupFactory.mockImplementation(async () => {
         // Disable auto-sync after first save
         mockCloudSyncStore.autoSync.enabled = false
       })
@@ -412,7 +403,7 @@ describe('useAutoSync', () => {
 
       await vi.advanceTimersByTimeAsync(15000)
 
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledTimes(1)
+      expect(mockBackupFactory).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -429,8 +420,8 @@ describe('useAutoSync', () => {
 
       await vi.advanceTimersByTimeAsync(15000)
 
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledTimes(1)
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledWith('TestNamespace', 'Factory1')
+      expect(mockBackupFactory).toHaveBeenCalledTimes(1)
+      expect(mockBackupFactory).toHaveBeenCalledWith('TestNamespace', 'Factory1')
     })
 
     it('skips factory removed from selectedFactories during save', async () => {
@@ -440,7 +431,7 @@ describe('useAutoSync', () => {
         Factory2: createTestFactory('Factory2', FactorySyncStatus.DIRTY),
       }
 
-      mockUseCloudBackup.backupFactory.mockImplementation(async () => {
+      mockBackupFactory.mockImplementation(async () => {
         // Remove Factory2 from selection after first save
         mockCloudSyncStore.autoSync.selectedFactories = ['Factory1']
       })
@@ -451,7 +442,7 @@ describe('useAutoSync', () => {
 
       await vi.advanceTimersByTimeAsync(15000)
 
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledTimes(1)
+      expect(mockBackupFactory).toHaveBeenCalledTimes(1)
     })
   })
 })

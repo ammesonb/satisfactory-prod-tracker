@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { component, element } from '@/__tests__/vue-test-helpers'
 import type { GoogleDriveFile } from '@/types/cloudSync'
 
-import BackupList from '@/components/modals/import-export/BackupList.vue'
-import FactoryBackupEntry from '@/components/modals/import-export/FactoryBackupEntry.vue'
+import BackupList from '@/components/modals/cloud-sync/BackupList.vue'
+import FactoryBackupEntry from '@/components/modals/cloud-sync/FactoryBackupEntry.vue'
 import { VBtn, VList } from 'vuetify/components'
 
 vi.mock('@/composables/useStores', async () => {

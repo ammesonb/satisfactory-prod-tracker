@@ -235,6 +235,16 @@ describe('useGoogleAuthStore', () => {
 
   describe('isTokenExpired getter', () => {
     const TOKEN_EXPIRY_BUFFER_MS = 5000
+    const NOW = 1700000000000
+
+    beforeEach(() => {
+      vi.useFakeTimers()
+      vi.setSystemTime(NOW)
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
 
     it('returns true when expiresAt is null', () => {
       const store = useGoogleAuthStore()
@@ -244,28 +254,28 @@ describe('useGoogleAuthStore', () => {
 
     it('returns true when token expired in the past', () => {
       const store = useGoogleAuthStore()
-      store.expiresAt = Date.now() - 10000 // 10 seconds ago
+      store.expiresAt = NOW - 10000 // 10 seconds ago
 
       expect(store.isTokenExpired).toBe(true)
     })
 
     it('returns true when token expires right now', () => {
       const store = useGoogleAuthStore()
-      store.expiresAt = Date.now()
+      store.expiresAt = NOW
 
       expect(store.isTokenExpired).toBe(true)
     })
 
     it('returns true when token expires within buffer (< 5 seconds)', () => {
       const store = useGoogleAuthStore()
-      store.expiresAt = Date.now() + TOKEN_EXPIRY_BUFFER_MS - 1000 // 4 seconds from now
+      store.expiresAt = NOW + TOKEN_EXPIRY_BUFFER_MS - 1000 // 4 seconds from now
 
       expect(store.isTokenExpired).toBe(true)
     })
 
     it('returns true at exact buffer boundary', () => {
       const store = useGoogleAuthStore()
-      store.expiresAt = Date.now() + TOKEN_EXPIRY_BUFFER_MS // Exactly 5 seconds
+      store.expiresAt = NOW + TOKEN_EXPIRY_BUFFER_MS // Exactly 5 seconds
 
       // The implementation uses `>` not `>=`, so exact boundary returns false
       expect(store.isTokenExpired).toBe(false)
@@ -273,14 +283,14 @@ describe('useGoogleAuthStore', () => {
 
     it('returns false when token expires beyond buffer', () => {
       const store = useGoogleAuthStore()
-      store.expiresAt = Date.now() + TOKEN_EXPIRY_BUFFER_MS + 1000 // 6 seconds from now
+      store.expiresAt = NOW + TOKEN_EXPIRY_BUFFER_MS + 1000 // 6 seconds from now
 
       expect(store.isTokenExpired).toBe(false)
     })
 
     it('returns false for long-lived token', () => {
       const store = useGoogleAuthStore()
-      store.expiresAt = Date.now() + 3600000 // 1 hour from now
+      store.expiresAt = NOW + 3600000 // 1 hour from now
 
       expect(store.isTokenExpired).toBe(false)
     })

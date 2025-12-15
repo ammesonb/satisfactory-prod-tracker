@@ -22,7 +22,7 @@ vi.mock('@/composables/useStores', async () => {
 })
 
 // Import mocks after setting up mocks
-import { mockUseGoogleDrive } from '@/__tests__/fixtures/composables/useGoogleDrive'
+import { mockUseGoogleDrive, mockRenameFile } from '@/__tests__/fixtures/composables/useGoogleDrive'
 import { mockCloudSyncStore } from '@/__tests__/fixtures/composables/cloudSyncStore'
 import { mockFactories } from '@/__tests__/fixtures/composables/factoryStore'
 import { mockIsAuthenticated } from '@/__tests__/fixtures/composables/googleAuthStore'
@@ -292,6 +292,366 @@ describe('useCloudBackup', () => {
       await cloudBackup.deleteBackup('Save1', 'test.sptrak')
 
       expect(mockUseGoogleDrive.deleteFile).toHaveBeenCalledWith('file-789')
+    })
+  })
+
+  describe('findCloudFile', () => {
+    it('throws error when not authenticated', async () => {
+      mockIsAuthenticated.mockReturnValue(false)
+      const cloudBackup = useCloudBackup()
+
+      await expect(cloudBackup.findCloudFile('Save1', 'MyFactory')).rejects.toThrow(
+        CLOUD_SYNC_ERRORS.NOT_AUTHENTICATED,
+      )
+    })
+
+    it('returns null when file not found', async () => {
+      mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
+      mockUseGoogleDrive.listFiles.mockResolvedValue([])
+
+      const cloudBackup = useCloudBackup()
+      const result = await cloudBackup.findCloudFile('Save1', 'MyFactory')
+
+      expect(result).toBeNull()
+      expect(mockUseGoogleDrive.listFiles).toHaveBeenCalledWith(
+        'folder-123',
+        "name='MyFactory.sptrak'",
+      )
+    })
+
+    it('returns file when found', async () => {
+      const mockFile: GoogleDriveFile = {
+        id: 'file-123',
+        name: 'MyFactory.sptrak',
+        mimeType: 'application/json',
+        modifiedTime: '2023-01-01T00:00:00Z',
+        createdTime: '2023-01-01T00:00:00Z',
+      }
+      mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
+      mockUseGoogleDrive.listFiles.mockResolvedValue([mockFile])
+
+      const cloudBackup = useCloudBackup()
+      const result = await cloudBackup.findCloudFile('Save1', 'MyFactory')
+
+      expect(result).toEqual(mockFile)
+    })
+
+    it('returns null when folder path throws', async () => {
+      mockUseGoogleDrive.ensureFolderPath.mockRejectedValue(new Error('Folder not found'))
+
+      const cloudBackup = useCloudBackup()
+      const result = await cloudBackup.findCloudFile('Save1', 'MyFactory')
+
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('downloadSptrakFile', () => {
+    it('returns null when file not found', async () => {
+      mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
+      mockUseGoogleDrive.listFiles.mockResolvedValue([])
+
+      const cloudBackup = useCloudBackup()
+      const result = await cloudBackup.downloadSptrakFile('Save1', 'MyFactory')
+
+      expect(result).toBeNull()
+    })
+
+    it('returns parsed sptrak file when found', async () => {
+      const mockFile: GoogleDriveFile = {
+        id: 'file-123',
+        name: 'MyFactory.sptrak',
+        mimeType: 'application/json',
+        modifiedTime: '2023-01-01T00:00:00Z',
+        createdTime: '2023-01-01T00:00:00Z',
+      }
+      const sptrakContent = {
+        metadata: {
+          version: '1.0',
+          instanceId: 'instance-abc',
+          displayId: 'Other Device',
+          lastModified: '2023-01-01T00:00:00Z',
+          factoryName: 'MyFactory',
+          namespace: 'Save1',
+        },
+        factory: {
+          name: 'MyFactory',
+          icon: 'icon.png',
+          floors: [],
+          recipeLinks: {},
+        },
+      }
+      mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
+      mockUseGoogleDrive.listFiles.mockResolvedValue([mockFile])
+      mockUseGoogleDrive.downloadFile.mockResolvedValue(JSON.stringify(sptrakContent))
+
+      const cloudBackup = useCloudBackup()
+      const result = await cloudBackup.downloadSptrakFile('Save1', 'MyFactory')
+
+      expect(result).toEqual(sptrakContent)
+    })
+
+    it('returns null when download fails', async () => {
+      const mockFile: GoogleDriveFile = {
+        id: 'file-123',
+        name: 'MyFactory.sptrak',
+        mimeType: 'application/json',
+        modifiedTime: '2023-01-01T00:00:00Z',
+        createdTime: '2023-01-01T00:00:00Z',
+      }
+      mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
+      mockUseGoogleDrive.listFiles.mockResolvedValue([mockFile])
+      mockUseGoogleDrive.downloadFile.mockRejectedValue(new Error('Download failed'))
+
+      const cloudBackup = useCloudBackup()
+      const result = await cloudBackup.downloadSptrakFile('Save1', 'MyFactory')
+
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('detectConflict', () => {
+    it('returns null when no cloud file exists', async () => {
+      mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
+      mockUseGoogleDrive.listFiles.mockResolvedValue([])
+
+      const factory: Factory = {
+        name: 'MyFactory',
+        icon: 'icon.png',
+        floors: [],
+        recipeLinks: {},
+      }
+      mockFactories.value = { MyFactory: factory }
+
+      const cloudBackup = useCloudBackup()
+      const result = await cloudBackup.detectConflict('Save1', 'MyFactory')
+
+      expect(result).toBeNull()
+    })
+
+    it('throws error when factory not found locally', async () => {
+      const mockFile: GoogleDriveFile = {
+        id: 'file-123',
+        name: 'MyFactory.sptrak',
+        mimeType: 'application/json',
+        modifiedTime: '2023-01-01T00:00:00Z',
+        createdTime: '2023-01-01T00:00:00Z',
+      }
+      mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
+      mockUseGoogleDrive.listFiles.mockResolvedValue([mockFile])
+      mockFactories.value = {}
+
+      const cloudBackup = useCloudBackup()
+
+      await expect(cloudBackup.detectConflict('Save1', 'MyFactory')).rejects.toThrow(
+        CLOUD_SYNC_ERRORS.FACTORY_NOT_FOUND('MyFactory'),
+      )
+    })
+
+    it('returns null when cloud file is older than lastSynced', async () => {
+      const mockFile: GoogleDriveFile = {
+        id: 'file-123',
+        name: 'MyFactory.sptrak',
+        mimeType: 'application/json',
+        modifiedTime: '2023-01-01T00:00:00Z',
+        createdTime: '2023-01-01T00:00:00Z',
+      }
+      mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
+      mockUseGoogleDrive.listFiles.mockResolvedValue([mockFile])
+
+      const factory: Factory = {
+        name: 'MyFactory',
+        icon: 'icon.png',
+        floors: [],
+        recipeLinks: {},
+        syncStatus: {
+          status: FactorySyncStatus.CLEAN,
+          lastSynced: '2023-01-02T00:00:00Z', // Newer than cloud
+          lastError: null,
+        },
+      }
+      mockFactories.value = { MyFactory: factory }
+
+      const cloudBackup = useCloudBackup()
+      const result = await cloudBackup.detectConflict('Save1', 'MyFactory')
+
+      expect(result).toBeNull()
+      expect(mockUseGoogleDrive.downloadFile).not.toHaveBeenCalled()
+    })
+
+    it('returns null when cloud file is from same instance', async () => {
+      const mockFile: GoogleDriveFile = {
+        id: 'file-123',
+        name: 'MyFactory.sptrak',
+        mimeType: 'application/json',
+        modifiedTime: '2023-01-02T00:00:00Z',
+        createdTime: '2023-01-01T00:00:00Z',
+      }
+      const sptrakContent = {
+        metadata: {
+          version: '1.0',
+          instanceId: 'test-instance-123', // Same as mockCloudSyncStore.instanceId
+          displayId: 'Test Device',
+          lastModified: '2023-01-02T00:00:00Z',
+          factoryName: 'MyFactory',
+          namespace: 'Save1',
+        },
+        factory: {
+          name: 'MyFactory',
+          icon: 'icon.png',
+          floors: [],
+          recipeLinks: {},
+        },
+      }
+      mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
+      mockUseGoogleDrive.listFiles.mockResolvedValue([mockFile])
+      mockUseGoogleDrive.downloadFile.mockResolvedValue(JSON.stringify(sptrakContent))
+
+      const factory: Factory = {
+        name: 'MyFactory',
+        icon: 'icon.png',
+        floors: [],
+        recipeLinks: {},
+        syncStatus: {
+          status: FactorySyncStatus.CLEAN,
+          lastSynced: '2023-01-01T00:00:00Z', // Older than cloud
+          lastError: null,
+        },
+      }
+      mockFactories.value = { MyFactory: factory }
+
+      const cloudBackup = useCloudBackup()
+      const result = await cloudBackup.detectConflict('Save1', 'MyFactory')
+
+      expect(result).toBeNull()
+    })
+
+    it('returns conflict info when cloud is newer from different instance', async () => {
+      const mockFile: GoogleDriveFile = {
+        id: 'file-123',
+        name: 'MyFactory.sptrak',
+        mimeType: 'application/json',
+        modifiedTime: '2023-01-02T00:00:00Z',
+        createdTime: '2023-01-01T00:00:00Z',
+      }
+      const sptrakContent = {
+        metadata: {
+          version: '1.0',
+          instanceId: 'other-instance-456', // Different from mockCloudSyncStore.instanceId
+          displayId: 'Other Device',
+          lastModified: '2023-01-02T00:00:00Z',
+          factoryName: 'MyFactory',
+          namespace: 'Save1',
+        },
+        factory: {
+          name: 'MyFactory',
+          icon: 'icon.png',
+          floors: [],
+          recipeLinks: {},
+        },
+      }
+      mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
+      mockUseGoogleDrive.listFiles.mockResolvedValue([mockFile])
+      mockUseGoogleDrive.downloadFile.mockResolvedValue(JSON.stringify(sptrakContent))
+
+      const factory: Factory = {
+        name: 'MyFactory',
+        icon: 'icon.png',
+        floors: [],
+        recipeLinks: {},
+        syncStatus: {
+          status: FactorySyncStatus.DIRTY,
+          lastSynced: '2023-01-01T00:00:00Z',
+          lastError: null,
+        },
+      }
+      mockFactories.value = { MyFactory: factory }
+
+      const cloudBackup = useCloudBackup()
+      const result = await cloudBackup.detectConflict('Save1', 'MyFactory')
+
+      expect(result).toEqual({
+        factoryName: 'MyFactory',
+        cloudTimestamp: '2023-01-02T00:00:00Z',
+        cloudInstanceId: 'other-instance-456',
+        cloudDisplayId: 'Other Device',
+        localTimestamp: '2023-01-01T00:00:00Z',
+      })
+    })
+
+    it('downloads file to check when factory has never synced', async () => {
+      const mockFile: GoogleDriveFile = {
+        id: 'file-123',
+        name: 'MyFactory.sptrak',
+        mimeType: 'application/json',
+        modifiedTime: '2023-01-02T00:00:00Z',
+        createdTime: '2023-01-01T00:00:00Z',
+      }
+      const sptrakContent = {
+        metadata: {
+          version: '1.0',
+          instanceId: 'other-instance-456',
+          displayId: 'Other Device',
+          lastModified: '2023-01-02T00:00:00Z',
+          factoryName: 'MyFactory',
+          namespace: 'Save1',
+        },
+        factory: {
+          name: 'MyFactory',
+          icon: 'icon.png',
+          floors: [],
+          recipeLinks: {},
+        },
+      }
+      mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
+      mockUseGoogleDrive.listFiles.mockResolvedValue([mockFile])
+      mockUseGoogleDrive.downloadFile.mockResolvedValue(JSON.stringify(sptrakContent))
+
+      const factory: Factory = {
+        name: 'MyFactory',
+        icon: 'icon.png',
+        floors: [],
+        recipeLinks: {},
+        // No syncStatus - never synced
+      }
+      mockFactories.value = { MyFactory: factory }
+
+      const cloudBackup = useCloudBackup()
+      const result = await cloudBackup.detectConflict('Save1', 'MyFactory')
+
+      expect(mockUseGoogleDrive.downloadFile).toHaveBeenCalled()
+      expect(result).not.toBeNull()
+      expect(result?.localTimestamp).toBe('Never synced')
+    })
+  })
+
+  describe('renameBackup', () => {
+    it('does nothing when cloud file does not exist', async () => {
+      mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
+      mockUseGoogleDrive.listFiles.mockResolvedValue([])
+
+      const cloudBackup = useCloudBackup()
+      await cloudBackup.renameBackup('Save1', 'OldFactory', 'NewFactory')
+
+      expect(mockRenameFile).not.toHaveBeenCalled()
+    })
+
+    it('renames file when it exists', async () => {
+      const mockFile: GoogleDriveFile = {
+        id: 'file-123',
+        name: 'OldFactory.sptrak',
+        mimeType: 'application/json',
+        modifiedTime: '2023-01-01T00:00:00Z',
+        createdTime: '2023-01-01T00:00:00Z',
+      }
+      mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
+      mockUseGoogleDrive.listFiles.mockResolvedValue([mockFile])
+      mockRenameFile.mockResolvedValue(undefined)
+
+      const cloudBackup = useCloudBackup()
+      await cloudBackup.renameBackup('Save1', 'OldFactory', 'NewFactory')
+
+      expect(mockRenameFile).toHaveBeenCalledWith('file-123', 'NewFactory.sptrak')
     })
   })
 })

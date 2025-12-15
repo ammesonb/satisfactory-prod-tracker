@@ -8,7 +8,7 @@ import type { GoogleDriveFile } from '@/types/cloudSync'
 vi.mock('@/composables/useCloudBackup', async () => {
   const { mockUseCloudBackup } = await import('@/__tests__/fixtures/composables/useCloudBackup')
   return {
-    useCloudBackup: () => mockUseCloudBackup,
+    useCloudBackup: mockUseCloudBackup,
   }
 })
 
@@ -20,7 +20,12 @@ vi.mock('@/composables/useStores', async () => {
 })
 
 // Import mocks after setting up mocks
-import { mockUseCloudBackup } from '@/__tests__/fixtures/composables/useCloudBackup'
+import {
+  mockBackupFactory,
+  mockDeleteBackup,
+  mockListBackups,
+  mockRestoreFactory,
+} from '@/__tests__/fixtures/composables/useCloudBackup'
 import { mockCloudSyncStore } from '@/__tests__/fixtures/composables/cloudSyncStore'
 
 describe('useBackupManager', () => {
@@ -31,7 +36,7 @@ describe('useBackupManager', () => {
     // Reset mock state
     mockCloudSyncStore.autoSync.namespace = 'TestNamespace'
     mockCloudSyncStore.autoSync.enabled = true
-    mockUseCloudBackup.listBackups.mockResolvedValue([])
+    mockListBackups.mockResolvedValue([])
   })
 
   describe('state initialization', () => {
@@ -83,49 +88,37 @@ describe('useBackupManager', () => {
     })
 
     it('backs up single factory', async () => {
-      mockUseCloudBackup.backupFactory.mockResolvedValue(undefined)
-      mockUseCloudBackup.listBackups.mockResolvedValue([])
+      mockBackupFactory.mockResolvedValue(undefined)
+      mockListBackups.mockResolvedValue([])
 
       const manager = useBackupManager()
       manager.selectedFactoriesForBackup.value = ['Factory1']
 
       await manager.performBackup()
 
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledTimes(1)
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledWith('TestNamespace', 'Factory1')
+      expect(mockBackupFactory).toHaveBeenCalledTimes(1)
+      expect(mockBackupFactory).toHaveBeenCalledWith('TestNamespace', 'Factory1')
       expect(manager.selectedFactoriesForBackup.value).toEqual([])
     })
 
     it('backs up multiple factories sequentially', async () => {
-      mockUseCloudBackup.backupFactory.mockResolvedValue(undefined)
-      mockUseCloudBackup.listBackups.mockResolvedValue([])
+      mockBackupFactory.mockResolvedValue(undefined)
+      mockListBackups.mockResolvedValue([])
 
       const manager = useBackupManager()
       manager.selectedFactoriesForBackup.value = ['Factory1', 'Factory2', 'Factory3']
 
       await manager.performBackup()
 
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenCalledTimes(3)
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenNthCalledWith(
-        1,
-        'TestNamespace',
-        'Factory1',
-      )
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenNthCalledWith(
-        2,
-        'TestNamespace',
-        'Factory2',
-      )
-      expect(mockUseCloudBackup.backupFactory).toHaveBeenNthCalledWith(
-        3,
-        'TestNamespace',
-        'Factory3',
-      )
+      expect(mockBackupFactory).toHaveBeenCalledTimes(3)
+      expect(mockBackupFactory).toHaveBeenNthCalledWith(1, 'TestNamespace', 'Factory1')
+      expect(mockBackupFactory).toHaveBeenNthCalledWith(2, 'TestNamespace', 'Factory2')
+      expect(mockBackupFactory).toHaveBeenNthCalledWith(3, 'TestNamespace', 'Factory3')
     })
 
     it('clears selection after successful backup', async () => {
-      mockUseCloudBackup.backupFactory.mockResolvedValue(undefined)
-      mockUseCloudBackup.listBackups.mockResolvedValue([])
+      mockBackupFactory.mockResolvedValue(undefined)
+      mockListBackups.mockResolvedValue([])
 
       const manager = useBackupManager()
       manager.selectedFactoriesForBackup.value = ['Factory1']
@@ -145,22 +138,22 @@ describe('useBackupManager', () => {
           createdTime: '2023-01-01',
         },
       ]
-      mockUseCloudBackup.backupFactory.mockResolvedValue(undefined)
-      mockUseCloudBackup.listBackups.mockResolvedValue(mockBackups)
+      mockBackupFactory.mockResolvedValue(undefined)
+      mockListBackups.mockResolvedValue(mockBackups)
 
       const manager = useBackupManager()
       manager.selectedFactoriesForBackup.value = ['Factory1']
 
       await manager.performBackup()
 
-      expect(mockUseCloudBackup.listBackups).toHaveBeenCalledWith('TestNamespace')
+      expect(mockListBackups).toHaveBeenCalledWith('TestNamespace')
       expect(manager.backupFiles.value).toEqual(mockBackups)
     })
   })
 
   describe('restoreBackup', () => {
     it('calls cloudBackup.restoreFactory with correct parameters', async () => {
-      mockUseCloudBackup.restoreFactory.mockResolvedValue(undefined)
+      mockRestoreFactory.mockResolvedValue(undefined)
 
       const backup: GoogleDriveFile = {
         id: 'file-1',
@@ -173,11 +166,7 @@ describe('useBackupManager', () => {
       const manager = useBackupManager()
       await manager.restoreBackup(backup)
 
-      expect(mockUseCloudBackup.restoreFactory).toHaveBeenCalledWith(
-        'TestNamespace',
-        'Factory1.sptrak',
-        undefined,
-      )
+      expect(mockRestoreFactory).toHaveBeenCalledWith('TestNamespace', 'Factory1.sptrak', undefined)
     })
   })
 
@@ -192,8 +181,8 @@ describe('useBackupManager', () => {
           createdTime: '2023-01-02',
         },
       ]
-      mockUseCloudBackup.deleteBackup.mockResolvedValue(undefined)
-      mockUseCloudBackup.listBackups.mockResolvedValue(mockBackups)
+      mockDeleteBackup.mockResolvedValue(undefined)
+      mockListBackups.mockResolvedValue(mockBackups)
 
       const backup: GoogleDriveFile = {
         id: 'file-1',
@@ -206,11 +195,8 @@ describe('useBackupManager', () => {
       const manager = useBackupManager()
       await manager.deleteBackup(backup)
 
-      expect(mockUseCloudBackup.deleteBackup).toHaveBeenCalledWith(
-        'TestNamespace',
-        'Factory1.sptrak',
-      )
-      expect(mockUseCloudBackup.listBackups).toHaveBeenCalledWith('TestNamespace')
+      expect(mockDeleteBackup).toHaveBeenCalledWith('TestNamespace', 'Factory1.sptrak')
+      expect(mockListBackups).toHaveBeenCalledWith('TestNamespace')
       expect(manager.backupFiles.value).toEqual(mockBackups)
     })
   })
@@ -223,7 +209,7 @@ describe('useBackupManager', () => {
       await manager.refreshBackupList()
 
       expect(manager.backupFiles.value).toEqual([])
-      expect(mockUseCloudBackup.listBackups).not.toHaveBeenCalled()
+      expect(mockListBackups).not.toHaveBeenCalled()
     })
 
     it('sets loading state during refresh', async () => {
@@ -238,7 +224,7 @@ describe('useBackupManager', () => {
       ]
 
       let loadingDuringCall = false
-      mockUseCloudBackup.listBackups.mockImplementation(async () => {
+      mockListBackups.mockImplementation(async () => {
         loadingDuringCall = manager.loadingBackups.value
         return mockBackups
       })
@@ -270,18 +256,18 @@ describe('useBackupManager', () => {
           createdTime: '2023-01-02',
         },
       ]
-      mockUseCloudBackup.listBackups.mockResolvedValue(mockBackups)
+      mockListBackups.mockResolvedValue(mockBackups)
 
       const manager = useBackupManager()
       await manager.refreshBackupList()
 
       expect(manager.backupFiles.value).toEqual(mockBackups)
-      expect(mockUseCloudBackup.listBackups).toHaveBeenCalledWith('TestNamespace')
+      expect(mockListBackups).toHaveBeenCalledWith('TestNamespace')
     })
 
     it('clears backupFiles and rethrows on error', async () => {
       const error = new Error('Network error')
-      mockUseCloudBackup.listBackups.mockRejectedValue(error)
+      mockListBackups.mockRejectedValue(error)
 
       const manager = useBackupManager()
       manager.backupFiles.value = [
@@ -299,7 +285,7 @@ describe('useBackupManager', () => {
     })
 
     it('resets loading state on error', async () => {
-      mockUseCloudBackup.listBackups.mockRejectedValue(new Error('Network error'))
+      mockListBackups.mockRejectedValue(new Error('Network error'))
 
       const manager = useBackupManager()
 
@@ -312,7 +298,7 @@ describe('useBackupManager', () => {
   describe('error handling', () => {
     it('propagates errors from backupFactory', async () => {
       const error = new Error('Backup failed')
-      mockUseCloudBackup.backupFactory.mockRejectedValue(error)
+      mockBackupFactory.mockRejectedValue(error)
 
       const manager = useBackupManager()
       manager.selectedFactoriesForBackup.value = ['Factory1']
@@ -322,7 +308,7 @@ describe('useBackupManager', () => {
 
     it('propagates errors from restoreFactory', async () => {
       const error = new Error('Restore failed')
-      mockUseCloudBackup.restoreFactory.mockRejectedValue(error)
+      mockRestoreFactory.mockRejectedValue(error)
 
       const backup: GoogleDriveFile = {
         id: 'file-1',
@@ -339,7 +325,7 @@ describe('useBackupManager', () => {
 
     it('propagates errors from deleteBackup', async () => {
       const error = new Error('Delete failed')
-      mockUseCloudBackup.deleteBackup.mockRejectedValue(error)
+      mockDeleteBackup.mockRejectedValue(error)
 
       const backup: GoogleDriveFile = {
         id: 'file-1',
