@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 
+import { useAutoSync } from '@/composables/useAutoSync'
 import { useFloorNavigation } from '@/composables/useFloorNavigation'
 import { useRecipeStatus } from '@/composables/useRecipeStatus'
 import { useDataStore } from '@/stores/data'
@@ -9,6 +10,7 @@ import { type RecipeProduct } from '@/types/data'
 
 const dataStore = useDataStore()
 const factoryStore = useFactoryStore()
+const autoSync = useAutoSync()
 const showAddFactoryModal = ref(false)
 
 const handleAddFactory = (factoryData: {
@@ -32,6 +34,7 @@ onMounted(() => {
 
   dataStore.loadData()
   useFloorNavigation().initializeExpansion(useRecipeStatus().isRecipeComplete)
+  autoSync.initialize()
 })
 </script>
 

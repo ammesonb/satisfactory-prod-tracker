@@ -94,6 +94,9 @@ export const useFactoryStore = defineStore('factory', {
         floors,
         recipeLinks,
       }
+
+      // Mark new factory as dirty for auto-sync
+      this.markDirty(name)
     },
     removeFactory(name: string) {
       if (this.currentFactory?.name === name) {
@@ -118,6 +121,7 @@ export const useFactoryStore = defineStore('factory', {
     setLinkBuiltState(linkId: string, built: boolean) {
       if (!this.currentFactory) return
       this.currentFactory.recipeLinks[linkId] = built
+      this.markDirty(this.currentFactory.name)
     },
     getRecipeByName(recipeName: string): RecipeNode | null {
       if (!this.currentFactory) return null

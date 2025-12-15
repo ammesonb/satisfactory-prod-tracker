@@ -52,6 +52,13 @@ export interface IFactoryStore {
   getRecipeByName: (recipeName: string) => RecipeNode | null
   exportFactories: (factoryNames?: string[]) => Record<string, Factory>
   importFactories: (factories: Record<string, Factory>) => void
+  markDirty: (factoryName: string) => void
+  setSyncStatus: (
+    factoryName: string,
+    status: import('@/types/cloudSync').FactorySyncStatus,
+  ) => void
+  setSyncError: (factoryName: string, errorMessage: string) => void
+  setSyncConflict: (factoryName: string, conflict: import('@/types/cloudSync').ConflictInfo) => void
 }
 
 /**
@@ -137,9 +144,7 @@ export interface ICloudSyncStore {
   changeNamespace: (newNamespace: string) => Promise<void>
   addFactoryToAutoSync: (factoryName: string) => void
   removeFactoryFromAutoSync: (factoryName: string) => void
-  performAutoSave: () => Promise<void>
-  checkForConflicts: () => Promise<void>
-  resolveConflict: (factoryName: string, resolution: 'cloud' | 'local') => Promise<void>
+  updateFactoryNameInAutoSync: (oldName: string, newName: string) => void
   setGlobalError: (message: string) => void
   clearGlobalError: () => void
   suspendAutoSync: () => void

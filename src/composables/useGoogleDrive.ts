@@ -146,6 +146,19 @@ export function useGoogleDrive() {
   }
 
   /**
+   * Rename a file in Google Drive
+   *
+   * @param fileId - Google Drive file ID
+   * @param newName - New filename
+   */
+  async function renameFile(fileId: string, newName: string): Promise<void> {
+    await getDriveClient().files.update({
+      fileId,
+      resource: { name: newName },
+    })
+  }
+
+  /**
    * Update/replace an existing file
    *
    * @param fileId - Google Drive file ID
@@ -282,6 +295,7 @@ export function useGoogleDrive() {
     deleteFile,
     listFiles,
     getFileMetadata,
+    renameFile,
     updateFile,
 
     // Folder operations

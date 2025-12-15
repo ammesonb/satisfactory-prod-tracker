@@ -18,9 +18,7 @@ export const mockDisableAutoSync = vi.fn()
 export const mockChangeNamespace = vi.fn()
 export const mockAddFactoryToAutoSync = vi.fn()
 export const mockRemoveFactoryFromAutoSync = vi.fn()
-export const mockPerformAutoSave = vi.fn()
-export const mockCheckForConflicts = vi.fn()
-export const mockResolveConflict = vi.fn()
+export const mockUpdateFactoryNameInAutoSync = vi.fn()
 export const mockSetGlobalError = vi.fn()
 export const mockClearGlobalError = vi.fn()
 export const mockSuspendAutoSync = vi.fn()
@@ -52,9 +50,7 @@ export const mockCloudSyncStore = {
   changeNamespace: mockChangeNamespace,
   addFactoryToAutoSync: mockAddFactoryToAutoSync,
   removeFactoryFromAutoSync: mockRemoveFactoryFromAutoSync,
-  performAutoSave: mockPerformAutoSave,
-  checkForConflicts: mockCheckForConflicts,
-  resolveConflict: mockResolveConflict,
+  updateFactoryNameInAutoSync: mockUpdateFactoryNameInAutoSync,
   setGlobalError: mockSetGlobalError,
   clearGlobalError: mockClearGlobalError,
   suspendAutoSync: mockSuspendAutoSync,
