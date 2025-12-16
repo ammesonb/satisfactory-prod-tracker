@@ -26,6 +26,7 @@ export function useGoogleDrive() {
   /**
    * Ensure we have a valid access token before making API calls.
    * If the token is expired, attempt silent refresh.
+   * If refresh fails, clears auth state so user can re-authenticate.
    */
   async function ensureAuthenticated(): Promise<void> {
     if (!googleAuthStore.accessToken) {
@@ -33,7 +34,19 @@ export function useGoogleDrive() {
     }
 
     if (googleAuthStore.isTokenExpired) {
-      await googleAuthStore.refreshToken()
+      try {
+        await googleAuthStore.refreshToken()
+      } catch (error) {
+        // Silent refresh failed - clear auth state so UI shows sign-in
+        console.warn('Token refresh failed, clearing auth state:', error)
+        googleAuthStore.clearToken()
+        throw new Error('Session expired. Please sign in again.')
+      }
+    }
+
+    // Sync token to gapi client
+    if (googleAuthStore.accessToken) {
+      googleApiClient.setAccessToken(googleAuthStore.accessToken)
     }
   }
 

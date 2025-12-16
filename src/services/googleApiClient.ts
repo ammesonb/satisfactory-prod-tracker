@@ -264,17 +264,61 @@ class GoogleApiClient {
   }
 
   /**
-   * Refresh the access token
-   * With GIS, we just request a new token
+   * Silently refresh the access token without user interaction.
+   * Uses prompt: 'none' which works if the user has an active Google session.
+   * Throws if silent refresh fails (user must re-authenticate).
    *
    * @returns New access token and expiry timestamp
+   */
+  async silentRefresh(): Promise<{
+    accessToken: string
+    expiresAt: number
+  }> {
+    const tokenClient = this.getTokenClient()
+
+    return new Promise((resolve, reject) => {
+      // Set up error handler for when popup is needed but blocked
+      tokenClient.error_callback = (error: { type: string; message?: string }) => {
+        reject(
+          new Error(
+            `Silent refresh failed: ${error.type} - ${error.message || 'User interaction required'}`,
+          ),
+        )
+      }
+
+      tokenClient.callback = (response: {
+        access_token: string
+        expires_in: number
+        error?: string
+      }) => {
+        try {
+          this.handleTokenResponse(response, (accessToken, expiresAt) => {
+            resolve({ accessToken, expiresAt })
+          })
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : 'Unknown error during silent refresh'
+          reject(new Error(`Silent refresh failed: ${errorMessage}`))
+        }
+      }
+
+      // Request token silently - no UI shown if user has active Google session
+      tokenClient.requestAccessToken({ prompt: 'none' })
+    })
+  }
+
+  /**
+   * Refresh the access token.
+   * Attempts silent refresh first (no UI if user has active Google session).
+   *
+   * @returns New access token and expiry timestamp
+   * @throws Error if silent refresh fails (caller should clear auth state)
    */
   async refreshToken(): Promise<{
     accessToken: string
     expiresAt: number
   }> {
-    // With GIS, we just request a new token
-    return this.signInWithGoogle()
+    return this.silentRefresh()
   }
 
   /**

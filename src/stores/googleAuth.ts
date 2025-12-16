@@ -54,9 +54,20 @@ export const useGoogleAuthStore = defineStore('googleAuth', {
         this.setToken(accessToken, Date.now() + expiresIn * 1000)
       })
 
-      // If we already have a valid token, set it on the client
-      if (this.accessToken && this.isAuthenticated) {
-        googleApiClient.setAccessToken(this.accessToken)
+      // Restore session if we have a stored token
+      if (this.accessToken) {
+        if (this.isTokenExpired) {
+          // Try silent refresh - works if user has active Google session
+          try {
+            await this.refreshToken()
+          } catch {
+            // Silent refresh failed - user will need to sign in again
+            this.clearToken()
+          }
+        } else {
+          // Token still valid - sync to gapi client
+          googleApiClient.setAccessToken(this.accessToken)
+        }
       }
     },
 

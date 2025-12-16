@@ -72,13 +72,27 @@ describe('useGoogleAuthStore', () => {
       expect(googleApiClient.setAccessToken).toHaveBeenCalledWith('existing-token')
     })
 
-    it('does not set token on API client if token is expired', async () => {
+    it('attempts silent refresh if token is expired', async () => {
       const store = useGoogleAuthStore()
       store.setToken('expired-token', Date.now() - 1000)
 
       await store.initialize()
 
-      expect(googleApiClient.setAccessToken).not.toHaveBeenCalled()
+      expect(googleApiClient.refreshToken).toHaveBeenCalled()
+      expect(store.accessToken).toBe('refreshed-token')
+    })
+
+    it('clears token if silent refresh fails on startup', async () => {
+      vi.spyOn(googleApiClient, 'refreshToken').mockRejectedValue(new Error('interaction_required'))
+
+      const store = useGoogleAuthStore()
+      store.setToken('expired-token', Date.now() - 1000)
+
+      await store.initialize()
+
+      expect(googleApiClient.refreshToken).toHaveBeenCalled()
+      expect(store.accessToken).toBeNull()
+      expect(store.isAuthenticated).toBe(false)
     })
 
     it('does not set token on API client if no token exists', async () => {

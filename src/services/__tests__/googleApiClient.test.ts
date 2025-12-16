@@ -125,8 +125,9 @@ describe('googleApiClient', () => {
       await googleApiClient.initialize(() => {})
     })
 
-    it('requests new access token', async () => {
-      mockTokenClient.requestAccessToken.mockImplementation(() => {
+    it('requests new access token silently with prompt: none', async () => {
+      mockTokenClient.requestAccessToken.mockImplementation((options: { prompt: string }) => {
+        expect(options.prompt).toBe('none')
         mockTokenClient.callback!({
           access_token: 'refreshed-token',
           expires_in: 3600,
@@ -136,7 +137,17 @@ describe('googleApiClient', () => {
       const result = await googleApiClient.refreshToken()
 
       expect(result.accessToken).toBe('refreshed-token')
-      expect(mockTokenClient.requestAccessToken).toHaveBeenCalled()
+      expect(mockTokenClient.requestAccessToken).toHaveBeenCalledWith({ prompt: 'none' })
+    })
+
+    it('rejects when silent refresh fails', async () => {
+      mockTokenClient.requestAccessToken.mockImplementation(() => {
+        mockTokenClient.callback!({
+          error: 'interaction_required',
+        })
+      })
+
+      await expect(googleApiClient.refreshToken()).rejects.toThrow('interaction_required')
     })
   })
 
