@@ -12,12 +12,14 @@ import { FactorySyncStatus } from '@/types/cloudSync'
 import { FACTORY_STATUS_TOOLTIPS, STATUS_COLORS, STATUS_ICONS } from '@/utils/cloudSync'
 
 import FactorySyncBadge from '@/components/common/FactorySyncBadge.vue'
-import { VBadge, VTooltip } from 'vuetify/components'
+import { VBadge, VIcon, VTooltip } from 'vuetify/components'
 
 vi.mock('@/composables/useStores', async () => {
   const { mockGetStores } = await import('@/__tests__/fixtures/composables')
   return { getStores: mockGetStores }
 })
+
+const SYNC_BADGE_CONTAINER = '.sync-badge-container'
 
 // Test factories with different sync statuses
 const TEST_FACTORIES = {
@@ -62,34 +64,46 @@ describe('FactorySyncBadge', () => {
   })
 
   describe('visibility', () => {
-    it('shows badge when authenticated and factory is auto-synced', () => {
+    it('shows sync indicator when authenticated and factory is auto-synced (expanded mode)', () => {
       mockIsAuthenticated.mockReturnValue(true)
       mockSelectedFactories.value = [TEST_FACTORIES.clean.name]
 
-      const wrapper = createWrapper(TEST_FACTORIES.clean)
+      const wrapper = createWrapper(TEST_FACTORIES.clean, false)
+
+      element(wrapper, SYNC_BADGE_CONTAINER).assert()
+      component(wrapper, VIcon).assert()
+    })
+
+    it('shows dot badge when authenticated and factory is auto-synced (rail mode)', () => {
+      mockIsAuthenticated.mockReturnValue(true)
+      mockSelectedFactories.value = [TEST_FACTORIES.clean.name]
+
+      const wrapper = createWrapper(TEST_FACTORIES.clean, true)
 
       component(wrapper, VBadge).assert()
     })
 
-    it('hides badge when not authenticated', () => {
+    it('hides sync indicator when not authenticated', () => {
       mockIsAuthenticated.mockReturnValue(false)
       mockSelectedFactories.value = [TEST_FACTORIES.clean.name]
 
       const wrapper = createWrapper(TEST_FACTORIES.clean)
 
+      element(wrapper, SYNC_BADGE_CONTAINER).assert({ exists: false })
       component(wrapper, VBadge).assert({ exists: false })
     })
 
-    it('hides badge when factory is not auto-synced', () => {
+    it('hides sync indicator when factory is not auto-synced', () => {
       mockIsAuthenticated.mockReturnValue(true)
       mockSelectedFactories.value = []
 
       const wrapper = createWrapper(TEST_FACTORIES.clean)
 
+      element(wrapper, SYNC_BADGE_CONTAINER).assert({ exists: false })
       component(wrapper, VBadge).assert({ exists: false })
     })
 
-    it('renders slot content when badge is hidden', () => {
+    it('renders slot content when sync indicator is hidden', () => {
       mockIsAuthenticated.mockReturnValue(false)
 
       const wrapper = createWrapper(TEST_FACTORIES.clean)
@@ -97,13 +111,13 @@ describe('FactorySyncBadge', () => {
       element(wrapper, '.slot-content').assert()
     })
 
-    it('wraps slot content with badge when badge is shown', () => {
+    it('wraps slot content with sync indicator when shown (expanded mode)', () => {
       mockIsAuthenticated.mockReturnValue(true)
       mockSelectedFactories.value = [TEST_FACTORIES.clean.name]
 
-      const wrapper = createWrapper(TEST_FACTORIES.clean)
+      const wrapper = createWrapper(TEST_FACTORIES.clean, false)
 
-      component(wrapper, VBadge).assert()
+      element(wrapper, SYNC_BADGE_CONTAINER).assert()
       expect(wrapper.find('.slot-content').exists()).toBe(true)
     })
   })
@@ -113,36 +127,56 @@ describe('FactorySyncBadge', () => {
       mockIsAuthenticated.mockReturnValue(true)
     })
 
-    it('passes color from utility function to badge', () => {
-      mockSelectedFactories.value = [TEST_FACTORIES.clean.name]
-      const wrapper = createWrapper(TEST_FACTORIES.clean)
+    describe('expanded mode (rail=false)', () => {
+      it('passes color from utility function to icon', () => {
+        mockSelectedFactories.value = [TEST_FACTORIES.clean.name]
+        const wrapper = createWrapper(TEST_FACTORIES.clean, false)
 
-      const badge = component(wrapper, VBadge).getComponent()
-      expect(badge.props().color).toBe(STATUS_COLORS[FactorySyncStatus.CLEAN])
+        const icon = component(wrapper, VIcon).getComponent()
+        expect(icon.props().color).toBe(STATUS_COLORS[FactorySyncStatus.CLEAN])
+      })
+
+      it('passes icon from utility function to icon', () => {
+        mockSelectedFactories.value = [TEST_FACTORIES.dirty.name]
+        const wrapper = createWrapper(TEST_FACTORIES.dirty, false)
+
+        const icon = component(wrapper, VIcon).getComponent()
+        expect(icon.props().icon).toBe(STATUS_ICONS[FactorySyncStatus.DIRTY])
+      })
+
+      it('adds spinning class when status is SAVING', () => {
+        mockSelectedFactories.value = [TEST_FACTORIES.saving.name]
+        const wrapper = createWrapper(TEST_FACTORIES.saving, false)
+
+        const icon = component(wrapper, VIcon).getComponent()
+        expect(icon.classes()).toContain('mdi-spin')
+      })
+
+      it('does not add spinning class when status is not SAVING', () => {
+        mockSelectedFactories.value = [TEST_FACTORIES.clean.name]
+        const wrapper = createWrapper(TEST_FACTORIES.clean, false)
+
+        const icon = component(wrapper, VIcon).getComponent()
+        expect(icon.classes()).not.toContain('mdi-spin')
+      })
     })
 
-    it('passes icon from utility function to badge', () => {
-      mockSelectedFactories.value = [TEST_FACTORIES.dirty.name]
-      const wrapper = createWrapper(TEST_FACTORIES.dirty)
+    describe('rail mode (rail=true)', () => {
+      it('uses dot mode on VBadge', () => {
+        mockSelectedFactories.value = [TEST_FACTORIES.clean.name]
+        const wrapper = createWrapper(TEST_FACTORIES.clean, true)
 
-      const badge = component(wrapper, VBadge).getComponent()
-      expect(badge.props().icon).toBe(STATUS_ICONS[FactorySyncStatus.DIRTY])
-    })
+        const badge = component(wrapper, VBadge).getComponent()
+        expect(badge.props().dot).toBe(true)
+      })
 
-    it('uses dot mode when rail prop is true', () => {
-      mockSelectedFactories.value = [TEST_FACTORIES.clean.name]
-      const wrapper = createWrapper(TEST_FACTORIES.clean, true)
+      it('passes color from utility function to badge', () => {
+        mockSelectedFactories.value = [TEST_FACTORIES.clean.name]
+        const wrapper = createWrapper(TEST_FACTORIES.clean, true)
 
-      const badge = component(wrapper, VBadge).getComponent()
-      expect(badge.props().dot).toBe(true)
-    })
-
-    it('uses icon mode when rail prop is false', () => {
-      mockSelectedFactories.value = [TEST_FACTORIES.clean.name]
-      const wrapper = createWrapper(TEST_FACTORIES.clean, false)
-
-      const badge = component(wrapper, VBadge).getComponent()
-      expect(badge.props().dot).toBe(false)
+        const badge = component(wrapper, VBadge).getComponent()
+        expect(badge.props().color).toBe(STATUS_COLORS[FactorySyncStatus.CLEAN])
+      })
     })
   })
 

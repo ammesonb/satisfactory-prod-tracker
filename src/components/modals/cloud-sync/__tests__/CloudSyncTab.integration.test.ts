@@ -9,8 +9,17 @@ import {
   mockRefreshBackupList,
   mockRestoreBackup,
 } from '@/__tests__/fixtures/composables/useBackupManager'
-import { mockCanSync } from '@/__tests__/fixtures/composables/useCloudBackup'
+import {
+  mockBackupFactory,
+  mockCanSync,
+  mockRestoreFactory,
+} from '@/__tests__/fixtures/composables/useCloudBackup'
+import {
+  mockFindOrCreateFolder,
+  mockListFolders,
+} from '@/__tests__/fixtures/composables/useGoogleDrive'
 import type { GoogleDriveFile } from '@/types/cloudSync'
+import type { Factory } from '@/types/factory'
 
 import CloudAuth from '@/components/modals/cloud-sync/CloudAuth.vue'
 import CloudSyncTab from '@/components/modals/cloud-sync/CloudSyncTab.vue'
@@ -18,7 +27,7 @@ import BackupList from '@/components/modals/cloud-sync/BackupList.vue'
 import SignedInUser from '@/components/modals/cloud-sync/SignedInUser.vue'
 import FactorySelector from '@/components/common/FactorySelector.vue'
 import NamespaceSelector from '@/components/common/NamespaceSelector.vue'
-import { VAlert, VSwitch } from 'vuetify/components'
+import { VAlert, VBtn, VSwitch } from 'vuetify/components'
 
 const mockAuthenticate = vi.fn()
 const mockSignOut = vi.fn()
@@ -42,11 +51,17 @@ const mockCloudSyncStore = {
   disableAutoSync: mockDisableAutoSync,
 }
 
-const mockFactoryStore = {
+const mockClearSyncConflict = vi.fn()
+
+const mockFactoryStore: {
+  factoryList: Factory[]
+  clearSyncConflict: typeof mockClearSyncConflict
+} = {
   factoryList: [
     { name: 'Iron Factory', icon: 'Desc_IronIngot_C', floors: [], recipeLinks: {} },
     { name: 'Steel Factory', icon: 'Desc_SteelIngot_C', floors: [], recipeLinks: {} },
   ],
+  clearSyncConflict: mockClearSyncConflict,
 }
 
 vi.mock('@/composables/useStores', () => ({
@@ -67,6 +82,11 @@ vi.mock('@/composables/useCloudBackup', async () => {
   return { useCloudBackup: mockUseCloudBackup }
 })
 
+vi.mock('@/composables/useGoogleDrive', async () => {
+  const { mockUseGoogleDrive } = await import('@/__tests__/fixtures/composables/useGoogleDrive')
+  return { useGoogleDrive: () => mockUseGoogleDrive }
+})
+
 global.confirm = vi.fn(() => true)
 
 describe('CloudSyncTab Integration', () => {
@@ -85,6 +105,18 @@ describe('CloudSyncTab Integration', () => {
     mockBackupFiles.value = []
     mockLoadingBackups.value = false
     mockCanSync.value = false
+
+    // Reset mock implementations to default resolved values
+    mockRefreshBackupList.mockResolvedValue(undefined)
+    mockBackupFactory.mockResolvedValue(undefined)
+    mockRestoreFactory.mockResolvedValue(undefined)
+    mockRestoreBackup.mockResolvedValue(undefined)
+    mockDeleteBackup.mockResolvedValue(undefined)
+    mockAuthenticate.mockResolvedValue(undefined)
+
+    // Default mock for namespace fetching
+    mockFindOrCreateFolder.mockResolvedValue('root-folder-id')
+    mockListFolders.mockResolvedValue([])
   })
 
   describe('Authentication State', () => {
@@ -203,6 +235,73 @@ describe('CloudSyncTab Integration', () => {
       await flushPromises()
 
       expect(mockRefreshBackupList).toHaveBeenCalled()
+    })
+
+    it('fetches namespaces on mount when authenticated', async () => {
+      mockGoogleAuthStore.isAuthenticated = true
+      mockListFolders.mockResolvedValue([
+        { id: '1', name: 'Save1', mimeType: 'folder', modifiedTime: '', createdTime: '' },
+        { id: '2', name: 'Save2', mimeType: 'folder', modifiedTime: '', createdTime: '' },
+      ])
+
+      createWrapper()
+      await flushPromises()
+
+      expect(mockFindOrCreateFolder).toHaveBeenCalledWith('SatisProdTrak')
+      expect(mockListFolders).toHaveBeenCalledWith('root-folder-id')
+    })
+
+    it('passes available namespaces to NamespaceSelector', async () => {
+      mockGoogleAuthStore.isAuthenticated = true
+      mockListFolders.mockResolvedValue([
+        { id: '1', name: 'Save1', mimeType: 'folder', modifiedTime: '', createdTime: '' },
+        { id: '2', name: 'Save2', mimeType: 'folder', modifiedTime: '', createdTime: '' },
+      ])
+
+      const wrapper = createWrapper()
+      await flushPromises()
+
+      component(wrapper, NamespaceSelector).assert({
+        props: { availableNamespaces: ['Save1', 'Save2'] },
+      })
+    })
+
+    it('fetches namespaces after authentication', async () => {
+      mockGoogleAuthStore.isAuthenticated = false
+      mockListFolders.mockResolvedValue([
+        { id: '1', name: 'MyGame', mimeType: 'folder', modifiedTime: '', createdTime: '' },
+      ])
+
+      const wrapper = createWrapper()
+      await flushPromises()
+
+      // Not called yet since not authenticated
+      expect(mockFindOrCreateFolder).not.toHaveBeenCalled()
+
+      // Simulate successful authentication - the authenticate action sets isAuthenticated
+      mockAuthenticate.mockImplementation(async () => {
+        mockGoogleAuthStore.isAuthenticated = true
+      })
+      await component(wrapper, CloudAuth).emit('authenticate')
+      await flushPromises()
+
+      expect(mockFindOrCreateFolder).toHaveBeenCalledWith('SatisProdTrak')
+      expect(mockListFolders).toHaveBeenCalled()
+    })
+
+    it('handles namespace fetch errors gracefully', async () => {
+      mockGoogleAuthStore.isAuthenticated = true
+      mockFindOrCreateFolder.mockRejectedValue(new Error('Network error'))
+
+      const wrapper = createWrapper()
+      await flushPromises()
+
+      // Should not show error to user, just log warning
+      expect(wrapper.text()).not.toContain('Network error')
+      // NamespaceSelector should still render with empty list
+      component(wrapper, NamespaceSelector).assert({
+        props: { availableNamespaces: [] },
+      })
     })
   })
 
@@ -396,6 +495,152 @@ describe('CloudSyncTab Integration', () => {
       await component(wrapper, VAlert).emit('click:close')
 
       component(wrapper, VAlert).assert({ exists: false })
+    })
+  })
+
+  describe('Conflict Resolution', () => {
+    const CONFLICTED_FACTORY_NAME = 'Iron Factory'
+    const CONFLICTED_FACTORY_FILENAME = 'Iron_Factory.sptrak'
+    const CLOUD_DEVICE_NAME = 'Work Laptop'
+    const TEST_NAMESPACE = 'test-namespace'
+
+    const conflictInfo = {
+      factoryName: CONFLICTED_FACTORY_NAME,
+      cloudTimestamp: '2024-01-15T10:30:00.000Z',
+      cloudInstanceId: 'other-device-123',
+      cloudDisplayId: CLOUD_DEVICE_NAME,
+      localTimestamp: '2024-01-15T09:00:00.000Z',
+    }
+
+    const factoryWithConflict = {
+      name: CONFLICTED_FACTORY_NAME,
+      icon: 'Desc_IronIngot_C',
+      floors: [],
+      recipeLinks: {},
+      conflict: conflictInfo,
+    }
+
+    beforeEach(() => {
+      mockGoogleAuthStore.isAuthenticated = true
+      mockCanSync.value = true
+      mockCloudSyncStore.autoSync.namespace = TEST_NAMESPACE
+    })
+
+    it('shows conflict card when factories have conflicts', () => {
+      mockFactoryStore.factoryList = [factoryWithConflict]
+
+      const wrapper = createWrapper()
+
+      expect(wrapper.text()).toContain('Sync Conflicts Detected')
+      expect(wrapper.text()).toContain(CONFLICTED_FACTORY_NAME)
+      expect(wrapper.text()).toContain(CLOUD_DEVICE_NAME)
+    })
+
+    it('hides conflict card when no conflicts', () => {
+      mockFactoryStore.factoryList = [
+        { name: CONFLICTED_FACTORY_NAME, icon: 'Desc_IronIngot_C', floors: [], recipeLinks: {} },
+      ]
+
+      const wrapper = createWrapper()
+
+      expect(wrapper.text()).not.toContain('Sync Conflicts Detected')
+    })
+
+    it('shows Keep Local and Use Cloud buttons for each conflict', () => {
+      mockFactoryStore.factoryList = [factoryWithConflict]
+
+      const wrapper = createWrapper()
+
+      expect(wrapper.text()).toContain('Keep Local')
+      expect(wrapper.text()).toContain('Use Cloud')
+    })
+
+    it('calls backupFactory and clearSyncConflict when Keep Local clicked', async () => {
+      mockFactoryStore.factoryList = [factoryWithConflict]
+      mockBackupFactory.mockResolvedValue(undefined)
+
+      const wrapper = createWrapper()
+
+      await component(wrapper, VBtn)
+        .match((btn) => btn.text().includes('Keep Local'))
+        .click()
+      await flushPromises()
+
+      expect(mockBackupFactory).toHaveBeenCalledWith(TEST_NAMESPACE, CONFLICTED_FACTORY_NAME)
+      expect(mockClearSyncConflict).toHaveBeenCalledWith(CONFLICTED_FACTORY_NAME)
+    })
+
+    it('calls restoreFactory with overwrite and clearSyncConflict when Use Cloud clicked', async () => {
+      mockFactoryStore.factoryList = [factoryWithConflict]
+      mockRestoreFactory.mockResolvedValue(undefined)
+
+      const wrapper = createWrapper()
+
+      await component(wrapper, VBtn)
+        .match((btn) => btn.text().includes('Use Cloud'))
+        .click()
+      await flushPromises()
+
+      expect(mockRestoreFactory).toHaveBeenCalledWith(
+        TEST_NAMESPACE,
+        CONFLICTED_FACTORY_FILENAME,
+        CONFLICTED_FACTORY_NAME,
+        true,
+      )
+      expect(mockClearSyncConflict).toHaveBeenCalledWith(CONFLICTED_FACTORY_NAME)
+    })
+
+    it('displays error when Keep Local fails', async () => {
+      mockFactoryStore.factoryList = [factoryWithConflict]
+      mockBackupFactory.mockRejectedValue(new Error('Backup failed'))
+
+      const wrapper = createWrapper()
+
+      await component(wrapper, VBtn)
+        .match((btn) => btn.text().includes('Keep Local'))
+        .click()
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('Failed to resolve conflict: Backup failed')
+    })
+
+    it('displays error when Use Cloud fails', async () => {
+      mockFactoryStore.factoryList = [factoryWithConflict]
+      mockRestoreFactory.mockRejectedValue(new Error('Restore failed'))
+
+      const wrapper = createWrapper()
+
+      await component(wrapper, VBtn)
+        .match((btn) => btn.text().includes('Use Cloud'))
+        .click()
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('Failed to resolve conflict: Restore failed')
+    })
+
+    it('displays local and cloud timestamps', () => {
+      mockFactoryStore.factoryList = [factoryWithConflict]
+
+      const wrapper = createWrapper()
+
+      expect(wrapper.text()).toContain('Local:')
+      expect(wrapper.text()).toContain('Cloud:')
+    })
+
+    it('shows "Never synced" for local timestamp when applicable', () => {
+      mockFactoryStore.factoryList = [
+        {
+          ...factoryWithConflict,
+          conflict: {
+            ...conflictInfo,
+            localTimestamp: 'Never synced',
+          },
+        },
+      ]
+
+      const wrapper = createWrapper()
+
+      expect(wrapper.text()).toContain('Never synced')
     })
   })
 })

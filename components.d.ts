@@ -53,6 +53,7 @@ declare module 'vue' {
     RecipeOutputs: typeof import('./src/components/factory/RecipeOutputs.vue')['default']
     RecipeSelector: typeof import('./src/components/common/RecipeSelector.vue')['default']
     SignedInUser: typeof import('./src/components/modals/cloud-sync/SignedInUser.vue')['default']
+    SyncConflicts: typeof import('./src/components/modals/cloud-sync/SyncConflicts.vue')['default']
     ThemeSwitcher: typeof import('./src/components/common/ThemeSwitcher.vue')['default']
     TransportCapacityTooltip: typeof import('./src/components/factory/TransportCapacityTooltip.vue')['default']
     VAlert: typeof import('vuetify/components')['VAlert']

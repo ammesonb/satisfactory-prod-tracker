@@ -21,6 +21,8 @@ import { useGoogleDrive } from '@/composables/useGoogleDrive'
 import { useGoogleAuthStore } from '@/stores/googleAuth'
 
 describe('useGoogleDrive', () => {
+  let googleAuthStore: ReturnType<typeof useGoogleAuthStore>
+
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
@@ -32,11 +34,57 @@ describe('useGoogleDrive', () => {
     mockGoogleApiClient.getGoogleAuth.mockReturnValue(mockGoogleAuth)
     mockGoogleApiClient.getIsInitialized.mockReturnValue(true)
     mockGoogleApiClient.setAccessToken.mockReturnValue(undefined)
+    mockGoogleApiClient.signInWithGoogle.mockResolvedValue({
+      accessToken: 'refreshed-token',
+      expiresAt: Date.now() + 3600000,
+    })
     mockTokenClient.callback = null
 
-    // Setup googleAuthStore with mock token
-    const googleAuthStore = useGoogleAuthStore()
+    // Setup googleAuthStore with mock token (valid, not expired)
+    googleAuthStore = useGoogleAuthStore()
     googleAuthStore.setToken('mock-token', Date.now() + 3600000)
+  })
+
+  describe('ensureAuthenticated', () => {
+    it('should throw if no access token', async () => {
+      googleAuthStore.clearToken()
+      const googleDrive = useGoogleDrive()
+
+      await expect(googleDrive.listFiles()).rejects.toThrow('Not authenticated. Sign in first.')
+    })
+
+    it('should refresh token if expired before API call', async () => {
+      // Set expired token
+      googleAuthStore.setToken('expired-token', Date.now() - 1000)
+
+      // Spy on store's refreshToken and mock it to update the token
+      const refreshSpy = vi.spyOn(googleAuthStore, 'refreshToken').mockImplementation(async () => {
+        googleAuthStore.setToken('refreshed-token', Date.now() + 3600000)
+      })
+
+      mockGapi.client.drive.files.list.mockResolvedValue({
+        result: { files: [] },
+      })
+
+      const googleDrive = useGoogleDrive()
+      await googleDrive.listFiles()
+
+      expect(refreshSpy).toHaveBeenCalled()
+      expect(googleAuthStore.accessToken).toBe('refreshed-token')
+    })
+
+    it('should not refresh token if still valid', async () => {
+      // Token is valid (set in beforeEach)
+      const googleDrive = useGoogleDrive()
+
+      mockGapi.client.drive.files.list.mockResolvedValue({
+        result: { files: [] },
+      })
+
+      await googleDrive.listFiles()
+
+      expect(mockGoogleApiClient.signInWithGoogle).not.toHaveBeenCalled()
+    })
   })
 
   describe('uploadFile', () => {

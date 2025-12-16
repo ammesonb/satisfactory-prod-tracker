@@ -2,28 +2,52 @@ import { computed, onMounted, ref } from 'vue'
 
 import { useBackupManager } from '@/composables/useBackupManager'
 import { useCloudBackup } from '@/composables/useCloudBackup'
+import { useGoogleDrive } from '@/composables/useGoogleDrive'
 import { getStores } from '@/composables/useStores'
-import type { GoogleDriveFile } from '@/types/cloudSync'
+import type { ConflictInfo, GoogleDriveFile } from '@/types/cloudSync'
 import type { Factory } from '@/types/factory'
+import { generateSptrakFilename } from '@/utils/sptrak'
 import { getFactorySyncTooltip, getSyncStatusColor } from '@/utils/cloudSync'
 
 export function useCloudSyncTab() {
   const { googleAuthStore, cloudSyncStore, factoryStore } = getStores()
   const backupManager = useBackupManager()
   const cloudBackup = useCloudBackup()
+  const googleDrive = useGoogleDrive()
   const error = ref<string | null>(null)
+  const availableNamespaces = ref<string[]>([])
 
   const availableFactories = computed(() => factoryStore.factoryList)
 
+  const conflictedFactories = computed(() =>
+    factoryStore.factoryList.filter(
+      (f): f is Factory & { conflict: ConflictInfo } => f.conflict !== undefined,
+    ),
+  )
+
   onMounted(async () => {
+    if (googleAuthStore.isAuthenticated) {
+      await fetchNamespaces()
+    }
     if (cloudBackup.canSync.value) {
       await refreshBackups()
     }
   })
 
+  async function fetchNamespaces() {
+    try {
+      const rootFolder = await googleDrive.findOrCreateFolder('SatisProdTrak')
+      const folders = await googleDrive.listFolders(rootFolder)
+      availableNamespaces.value = folders.map((f) => f.name)
+    } catch (err) {
+      console.warn('Failed to fetch namespaces:', err)
+    }
+  }
+
   async function authenticate() {
     try {
       await cloudSyncStore.authenticate()
+      await fetchNamespaces()
       if (cloudSyncStore.autoSync.namespace) {
         await refreshBackups()
       }
@@ -92,6 +116,32 @@ export function useCloudSyncTab() {
     error.value = null
   }
 
+  async function resolveConflictKeepLocal(factoryName: string) {
+    try {
+      // this just saves the factory, other conflict checking happens at higher level composables
+      await cloudBackup.backupFactory(cloudSyncStore.autoSync.namespace, factoryName)
+      factoryStore.clearSyncConflict(factoryName)
+      await refreshBackups()
+    } catch (err) {
+      error.value = `Failed to resolve conflict: ${err instanceof Error ? err.message : 'Unknown error'}`
+    }
+  }
+
+  async function resolveConflictUseCloud(factoryName: string) {
+    try {
+      const filename = generateSptrakFilename(factoryName)
+      await cloudBackup.restoreFactory(
+        cloudSyncStore.autoSync.namespace,
+        filename,
+        factoryName,
+        true, // overwrite existing
+      )
+      factoryStore.clearSyncConflict(factoryName)
+    } catch (err) {
+      error.value = `Failed to resolve conflict: ${err instanceof Error ? err.message : 'Unknown error'}`
+    }
+  }
+
   function getFactorySyncStatus(factory: Factory) {
     const isAutoSynced = cloudSyncStore.autoSync.selectedFactories.includes(factory.name)
     const status = factory.syncStatus?.status
@@ -115,6 +165,8 @@ export function useCloudSyncTab() {
     // State
     error,
     availableFactories,
+    availableNamespaces,
+    conflictedFactories,
 
     // From stores/composables
     googleAuthStore,
@@ -132,6 +184,8 @@ export function useCloudSyncTab() {
     signOut,
     toggleAutoSync,
     clearError,
+    resolveConflictKeepLocal,
+    resolveConflictUseCloud,
     getFactorySyncStatus,
   }
 }

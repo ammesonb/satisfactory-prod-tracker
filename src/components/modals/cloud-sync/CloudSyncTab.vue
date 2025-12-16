@@ -4,6 +4,8 @@ import { useCloudSyncTab } from '@/components/modals/cloud-sync/useCloudSyncTab'
 const {
   error,
   availableFactories,
+  availableNamespaces,
+  conflictedFactories,
   googleAuthStore,
   cloudSyncStore,
   canSync,
@@ -17,6 +19,8 @@ const {
   signOut,
   toggleAutoSync,
   clearError,
+  resolveConflictKeepLocal,
+  resolveConflictUseCloud,
   getFactorySyncStatus,
 } = useCloudSyncTab()
 </script>
@@ -42,11 +46,31 @@ const {
       <!-- Sync Configuration -->
       <v-card>
         <v-card-text>
+          <v-text-field
+            v-model="cloudSyncStore.displayId"
+            label="Device Name"
+            hint="A friendly name to identify this device in sync conflicts"
+            placeholder="e.g. Gaming PC, Laptop"
+            density="compact"
+            variant="outlined"
+            prepend-inner-icon="mdi-laptop"
+            persistent-hint
+            class="mb-4"
+          />
+
           <NamespaceSelector
             v-model="cloudSyncStore.autoSync.namespace"
+            :available-namespaces="availableNamespaces"
             label="Namespace"
             hint="Select or create a namespace to organize your backups"
             @blur="refreshBackups"
+          />
+
+          <SyncConflicts
+            :conflicts="conflictedFactories"
+            class="mt-4"
+            @keep-local="resolveConflictKeepLocal"
+            @use-cloud="resolveConflictUseCloud"
           />
 
           <template v-if="canSync">

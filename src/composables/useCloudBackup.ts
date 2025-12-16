@@ -86,11 +86,13 @@ export function useCloudBackup() {
    * @param namespace - Namespace (folder) containing the backup
    * @param filename - Name of the .sptrak file
    * @param importAlias - Optional alias name if restoring with a different name
+   * @param overwrite - If true, overwrites existing factory with same name (for conflict resolution)
    */
   async function restoreFactory(
     namespace: string,
     filename: string,
     importAlias?: string,
+    overwrite?: boolean,
   ): Promise<void> {
     if (!googleAuthStore.isAuthenticated) {
       throw new Error(CLOUD_SYNC_ERRORS.NOT_AUTHENTICATED)
@@ -119,8 +121,8 @@ export function useCloudBackup() {
     // Use alias name if provided, otherwise use original name
     const factoryName = importAlias || sptrakFile.factory.name
 
-    // Check for name conflict
-    if (factoryStore.factories[factoryName]) {
+    // Check for name conflict (unless overwriting for conflict resolution)
+    if (factoryStore.factories[factoryName] && !overwrite) {
       throw new Error(`A factory named "${factoryName}" already exists`)
     }
 

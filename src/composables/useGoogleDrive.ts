@@ -23,7 +23,22 @@ export function useGoogleDrive() {
     googleApiClient.setAccessToken(googleAuthStore.accessToken)
   }
 
-  const getDriveClient = () => {
+  /**
+   * Ensure we have a valid access token before making API calls.
+   * If the token is expired, attempt silent refresh.
+   */
+  async function ensureAuthenticated(): Promise<void> {
+    if (!googleAuthStore.accessToken) {
+      throw new Error('Not authenticated. Sign in first.')
+    }
+
+    if (googleAuthStore.isTokenExpired) {
+      await googleAuthStore.refreshToken()
+    }
+  }
+
+  const getDriveClient = async () => {
+    await ensureAuthenticated()
     return googleApiClient.getDriveClient()
   }
 
@@ -50,7 +65,8 @@ export function useGoogleDrive() {
     }
 
     // Create empty file with metadata first
-    const createResponse = await getDriveClient().files.create({
+    const driveClient = await getDriveClient()
+    const createResponse = await driveClient.files.create({
       resource: metadata,
       fields: GOOGLE_DRIVE_FIELDS.FILE_ID_ONLY,
     })
@@ -70,7 +86,8 @@ export function useGoogleDrive() {
    * @returns File content as string
    */
   async function downloadFile(fileId: string): Promise<string> {
-    const response = await getDriveClient().files.get({
+    const driveClient = await getDriveClient()
+    const response = await driveClient.files.get({
       fileId,
       alt: 'media',
     })
@@ -83,7 +100,8 @@ export function useGoogleDrive() {
    * @param fileId - Google Drive file ID
    */
   async function deleteFile(fileId: string): Promise<void> {
-    await getDriveClient().files.delete({
+    const driveClient = await getDriveClient()
+    await driveClient.files.delete({
       fileId,
     })
   }
@@ -106,7 +124,8 @@ export function useGoogleDrive() {
       queries.push(GOOGLE_DRIVE_QUERY_OPERATORS.IN_PARENTS(folderId))
     }
 
-    const response = await getDriveClient().files.list({
+    const driveClient = await getDriveClient()
+    const response = await driveClient.files.list({
       q: GOOGLE_DRIVE_QUERY_OPERATORS.AND(...queries),
       fields: GOOGLE_DRIVE_FIELDS.FILE_LIST_BASIC,
       pageSize: 1000,
@@ -129,7 +148,8 @@ export function useGoogleDrive() {
    * @returns File metadata
    */
   async function getFileMetadata(fileId: string): Promise<GoogleDriveFile> {
-    const response = await getDriveClient().files.get({
+    const driveClient = await getDriveClient()
+    const response = await driveClient.files.get({
       fileId,
       fields: GOOGLE_DRIVE_FIELDS.FILE_BASIC,
     })
@@ -152,7 +172,8 @@ export function useGoogleDrive() {
    * @param newName - New filename
    */
   async function renameFile(fileId: string, newName: string): Promise<void> {
-    await getDriveClient().files.update({
+    const driveClient = await getDriveClient()
+    await driveClient.files.update({
       fileId,
       resource: { name: newName },
     })
@@ -165,9 +186,7 @@ export function useGoogleDrive() {
    * @param content - New file content as string
    */
   async function updateFile(fileId: string, content: string): Promise<void> {
-    if (!googleAuthStore.accessToken) {
-      throw new Error('Not authenticated. Sign in first.')
-    }
+    await ensureAuthenticated()
 
     // Use fetch with simple upload (uploadType=media in URL query string)
     // gapi.client doesn't handle media uploads properly in browser
@@ -210,7 +229,8 @@ export function useGoogleDrive() {
       metadata.parents = [parentId]
     }
 
-    const response = await getDriveClient().files.create({
+    const driveClient = await getDriveClient()
+    const response = await driveClient.files.create({
       resource: metadata,
       fields: GOOGLE_DRIVE_FIELDS.FILE_ID_ONLY,
     })
@@ -236,7 +256,8 @@ export function useGoogleDrive() {
       queries.push(GOOGLE_DRIVE_QUERY_OPERATORS.IN_PARENTS(parentId))
     }
 
-    const response = await getDriveClient().files.list({
+    const driveClient = await getDriveClient()
+    const response = await driveClient.files.list({
       q: GOOGLE_DRIVE_QUERY_OPERATORS.AND(...queries),
       fields: 'files(id)',
       pageSize: 1,

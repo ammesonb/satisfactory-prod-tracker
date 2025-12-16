@@ -59,6 +59,7 @@ export interface IFactoryStore {
   ) => void
   setSyncError: (factoryName: string, errorMessage: string) => void
   setSyncConflict: (factoryName: string, conflict: import('@/types/cloudSync').ConflictInfo) => void
+  clearSyncConflict: (factoryName: string) => void
 }
 
 /**

@@ -27,6 +27,7 @@ const syncBadge = computed(() => {
     icon: getSyncStatusIcon(status),
     tooltip: getFactorySyncTooltip(props.factory.syncStatus?.status, isAuthenticated),
     show: isAuthenticated && isAutoSynced,
+    spinning: status === FactorySyncStatus.SAVING,
   }
 })
 </script>
@@ -34,20 +35,36 @@ const syncBadge = computed(() => {
 <template>
   <v-tooltip :text="syncBadge.tooltip" location="right" :disabled="!syncBadge.show">
     <template v-slot:activator="{ props: tooltipProps }">
-      <v-badge
-        v-if="syncBadge.show"
-        :color="syncBadge.color"
-        :icon="syncBadge.icon"
-        :dot="rail"
-        overlap
-        offset-y="4"
-        :width="rail ? undefined : '24'"
-        :height="rail ? undefined : '24'"
-        v-bind="tooltipProps"
-      >
-        <slot />
-      </v-badge>
+      <template v-if="syncBadge.show">
+        <!-- Rail mode: use dot badge -->
+        <v-badge v-if="rail" :color="syncBadge.color" dot location="top left" v-bind="tooltipProps">
+          <slot />
+        </v-badge>
+        <!-- Expanded mode: colored icon without background -->
+        <div v-else class="sync-badge-container" v-bind="tooltipProps">
+          <slot />
+          <v-icon
+            :icon="syncBadge.icon"
+            :color="syncBadge.color"
+            :class="['sync-icon', { 'mdi-spin': syncBadge.spinning }]"
+          />
+        </div>
+      </template>
       <slot v-else />
     </template>
   </v-tooltip>
 </template>
+
+<style scoped>
+.sync-badge-container {
+  position: relative;
+  display: inline-block;
+}
+
+.sync-icon {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  font-size: 20px !important;
+}
+</style>
