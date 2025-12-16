@@ -95,12 +95,13 @@ describe('useGoogleAuthStore', () => {
       expect(store.isAuthenticated).toBe(false)
     })
 
-    it('does not set token on API client if no token exists', async () => {
+    it('attempts silent refresh even if no token exists', async () => {
       const store = useGoogleAuthStore()
 
       await store.initialize()
 
-      expect(googleApiClient.setAccessToken).not.toHaveBeenCalled()
+      // With no token, isTokenExpired is true, so we attempt refresh
+      expect(googleApiClient.refreshToken).toHaveBeenCalled()
     })
 
     it('stores token when callback is invoked by googleApiClient', async () => {

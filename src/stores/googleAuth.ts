@@ -8,6 +8,9 @@ import { googleApiClient } from '@/services/googleApiClient'
  * Persisted to localStorage to maintain authentication across sessions.
  * Orchestrates authentication operations with googleApiClient service.
  */
+const TOKEN_REFRESH_CHECK_INTERVAL_MS = 30000 // Check every 30 seconds
+const TOKEN_REFRESH_BUFFER_MS = 180000 // Refresh if expiring within 3 minutes
+
 export const useGoogleAuthStore = defineStore('googleAuth', {
   state: () => ({
     /**
@@ -24,6 +27,11 @@ export const useGoogleAuthStore = defineStore('googleAuth', {
      * User's email address
      */
     userEmail: null as string | null,
+
+    /**
+     * Interval ID for token refresh checker
+     */
+    _refreshIntervalId: null as ReturnType<typeof setInterval> | null,
   }),
 
   getters: {
@@ -54,21 +62,56 @@ export const useGoogleAuthStore = defineStore('googleAuth', {
         this.setToken(accessToken, Date.now() + expiresIn * 1000)
       })
 
-      // Restore session if we have a stored token
-      if (this.accessToken) {
-        if (this.isTokenExpired) {
-          // Try silent refresh - works if user has active Google session
-          try {
-            await this.refreshToken()
-          } catch {
-            // Silent refresh failed - user will need to sign in again
-            this.clearToken()
-          }
-        } else {
-          // Token still valid - sync to gapi client
-          googleApiClient.setAccessToken(this.accessToken)
+      // Check if we need to refresh now
+      await this.checkAndRefreshToken()
+
+      // Start periodic token refresh checker
+      this.startTokenRefreshChecker()
+    },
+
+    /**
+     * Check if token needs refresh and refresh if necessary
+     */
+    async checkAndRefreshToken(): Promise<void> {
+      const now = Date.now()
+      const needsRefresh = this.expiresAt === null || now > this.expiresAt - TOKEN_REFRESH_BUFFER_MS
+
+      if (needsRefresh) {
+        console.log('[GoogleAuth] Token expired/expiring soon, attempting refresh...')
+        try {
+          await this.refreshToken()
+          console.log('[GoogleAuth] Token refresh succeeded')
+        } catch (error) {
+          console.warn('[GoogleAuth] Token refresh failed:', error)
+          this.clearToken()
         }
+      } else if (this.accessToken) {
+        // Token still valid - sync to gapi client
+        googleApiClient.setAccessToken(this.accessToken)
       }
+    },
+
+    /**
+     * Start periodic token refresh checker
+     */
+    startTokenRefreshChecker(): void {
+      // Clear any existing interval
+      if (this._refreshIntervalId) {
+        clearInterval(this._refreshIntervalId)
+      }
+
+      this._refreshIntervalId = setInterval(() => {
+        if (this.accessToken && this.expiresAt) {
+          const now = Date.now()
+          const expiresIn = this.expiresAt - now
+          if (expiresIn < TOKEN_REFRESH_BUFFER_MS) {
+            console.log(
+              `[GoogleAuth] Token expiring in ${Math.round(expiresIn / 1000)}s, refreshing...`,
+            )
+            this.checkAndRefreshToken()
+          }
+        }
+      }, TOKEN_REFRESH_CHECK_INTERVAL_MS)
     },
 
     /**
@@ -132,5 +175,7 @@ export const useGoogleAuthStore = defineStore('googleAuth', {
     },
   },
 
-  persist: true,
+  persist: {
+    pick: ['accessToken', 'expiresAt', 'userEmail'],
+  },
 })

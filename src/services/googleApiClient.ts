@@ -303,6 +303,7 @@ class GoogleApiClient {
       }
 
       // Request token silently - no UI shown if user has active Google session
+      console.log('[GoogleApiClient] Requesting token with prompt: none')
       tokenClient.requestAccessToken({ prompt: 'none' })
     })
   }
