@@ -2,6 +2,10 @@ import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  mockCloudSyncStore,
+  mockRemoveFactoryFromAutoSync,
+} from '@/__tests__/fixtures/composables/cloudSyncStore'
+import {
   mockFilteredItems,
   mockSearchInput,
   mockUpdateSearch,
@@ -13,6 +17,7 @@ import {
   mockSetSelectedFactory,
 } from '@/__tests__/fixtures/composables/factoryStore'
 import { mockInitializeExpansion } from '@/__tests__/fixtures/composables/navigation'
+import { mockDeleteBackup } from '@/__tests__/fixtures/composables/useCloudBackup'
 import { mockIsRecipeComplete } from '@/__tests__/fixtures/composables/useRecipeStatus'
 import { component, element } from '@/__tests__/vue-test-helpers'
 
@@ -39,6 +44,11 @@ vi.mock('@/composables/useRecipeStatus', async () => {
 vi.mock('@/composables/useDataSearch', async () => {
   const { mockUseDataSearch } = await import('@/__tests__/fixtures/composables')
   return { useDataSearch: mockUseDataSearch }
+})
+
+vi.mock('@/composables/useCloudBackup', async () => {
+  const { mockUseCloudBackup } = await import('@/__tests__/fixtures/composables')
+  return { useCloudBackup: mockUseCloudBackup }
 })
 
 // Mock modal component to avoid DOM issues in tests
@@ -219,14 +229,30 @@ describe('FactoryDrawer Integration', () => {
       expect(mockInitializeExpansion).toHaveBeenCalledWith(mockIsRecipeComplete)
     })
 
-    it('handles factory deletion through drawer row', async () => {
+    it('handles factory deletion without cloud backup deletion', async () => {
       const wrapper = createWrapper()
       const factoryName = 'Steel Production Plant'
 
       component(wrapper, FactoryDrawerRow)
         .match((row) => row.props('factory').name === factoryName)
-        .emit('delete', factoryName)
+        .emit('delete', factoryName, false)
 
+      expect(mockDeleteBackup).not.toHaveBeenCalled()
+      expect(mockRemoveFactoryFromAutoSync).toHaveBeenCalledWith(factoryName)
+      expect(mockRemoveFactory).toHaveBeenCalledWith(factoryName)
+    })
+
+    it('handles factory deletion with cloud backup deletion', async () => {
+      mockCloudSyncStore.autoSync.namespace = 'test-namespace'
+      const wrapper = createWrapper()
+      const factoryName = 'Steel Production Plant'
+
+      component(wrapper, FactoryDrawerRow)
+        .match((row) => row.props('factory').name === factoryName)
+        .emit('delete', factoryName, true)
+
+      expect(mockDeleteBackup).toHaveBeenCalledWith('test-namespace', `${factoryName}.sptrak`)
+      expect(mockRemoveFactoryFromAutoSync).toHaveBeenCalledWith(factoryName)
       expect(mockRemoveFactory).toHaveBeenCalledWith(factoryName)
     })
   })

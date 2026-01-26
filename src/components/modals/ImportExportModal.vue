@@ -88,7 +88,7 @@ const handleModalChange = (value: boolean) => {
         </v-tab>
       </v-tabs>
 
-      <v-card-text class="pt-0">
+      <v-card-text class="pt-0" style="max-height: 70vh; overflow-y: auto">
         <v-window v-model="activeTab">
           <!-- Export Tab -->
           <v-window-item value="export">

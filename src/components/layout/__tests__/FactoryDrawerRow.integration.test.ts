@@ -151,7 +151,7 @@ describe('FactoryDrawerRow Integration', () => {
   })
 
   describe('Delete Confirmation Flow', () => {
-    it('calls delete handler when deletion is confirmed', async () => {
+    it('calls delete handler with factory name and deleteCloudBackup=false by default', async () => {
       const wrapper = createWrapper()
 
       // Trigger delete from FactoryName
@@ -159,7 +159,7 @@ describe('FactoryDrawerRow Integration', () => {
 
       // Confirm deletion
       await component(wrapper, ConfirmationModal).emit('confirm')
-      expect(wrapper.vm.onDelete).toHaveBeenCalledWith('Steel Production Plant')
+      expect(wrapper.vm.onDelete).toHaveBeenCalledWith('Steel Production Plant', false)
     })
 
     it('shows modal when delete is triggered and hides when cancelled', async () => {

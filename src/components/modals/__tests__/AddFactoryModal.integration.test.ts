@@ -2,6 +2,11 @@ import { mount, VueWrapper } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  mockAddFactoryToAutoSync,
+  mockCloudSyncStore,
+} from '@/__tests__/fixtures/composables/cloudSyncStore'
+import { mockFactories } from '@/__tests__/fixtures/composables/factoryStore'
+import {
   mockBuildingCount,
   mockDisplayError,
   mockErrorMessage,
@@ -19,11 +24,16 @@ import ItemSelector from '@/components/common/ItemSelector.vue'
 import AddFactoryModal from '@/components/modals/AddFactoryModal.vue'
 import ExternalInputSelector from '@/components/modals/add-factory/ExternalInputSelector.vue'
 import RecipeForm from '@/components/modals/add-factory/RecipeForm.vue'
-import { VBtn, VBtnToggle, VTextarea, VTextField } from 'vuetify/components'
+import { VBtn, VBtnToggle, VCheckbox, VTextarea, VTextField } from 'vuetify/components'
 
 vi.mock('@/composables/useStores', async () => {
   const { mockUseStores } = await import('@/__tests__/fixtures/composables')
   return mockUseStores
+})
+
+vi.mock('@/stores/cloudSync', async () => {
+  const { mockCloudSyncStore } = await import('@/__tests__/fixtures/composables/cloudSyncStore')
+  return { useCloudSyncStore: () => mockCloudSyncStore }
 })
 
 vi.mock('@/components/modals/add-factory/composables/useRecipeInputForm', async () => {
@@ -84,6 +94,8 @@ describe('AddFactoryModal Integration', () => {
     mockIsValid.value = false
     mockDisplayError.value = ''
     mockBuildingCount.value = 1
+    // Reset auto-sync state
+    mockCloudSyncStore.autoSync.enabled = false
   })
 
   describe('Modal Visibility', () => {
@@ -376,6 +388,154 @@ describe('AddFactoryModal Integration', () => {
       )
 
       windowOpenSpy.mockRestore()
+    })
+  })
+
+  describe('Auto-sync Checkbox', () => {
+    it('does not show auto-sync checkbox when auto-sync is disabled', () => {
+      mockCloudSyncStore.autoSync.enabled = false
+      const wrapper = createWrapper()
+
+      component(wrapper, VCheckbox).assert({ exists: false })
+    })
+
+    it('shows auto-sync checkbox when auto-sync is enabled', () => {
+      mockCloudSyncStore.autoSync.enabled = true
+      const wrapper = createWrapper()
+
+      component(wrapper, VCheckbox)
+        .match((cb) => cb.props('label') === 'Auto-sync factory')
+        .assert()
+    })
+
+    it('adds factory to auto-sync when checkbox is checked', async () => {
+      mockCloudSyncStore.autoSync.enabled = true
+      const wrapper = createWrapper()
+
+      setTextFieldValue(wrapper, 'Test Factory')
+      await component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.IRON)
+      await component(wrapper, RecipeForm).emit('change', [
+        { recipe: 'Recipe_IronIngot_C', building: 'Build_SmelterMk1_C', count: 2 },
+      ])
+
+      // Check the auto-sync checkbox
+      await component(wrapper, VCheckbox).emit('update:modelValue', true)
+
+      // Submit the form
+      component(wrapper, VBtn)
+        .match((btn) => btn.text().includes('Add Factory'))
+        .click()
+
+      expect(mockAddFactoryToAutoSync).toHaveBeenCalledWith('Test Factory')
+    })
+
+    it('does not add factory to auto-sync when checkbox is unchecked', async () => {
+      mockCloudSyncStore.autoSync.enabled = true
+      const wrapper = createWrapper()
+
+      setTextFieldValue(wrapper, 'Test Factory')
+      await component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.IRON)
+      await component(wrapper, RecipeForm).emit('change', [
+        { recipe: 'Recipe_IronIngot_C', building: 'Build_SmelterMk1_C', count: 2 },
+      ])
+
+      // Submit without checking the checkbox
+      component(wrapper, VBtn)
+        .match((btn) => btn.text().includes('Add Factory'))
+        .click()
+
+      expect(mockAddFactoryToAutoSync).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('Name Collision Detection', () => {
+    beforeEach(() => {
+      // Set up an existing factory
+      mockFactories.value = {
+        'Existing Factory': {
+          name: 'Existing Factory',
+          icon: 'test-icon',
+          floors: [],
+          recipeLinks: {},
+        },
+      }
+    })
+
+    afterEach(() => {
+      mockFactories.value = {}
+    })
+
+    it('shows error message when factory name already exists', async () => {
+      const wrapper = createWrapper()
+      setTextFieldValue(wrapper, 'Existing Factory')
+
+      await wrapper.vm.$nextTick()
+
+      component(wrapper, VTextField)
+        .match((field) => field.props('label') === 'Factory name')
+        .assert({ props: { error: true } })
+    })
+
+    it('disables Add Factory button when there is a name conflict', async () => {
+      const wrapper = createWrapper()
+      setTextFieldValue(wrapper, 'Existing Factory')
+
+      await component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.IRON)
+      await component(wrapper, RecipeForm).emit('change', [
+        { recipe: 'Recipe_IronIngot_C', building: 'Build_SmelterMk1_C', count: 2 },
+      ])
+
+      component(wrapper, VBtn)
+        .match((btn) => btn.text().includes('Add Factory'))
+        .assert({ props: { disabled: true } })
+    })
+
+    it('enables Add Factory button when name is changed to non-conflicting', async () => {
+      const wrapper = createWrapper()
+      setTextFieldValue(wrapper, 'Existing Factory')
+
+      await component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.IRON)
+      await component(wrapper, RecipeForm).emit('change', [
+        { recipe: 'Recipe_IronIngot_C', building: 'Build_SmelterMk1_C', count: 2 },
+      ])
+
+      // Button should be disabled due to conflict
+      component(wrapper, VBtn)
+        .match((btn) => btn.text().includes('Add Factory'))
+        .assert({ props: { disabled: true } })
+
+      // Change to a non-conflicting name
+      setTextFieldValue(wrapper, 'New Factory')
+      await wrapper.vm.$nextTick()
+
+      // Button should now be enabled
+      component(wrapper, VBtn)
+        .match((btn) => btn.text().includes('Add Factory'))
+        .assert({ props: { disabled: false } })
+    })
+
+    it('does not show error for empty name', () => {
+      const wrapper = createWrapper()
+
+      component(wrapper, VTextField)
+        .match((field) => field.props('label') === 'Factory name')
+        .assert({ props: { error: false } })
+    })
+
+    it('does not emit add-factory when name conflicts', async () => {
+      const wrapper = createWrapper()
+      setTextFieldValue(wrapper, 'Existing Factory')
+
+      await component(wrapper, ItemSelector).emit('update:modelValue', TEST_ITEM.IRON)
+      await component(wrapper, RecipeForm).emit('change', [
+        { recipe: 'Recipe_IronIngot_C', building: 'Build_SmelterMk1_C', count: 2 },
+      ])
+
+      // Try to click the button (it's disabled, but let's verify no event is emitted)
+      const addButton = component(wrapper, VBtn).match((btn) => btn.text().includes('Add Factory'))
+      await addButton.click()
+
+      expect(wrapper.emitted('add-factory')).toBeFalsy()
     })
   })
 })

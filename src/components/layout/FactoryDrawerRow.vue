@@ -11,16 +11,22 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits(['select', 'delete', 'rename'])
+const emit = defineEmits<{
+  select: []
+  delete: [name: string, deleteCloudBackup: boolean]
+  rename: [oldName: string, newName: string]
+}>()
 
 const showDeleteConfirm = ref(false)
+const deleteCloudBackup = ref(false)
 
 const handleDelete = () => {
+  deleteCloudBackup.value = false
   showDeleteConfirm.value = true
 }
 
 const confirmDelete = () => {
-  emit('delete', props.factory.name)
+  emit('delete', props.factory.name, deleteCloudBackup.value)
 }
 
 const handleRename = (oldName: string, newName: string) => {
@@ -49,5 +55,14 @@ const handleRename = (oldName: string, newName: string) => {
     cancel-text="Cancel"
     @confirm="confirmDelete"
     @cancel="() => {}"
-  />
+  >
+    <template #extra-content>
+      <v-checkbox
+        v-model="deleteCloudBackup"
+        label="Delete cloud backups"
+        :hide-details="true"
+        class="mt-2"
+      />
+    </template>
+  </ConfirmationModal>
 </template>

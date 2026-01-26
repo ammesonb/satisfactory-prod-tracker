@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, h } from 'vue'
 
+import { useCloudBackup } from '@/composables/useCloudBackup'
 import { useDataSearch } from '@/composables/useDataSearch'
 import { useFloorNavigation } from '@/composables/useFloorNavigation'
 import { useRecipeStatus } from '@/composables/useRecipeStatus'
@@ -8,7 +9,8 @@ import { getStores } from '@/composables/useStores'
 import type { Factory } from '@/types/factory'
 
 const collapsed = ref(true)
-const { factoryStore } = getStores()
+const { factoryStore, cloudSyncStore, errorStore } = getStores()
+const cloudBackup = useCloudBackup()
 const { initializeExpansion } = useFloorNavigation()
 const { isRecipeComplete } = useRecipeStatus()
 
@@ -26,6 +28,26 @@ const {
 const selectFactory = (factory: Factory) => {
   factoryStore.setSelectedFactory(factory.name)
   initializeExpansion(isRecipeComplete)
+}
+
+const handleDeleteFactory = async (name: string, deleteCloudBackups: boolean) => {
+  if (deleteCloudBackups) {
+    try {
+      await cloudBackup.deleteBackup(cloudSyncStore.autoSync.namespace, `${name}.sptrak`)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      // File not found is expected - user may not have a cloud backup
+      if (!message.toLowerCase().includes('not found')) {
+        errorStore
+          .error()
+          .title('Failed to delete cloud backup')
+          .body(() => h('p', message))
+          .show()
+      }
+    }
+  }
+  cloudSyncStore.removeFactoryFromAutoSync(name)
+  factoryStore.removeFactory(name)
 }
 
 // Dynamic drawer width based on longest factory name
@@ -78,7 +100,7 @@ const drawerWidth = computed(() => {
         :selected="factoryStore.selected === factory.name"
         @select="selectFactory(factory)"
         @rename="(oldName: string, newName: string) => factoryStore.renameFactory(oldName, newName)"
-        @delete="factoryStore.removeFactory"
+        @delete="handleDeleteFactory"
       />
     </v-list>
     <v-list v-else>
