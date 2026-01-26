@@ -243,7 +243,7 @@ describe('FactoryDrawer Integration', () => {
     })
 
     it('handles factory deletion with cloud backup deletion', async () => {
-      mockCloudSyncStore.autoSync.namespace = 'test-namespace'
+      mockCloudSyncStore.namespace = 'test-namespace'
       const wrapper = createWrapper()
       const factoryName = 'Steel Production Plant'
 

@@ -59,7 +59,7 @@ describe('useAutoSync', () => {
 
     // Reset store state
     mockCloudSyncStore.autoSync.enabled = true
-    mockCloudSyncStore.autoSync.namespace = 'TestNamespace'
+    mockCloudSyncStore.namespace = 'TestNamespace'
     mockCloudSyncStore.autoSync.selectedFactories = []
     mockCloudSyncStore.autoSyncSuspended = false
     mockIsAuthenticated.mockReturnValue(true)
@@ -121,7 +121,7 @@ describe('useAutoSync', () => {
     })
 
     it('does not schedule save when namespace is empty', () => {
-      mockCloudSyncStore.autoSync.namespace = ''
+      mockCloudSyncStore.namespace = ''
       mockCloudSyncStore.autoSync.selectedFactories = ['Factory1']
       mockFactories.value = {
         Factory1: createTestFactory('Factory1', FactorySyncStatus.DIRTY),

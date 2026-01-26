@@ -3,7 +3,6 @@ import { ref } from 'vue'
 
 // Create reactive refs that persist across calls for key properties
 export const mockAutoSyncEnabled = ref(false)
-export const mockAutoSyncNamespace = ref('')
 export const mockSelectedFactories = ref<string[]>([])
 
 // Explicit vi.fn() for all methods
@@ -15,7 +14,6 @@ export const mockRefreshAuth = vi.fn()
 export const mockSignOut = vi.fn()
 export const mockEnableAutoSync = vi.fn()
 export const mockDisableAutoSync = vi.fn()
-export const mockChangeNamespace = vi.fn()
 export const mockAddFactoryToAutoSync = vi.fn()
 export const mockRemoveFactoryFromAutoSync = vi.fn()
 export const mockUpdateFactoryNameInAutoSync = vi.fn()
@@ -33,9 +31,9 @@ export const mockCloudSyncStore = {
   // State
   instanceId: 'test-instance-id',
   displayId: 'Test Device',
+  namespace: '',
   autoSync: {
     enabled: mockAutoSyncEnabled.value,
-    namespace: mockAutoSyncNamespace.value,
     selectedFactories: mockSelectedFactories.value,
   },
   autoSyncSuspended: false,
@@ -47,7 +45,6 @@ export const mockCloudSyncStore = {
   signOut: mockSignOut,
   enableAutoSync: mockEnableAutoSync,
   disableAutoSync: mockDisableAutoSync,
-  changeNamespace: mockChangeNamespace,
   addFactoryToAutoSync: mockAddFactoryToAutoSync,
   removeFactoryFromAutoSync: mockRemoveFactoryFromAutoSync,
   updateFactoryNameInAutoSync: mockUpdateFactoryNameInAutoSync,

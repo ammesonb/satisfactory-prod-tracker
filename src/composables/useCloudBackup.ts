@@ -28,9 +28,7 @@ export function useCloudBackup() {
   const { cloudSyncStore, factoryStore, googleAuthStore } = getStores()
   const googleDrive = useGoogleDrive()
 
-  const canSync = computed(
-    () => googleAuthStore.isAuthenticated && !!cloudSyncStore.autoSync.namespace,
-  )
+  const canSync = computed(() => googleAuthStore.isAuthenticated && !!cloudSyncStore.namespace)
 
   /**
    * Backup a factory to Google Drive
@@ -148,7 +146,7 @@ export function useCloudBackup() {
       throw new Error(CLOUD_SYNC_ERRORS.NOT_AUTHENTICATED)
     }
 
-    const targetNamespace = namespace || cloudSyncStore.autoSync.namespace
+    const targetNamespace = namespace || cloudSyncStore.namespace
 
     if (!targetNamespace) {
       return []

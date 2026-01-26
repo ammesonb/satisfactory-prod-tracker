@@ -10,10 +10,12 @@ export const useCloudSyncStore = defineStore('cloudSync', {
     instanceId: '',
     displayId: undefined,
 
+    // Cloud storage namespace (Google Drive folder organization)
+    namespace: '',
+
     // Auto-sync configuration
     autoSync: {
       enabled: false,
-      namespace: '',
       selectedFactories: [], // Arrays serialize fine for pinia persist, and we need ordering for UI consistency
     },
 
@@ -71,21 +73,13 @@ export const useCloudSyncStore = defineStore('cloudSync', {
     // Auto-Sync Management Actions (Phase 4)
     // ========================================
 
-    enableAutoSync(namespace: string, factories: string[]): void {
+    enableAutoSync(): void {
       this.autoSync.enabled = true
-      this.autoSync.namespace = namespace
-      this.autoSync.selectedFactories = [...factories]
     },
 
     disableAutoSync(): void {
       this.autoSync.enabled = false
-      // Keep namespace and selectedFactories so user can toggle on/off without losing selections
-    },
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async changeNamespace(newNamespace: string): Promise<void> {
-      // To be implemented in Phase 4
-      throw new Error('Not implemented')
+      // Keep selectedFactories so user can toggle on/off without losing selections
     },
 
     addFactoryToAutoSync(factoryName: string): void {

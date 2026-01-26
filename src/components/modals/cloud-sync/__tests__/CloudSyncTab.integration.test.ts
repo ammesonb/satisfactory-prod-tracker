@@ -40,8 +40,8 @@ const mockGoogleAuthStore = {
 }
 
 const mockCloudSyncStore = {
+  namespace: '',
   autoSync: {
-    namespace: '',
     enabled: false,
     selectedFactories: [] as string[],
   },
@@ -99,7 +99,7 @@ describe('CloudSyncTab Integration', () => {
     vi.mocked(global.confirm).mockReturnValue(true)
     mockGoogleAuthStore.isAuthenticated = false
     mockGoogleAuthStore.userEmail = ''
-    mockCloudSyncStore.autoSync.namespace = ''
+    mockCloudSyncStore.namespace = ''
     mockCloudSyncStore.autoSync.enabled = false
     mockCloudSyncStore.autoSync.selectedFactories = []
     mockBackupFiles.value = []
@@ -335,14 +335,14 @@ describe('CloudSyncTab Integration', () => {
 
     it('calls enableAutoSync when toggle turned on', async () => {
       mockCloudSyncStore.autoSync.selectedFactories = ['Iron Factory']
-      mockCloudSyncStore.autoSync.namespace = 'test-namespace'
+      mockCloudSyncStore.namespace = 'test-namespace'
 
       const wrapper = createWrapper()
 
       await component(wrapper, VSwitch).emit('update:modelValue', true)
       await flushPromises()
 
-      expect(mockEnableAutoSync).toHaveBeenCalledWith('test-namespace', ['Iron Factory'])
+      expect(mockEnableAutoSync).toHaveBeenCalled()
     })
 
     it('calls disableAutoSync when toggle turned off', async () => {
@@ -523,7 +523,7 @@ describe('CloudSyncTab Integration', () => {
     beforeEach(() => {
       mockGoogleAuthStore.isAuthenticated = true
       mockCanSync.value = true
-      mockCloudSyncStore.autoSync.namespace = TEST_NAMESPACE
+      mockCloudSyncStore.namespace = TEST_NAMESPACE
     })
 
     it('shows conflict card when factories have conflicts', () => {

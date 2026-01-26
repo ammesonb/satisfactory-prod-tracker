@@ -248,7 +248,7 @@ describe('useCloudBackup', () => {
     })
 
     it('uses auto-sync namespace when not provided', async () => {
-      mockCloudSyncStore.autoSync.namespace = 'AutoSyncNamespace'
+      mockCloudSyncStore.namespace = 'AutoSyncNamespace'
       mockUseGoogleDrive.ensureFolderPath.mockResolvedValue('folder-123')
       mockUseGoogleDrive.listFiles.mockResolvedValue([])
 

@@ -126,9 +126,9 @@ export interface ICloudSyncStore {
   // State
   instanceId: string
   displayId?: string
+  namespace: string
   autoSync: {
     enabled: boolean
-    namespace: string
     selectedFactories: string[]
   }
   autoSyncSuspended: boolean
@@ -140,9 +140,8 @@ export interface ICloudSyncStore {
   authenticate: () => Promise<void>
   refreshAuth: () => Promise<void>
   signOut: () => void
-  enableAutoSync: (namespace: string, factories: string[]) => void
+  enableAutoSync: () => void
   disableAutoSync: () => void
-  changeNamespace: (newNamespace: string) => Promise<void>
   addFactoryToAutoSync: (factoryName: string) => void
   removeFactoryFromAutoSync: (factoryName: string) => void
   updateFactoryNameInAutoSync: (oldName: string, newName: string) => void

@@ -25,7 +25,7 @@ export function useBackupManager() {
   // ========================================
 
   const canBackup = computed(
-    () => !!cloudSyncStore.autoSync.namespace && selectedFactoriesForBackup.value.length > 0,
+    () => !!cloudSyncStore.namespace && selectedFactoriesForBackup.value.length > 0,
   )
 
   // ========================================
@@ -38,7 +38,7 @@ export function useBackupManager() {
     }
 
     for (const factoryName of selectedFactoriesForBackup.value) {
-      await cloudBackup.backupFactory(cloudSyncStore.autoSync.namespace, factoryName)
+      await cloudBackup.backupFactory(cloudSyncStore.namespace, factoryName)
     }
 
     selectedFactoriesForBackup.value = []
@@ -50,7 +50,7 @@ export function useBackupManager() {
   // ========================================
 
   async function restoreBackup(backup: GoogleDriveFile, importAlias?: string): Promise<void> {
-    await cloudBackup.restoreFactory(cloudSyncStore.autoSync.namespace, backup.name, importAlias)
+    await cloudBackup.restoreFactory(cloudSyncStore.namespace, backup.name, importAlias)
   }
 
   // ========================================
@@ -58,7 +58,7 @@ export function useBackupManager() {
   // ========================================
 
   async function deleteBackup(backup: GoogleDriveFile): Promise<void> {
-    await cloudBackup.deleteBackup(cloudSyncStore.autoSync.namespace, backup.name)
+    await cloudBackup.deleteBackup(cloudSyncStore.namespace, backup.name)
     await refreshBackupList()
   }
 
@@ -67,7 +67,7 @@ export function useBackupManager() {
   // ========================================
 
   async function refreshBackupList(): Promise<void> {
-    if (!cloudSyncStore.autoSync.namespace) {
+    if (!cloudSyncStore.namespace) {
       backupFiles.value = []
       return
     }
@@ -75,7 +75,7 @@ export function useBackupManager() {
     loadingBackups.value = true
 
     try {
-      backupFiles.value = await cloudBackup.listBackups(cloudSyncStore.autoSync.namespace)
+      backupFiles.value = await cloudBackup.listBackups(cloudSyncStore.namespace)
     } catch (err) {
       backupFiles.value = []
       throw err

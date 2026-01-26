@@ -45,48 +45,38 @@ describe('useCloudSyncStore', () => {
     })
   })
 
-  it('initializes with auto-sync disabled', () => {
+  it('initializes with auto-sync disabled and empty namespace', () => {
     const store = useCloudSyncStore()
 
     expect(store.autoSync.enabled).toBe(false)
-    expect(store.autoSync.namespace).toBe('')
+    expect(store.namespace).toBe('')
     expect(store.autoSync.selectedFactories).toEqual([])
   })
 
-  it('enables auto-sync with namespace and factories', () => {
+  it('enables auto-sync', () => {
     const store = useCloudSyncStore()
+    store.addFactoryToAutoSync('F1')
+    store.addFactoryToAutoSync('F2')
 
-    store.enableAutoSync('Save1', ['F1', 'F2'])
+    store.enableAutoSync()
 
     expect(store.autoSync.enabled).toBe(true)
-    expect(store.autoSync.namespace).toBe('Save1')
     expect(store.autoSync.selectedFactories).toEqual(['F1', 'F2'])
-  })
-
-  it('copies factory array to prevent external mutations', () => {
-    const store = useCloudSyncStore()
-    const factories = ['F1']
-
-    store.enableAutoSync('Save1', factories)
-    factories.push('F2')
-
-    expect(store.autoSync.selectedFactories).toEqual(['F1'])
   })
 
   it('preserves selections when disabling auto-sync', () => {
     const store = useCloudSyncStore()
-    store.enableAutoSync('Save1', ['F1'])
+    store.addFactoryToAutoSync('F1')
+    store.enableAutoSync()
 
     store.disableAutoSync()
 
     expect(store.autoSync.enabled).toBe(false)
-    expect(store.autoSync.namespace).toBe('Save1')
     expect(store.autoSync.selectedFactories).toEqual(['F1'])
   })
 
   it('adds factory to auto-sync', () => {
     const store = useCloudSyncStore()
-    store.enableAutoSync('Save1', [])
 
     store.addFactoryToAutoSync('NewFactory')
 
@@ -95,7 +85,7 @@ describe('useCloudSyncStore', () => {
 
   it('prevents duplicate factories', () => {
     const store = useCloudSyncStore()
-    store.enableAutoSync('Save1', ['F1'])
+    store.addFactoryToAutoSync('F1')
 
     store.addFactoryToAutoSync('F1')
 
@@ -104,7 +94,8 @@ describe('useCloudSyncStore', () => {
 
   it('removes factory from auto-sync', () => {
     const store = useCloudSyncStore()
-    store.enableAutoSync('Save1', ['F1', 'F2'])
+    store.addFactoryToAutoSync('F1')
+    store.addFactoryToAutoSync('F2')
 
     store.removeFactoryFromAutoSync('F1')
 
@@ -113,7 +104,7 @@ describe('useCloudSyncStore', () => {
 
   it('handles removing non-existent factory', () => {
     const store = useCloudSyncStore()
-    store.enableAutoSync('Save1', ['F1'])
+    store.addFactoryToAutoSync('F1')
 
     store.removeFactoryFromAutoSync('NonExistent')
 
@@ -122,7 +113,7 @@ describe('useCloudSyncStore', () => {
 
   it('checks if factory is auto-synced', () => {
     const store = useCloudSyncStore()
-    store.enableAutoSync('Save1', ['F1'])
+    store.addFactoryToAutoSync('F1')
 
     expect(store.isFactoryAutoSynced('F1')).toBe(true)
     expect(store.isFactoryAutoSynced('F2')).toBe(false)

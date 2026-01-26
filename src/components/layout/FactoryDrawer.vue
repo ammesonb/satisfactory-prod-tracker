@@ -33,7 +33,7 @@ const selectFactory = (factory: Factory) => {
 const handleDeleteFactory = async (name: string, deleteCloudBackups: boolean) => {
   if (deleteCloudBackups) {
     try {
-      await cloudBackup.deleteBackup(cloudSyncStore.autoSync.namespace, `${name}.sptrak`)
+      await cloudBackup.deleteBackup(cloudSyncStore.namespace, `${name}.sptrak`)
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       // File not found is expected - user may not have a cloud backup

@@ -59,7 +59,7 @@ const {
           />
 
           <NamespaceSelector
-            v-model="cloudSyncStore.autoSync.namespace"
+            v-model="cloudSyncStore.namespace"
             :available-namespaces="availableNamespaces"
             label="Namespace"
             hint="Select or create a namespace to organize your backups"

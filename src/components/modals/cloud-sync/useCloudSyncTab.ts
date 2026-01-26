@@ -48,7 +48,7 @@ export function useCloudSyncTab() {
     try {
       await cloudSyncStore.authenticate()
       await fetchNamespaces()
-      if (cloudSyncStore.autoSync.namespace) {
+      if (cloudSyncStore.namespace) {
         await refreshBackups()
       }
     } catch (err) {
@@ -58,7 +58,7 @@ export function useCloudSyncTab() {
 
   async function backupFactory(factory: Factory) {
     try {
-      await cloudBackup.backupFactory(cloudSyncStore.autoSync.namespace, factory.name)
+      await cloudBackup.backupFactory(cloudSyncStore.namespace, factory.name)
       await refreshBackups()
     } catch (err) {
       error.value = `Backup failed: ${err instanceof Error ? err.message : 'Unknown error'}`
@@ -103,10 +103,7 @@ export function useCloudSyncTab() {
 
   function toggleAutoSync(enabled: boolean | null) {
     if (enabled) {
-      cloudSyncStore.enableAutoSync(
-        cloudSyncStore.autoSync.namespace,
-        cloudSyncStore.autoSync.selectedFactories,
-      )
+      cloudSyncStore.enableAutoSync()
     } else {
       cloudSyncStore.disableAutoSync()
     }
@@ -119,7 +116,7 @@ export function useCloudSyncTab() {
   async function resolveConflictKeepLocal(factoryName: string) {
     try {
       // this just saves the factory, other conflict checking happens at higher level composables
-      await cloudBackup.backupFactory(cloudSyncStore.autoSync.namespace, factoryName)
+      await cloudBackup.backupFactory(cloudSyncStore.namespace, factoryName)
       factoryStore.clearSyncConflict(factoryName)
       await refreshBackups()
     } catch (err) {
@@ -131,7 +128,7 @@ export function useCloudSyncTab() {
     try {
       const filename = generateSptrakFilename(factoryName)
       await cloudBackup.restoreFactory(
-        cloudSyncStore.autoSync.namespace,
+        cloudSyncStore.namespace,
         filename,
         factoryName,
         true, // overwrite existing

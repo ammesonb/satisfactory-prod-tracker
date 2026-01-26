@@ -47,7 +47,7 @@ export function useAutoSync() {
       cloudSyncStore.autoSync.enabled &&
       !cloudSyncStore.autoSyncSuspended &&
       googleAuthStore.isAuthenticated &&
-      cloudSyncStore.autoSync.namespace !== ''
+      cloudSyncStore.namespace !== ''
     )
   }
 
@@ -93,10 +93,7 @@ export function useAutoSync() {
   async function checkConflict(factoryName: string): Promise<boolean> {
     if (wasRecentlySynced(factoryName)) return false
 
-    const conflict = await cloudBackup.detectConflict(
-      cloudSyncStore.autoSync.namespace,
-      factoryName,
-    )
+    const conflict = await cloudBackup.detectConflict(cloudSyncStore.namespace, factoryName)
 
     if (conflict) {
       factoryStore.setSyncConflict(factoryName, conflict)
@@ -113,7 +110,7 @@ export function useAutoSync() {
 
     try {
       if (await checkConflict(factoryName)) return
-      await cloudBackup.backupFactory(cloudSyncStore.autoSync.namespace, factoryName)
+      await cloudBackup.backupFactory(cloudSyncStore.namespace, factoryName)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
 

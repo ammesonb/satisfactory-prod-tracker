@@ -34,7 +34,7 @@ describe('useBackupManager', () => {
     vi.clearAllMocks()
 
     // Reset mock state
-    mockCloudSyncStore.autoSync.namespace = 'TestNamespace'
+    mockCloudSyncStore.namespace = 'TestNamespace'
     mockCloudSyncStore.autoSync.enabled = true
     mockListBackups.mockResolvedValue([])
   })
@@ -51,7 +51,7 @@ describe('useBackupManager', () => {
 
   describe('canBackup computed', () => {
     it('returns false when no namespace set', () => {
-      mockCloudSyncStore.autoSync.namespace = ''
+      mockCloudSyncStore.namespace = ''
       const manager = useBackupManager()
 
       manager.selectedFactoriesForBackup.value = ['Factory1']
@@ -60,7 +60,7 @@ describe('useBackupManager', () => {
     })
 
     it('returns false when no factories selected', () => {
-      mockCloudSyncStore.autoSync.namespace = 'TestNamespace'
+      mockCloudSyncStore.namespace = 'TestNamespace'
       const manager = useBackupManager()
 
       manager.selectedFactoriesForBackup.value = []
@@ -69,7 +69,7 @@ describe('useBackupManager', () => {
     })
 
     it('returns true when namespace set and factories selected', () => {
-      mockCloudSyncStore.autoSync.namespace = 'TestNamespace'
+      mockCloudSyncStore.namespace = 'TestNamespace'
       const manager = useBackupManager()
 
       manager.selectedFactoriesForBackup.value = ['Factory1']
@@ -203,7 +203,7 @@ describe('useBackupManager', () => {
 
   describe('refreshBackupList', () => {
     it('returns empty array when no namespace set', async () => {
-      mockCloudSyncStore.autoSync.namespace = ''
+      mockCloudSyncStore.namespace = ''
       const manager = useBackupManager()
 
       await manager.refreshBackupList()
