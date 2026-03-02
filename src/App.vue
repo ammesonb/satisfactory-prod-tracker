@@ -6,26 +6,11 @@ import { useFloorNavigation } from '@/composables/useFloorNavigation'
 import { useRecipeStatus } from '@/composables/useRecipeStatus'
 import { useDataStore } from '@/stores/data'
 import { useFactoryStore } from '@/stores/factory'
-import { type RecipeProduct } from '@/types/data'
 
 const dataStore = useDataStore()
 const factoryStore = useFactoryStore()
 const autoSync = useAutoSync()
 const showAddFactoryModal = ref(false)
-
-const handleAddFactory = (factoryData: {
-  name: string
-  icon: string
-  recipes: string
-  externalInputs: RecipeProduct[]
-}) => {
-  factoryStore.addFactory(
-    factoryData.name,
-    factoryData.icon || 'default-icon',
-    factoryData.recipes,
-    factoryData.externalInputs,
-  )
-}
 
 onMounted(() => {
   if (!(factoryStore.selected in factoryStore.factories)) {
@@ -63,7 +48,7 @@ onMounted(() => {
         </div>
       </v-main>
 
-      <AddFactoryModal v-model="showAddFactoryModal" @add-factory="handleAddFactory" />
+      <AddFactoryModal v-model="showAddFactoryModal" />
     </template>
     <ErrorModal />
   </v-app>

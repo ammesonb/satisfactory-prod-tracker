@@ -1,10 +1,7 @@
 import { mount, VueWrapper } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import {
-  mockAddFactoryToAutoSync,
-  mockCloudSyncStore,
-} from '@/__tests__/fixtures/composables/cloudSyncStore'
+import { mockCloudSyncStore } from '@/__tests__/fixtures/composables/cloudSyncStore'
 import { mockFactories } from '@/__tests__/fixtures/composables/factoryStore'
 import {
   mockBuildingCount,
@@ -16,15 +13,22 @@ import {
   mockSelectedRecipe,
   mockSelectedRecipes,
 } from '@/__tests__/fixtures/composables/recipeInputForm'
+import { mockAddFactory } from '@/__tests__/fixtures/composables/useFactoryActions'
 import { itemDatabase } from '@/__tests__/fixtures/data'
 import { component } from '@/__tests__/vue-test-helpers'
-import type { RecipeProduct } from '@/types/data'
 
 import ItemSelector from '@/components/common/ItemSelector.vue'
 import AddFactoryModal from '@/components/modals/AddFactoryModal.vue'
 import ExternalInputSelector from '@/components/modals/add-factory/ExternalInputSelector.vue'
 import RecipeForm from '@/components/modals/add-factory/RecipeForm.vue'
 import { VBtn, VBtnToggle, VCheckbox, VTextarea, VTextField } from 'vuetify/components'
+
+vi.mock('@/composables/useFactoryActions', async () => {
+  const { mockUseFactoryActions } = await import(
+    '@/__tests__/fixtures/composables/useFactoryActions'
+  )
+  return { useFactoryActions: mockUseFactoryActions }
+})
 
 vi.mock('@/composables/useStores', async () => {
   const { mockUseStores } = await import('@/__tests__/fixtures/composables')
@@ -57,13 +61,6 @@ const TEST_ITEM = {
     label: itemDatabase[TEST_ITEMS.COPPER_ORE].name,
     icon: itemDatabase[TEST_ITEMS.COPPER_ORE].icon,
   },
-}
-
-interface AddFactoryEvent {
-  name: string
-  icon: string
-  recipes: string
-  externalInputs: RecipeProduct[]
 }
 
 const setTextFieldValue = (wrapper: VueWrapper, value: string) => {
@@ -246,7 +243,7 @@ describe('AddFactoryModal Integration', () => {
   })
 
   describe('Factory Creation', () => {
-    it('emits add-factory event with correct data in recipe mode', async () => {
+    it('calls addFactory with correct data in recipe mode', async () => {
       const wrapper = createWrapper()
       setTextFieldValue(wrapper, 'Iron Production')
 
@@ -261,15 +258,15 @@ describe('AddFactoryModal Integration', () => {
         .match((btn) => btn.text().includes('Add Factory'))
         .click()
 
-      expect(wrapper.emitted('add-factory')).toBeTruthy()
-      const emittedFactory = wrapper.emitted('add-factory')![0][0] as AddFactoryEvent
-      expect(emittedFactory.name).toBe('Iron Production')
-      expect(emittedFactory.icon).toBe(TEST_ITEM.IRON.icon)
-      expect(emittedFactory.recipes).toContain('Recipe_IronIngot_C@1.0#Build_SmelterMk1_C')
-      expect(emittedFactory.recipes).toContain('Recipe_IronPlate_C@1.0#Build_ConstructorMk1_C')
+      expect(mockAddFactory).toHaveBeenCalledTimes(1)
+      const [name, icon, recipes] = mockAddFactory.mock.calls[0]
+      expect(name).toBe('Iron Production')
+      expect(icon).toBe(TEST_ITEM.IRON.icon)
+      expect(recipes).toContain('Recipe_IronIngot_C@1.0#Build_SmelterMk1_C')
+      expect(recipes).toContain('Recipe_IronPlate_C@1.0#Build_ConstructorMk1_C')
     })
 
-    it('emits add-factory event with correct data in import mode', async () => {
+    it('calls addFactory with correct data in import mode', async () => {
       const wrapper = createWrapper()
       setTextFieldValue(wrapper, 'Imported Factory')
 
@@ -286,14 +283,14 @@ describe('AddFactoryModal Integration', () => {
         .match((btn) => btn.text().includes('Add Factory'))
         .click()
 
-      expect(wrapper.emitted('add-factory')).toBeTruthy()
-      const emittedFactory = wrapper.emitted('add-factory')![0][0] as AddFactoryEvent
-      expect(emittedFactory.name).toBe('Imported Factory')
-      expect(emittedFactory.icon).toBe(TEST_ITEM.COPPER.icon)
-      expect(emittedFactory.recipes).toBe(recipesText)
+      expect(mockAddFactory).toHaveBeenCalledTimes(1)
+      const [name, icon, recipes] = mockAddFactory.mock.calls[0]
+      expect(name).toBe('Imported Factory')
+      expect(icon).toBe(TEST_ITEM.COPPER.icon)
+      expect(recipes).toBe(recipesText)
     })
 
-    it('includes external inputs in emitted factory data', async () => {
+    it('includes external inputs in addFactory call', async () => {
       const wrapper = createWrapper()
       setTextFieldValue(wrapper, 'Factory with Imports')
 
@@ -311,8 +308,9 @@ describe('AddFactoryModal Integration', () => {
         .match((btn) => btn.text().includes('Add Factory'))
         .click()
 
-      const emittedFactory = wrapper.emitted('add-factory')![0][0] as AddFactoryEvent
-      expect(emittedFactory.externalInputs).toEqual(testExternalInputs)
+      expect(mockAddFactory).toHaveBeenCalledTimes(1)
+      const [, , , externalInputs] = mockAddFactory.mock.calls[0]
+      expect(externalInputs).toEqual(testExternalInputs)
     })
   })
 
@@ -408,7 +406,7 @@ describe('AddFactoryModal Integration', () => {
         .assert()
     })
 
-    it('adds factory to auto-sync when checkbox is checked', async () => {
+    it('passes addToAutoSync=true when checkbox is checked', async () => {
       mockCloudSyncStore.autoSync.enabled = true
       const wrapper = createWrapper()
 
@@ -426,10 +424,12 @@ describe('AddFactoryModal Integration', () => {
         .match((btn) => btn.text().includes('Add Factory'))
         .click()
 
-      expect(mockAddFactoryToAutoSync).toHaveBeenCalledWith('Test Factory')
+      expect(mockAddFactory).toHaveBeenCalledTimes(1)
+      const [, , , , addToAutoSync] = mockAddFactory.mock.calls[0]
+      expect(addToAutoSync).toBe(true)
     })
 
-    it('does not add factory to auto-sync when checkbox is unchecked', async () => {
+    it('passes addToAutoSync=false when checkbox is unchecked', async () => {
       mockCloudSyncStore.autoSync.enabled = true
       const wrapper = createWrapper()
 
@@ -444,7 +444,9 @@ describe('AddFactoryModal Integration', () => {
         .match((btn) => btn.text().includes('Add Factory'))
         .click()
 
-      expect(mockAddFactoryToAutoSync).not.toHaveBeenCalled()
+      expect(mockAddFactory).toHaveBeenCalledTimes(1)
+      const [, , , , addToAutoSync] = mockAddFactory.mock.calls[0]
+      expect(addToAutoSync).toBe(false)
     })
   })
 
@@ -522,7 +524,7 @@ describe('AddFactoryModal Integration', () => {
         .assert({ props: { error: false } })
     })
 
-    it('does not emit add-factory when name conflicts', async () => {
+    it('does not call addFactory when name conflicts', async () => {
       const wrapper = createWrapper()
       setTextFieldValue(wrapper, 'Existing Factory')
 
@@ -531,11 +533,11 @@ describe('AddFactoryModal Integration', () => {
         { recipe: 'Recipe_IronIngot_C', building: 'Build_SmelterMk1_C', count: 2 },
       ])
 
-      // Try to click the button (it's disabled, but let's verify no event is emitted)
+      // Try to click the button (it's disabled, but let's verify addFactory is not called)
       const addButton = component(wrapper, VBtn).match((btn) => btn.text().includes('Add Factory'))
       await addButton.click()
 
-      expect(wrapper.emitted('add-factory')).toBeFalsy()
+      expect(mockAddFactory).not.toHaveBeenCalled()
     })
   })
 })

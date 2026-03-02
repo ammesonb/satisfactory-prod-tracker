@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
+import { useFactoryActions } from '@/composables/useFactoryActions'
 import { getStores } from '@/composables/useStores'
 import type { ItemOption, RecipeProduct } from '@/types/data'
 import { type RecipeEntry } from '@/types/factory'
@@ -10,9 +11,10 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits(['update:modelValue', 'add-factory'])
+const emit = defineEmits(['update:modelValue'])
 
 const { factoryStore, cloudSyncStore } = getStores()
+const { addFactory: createFactory } = useFactoryActions()
 
 // Check if the current factory name already exists
 const hasNameConflict = computed(() => {
@@ -58,15 +60,10 @@ const clear = () => {
   showDialog.value = false
 }
 
-const addFactory = () => {
+const handleAddFactory = () => {
   if (!canSubmit.value) return
 
-  const factory = {
-    name: form.value.name,
-    icon: form.value.item!.icon,
-    recipes: form.value.recipes,
-    externalInputs: form.value.externalInputs,
-  }
+  let recipes = form.value.recipes
 
   if (inputMode.value === 'recipe') {
     if (form.value.name && form.value.recipeList.length > 0 && form.value.item?.icon) {
@@ -75,15 +72,17 @@ const addFactory = () => {
         return `"${entry.recipe}@1.0#${entry.building}": "${entry.count}"`
       })
 
-      factory.recipes = recipeStrings.join('\n')
+      recipes = recipeStrings.join('\n')
     }
   }
 
-  emit('add-factory', factory)
-
-  if (form.value.addToAutoSync && cloudSyncStore.autoSync.enabled) {
-    cloudSyncStore.addFactoryToAutoSync(factory.name)
-  }
+  createFactory(
+    form.value.name,
+    form.value.item!.icon,
+    recipes,
+    form.value.externalInputs,
+    form.value.addToAutoSync,
+  )
 
   clear()
 }
@@ -190,7 +189,12 @@ const openHelpWiki = () => {
       <v-card-actions class="flex-shrink-0 pa-4">
         <v-spacer />
         <v-btn variant="tonal" @click="clear">Cancel</v-btn>
-        <v-btn color="secondary" variant="elevated" @click="addFactory" :disabled="!canSubmit">
+        <v-btn
+          color="secondary"
+          variant="elevated"
+          @click="handleAddFactory"
+          :disabled="!canSubmit"
+        >
           Add Factory
         </v-btn>
       </v-card-actions>
