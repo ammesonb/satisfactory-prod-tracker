@@ -2,6 +2,7 @@ import { mount, VueWrapper } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 
+import { mockGetStores } from '@/__tests__/fixtures/composables/stores'
 import { component } from '@/__tests__/vue-test-helpers'
 import type { Building, Item, ItemOption } from '@/types/data'
 import type { IDataStore } from '@/types/stores'
@@ -43,11 +44,7 @@ const mockDataStore = {
   ],
 } as unknown as Partial<IDataStore>
 
-vi.mock('@/composables/useStores', () => ({
-  getStores: vi.fn(() => ({
-    dataStore: mockDataStore,
-  })),
-}))
+vi.mock('@/composables/useStores')
 
 // Mock the utility functions
 vi.mock('@/utils/items', () => ({
@@ -110,6 +107,7 @@ describe('ItemSelector Integration', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockGetStores.mockReturnValue({ dataStore: mockDataStore })
   })
 
   const createWrapper = (props = {}) => {
