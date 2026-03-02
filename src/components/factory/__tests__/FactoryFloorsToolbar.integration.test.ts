@@ -1,11 +1,14 @@
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { mockCurrentFactory } from '@/__tests__/fixtures/composables/factoryStore'
 import {
-  getMockFloorManagement,
-  getMockFloorNavigation,
-  getMockRecipeStatus,
-} from '@/__tests__/fixtures/composables/testUtils'
+  mockOpenFloorEditor,
+} from '@/__tests__/fixtures/composables/floorManagement'
+import {
+  mockSetRecipeExpansionFromCompletion,
+} from '@/__tests__/fixtures/composables/navigation'
+import { mockIsRecipeComplete } from '@/__tests__/fixtures/composables/useRecipeStatus'
 import type { Factory } from '@/types/factory'
 import { ExpandRecipeState } from '@/utils/floors'
 
@@ -36,15 +39,12 @@ describe('FactoryFloorsToolbar Integration', () => {
     recipeLinks: {},
   }
 
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks()
-    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/factoryStore')
     mockCurrentFactory.value = null
   })
 
-  const createWrapper = async (factoryOverride?: Partial<Factory> | null) => {
-    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/factoryStore')
-
+  const createWrapper = (factoryOverride?: Partial<Factory> | null) => {
     if (factoryOverride === null) {
       mockCurrentFactory.value = null
     } else if (factoryOverride) {
@@ -106,16 +106,13 @@ describe('FactoryFloorsToolbar Integration', () => {
     expectedState: typeof ExpandRecipeState.Complete | typeof ExpandRecipeState.Incomplete,
     expectedExpanded: boolean,
   ) => {
-    const wrapper = await createWrapper()
-
-    const mockSetRecipeExpansion = (await getMockFloorNavigation()).setRecipeExpansionFromCompletion
-    const mockIsRecipeComplete = (await getMockRecipeStatus()).isRecipeComplete
+    const wrapper = createWrapper()
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const menuActions = (wrapper.vm as any).menuActions
     await menuActions[actionName]()
 
-    expect(mockSetRecipeExpansion).toHaveBeenCalledWith(
+    expect(mockSetRecipeExpansionFromCompletion).toHaveBeenCalledWith(
       expectedState,
       expectedExpanded,
       mockIsRecipeComplete,
@@ -139,11 +136,10 @@ describe('FactoryFloorsToolbar Integration', () => {
   })
 
   it('calls openFloorEditor when Edit Floors button is clicked', async () => {
-    const wrapper = await createWrapper()
+    const wrapper = createWrapper()
     const editButton = wrapper.findAllComponents(VBtn)[2]
     await editButton.trigger('click')
 
-    const mockOpenFloorEditor = (await getMockFloorManagement()).openFloorEditor
     expect(mockOpenFloorEditor).toHaveBeenCalledWith()
   })
 })

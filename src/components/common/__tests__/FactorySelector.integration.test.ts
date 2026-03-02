@@ -8,6 +8,7 @@ import {
   mockSomeSelected,
   mockToggleAll,
   mockToggleItem,
+  mockUseSelection,
 } from '@/__tests__/fixtures/composables/selection'
 import { component } from '@/__tests__/vue-test-helpers'
 import type { Factory } from '@/types/factory'
@@ -191,19 +192,17 @@ describe('FactorySelector Integration', () => {
     component(wrapper, VList).assert({ exists: true })
   })
 
-  it('calls composable with correct parameters', async () => {
-    const { useSelection } = await import('@/composables/useSelection')
-
+  it('calls composable with correct parameters', () => {
     createWrapper()
 
-    expect(useSelection).toHaveBeenCalledWith({
+    expect(mockUseSelection).toHaveBeenCalledWith({
       items: expect.any(Object), // toRefs creates reactive references
       selected: expect.any(Object),
       getKey: expect.any(Function),
     })
 
     // Test the getKey function
-    const call = vi.mocked(useSelection).mock.calls[0]
+    const call = mockUseSelection.mock.calls[0]
     const getKey = call[0].getKey
     expect(getKey(mockFactories[0])).toBe(FACTORY_NAMES.IRON)
   })

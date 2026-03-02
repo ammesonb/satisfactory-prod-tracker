@@ -73,11 +73,8 @@ describe('FactoryPanels Integration', () => {
     ...customProps,
   })
 
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks()
-
-    // Reset the centralized factory store mock
-    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/factoryStore')
     mockCurrentFactory.value = null
   })
 
@@ -85,13 +82,11 @@ describe('FactoryPanels Integration', () => {
     return mount(FactoryPanels)
   }
 
-  const setFactoryWithFloors = async () => {
-    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/factoryStore')
+  const setFactoryWithFloors = () => {
     mockCurrentFactory.value = createMockFactory()
   }
 
-  const setFactoryWithCustomFloors = async (floors: Floor[]) => {
-    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/factoryStore')
+  const setFactoryWithCustomFloors = (floors: Floor[]) => {
     mockCurrentFactory.value = createMockFactory({ floors })
   }
 
