@@ -15,17 +15,8 @@ import type { Material } from '@/types/factory'
 import CachedIcon from '@/components/common/CachedIcon.vue'
 import TransportCapacityTooltip from '@/components/factory/TransportCapacityTooltip.vue'
 
-// Use centralized fixtures for mocking composables
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
-})
-
-// Mock the useTransport composable
-vi.mock('@/composables/useTransport', async () => {
-  const { mockUseTransport } = await import('@/__tests__/fixtures/composables/transport')
-  return { useTransport: mockUseTransport }
-})
+vi.mock('@/composables/useStores')
+vi.mock('@/composables/useTransport')
 
 describe('TransportCapacityTooltip Integration', () => {
   // Single test data definition

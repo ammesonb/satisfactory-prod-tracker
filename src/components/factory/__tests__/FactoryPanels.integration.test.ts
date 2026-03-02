@@ -14,16 +14,8 @@ import FactoryPanels from '@/components/factory/FactoryPanels.vue'
 import FloorEditModal from '@/components/modals/FloorEditModal.vue'
 import { VExpansionPanels } from 'vuetify/components'
 
-// Use centralized fixtures for mocking composables
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
-})
-
-vi.mock('@/composables/useFloorNavigation', async () => {
-  const { mockUseFloorNavigation } = await import('@/__tests__/fixtures/composables')
-  return { useFloorNavigation: mockUseFloorNavigation }
-})
+vi.mock('@/composables/useStores')
+vi.mock('@/composables/useFloorNavigation')
 
 describe('FactoryPanels Integration', () => {
   // Test constants from fixtures

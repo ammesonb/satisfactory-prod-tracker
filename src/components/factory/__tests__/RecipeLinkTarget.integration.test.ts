@@ -12,25 +12,10 @@ import type { Material } from '@/types/factory'
 import RecipeLinkTarget from '@/components/factory/RecipeLinkTarget.vue'
 
 // Use centralized mock fixtures
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
-})
-
-vi.mock('@/composables/useFloorNavigation', async () => {
-  const { mockUseFloorNavigation } = await import('@/__tests__/fixtures/composables')
-  return { useFloorNavigation: mockUseFloorNavigation }
-})
-
-vi.mock('@/composables/useLinkData', async () => {
-  const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
-  return { useLinkData: mockUseLinkData }
-})
-
-vi.mock('@/composables/useRecipeStatus', async () => {
-  const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
-  return { useRecipeStatus: mockUseRecipeStatus }
-})
+vi.mock('@/composables/useStores')
+vi.mock('@/composables/useFloorNavigation')
+vi.mock('@/composables/useLinkData')
+vi.mock('@/composables/useRecipeStatus')
 
 describe('RecipeLinkTarget Integration', () => {
   // Test constants from fixtures

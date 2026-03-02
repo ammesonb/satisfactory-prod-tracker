@@ -16,11 +16,7 @@ import FactorySelector from '@/components/common/FactorySelector.vue'
 import { VCard, VCheckbox, VList, VListItem } from 'vuetify/components'
 import CachedIcon from '../CachedIcon.vue'
 
-// Mock the useSelection composable
-vi.mock('@/composables/useSelection', async () => {
-  const { mockUseSelection } = await import('@/__tests__/fixtures/composables')
-  return { useSelection: mockUseSelection }
-})
+vi.mock('@/composables/useSelection')
 
 // Mock the image utility
 vi.mock('@/logistics/images', () => ({

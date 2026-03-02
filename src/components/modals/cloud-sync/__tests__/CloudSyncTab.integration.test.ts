@@ -72,20 +72,9 @@ vi.mock('@/composables/useStores', () => ({
   }),
 }))
 
-vi.mock('@/composables/useBackupManager', async () => {
-  const { mockUseBackupManager } = await import('@/__tests__/fixtures/composables/useBackupManager')
-  return { useBackupManager: mockUseBackupManager }
-})
-
-vi.mock('@/composables/useCloudBackup', async () => {
-  const { mockUseCloudBackup } = await import('@/__tests__/fixtures/composables/useCloudBackup')
-  return { useCloudBackup: mockUseCloudBackup }
-})
-
-vi.mock('@/composables/useGoogleDrive', async () => {
-  const { mockUseGoogleDrive } = await import('@/__tests__/fixtures/composables/useGoogleDrive')
-  return { useGoogleDrive: () => mockUseGoogleDrive }
-})
+vi.mock('@/composables/useBackupManager')
+vi.mock('@/composables/useCloudBackup')
+vi.mock('@/composables/useGoogleDrive')
 
 global.confirm = vi.fn(() => true)
 

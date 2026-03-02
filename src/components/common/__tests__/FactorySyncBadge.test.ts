@@ -14,10 +14,7 @@ import { FACTORY_STATUS_TOOLTIPS, STATUS_COLORS, STATUS_ICONS } from '@/utils/cl
 import FactorySyncBadge from '@/components/common/FactorySyncBadge.vue'
 import { VBadge, VIcon, VTooltip } from 'vuetify/components'
 
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
-})
+vi.mock('@/composables/useStores')
 
 const SYNC_BADGE_CONTAINER = '.sync-badge-container'
 

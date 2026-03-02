@@ -4,20 +4,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import { useBackupManager } from '@/composables/useBackupManager'
 import type { GoogleDriveFile } from '@/types/cloudSync'
 
-// Mock dependencies
-vi.mock('@/composables/useCloudBackup', async () => {
-  const { mockUseCloudBackup } = await import('@/__tests__/fixtures/composables/useCloudBackup')
-  return {
-    useCloudBackup: mockUseCloudBackup,
-  }
-})
-
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return {
-    getStores: mockGetStores,
-  }
-})
+vi.mock('@/composables/useCloudBackup')
+vi.mock('@/composables/useStores')
 
 // Import mocks after setting up mocks
 import {

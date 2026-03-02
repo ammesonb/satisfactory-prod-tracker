@@ -25,10 +25,7 @@ import RecipeDisplay from '@/components/modals/add-factory/RecipeDisplay.vue'
 import RecipeForm from '@/components/modals/add-factory/RecipeForm.vue'
 import { VAlert, VBtn, VTextField } from 'vuetify/components'
 
-vi.mock('@/composables/useStores', async () => {
-  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
-  return mockUseStores
-})
+vi.mock('@/composables/useStores')
 
 vi.mock('@/components/modals/add-factory/composables/useRecipeInputForm', async () => {
   const { mockUseRecipeInputForm } = await import('@/__tests__/fixtures/composables')

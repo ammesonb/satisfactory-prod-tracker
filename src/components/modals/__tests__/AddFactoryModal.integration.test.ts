@@ -23,17 +23,8 @@ import ExternalInputSelector from '@/components/modals/add-factory/ExternalInput
 import RecipeForm from '@/components/modals/add-factory/RecipeForm.vue'
 import { VBtn, VBtnToggle, VCheckbox, VTextarea, VTextField } from 'vuetify/components'
 
-vi.mock('@/composables/useFactoryActions', async () => {
-  const { mockUseFactoryActions } = await import(
-    '@/__tests__/fixtures/composables/useFactoryActions'
-  )
-  return { useFactoryActions: mockUseFactoryActions }
-})
-
-vi.mock('@/composables/useStores', async () => {
-  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
-  return mockUseStores
-})
+vi.mock('@/composables/useFactoryActions')
+vi.mock('@/composables/useStores')
 
 vi.mock('@/stores/cloudSync', async () => {
   const { mockCloudSyncStore } = await import('@/__tests__/fixtures/composables/cloudSyncStore')

@@ -10,15 +10,8 @@ import FactorySelector from '@/components/common/FactorySelector.vue'
 import ExportTab from '@/components/modals/import-export/ExportTab.vue'
 import { VBtn } from 'vuetify/components'
 
-vi.mock('@/composables/useStores', async () => {
-  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
-  return mockUseStores
-})
-
-vi.mock('@/composables/useDataShare', async () => {
-  const { mockUseDataShare } = await import('@/__tests__/fixtures/composables')
-  return { useDataShare: () => mockUseDataShare }
-})
+vi.mock('@/composables/useStores')
+vi.mock('@/composables/useDataShare')
 
 const TEST_FACTORIES = {
   IRON: 'Iron Factory',

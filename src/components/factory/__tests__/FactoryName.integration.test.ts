@@ -7,10 +7,7 @@ import { component } from '@/__tests__/vue-test-helpers'
 import FactoryName from '@/components/factory/FactoryName.vue'
 import { VBtn, VTextField } from 'vuetify/components'
 
-vi.mock('@/composables/useStores', async () => {
-  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
-  return mockUseStores
-})
+vi.mock('@/composables/useStores')
 
 describe('FactoryName Integration', () => {
   const createWrapper = (props = {}) => {

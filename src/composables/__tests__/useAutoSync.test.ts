@@ -4,19 +4,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import { useAutoSync } from '@/composables/useAutoSync'
 import { FactorySyncStatus } from '@/types/cloudSync'
 
-vi.mock('@/composables/useCloudBackup', async () => {
-  const { mockUseCloudBackup } = await import('@/__tests__/fixtures/composables/useCloudBackup')
-  return {
-    useCloudBackup: mockUseCloudBackup,
-  }
-})
-
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return {
-    getStores: mockGetStores,
-  }
-})
+vi.mock('@/composables/useCloudBackup')
+vi.mock('@/composables/useStores')
 
 import {
   mockBackupFactory,

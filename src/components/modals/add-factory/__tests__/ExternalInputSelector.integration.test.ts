@@ -16,11 +16,7 @@ import {
   VTextField,
 } from 'vuetify/components'
 
-// Mock composables with centralized fixtures
-vi.mock('@/composables/useStores', async () => {
-  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
-  return mockUseStores
-})
+vi.mock('@/composables/useStores')
 
 describe('ExternalInputSelector Integration', () => {
   const IRON_ORE = 'Desc_OreIron_C'

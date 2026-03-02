@@ -15,21 +15,9 @@ import RecipeLinkTarget from '@/components/factory/RecipeLinkTarget.vue'
 import TransportCapacityTooltip from '@/components/factory/TransportCapacityTooltip.vue'
 import { VCard, VCheckbox } from 'vuetify/components'
 
-// Use centralized mock fixtures
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
-})
-
-vi.mock('@/composables/useRecipeStatus', async () => {
-  const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
-  return { useRecipeStatus: mockUseRecipeStatus }
-})
-
-vi.mock('@/composables/useLinkData', async () => {
-  const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
-  return { useLinkData: mockUseLinkData }
-})
+vi.mock('@/composables/useStores')
+vi.mock('@/composables/useRecipeStatus')
+vi.mock('@/composables/useLinkData')
 
 describe('RecipeLink Integration', () => {
   // Test constants from fixtures

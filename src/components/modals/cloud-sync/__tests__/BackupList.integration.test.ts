@@ -8,10 +8,7 @@ import BackupList from '@/components/modals/cloud-sync/BackupList.vue'
 import FactoryBackupEntry from '@/components/modals/cloud-sync/FactoryBackupEntry.vue'
 import { VBtn, VList } from 'vuetify/components'
 
-vi.mock('@/composables/useStores', async () => {
-  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
-  return mockUseStores
-})
+vi.mock('@/composables/useStores')
 
 describe('BackupList Integration', () => {
   const mockBackups: GoogleDriveFile[] = [

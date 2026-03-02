@@ -29,20 +29,8 @@ vi.mock('@/types/factory', async () => {
   }
 })
 
-vi.mock('@/composables/useStores', async () => {
-  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
-  return mockUseStores
-})
-
-vi.mock('@/stores/cloudSync', async () => {
-  const { mockCloudSyncStore } = await import('@/__tests__/fixtures/composables/cloudSyncStore')
-  return { useCloudSyncStore: () => mockCloudSyncStore }
-})
-
-vi.mock('@/composables/useDataShare', async () => {
-  const { mockUseDataShare } = await import('@/__tests__/fixtures/composables')
-  return { useDataShare: () => mockUseDataShare }
-})
+vi.mock('@/composables/useStores')
+vi.mock('@/composables/useDataShare')
 
 const TEST_FACTORIES = {
   IRON: 'Iron Factory',

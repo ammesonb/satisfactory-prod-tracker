@@ -6,20 +6,8 @@ import { CLOUD_SYNC_ERRORS, FactorySyncStatus } from '@/types/cloudSync'
 import type { GoogleDriveFile } from '@/types/cloudSync'
 import type { Factory } from '@/types/factory'
 
-// Mock the dependencies
-vi.mock('@/composables/useGoogleDrive', async () => {
-  const { mockUseGoogleDrive } = await import('@/__tests__/fixtures/composables/useGoogleDrive')
-  return {
-    useGoogleDrive: () => mockUseGoogleDrive,
-  }
-})
-
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return {
-    getStores: mockGetStores,
-  }
-})
+vi.mock('@/composables/useGoogleDrive')
+vi.mock('@/composables/useStores')
 
 // Import mocks after setting up mocks
 import { mockUseGoogleDrive, mockRenameFile } from '@/__tests__/fixtures/composables/useGoogleDrive'

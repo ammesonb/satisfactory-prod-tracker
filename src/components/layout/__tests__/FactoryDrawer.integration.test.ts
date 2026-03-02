@@ -25,31 +25,11 @@ import FactoryDrawer from '@/components/layout/FactoryDrawer.vue'
 import FactoryDrawerRow from '@/components/layout/FactoryDrawerRow.vue'
 import { VIcon, VNavigationDrawer, VTextField } from 'vuetify/components'
 
-// Mock composables with centralized fixtures
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
-})
-
-vi.mock('@/composables/useFloorNavigation', async () => {
-  const { mockUseFloorNavigation } = await import('@/__tests__/fixtures/composables')
-  return { useFloorNavigation: mockUseFloorNavigation }
-})
-
-vi.mock('@/composables/useRecipeStatus', async () => {
-  const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
-  return { useRecipeStatus: mockUseRecipeStatus }
-})
-
-vi.mock('@/composables/useDataSearch', async () => {
-  const { mockUseDataSearch } = await import('@/__tests__/fixtures/composables')
-  return { useDataSearch: mockUseDataSearch }
-})
-
-vi.mock('@/composables/useCloudBackup', async () => {
-  const { mockUseCloudBackup } = await import('@/__tests__/fixtures/composables')
-  return { useCloudBackup: mockUseCloudBackup }
-})
+vi.mock('@/composables/useStores')
+vi.mock('@/composables/useFloorNavigation')
+vi.mock('@/composables/useRecipeStatus')
+vi.mock('@/composables/useDataSearch')
+vi.mock('@/composables/useCloudBackup')
 
 // Mock modal component to avoid DOM issues in tests
 vi.mock('@/components/modals/ConfirmationModal.vue', () => ({

@@ -20,10 +20,7 @@ import ItemSelector from '@/components/common/ItemSelector.vue'
 import FloorEditModal from '@/components/modals/FloorEditModal.vue'
 import { VBtn, VCard, VCardTitle, VTextField } from 'vuetify/components'
 
-vi.mock('@/composables/useFloorManagement', async () => {
-  const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
-  return { useFloorManagement: mockUseFloorManagement }
-})
+vi.mock('@/composables/useFloorManagement')
 
 describe('FloorEditModal Integration', () => {
   const createWrapper = () => {

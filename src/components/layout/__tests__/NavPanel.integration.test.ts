@@ -11,30 +11,11 @@ import { formatFloorId, formatRecipeId } from '@/utils/floors'
 import NavPanel from '@/components/layout/NavPanel.vue'
 import { VBtn, VCard, VCardTitle, VChip, VListItem, VTextField } from 'vuetify/components'
 
-// Mock composables
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
-})
-
-vi.mock('@/composables/useFloorManagement', async () => {
-  const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
-  return { useFloorManagement: mockUseFloorManagement }
-})
-
-vi.mock('@/composables/useRecipeStatus', async () => {
-  const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
-  return { useRecipeStatus: mockUseRecipeStatus }
-})
-
-vi.mock('@/composables/useFloorSearch', async () => {
-  const { mockUseFloorSearch } = await import('@/__tests__/fixtures/composables')
-  return { useFloorSearch: mockUseFloorSearch }
-})
-
-vi.mock('@/logistics/images', () => ({
-  getIconURL: vi.fn((icon: string) => `/icons/${icon}.png`),
-}))
+vi.mock('@/composables/useStores')
+vi.mock('@/composables/useFloorManagement')
+vi.mock('@/composables/useRecipeStatus')
+vi.mock('@/composables/useFloorSearch')
+vi.mock('@/logistics/images')
 
 describe('NavPanel Integration', () => {
   const IRON_ORE = 'Desc_OreIron_C'

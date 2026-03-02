@@ -12,25 +12,10 @@ import { ExpandRecipeState } from '@/utils/floors'
 import FactoryFloorsToolbar from '@/components/factory/FactoryFloorsToolbar.vue'
 import { VBtn, VMenu } from 'vuetify/components'
 
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
-})
-
-vi.mock('@/composables/useFloorManagement', async () => {
-  const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
-  return { useFloorManagement: mockUseFloorManagement }
-})
-
-vi.mock('@/composables/useFloorNavigation', async () => {
-  const { mockUseFloorNavigation } = await import('@/__tests__/fixtures/composables')
-  return { useFloorNavigation: mockUseFloorNavigation }
-})
-
-vi.mock('@/composables/useRecipeStatus', async () => {
-  const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
-  return { useRecipeStatus: mockUseRecipeStatus }
-})
+vi.mock('@/composables/useStores')
+vi.mock('@/composables/useFloorManagement')
+vi.mock('@/composables/useFloorNavigation')
+vi.mock('@/composables/useRecipeStatus')
 
 describe('FactoryFloorsToolbar Integration', () => {
   // Test constants from fixtures

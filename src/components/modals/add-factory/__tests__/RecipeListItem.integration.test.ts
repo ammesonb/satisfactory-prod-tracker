@@ -9,11 +9,7 @@ import CachedIcon from '@/components/common/CachedIcon.vue'
 import RecipeListItem from '@/components/modals/add-factory/RecipeListItem.vue'
 import { VBtn } from 'vuetify/components'
 
-// Mock composables with centralized fixtures
-vi.mock('@/composables/useStores', async () => {
-  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
-  return mockUseStores
-})
+vi.mock('@/composables/useStores')
 
 const IRON_INGOT_RECIPE = 'Recipe_Fake_IronIngot_C'
 const SMELTER_BUILDING = 'Desc_SmelterMk1_C'

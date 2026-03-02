@@ -9,11 +9,7 @@ import FactoryDrawerRow from '@/components/layout/FactoryDrawerRow.vue'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
 import { VImg, VListItem } from 'vuetify/components'
 
-// Mock composables with centralized fixtures
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
-})
+vi.mock('@/composables/useStores')
 
 // Mock modal component to avoid DOM issues in tests
 vi.mock('@/components/modals/ConfirmationModal.vue', () => ({

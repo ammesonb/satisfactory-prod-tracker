@@ -18,21 +18,9 @@ import RecipeNodeComponent from '@/components/factory/RecipeNode.vue'
 import { VChip, VExpansionPanel, VSelect } from 'vuetify/components'
 import { formatRecipeId } from '@/utils/floors'
 
-// Use centralized mock fixtures
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
-})
-
-vi.mock('@/composables/useFloorManagement', async () => {
-  const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
-  return { useFloorManagement: mockUseFloorManagement }
-})
-
-vi.mock('@/composables/useRecipeStatus', async () => {
-  const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
-  return { useRecipeStatus: mockUseRecipeStatus }
-})
+vi.mock('@/composables/useStores')
+vi.mock('@/composables/useFloorManagement')
+vi.mock('@/composables/useRecipeStatus')
 
 describe('RecipeNode Integration', () => {
   // Test constants from fixtures

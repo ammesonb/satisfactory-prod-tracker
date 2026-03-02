@@ -10,11 +10,7 @@ import type { RecipeNode } from '@/logistics/graph-node'
 import RecipeDetails from '@/components/factory/RecipeDetails.vue'
 import { VCard } from 'vuetify/components'
 
-// Use centralized fixtures for mocking composables
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
-})
+vi.mock('@/composables/useStores')
 
 // Mock the image utility
 vi.mock('@/logistics/images', () => ({

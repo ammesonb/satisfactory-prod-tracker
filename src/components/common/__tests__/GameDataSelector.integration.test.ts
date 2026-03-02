@@ -16,10 +16,7 @@ import CachedIcon from '@/components/common/CachedIcon.vue'
 import GameDataSelector from '@/components/common/GameDataSelector.vue'
 import { VAutocomplete } from 'vuetify/components'
 
-vi.mock('@/composables/useDataSearch', async () => {
-  const { mockUseDataSearch } = await import('@/__tests__/fixtures/composables/dataSearch')
-  return { useDataSearch: mockUseDataSearch }
-})
+vi.mock('@/composables/useDataSearch')
 
 // Mock the image utility
 vi.mock('@/logistics/images', () => ({
