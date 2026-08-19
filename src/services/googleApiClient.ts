@@ -210,7 +210,7 @@ class GoogleApiClient {
    *
    * @returns Access token and expiry timestamp
    */
-  async signInWithGoogle(): Promise<{
+  async signInWithGoogle(hint?: string): Promise<{
     accessToken: string
     expiresAt: number
   }> {
@@ -236,7 +236,7 @@ class GoogleApiClient {
         }
 
         // Request access token
-        tokenClient.requestAccessToken({ prompt: '' })
+        tokenClient.requestAccessToken({ prompt: '', ...(hint ? { hint } : {}) })
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : 'Unknown error during Google sign-in'
@@ -268,9 +268,12 @@ class GoogleApiClient {
    * Uses prompt: 'none' which works if the user has an active Google session.
    * Throws if silent refresh fails (user must re-authenticate).
    *
+   * @param hint - Email of the account to refresh. Without it, Google cannot
+   *   pick an account when the browser has several signed in, and a prompt-less
+   *   request fails outright rather than choosing one.
    * @returns New access token and expiry timestamp
    */
-  async silentRefresh(): Promise<{
+  async silentRefresh(hint?: string): Promise<{
     accessToken: string
     expiresAt: number
   }> {
@@ -304,7 +307,7 @@ class GoogleApiClient {
 
       // Request token silently - no UI shown if user has active Google session
       console.log('[GoogleApiClient] Requesting token with prompt: none')
-      tokenClient.requestAccessToken({ prompt: 'none' })
+      tokenClient.requestAccessToken({ prompt: 'none', ...(hint ? { hint } : {}) })
     })
   }
 
@@ -312,14 +315,15 @@ class GoogleApiClient {
    * Refresh the access token.
    * Attempts silent refresh first (no UI if user has active Google session).
    *
+   * @param hint - Email of the account to refresh
    * @returns New access token and expiry timestamp
    * @throws Error if silent refresh fails (caller should clear auth state)
    */
-  async refreshToken(): Promise<{
+  async refreshToken(hint?: string): Promise<{
     accessToken: string
     expiresAt: number
   }> {
-    return this.silentRefresh()
+    return this.silentRefresh(hint)
   }
 
   /**

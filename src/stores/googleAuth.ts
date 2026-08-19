@@ -9,7 +9,25 @@ import { googleApiClient } from '@/services/googleApiClient'
  * Orchestrates authentication operations with googleApiClient service.
  */
 const TOKEN_REFRESH_CHECK_INTERVAL_MS = 30000 // Check every 30 seconds
-const TOKEN_REFRESH_BUFFER_MS = 180000 // Refresh if expiring within 3 minutes
+/**
+ * Refresh well ahead of expiry. Browsers throttle timers in background tabs to
+ * roughly once a minute (and harder still on battery), so a narrow window is
+ * routinely missed entirely and the token dies while the tab sits idle.
+ */
+const TOKEN_REFRESH_BUFFER_MS = 600000 // Refresh if expiring within 10 minutes
+
+/**
+ * Stable reference so repeated registration is a no-op, and so the store is
+ * resolved when the event fires rather than captured at registration time.
+ */
+const handleVisibilityChange = () => {
+  if (document.visibilityState !== 'visible') return
+
+  const store = useGoogleAuthStore()
+  if (store.accessToken) {
+    void store.checkAndRefreshToken()
+  }
+}
 
 export const useGoogleAuthStore = defineStore('googleAuth', {
   state: () => ({
@@ -27,6 +45,13 @@ export const useGoogleAuthStore = defineStore('googleAuth', {
      * User's email address
      */
     userEmail: null as string | null,
+
+    /**
+     * Account to hint on silent refresh. Survives token expiry (unlike
+     * userEmail) so a re-auth still targets the account the user picked
+     * originally instead of failing on an ambiguous account choice.
+     */
+    lastSignedInEmail: null as string | null,
 
     /**
      * Interval ID for token refresh checker
@@ -67,6 +92,20 @@ export const useGoogleAuthStore = defineStore('googleAuth', {
 
       // Start periodic token refresh checker
       this.startTokenRefreshChecker()
+      this.watchForForegroundReturn()
+    },
+
+    /**
+     * Refresh as soon as the tab is foregrounded again.
+     *
+     * The periodic checker cannot be relied on while the tab is hidden, so a
+     * token that lapsed in the background would otherwise stay broken until the
+     * next tick - long enough for the user's first action to fail.
+     */
+    watchForForegroundReturn(): void {
+      if (typeof document === 'undefined') return
+
+      document.addEventListener('visibilitychange', handleVisibilityChange)
     },
 
     /**
@@ -83,7 +122,12 @@ export const useGoogleAuthStore = defineStore('googleAuth', {
           console.log('[GoogleAuth] Token refresh succeeded')
         } catch (error) {
           console.warn('[GoogleAuth] Token refresh failed:', error)
-          this.clearToken()
+          // Refreshes start well before expiry, so a failure here usually leaves
+          // a perfectly usable token behind. Only sign the user out once it has
+          // actually lapsed - otherwise a single network blip ends the session.
+          if (this.isTokenExpired) {
+            this.clearToken()
+          }
         }
       } else if (this.accessToken) {
         // Token still valid - sync to gapi client
@@ -119,7 +163,7 @@ export const useGoogleAuthStore = defineStore('googleAuth', {
      * Opens OAuth consent flow and stores the token
      */
     async signIn(): Promise<void> {
-      const result = await googleApiClient.signInWithGoogle()
+      const result = await googleApiClient.signInWithGoogle(this.lastSignedInEmail ?? undefined)
       this.setToken(result.accessToken, result.expiresAt)
 
       // Fetch and store user email
@@ -140,13 +184,15 @@ export const useGoogleAuthStore = defineStore('googleAuth', {
         await googleApiClient.signOut(this.accessToken)
       }
       this.clearToken()
+      // Deliberate sign-out, so drop the hint too - the user may be switching accounts
+      this.lastSignedInEmail = null
     },
 
     /**
      * Refresh the access token
      */
     async refreshToken(): Promise<void> {
-      const result = await googleApiClient.refreshToken()
+      const result = await googleApiClient.refreshToken(this.lastSignedInEmail ?? undefined)
       this.setToken(result.accessToken, result.expiresAt)
     },
 
@@ -163,6 +209,7 @@ export const useGoogleAuthStore = defineStore('googleAuth', {
      */
     setUserEmail(email: string): void {
       this.userEmail = email
+      this.lastSignedInEmail = email
     },
 
     /**
@@ -176,6 +223,6 @@ export const useGoogleAuthStore = defineStore('googleAuth', {
   },
 
   persist: {
-    pick: ['accessToken', 'expiresAt', 'userEmail'],
+    pick: ['accessToken', 'expiresAt', 'userEmail', 'lastSignedInEmail'],
   },
 })

@@ -246,6 +246,64 @@ describe('useGoogleAuthStore', () => {
 
       expect(store.isAuthenticated).toBe(true)
     })
+
+    it('hints the previously signed-in account so Google can pick one silently', async () => {
+      const store = useGoogleAuthStore()
+      store.setUserEmail('alice@example.com')
+
+      await store.refreshToken()
+
+      expect(googleApiClient.refreshToken).toHaveBeenCalledWith('alice@example.com')
+    })
+
+    it('retains the hint after the token is cleared', async () => {
+      const store = useGoogleAuthStore()
+      store.setUserEmail('alice@example.com')
+      store.clearToken()
+
+      await store.refreshToken()
+
+      expect(googleApiClient.refreshToken).toHaveBeenCalledWith('alice@example.com')
+    })
+
+    it('drops the hint on explicit sign-out', async () => {
+      const store = useGoogleAuthStore()
+      store.setToken('test-token', Date.now() + 3600000)
+      store.setUserEmail('alice@example.com')
+
+      await store.signOut()
+      await store.refreshToken()
+
+      expect(googleApiClient.refreshToken).toHaveBeenCalledWith(undefined)
+    })
+  })
+
+  describe('checkAndRefreshToken', () => {
+    it('keeps a still-valid token when an early refresh fails', async () => {
+      vi.spyOn(googleApiClient, 'refreshToken').mockRejectedValue(new Error('network down'))
+
+      const store = useGoogleAuthStore()
+      // Inside the refresh buffer, but not yet expired
+      store.setToken('good-token', Date.now() + 120000)
+
+      await store.checkAndRefreshToken()
+
+      expect(googleApiClient.refreshToken).toHaveBeenCalled()
+      expect(store.accessToken).toBe('good-token')
+      expect(store.isAuthenticated).toBe(true)
+    })
+
+    it('clears an already-expired token when refresh fails', async () => {
+      vi.spyOn(googleApiClient, 'refreshToken').mockRejectedValue(new Error('network down'))
+
+      const store = useGoogleAuthStore()
+      store.setToken('stale-token', Date.now() - 1000)
+
+      await store.checkAndRefreshToken()
+
+      expect(store.accessToken).toBeNull()
+      expect(store.isAuthenticated).toBe(false)
+    })
   })
 
   describe('isTokenExpired getter', () => {

@@ -2,12 +2,8 @@ import { mount, type VueWrapper } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { mockCurrentFactory } from '@/__tests__/fixtures/composables/factoryStore'
-import {
-  mockOpenFloorEditor,
-} from '@/__tests__/fixtures/composables/floorManagement'
-import {
-  mockSetRecipeExpansionFromCompletion,
-} from '@/__tests__/fixtures/composables/navigation'
+import { mockOpenFloorEditor } from '@/__tests__/fixtures/composables/floorManagement'
+import { mockSetRecipeExpansionFromCompletion } from '@/__tests__/fixtures/composables/navigation'
 import { mockIsRecipeComplete } from '@/__tests__/fixtures/composables/useRecipeStatus'
 import type { Factory } from '@/types/factory'
 import { ExpandRecipeState } from '@/utils/floors'
