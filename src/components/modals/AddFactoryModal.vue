@@ -67,12 +67,14 @@ const handleAddFactory = () => {
 
   if (inputMode.value === 'recipe') {
     if (form.value.name && form.value.recipeList.length > 0 && form.value.item?.icon) {
-      // Convert recipe list to the expected format
-      const recipeStrings = form.value.recipeList.map((entry) => {
-        return `"${entry.recipe}@1.0#${entry.building}": "${entry.count}"`
-      })
-
-      recipes = recipeStrings.join('\n')
+      recipes = JSON.stringify(
+        Object.fromEntries(
+          form.value.recipeList.map((entry) => [
+            `${entry.recipe}@1.0#${entry.building}`,
+            String(entry.count),
+          ]),
+        ),
+      )
     }
   }
 
@@ -87,7 +89,6 @@ const handleAddFactory = () => {
   clear()
 }
 
-// TODO: update this with new instructions
 const instructions = `Import from Satisfactory Tools:
 
 1. 🏭 Create your factory on Satisfactory Tools
@@ -95,8 +96,8 @@ const instructions = `Import from Satisfactory Tools:
 3. 🌐 Go to Network tab → Reload page → Find "solver" requests
 4. 🔍 Use the requests pane to find the desired factory
 5. 📋 In the solver request, go to "Response" tab
-6. 📄 Copy all lines starting with "Recipe_" (include quotes)
-7. 📥 Paste into the Recipes field below (one per line)`
+6. 📄 Copy the entire response (right-click → Copy value / Copy all)
+7. 📥 Paste it into the Recipes field below`
 
 const openHelpWiki = () => {
   window.open(
@@ -165,7 +166,7 @@ const openHelpWiki = () => {
             v-if="inputMode === 'import'"
             v-model="form.recipes"
             label="Recipes"
-            placeholder="Paste recipe lines from Satisfactory Tools here..."
+            placeholder="Paste the Satisfactory Tools solver response here..."
             rows="8"
             variant="outlined"
             required

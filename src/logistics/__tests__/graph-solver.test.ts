@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 
 import { RecipeChainError } from '@/errors/processing-errors'
 import { expectErrorWithMessage } from '@/logistics/__tests__/error-test-helpers'
-import { RECIPES } from '@/logistics/__tests__/recipe-input-fixtures'
+import { makeRecipePayload, RECIPES } from '@/logistics/__tests__/recipe-input-fixtures'
 import { BASIC_TEST_CASES, COMPLEX_TEST_CASES } from '@/logistics/__tests__/recipe-test-cases'
 import type { RecipeNode } from '@/logistics/graph-node'
 import { solveRecipeChain } from '@/logistics/graph-solver'
@@ -24,7 +24,10 @@ const testRecipeChain = (
     let result: RecipeNode[]
 
     beforeEach(() => {
-      result = solveRecipeChain(testCase.rawRecipes, testCase.externalInputs || [])
+      result = solveRecipeChain(
+        makeRecipePayload(testCase.rawRecipes),
+        testCase.externalInputs || [],
+      )
     })
 
     it('has the correct number of recipe nodes', () => {
@@ -215,7 +218,7 @@ describe('graph-solver integration - production chain solving', () => {
     // Tests a basic 2-step production chain: Iron Ore -> Iron Ingot -> Iron Plate
     it('should handle simple production chain', () => {
       const testCase = BASIC_TEST_CASES.SIMPLE_PRODUCTION
-      const result = solveRecipeChain(testCase.rawRecipes, [])
+      const result = solveRecipeChain(makeRecipePayload(testCase.rawRecipes), [])
 
       expect(result).toHaveLength(testCase.expectedBatches.flat().length)
       expectRecipeBatchesToMatch(result, testCase.expectedBatches)
@@ -261,7 +264,7 @@ describe('graph-solver integration - production chain solving', () => {
       ]
 
       const error = expectErrorWithMessage(
-        () => solveRecipeChain(rawRecipes, []),
+        () => solveRecipeChain(makeRecipePayload(rawRecipes), []),
         RecipeChainError,
         {
           unprocessedRecipes: expect.arrayContaining(['Recipe_IronPlate_C']),

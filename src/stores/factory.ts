@@ -31,15 +31,7 @@ export const useFactoryStore = defineStore('factory', {
       const recipeNodes: RecipeNode[] = []
 
       try {
-        recipeNodes.push(
-          ...solveRecipeChain(
-            recipes
-              .trim()
-              .split('\n')
-              .map((s) => s.trim()),
-            externalInputs,
-          ),
-        )
+        recipeNodes.push(...solveRecipeChain(recipes, externalInputs))
       } catch (error) {
         if (isUserFriendlyError(error)) {
           error.showError(errorStore)

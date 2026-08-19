@@ -19,17 +19,19 @@ const steps = [
   },
 ]
 
-const sampleRecipes = `"Recipe_Alternate_SteelRod_C@100#Desc_ConstructorMk1_C": "2.5",
-"Recipe_Alternate_PureIronIngot_C@100#Desc_OilRefinery_C": "2.87179",
-"Recipe_ModularFrame_C@100#Desc_AssemblerMk1_C": "10",
-"Recipe_Alternate_SteelCastedPlate_C@100#Desc_FoundryMk1_C": "2.222222222222",
-"Recipe_Alternate_Wire_1_C@100#Desc_ConstructorMk1_C": "8.888888888888",
-"Recipe_Alternate_ReinforcedIronPlate_2_C@100#Desc_AssemblerMk1_C": "5.333333333333",
-"Recipe_Alternate_IngotSteel_1_C@100#Desc_FoundryMk1_C": "1.055555555555"`
+const sampleRecipes = JSON.stringify({
+  'Recipe_Alternate_SteelRod_C@100#Desc_ConstructorMk1_C': '2.5',
+  'Recipe_Alternate_PureIronIngot_C@100#Desc_OilRefinery_C': '2.87179',
+  'Recipe_ModularFrame_C@100#Desc_AssemblerMk1_C': '10',
+  'Recipe_Alternate_SteelCastedPlate_C@100#Desc_FoundryMk1_C': '2.222222222222',
+  'Recipe_Alternate_Wire_1_C@100#Desc_ConstructorMk1_C': '8.888888888888',
+  'Recipe_Alternate_ReinforcedIronPlate_2_C@100#Desc_AssemblerMk1_C': '5.333333333333',
+  'Recipe_Alternate_IngotSteel_1_C@100#Desc_FoundryMk1_C': '1.055555555555',
+})
 
 const addSampleFactory = () => {
   try {
-    factoryStore.addFactory('Sample Factory', 'desc-modularframe-c', sampleRecipes.trim(), [])
+    factoryStore.addFactory('Sample Factory', 'desc-modularframe-c', sampleRecipes, [])
     factoryStore.setSelectedFactory('Sample Factory')
   } catch (error) {
     console.error('Failed to add sample factory:', error)

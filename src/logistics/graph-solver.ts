@@ -8,7 +8,7 @@ import {
   produceRecipe,
   type RecipeNode,
 } from '@/logistics/graph-node'
-import { parseRecipeString } from '@/logistics/recipe-parser'
+import { parseRecipeInput } from '@/logistics/recipe-parser'
 import { useDataStore } from '@/stores/data'
 import type { RecipeProduct } from '@/types/data'
 
@@ -25,16 +25,14 @@ import type { RecipeProduct } from '@/types/data'
  * 4. At end of batch, flip recipes from pending -> produced for next iteration
  */
 export const solveRecipeChain = (
-  rawRecipes: string[],
+  recipeInput: string,
   externalInputs: RecipeProduct[],
 ): RecipeNode[] => {
   const data = useDataStore()
 
-  let pendingRecipes = rawRecipes
-    .map(parseRecipeString)
-    .map((recipe) =>
-      newRecipeNode(recipe, data.recipeIngredients(recipe.name), data.recipeProducts(recipe.name)),
-    )
+  let pendingRecipes = parseRecipeInput(recipeInput).map((recipe) =>
+    newRecipeNode(recipe, data.recipeIngredients(recipe.name), data.recipeProducts(recipe.name)),
+  )
   const circularRecipeGroups = groupCircularRecipes(pendingRecipes)
   const producedRecipes: Record<string, RecipeNode> = {}
 
