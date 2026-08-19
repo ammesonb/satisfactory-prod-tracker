@@ -102,6 +102,8 @@ app.mount('#app')
 themeStore.setTheme(themeStore.isDark)
 
 // Initialize Google API client
+// Note: Token refresh happens lazily via ensureAuthenticated() in useGoogleDrive
+// when the user performs a sync action. This avoids popup blockers on page load.
 googleAuthStore.initialize().catch((err) => {
   console.error('Failed to initialize Google API client:', err)
 })

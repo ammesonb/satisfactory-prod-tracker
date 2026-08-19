@@ -8,11 +8,7 @@ import RecipeDisplay from '@/components/modals/add-factory/RecipeDisplay.vue'
 import RecipeListItem from '@/components/modals/add-factory/RecipeListItem.vue'
 import { VCard } from 'vuetify/components'
 
-// Mock composables with centralized fixtures
-vi.mock('@/composables/useStores', async () => {
-  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
-  return mockUseStores
-})
+vi.mock('@/composables/useStores')
 
 const IRON_INGOT_RECIPE = 'Recipe_Fake_IronIngot_C'
 const COPPER_INGOT_RECIPE = 'Recipe_Fake_CopperIngot_C'

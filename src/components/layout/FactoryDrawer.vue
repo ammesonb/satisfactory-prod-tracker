@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 
 import { useDataSearch } from '@/composables/useDataSearch'
+import { useFactoryActions } from '@/composables/useFactoryActions'
 import { useFloorNavigation } from '@/composables/useFloorNavigation'
 import { useRecipeStatus } from '@/composables/useRecipeStatus'
 import { getStores } from '@/composables/useStores'
@@ -9,6 +10,7 @@ import type { Factory } from '@/types/factory'
 
 const collapsed = ref(true)
 const { factoryStore } = getStores()
+const { renameFactory, deleteFactory } = useFactoryActions()
 const { initializeExpansion } = useFloorNavigation()
 const { isRecipeComplete } = useRecipeStatus()
 
@@ -77,8 +79,8 @@ const drawerWidth = computed(() => {
         :rail="collapsed"
         :selected="factoryStore.selected === factory.name"
         @select="selectFactory(factory)"
-        @rename="(oldName: string, newName: string) => factoryStore.renameFactory(oldName, newName)"
-        @delete="factoryStore.removeFactory"
+        @rename="renameFactory"
+        @delete="deleteFactory"
       />
     </v-list>
     <v-list v-else>

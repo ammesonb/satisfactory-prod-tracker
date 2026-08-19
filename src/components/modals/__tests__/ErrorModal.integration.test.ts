@@ -14,10 +14,7 @@ import { mount } from '@vue/test-utils'
 import ErrorModal from '@/components/modals/ErrorModal.vue'
 import { VBtn, VCard, VCardText, VCardTitle, VIcon } from 'vuetify/components'
 
-vi.mock('@/composables/useStores', async () => {
-  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
-  return mockUseStores
-})
+vi.mock('@/composables/useStores')
 
 describe('ErrorModal Integration', () => {
   const createWrapper = () => {

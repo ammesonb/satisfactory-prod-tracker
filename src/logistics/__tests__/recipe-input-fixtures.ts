@@ -22,6 +22,10 @@ export const makeRecipe = (
   efficiency: number = 100,
 ) => `"${recipeName}@${efficiency}#${building}": "${amount}"`
 
+// Recipes are authored one entry at a time, but the solver consumes a whole
+// Satisfactory Tools payload, so entries get wrapped back into a JSON object.
+export const makeRecipePayload = (recipes: string[]) => `{${recipes.join(',')}}`
+
 // Recipe constants organized by production chains
 export const RECIPES = {
   // Basic resources

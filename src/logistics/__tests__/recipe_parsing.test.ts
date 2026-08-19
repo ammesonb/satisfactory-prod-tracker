@@ -2,107 +2,133 @@ import { describe, expect, it } from 'vitest'
 
 import { InvalidBuildingError, InvalidRecipeError, RecipeFormatError } from '@/errors/recipe-errors'
 import { isNaturalResource } from '@/logistics/constants'
-import { parseRecipeString } from '@/logistics/recipe-parser'
+import { parseRecipeInput } from '@/logistics/recipe-parser'
 
 // Vitest doesn't have fail globally, let's add it
 const fail = (message: string) => {
   throw new Error(message)
 }
 
+const payload = (entries: Record<string, string>) => JSON.stringify(entries)
+
 describe('recipe parsing and source selection', () => {
   describe('recipe parsing', () => {
-    it('should parse recipe strings', () => {
-      const result = parseRecipeString('"Recipe_Fake_IronIngot_C@100#Desc_SmelterMk1_C": "1.2345"')
-      expect(result).toEqual({
-        name: 'Recipe_Fake_IronIngot_C',
-        building: 'Desc_SmelterMk1_C',
-        count: 1.2345,
-      })
+    it('should parse a solver response body', () => {
+      const result = parseRecipeInput(
+        JSON.stringify({
+          code: 200,
+          result: {
+            'Recipe_Fake_IronIngot_C@100#Desc_SmelterMk1_C': '1.2345',
+            'Recipe_Wire_C@100#Desc_ConstructorMk1_C': '0.333',
+          },
+        }),
+      )
+
+      expect(result).toEqual([
+        { name: 'Recipe_Fake_IronIngot_C', building: 'Desc_SmelterMk1_C', count: 1.2345 },
+        { name: 'Recipe_Wire_C', building: 'Desc_ConstructorMk1_C', count: 0.333 },
+      ])
     })
 
-    it('should parse recipe strings with decimal efficiency', () => {
-      const result = parseRecipeString('"Recipe_Fake_IronIngot_C@75.5#Desc_SmelterMk1_C": "2.0"')
-      expect(result).toEqual({
-        name: 'Recipe_Fake_IronIngot_C',
-        building: 'Desc_SmelterMk1_C',
-        count: 2.0,
-      })
+    it('should parse a bare result object', () => {
+      const result = parseRecipeInput(
+        payload({ 'Recipe_Fake_IronIngot_C@100#Desc_SmelterMk1_C': '1.2345' }),
+      )
+
+      expect(result).toEqual([
+        { name: 'Recipe_Fake_IronIngot_C', building: 'Desc_SmelterMk1_C', count: 1.2345 },
+      ])
     })
 
-    it('should parse recipe strings with decimal amounts', () => {
-      const result = parseRecipeString('"Recipe_Wire_C@100#Desc_ConstructorMk1_C": "0.333"')
-      expect(result).toEqual({
-        name: 'Recipe_Wire_C',
-        building: 'Desc_ConstructorMk1_C',
-        count: 0.333,
-      })
+    it('should ignore resource, byproduct, and product entries', () => {
+      const result = parseRecipeInput(
+        JSON.stringify({
+          code: 200,
+          result: {
+            'Desc_OreIron_C#Mine': '1172.65',
+            'special__power#Byproduct': '3255.35',
+            'Recipe_Fake_IronIngot_C@100#Desc_SmelterMk1_C': '3',
+            'Desc_ModularFrame_C#Product': '30',
+          },
+        }),
+      )
+
+      expect(result).toEqual([
+        { name: 'Recipe_Fake_IronIngot_C', building: 'Desc_SmelterMk1_C', count: 3 },
+      ])
+    })
+
+    it('should parse decimal efficiency', () => {
+      const result = parseRecipeInput(
+        payload({ 'Recipe_Fake_IronIngot_C@75.5#Desc_SmelterMk1_C': '2.0' }),
+      )
+
+      expect(result[0].count).toBe(2.0)
     })
 
     describe('error cases', () => {
       describe('RecipeFormatError', () => {
-        it('should throw RecipeFormatError for missing quotes', () => {
-          expect(() => parseRecipeString('Recipe_Test_C@100#Desc_SmelterMk1_C: 1')).toThrow(
+        it('should throw RecipeFormatError for non-JSON input', () => {
+          expect(() => parseRecipeInput('"Recipe_Test_C@100#Desc_SmelterMk1_C": "1"')).toThrow(
+            RecipeFormatError,
+          )
+        })
+
+        it('should throw RecipeFormatError for JSON that is not an object', () => {
+          expect(() => parseRecipeInput('["Recipe_Test_C@100#Desc_SmelterMk1_C"]')).toThrow(
             RecipeFormatError,
           )
         })
 
         it('should throw RecipeFormatError for malformed recipe name', () => {
           expect(() =>
-            parseRecipeString('"Invalid Recipe Name@100#Desc_SmelterMk1_C": "1"'),
+            parseRecipeInput(payload({ 'Recipe_ Test@100#Desc_SmelterMk1_C': '1' })),
           ).toThrow(RecipeFormatError)
         })
 
-        it('should throw RecipeFormatError for missing @ symbol', () => {
-          expect(() => parseRecipeString('"Recipe_Test_C100#Desc_SmelterMk1_C": "1"')).toThrow(
-            RecipeFormatError,
-          )
-        })
-
         it('should throw RecipeFormatError for missing # symbol', () => {
-          expect(() => parseRecipeString('"Recipe_Test_C@100Desc_SmelterMk1_C": "1"')).toThrow(
-            RecipeFormatError,
-          )
-        })
-
-        it('should throw RecipeFormatError for missing colon', () => {
-          expect(() => parseRecipeString('"Recipe_Test_C@100#Desc_SmelterMk1_C" "1"')).toThrow(
-            RecipeFormatError,
-          )
+          expect(() =>
+            parseRecipeInput(payload({ 'Recipe_Test_C@100Desc_SmelterMk1_C': '1' })),
+          ).toThrow(RecipeFormatError)
         })
 
         it('should throw RecipeFormatError for invalid efficiency', () => {
-          expect(() => parseRecipeString('"Recipe_Test_C@abc#Desc_SmelterMk1_C": "1"')).toThrow(
-            RecipeFormatError,
-          )
+          expect(() =>
+            parseRecipeInput(payload({ 'Recipe_Test_C@abc#Desc_SmelterMk1_C': '1' })),
+          ).toThrow(RecipeFormatError)
         })
 
         it('should throw RecipeFormatError for invalid amount', () => {
-          expect(() => parseRecipeString('"Recipe_Test_C@100#Desc_SmelterMk1_C": "abc"')).toThrow(
-            RecipeFormatError,
-          )
+          expect(() =>
+            parseRecipeInput(payload({ 'Recipe_Test_C@100#Desc_SmelterMk1_C': 'abc' })),
+          ).toThrow(RecipeFormatError)
         })
 
-        it('should throw RecipeFormatError for empty string', () => {
-          expect(() => parseRecipeString('')).toThrow(RecipeFormatError)
+        it('should throw RecipeFormatError for empty input', () => {
+          expect(() => parseRecipeInput('')).toThrow(RecipeFormatError)
         })
 
         it('should throw RecipeFormatError for malformed building name', () => {
-          expect(() => parseRecipeString('"Recipe_Test_C@100#Invalid Building Name": "1"')).toThrow(
-            RecipeFormatError,
-          )
+          expect(() =>
+            parseRecipeInput(payload({ 'Recipe_Test_C@100#Invalid Building Name': '1' })),
+          ).toThrow(RecipeFormatError)
         })
       })
 
       describe('InvalidBuildingError', () => {
         it('should throw InvalidBuildingError for nonexistent building', () => {
           expect(() =>
-            parseRecipeString('"Recipe_Fake_IronIngot_C@100#Desc_NonexistentBuilding_C": "1"'),
+            parseRecipeInput(
+              payload({ 'Recipe_Fake_IronIngot_C@100#Desc_NonexistentBuilding_C': '1' }),
+            ),
           ).toThrow(InvalidBuildingError)
         })
 
         it('should include building name in error', () => {
           try {
-            parseRecipeString('"Recipe_Fake_IronIngot_C@100#Desc_NonexistentBuilding_C": "1"')
+            parseRecipeInput(
+              payload({ 'Recipe_Fake_IronIngot_C@100#Desc_NonexistentBuilding_C': '1' }),
+            )
             fail('Expected InvalidBuildingError to be thrown')
           } catch (error) {
             expect(error).toBeInstanceOf(InvalidBuildingError)
@@ -115,13 +141,13 @@ describe('recipe parsing and source selection', () => {
       describe('InvalidRecipeError', () => {
         it('should throw InvalidRecipeError for nonexistent recipe', () => {
           expect(() =>
-            parseRecipeString('"Recipe_NonexistentRecipe_C@100#Desc_SmelterMk1_C": "1"'),
+            parseRecipeInput(payload({ 'Recipe_NonexistentRecipe_C@100#Desc_SmelterMk1_C': '1' })),
           ).toThrow(InvalidRecipeError)
         })
 
         it('should include recipe name in error', () => {
           try {
-            parseRecipeString('"Recipe_NonexistentRecipe_C@100#Desc_SmelterMk1_C": "1"')
+            parseRecipeInput(payload({ 'Recipe_NonexistentRecipe_C@100#Desc_SmelterMk1_C': '1' }))
             fail('Expected InvalidRecipeError to be thrown')
           } catch (error) {
             expect(error).toBeInstanceOf(InvalidRecipeError)
@@ -134,34 +160,35 @@ describe('recipe parsing and source selection', () => {
 
     describe('edge cases', () => {
       it('should handle very small decimal amounts', () => {
-        const result = parseRecipeString(
-          '"Recipe_Fake_IronIngot_C@100#Desc_SmelterMk1_C": "0.0001"',
+        const result = parseRecipeInput(
+          payload({ 'Recipe_Fake_IronIngot_C@100#Desc_SmelterMk1_C': '0.0001' }),
         )
-        expect(result.count).toBe(0.0001)
+        expect(result[0].count).toBe(0.0001)
       })
 
       it('should handle very large amounts', () => {
-        const result = parseRecipeString(
-          '"Recipe_Fake_IronIngot_C@100#Desc_SmelterMk1_C": "999999.999"',
+        const result = parseRecipeInput(
+          payload({ 'Recipe_Fake_IronIngot_C@100#Desc_SmelterMk1_C': '999999.999' }),
         )
-        expect(result.count).toBe(999999.999)
+        expect(result[0].count).toBe(999999.999)
       })
 
       it('should handle zero efficiency (if valid format)', () => {
-        const result = parseRecipeString('"Recipe_Fake_IronIngot_C@0#Desc_SmelterMk1_C": "1"')
-        expect(result.name).toBe('Recipe_Fake_IronIngot_C')
+        const result = parseRecipeInput(
+          payload({ 'Recipe_Fake_IronIngot_C@0#Desc_SmelterMk1_C': '1' }),
+        )
+        expect(result[0].name).toBe('Recipe_Fake_IronIngot_C')
       })
 
       it('should handle maximum efficiency values', () => {
-        const result = parseRecipeString('"Recipe_Fake_IronIngot_C@250#Desc_SmelterMk1_C": "1"')
-        expect(result.name).toBe('Recipe_Fake_IronIngot_C')
+        const result = parseRecipeInput(
+          payload({ 'Recipe_Fake_IronIngot_C@250#Desc_SmelterMk1_C': '1' }),
+        )
+        expect(result[0].name).toBe('Recipe_Fake_IronIngot_C')
       })
 
-      it('should allow a trailing comma with some whitespace', () => {
-        const result = parseRecipeString(
-          '"Recipe_Fake_IronIngot_C@250#Desc_SmelterMk1_C": "1.23" ,',
-        )
-        expect(result.count).toBe(1.23)
+      it('should return nothing for a payload with no recipes', () => {
+        expect(parseRecipeInput(payload({ 'Desc_OreIron_C#Mine': '1172.65' }))).toEqual([])
       })
     })
 

@@ -11,11 +11,7 @@ import CachedIcon from '@/components/common/CachedIcon.vue'
 import RecipeBuilding from '@/components/factory/RecipeBuilding.vue'
 import { VCard, VCheckbox } from 'vuetify/components'
 
-// Use centralized fixtures for mocking composables
-vi.mock('@/composables/useRecipeStatus', async () => {
-  const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
-  return { useRecipeStatus: mockUseRecipeStatus }
-})
+vi.mock('@/composables/useRecipeStatus')
 
 vi.mock('@/stores', async () => {
   const { createMockDataStore } = await import('@/__tests__/fixtures/stores/dataStore')

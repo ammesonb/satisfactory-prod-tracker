@@ -10,10 +10,12 @@ export const useCloudSyncStore = defineStore('cloudSync', {
     instanceId: '',
     displayId: undefined,
 
+    // Cloud storage namespace (Google Drive folder organization)
+    namespace: '',
+
     // Auto-sync configuration
     autoSync: {
       enabled: false,
-      namespace: '',
       selectedFactories: [], // Arrays serialize fine for pinia persist, and we need ordering for UI consistency
     },
 
@@ -71,21 +73,13 @@ export const useCloudSyncStore = defineStore('cloudSync', {
     // Auto-Sync Management Actions (Phase 4)
     // ========================================
 
-    enableAutoSync(namespace: string, factories: string[]): void {
+    enableAutoSync(): void {
       this.autoSync.enabled = true
-      this.autoSync.namespace = namespace
-      this.autoSync.selectedFactories = [...factories]
     },
 
     disableAutoSync(): void {
       this.autoSync.enabled = false
-      // Keep namespace and selectedFactories so user can toggle on/off without losing selections
-    },
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async changeNamespace(newNamespace: string): Promise<void> {
-      // To be implemented in Phase 4
-      throw new Error('Not implemented')
+      // Keep selectedFactories so user can toggle on/off without losing selections
     },
 
     addFactoryToAutoSync(factoryName: string): void {
@@ -101,26 +95,15 @@ export const useCloudSyncStore = defineStore('cloudSync', {
       }
     },
 
-    // ========================================
-    // Sync Operations (Phase 4)
-    // ========================================
-
-    // CLAUDE: also a composable right, since this interacts with factory store to get sptrak, backup to cloud?
-    async performAutoSave(): Promise<void> {
-      // To be implemented in Phase 4
-      throw new Error('Not implemented')
-    },
-
-    // CLAUDE: conflict resolution also seems like a composable, since it is comparing/writing data only
-    async checkForConflicts(): Promise<void> {
-      // To be implemented in Phase 4
-      throw new Error('Not implemented')
-    },
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async resolveConflict(factoryName: string, resolution: 'cloud' | 'local'): Promise<void> {
-      // To be implemented in Phase 4
-      throw new Error('Not implemented')
+    /**
+     * Update selectedFactories when a factory is renamed
+     * Called by useAutoSync after successful cloud rename
+     */
+    updateFactoryNameInAutoSync(oldName: string, newName: string): void {
+      const index = this.autoSync.selectedFactories.indexOf(oldName)
+      if (index !== -1) {
+        this.autoSync.selectedFactories[index] = newName
+      }
     },
 
     // ========================================

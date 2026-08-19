@@ -10,16 +10,8 @@ import type { Material } from '@/types/factory'
 import RecipeLink from '@/components/factory/RecipeLink.vue'
 import RecipeOutputs from '@/components/factory/RecipeOutputs.vue'
 
-// Use centralized fixtures for mocking composables
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
-})
-
-vi.mock('@/composables/useRecipeStatus', async () => {
-  const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
-  return { useRecipeStatus: mockUseRecipeStatus }
-})
+vi.mock('@/composables/useStores')
+vi.mock('@/composables/useRecipeStatus')
 
 // Mock child components
 vi.mock('@/components/factory/RecipeLink.vue', () => ({

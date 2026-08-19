@@ -210,7 +210,7 @@ class GoogleApiClient {
    *
    * @returns Access token and expiry timestamp
    */
-  async signInWithGoogle(): Promise<{
+  async signInWithGoogle(hint?: string): Promise<{
     accessToken: string
     expiresAt: number
   }> {
@@ -236,7 +236,7 @@ class GoogleApiClient {
         }
 
         // Request access token
-        tokenClient.requestAccessToken({ prompt: '' })
+        tokenClient.requestAccessToken({ prompt: '', ...(hint ? { hint } : {}) })
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : 'Unknown error during Google sign-in'
@@ -264,17 +264,66 @@ class GoogleApiClient {
   }
 
   /**
-   * Refresh the access token
-   * With GIS, we just request a new token
+   * Silently refresh the access token without user interaction.
+   * Uses prompt: 'none' which works if the user has an active Google session.
+   * Throws if silent refresh fails (user must re-authenticate).
    *
+   * @param hint - Email of the account to refresh. Without it, Google cannot
+   *   pick an account when the browser has several signed in, and a prompt-less
+   *   request fails outright rather than choosing one.
    * @returns New access token and expiry timestamp
    */
-  async refreshToken(): Promise<{
+  async silentRefresh(hint?: string): Promise<{
     accessToken: string
     expiresAt: number
   }> {
-    // With GIS, we just request a new token
-    return this.signInWithGoogle()
+    const tokenClient = this.getTokenClient()
+
+    return new Promise((resolve, reject) => {
+      // Set up error handler for when popup is needed but blocked
+      tokenClient.error_callback = (error: { type: string; message?: string }) => {
+        reject(
+          new Error(
+            `Silent refresh failed: ${error.type} - ${error.message || 'User interaction required'}`,
+          ),
+        )
+      }
+
+      tokenClient.callback = (response: {
+        access_token: string
+        expires_in: number
+        error?: string
+      }) => {
+        try {
+          this.handleTokenResponse(response, (accessToken, expiresAt) => {
+            resolve({ accessToken, expiresAt })
+          })
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : 'Unknown error during silent refresh'
+          reject(new Error(`Silent refresh failed: ${errorMessage}`))
+        }
+      }
+
+      // Request token silently - no UI shown if user has active Google session
+      console.log('[GoogleApiClient] Requesting token with prompt: none')
+      tokenClient.requestAccessToken({ prompt: 'none', ...(hint ? { hint } : {}) })
+    })
+  }
+
+  /**
+   * Refresh the access token.
+   * Attempts silent refresh first (no UI if user has active Google session).
+   *
+   * @param hint - Email of the account to refresh
+   * @returns New access token and expiry timestamp
+   * @throws Error if silent refresh fails (caller should clear auth state)
+   */
+  async refreshToken(hint?: string): Promise<{
+    accessToken: string
+    expiresAt: number
+  }> {
+    return this.silentRefresh(hint)
   }
 
   /**

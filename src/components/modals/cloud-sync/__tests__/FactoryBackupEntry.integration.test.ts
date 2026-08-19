@@ -5,14 +5,11 @@ import { mockFactories } from '@/__tests__/fixtures/composables/factoryStore'
 import { component } from '@/__tests__/vue-test-helpers'
 import type { GoogleDriveFile } from '@/types/cloudSync'
 
-import FactoryBackupEntry from '@/components/modals/import-export/FactoryBackupEntry.vue'
+import FactoryBackupEntry from '@/components/modals/cloud-sync/FactoryBackupEntry.vue'
 import FactoryName from '@/components/factory/FactoryName.vue'
 import { VBtn, VListItem } from 'vuetify/components'
 
-vi.mock('@/composables/useStores', async () => {
-  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
-  return mockUseStores
-})
+vi.mock('@/composables/useStores')
 
 describe('FactoryBackupEntry Integration', () => {
   const mockBackup: GoogleDriveFile = {

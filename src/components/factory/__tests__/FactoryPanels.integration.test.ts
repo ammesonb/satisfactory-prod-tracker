@@ -14,16 +14,8 @@ import FactoryPanels from '@/components/factory/FactoryPanels.vue'
 import FloorEditModal from '@/components/modals/FloorEditModal.vue'
 import { VExpansionPanels } from 'vuetify/components'
 
-// Use centralized fixtures for mocking composables
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
-})
-
-vi.mock('@/composables/useFloorNavigation', async () => {
-  const { mockUseFloorNavigation } = await import('@/__tests__/fixtures/composables')
-  return { useFloorNavigation: mockUseFloorNavigation }
-})
+vi.mock('@/composables/useStores')
+vi.mock('@/composables/useFloorNavigation')
 
 describe('FactoryPanels Integration', () => {
   // Test constants from fixtures
@@ -81,11 +73,8 @@ describe('FactoryPanels Integration', () => {
     ...customProps,
   })
 
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks()
-
-    // Reset the centralized factory store mock
-    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/factoryStore')
     mockCurrentFactory.value = null
   })
 
@@ -93,13 +82,11 @@ describe('FactoryPanels Integration', () => {
     return mount(FactoryPanels)
   }
 
-  const setFactoryWithFloors = async () => {
-    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/factoryStore')
+  const setFactoryWithFloors = () => {
     mockCurrentFactory.value = createMockFactory()
   }
 
-  const setFactoryWithCustomFloors = async (floors: Floor[]) => {
-    const { mockCurrentFactory } = await import('@/__tests__/fixtures/composables/factoryStore')
+  const setFactoryWithCustomFloors = (floors: Floor[]) => {
     mockCurrentFactory.value = createMockFactory({ floors })
   }
 

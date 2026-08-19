@@ -11,6 +11,7 @@ export const mockCreateFolder = vi.fn()
 export const mockFindOrCreateFolder = vi.fn()
 export const mockEnsureFolderPath = vi.fn()
 export const mockListFolders = vi.fn()
+export const mockRenameFile = vi.fn()
 
 export const mockUseGoogleDrive = {
   uploadFile: mockUploadFile,
@@ -23,4 +24,5 @@ export const mockUseGoogleDrive = {
   findOrCreateFolder: mockFindOrCreateFolder,
   ensureFolderPath: mockEnsureFolderPath,
   listFolders: mockListFolders,
+  renameFile: mockRenameFile,
 }

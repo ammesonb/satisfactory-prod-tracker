@@ -47,6 +47,7 @@ const showDialog = computed({
       </v-card-title>
       <v-card-text>
         {{ props.message }}
+        <slot name="extra-content" />
       </v-card-text>
       <v-card-actions>
         <v-spacer />

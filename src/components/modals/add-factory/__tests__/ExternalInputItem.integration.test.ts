@@ -7,11 +7,7 @@ import CachedIcon from '@/components/common/CachedIcon.vue'
 import ExternalInputItem from '@/components/modals/add-factory/ExternalInputItem.vue'
 import { VBadge, VChip } from 'vuetify/components'
 
-// Mock composables with centralized fixtures
-vi.mock('@/composables/useStores', async () => {
-  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
-  return mockUseStores
-})
+vi.mock('@/composables/useStores')
 
 describe('ExternalInputItem Integration', () => {
   const IRON_ORE = 'Desc_OreIron_C'

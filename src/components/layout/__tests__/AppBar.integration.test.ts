@@ -16,10 +16,7 @@ vi.mock('@/components/modals/ImportExportModal.vue', () => ({
   },
 }))
 
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
-})
+vi.mock('@/composables/useStores')
 
 describe('AppBar Integration', () => {
   const createWrapper = (props = {}) => {

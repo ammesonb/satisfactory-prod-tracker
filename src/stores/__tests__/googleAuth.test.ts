@@ -72,21 +72,36 @@ describe('useGoogleAuthStore', () => {
       expect(googleApiClient.setAccessToken).toHaveBeenCalledWith('existing-token')
     })
 
-    it('does not set token on API client if token is expired', async () => {
+    it('attempts silent refresh if token is expired', async () => {
       const store = useGoogleAuthStore()
       store.setToken('expired-token', Date.now() - 1000)
 
       await store.initialize()
 
-      expect(googleApiClient.setAccessToken).not.toHaveBeenCalled()
+      expect(googleApiClient.refreshToken).toHaveBeenCalled()
+      expect(store.accessToken).toBe('refreshed-token')
     })
 
-    it('does not set token on API client if no token exists', async () => {
+    it('clears token if silent refresh fails on startup', async () => {
+      vi.spyOn(googleApiClient, 'refreshToken').mockRejectedValue(new Error('interaction_required'))
+
+      const store = useGoogleAuthStore()
+      store.setToken('expired-token', Date.now() - 1000)
+
+      await store.initialize()
+
+      expect(googleApiClient.refreshToken).toHaveBeenCalled()
+      expect(store.accessToken).toBeNull()
+      expect(store.isAuthenticated).toBe(false)
+    })
+
+    it('attempts silent refresh even if no token exists', async () => {
       const store = useGoogleAuthStore()
 
       await store.initialize()
 
-      expect(googleApiClient.setAccessToken).not.toHaveBeenCalled()
+      // With no token, isTokenExpired is true, so we attempt refresh
+      expect(googleApiClient.refreshToken).toHaveBeenCalled()
     })
 
     it('stores token when callback is invoked by googleApiClient', async () => {
@@ -231,10 +246,78 @@ describe('useGoogleAuthStore', () => {
 
       expect(store.isAuthenticated).toBe(true)
     })
+
+    it('hints the previously signed-in account so Google can pick one silently', async () => {
+      const store = useGoogleAuthStore()
+      store.setUserEmail('alice@example.com')
+
+      await store.refreshToken()
+
+      expect(googleApiClient.refreshToken).toHaveBeenCalledWith('alice@example.com')
+    })
+
+    it('retains the hint after the token is cleared', async () => {
+      const store = useGoogleAuthStore()
+      store.setUserEmail('alice@example.com')
+      store.clearToken()
+
+      await store.refreshToken()
+
+      expect(googleApiClient.refreshToken).toHaveBeenCalledWith('alice@example.com')
+    })
+
+    it('drops the hint on explicit sign-out', async () => {
+      const store = useGoogleAuthStore()
+      store.setToken('test-token', Date.now() + 3600000)
+      store.setUserEmail('alice@example.com')
+
+      await store.signOut()
+      await store.refreshToken()
+
+      expect(googleApiClient.refreshToken).toHaveBeenCalledWith(undefined)
+    })
+  })
+
+  describe('checkAndRefreshToken', () => {
+    it('keeps a still-valid token when an early refresh fails', async () => {
+      vi.spyOn(googleApiClient, 'refreshToken').mockRejectedValue(new Error('network down'))
+
+      const store = useGoogleAuthStore()
+      // Inside the refresh buffer, but not yet expired
+      store.setToken('good-token', Date.now() + 120000)
+
+      await store.checkAndRefreshToken()
+
+      expect(googleApiClient.refreshToken).toHaveBeenCalled()
+      expect(store.accessToken).toBe('good-token')
+      expect(store.isAuthenticated).toBe(true)
+    })
+
+    it('clears an already-expired token when refresh fails', async () => {
+      vi.spyOn(googleApiClient, 'refreshToken').mockRejectedValue(new Error('network down'))
+
+      const store = useGoogleAuthStore()
+      store.setToken('stale-token', Date.now() - 1000)
+
+      await store.checkAndRefreshToken()
+
+      expect(store.accessToken).toBeNull()
+      expect(store.isAuthenticated).toBe(false)
+    })
   })
 
   describe('isTokenExpired getter', () => {
     const TOKEN_EXPIRY_BUFFER_MS = 5000
+    const NOW = 1700000000000
+
+    beforeEach(() => {
+      vi.useFakeTimers()
+      vi.setSystemTime(NOW)
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
 
     it('returns true when expiresAt is null', () => {
       const store = useGoogleAuthStore()
@@ -244,28 +327,28 @@ describe('useGoogleAuthStore', () => {
 
     it('returns true when token expired in the past', () => {
       const store = useGoogleAuthStore()
-      store.expiresAt = Date.now() - 10000 // 10 seconds ago
+      store.expiresAt = NOW - 10000 // 10 seconds ago
 
       expect(store.isTokenExpired).toBe(true)
     })
 
     it('returns true when token expires right now', () => {
       const store = useGoogleAuthStore()
-      store.expiresAt = Date.now()
+      store.expiresAt = NOW
 
       expect(store.isTokenExpired).toBe(true)
     })
 
     it('returns true when token expires within buffer (< 5 seconds)', () => {
       const store = useGoogleAuthStore()
-      store.expiresAt = Date.now() + TOKEN_EXPIRY_BUFFER_MS - 1000 // 4 seconds from now
+      store.expiresAt = NOW + TOKEN_EXPIRY_BUFFER_MS - 1000 // 4 seconds from now
 
       expect(store.isTokenExpired).toBe(true)
     })
 
     it('returns true at exact buffer boundary', () => {
       const store = useGoogleAuthStore()
-      store.expiresAt = Date.now() + TOKEN_EXPIRY_BUFFER_MS // Exactly 5 seconds
+      store.expiresAt = NOW + TOKEN_EXPIRY_BUFFER_MS // Exactly 5 seconds
 
       // The implementation uses `>` not `>=`, so exact boundary returns false
       expect(store.isTokenExpired).toBe(false)
@@ -273,14 +356,14 @@ describe('useGoogleAuthStore', () => {
 
     it('returns false when token expires beyond buffer', () => {
       const store = useGoogleAuthStore()
-      store.expiresAt = Date.now() + TOKEN_EXPIRY_BUFFER_MS + 1000 // 6 seconds from now
+      store.expiresAt = NOW + TOKEN_EXPIRY_BUFFER_MS + 1000 // 6 seconds from now
 
       expect(store.isTokenExpired).toBe(false)
     })
 
     it('returns false for long-lived token', () => {
       const store = useGoogleAuthStore()
-      store.expiresAt = Date.now() + 3600000 // 1 hour from now
+      store.expiresAt = NOW + 3600000 // 1 hour from now
 
       expect(store.isTokenExpired).toBe(false)
     })

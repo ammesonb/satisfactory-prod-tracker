@@ -10,11 +10,7 @@ import { component, element } from '@/__tests__/vue-test-helpers'
 import GettingStarted from '@/components/common/GettingStarted.vue'
 import { VAlert, VBtn, VCard, VCardText, VCardTitle } from 'vuetify/components'
 
-// Mock the useStores composable
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
-})
+vi.mock('@/composables/useStores')
 
 describe('GettingStarted Integration', () => {
   // Test constants

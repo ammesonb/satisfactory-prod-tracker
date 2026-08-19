@@ -8,17 +8,8 @@ import FloatingNav from '@/components/layout/FloatingNav.vue'
 import NavPanel from '@/components/layout/NavPanel.vue'
 import { VFab } from 'vuetify/components'
 
-// Mock the useFloorNavigation composable
-vi.mock('@/composables/useFloorNavigation', async () => {
-  const { mockUseFloorNavigation } = await import('@/__tests__/fixtures/composables')
-  return { useFloorNavigation: mockUseFloorNavigation }
-})
-
-// Mock the useStores composable
-vi.mock('@/composables/useStores', async () => {
-  const { mockUseStores } = await import('@/__tests__/fixtures/composables/stores')
-  return mockUseStores
-})
+vi.mock('@/composables/useFloorNavigation')
+vi.mock('@/composables/useStores')
 
 describe('FloatingNav Integration', () => {
   const createWrapper = () => {

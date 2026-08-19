@@ -17,6 +17,10 @@ const syncBadge = computed(() => {
   const status = getGlobalSyncStatus(factoryStore.factories)
   const isAuthenticated = googleAuthStore.isAuthenticated
   const autoSyncEnabled = cloudSyncStore.autoSync.enabled
+  const wasConfigured = cloudSyncStore.autoSync.selectedFactories.length > 0
+
+  // Session expired: was configured but not authenticated
+  const sessionExpired = !isAuthenticated && wasConfigured
 
   return {
     color: autoSyncEnabled ? getSyncStatusColor(status) : 'info',
@@ -25,8 +29,11 @@ const syncBadge = computed(() => {
       ? autoSyncEnabled
         ? getGlobalSyncTooltip(status, isAuthenticated)
         : 'Signed in - configure backups in Cloud Sync tab'
-      : 'Connect to Google Drive',
+      : sessionExpired
+        ? 'Session expired - sign in to resume sync'
+        : 'Connect to Google Drive',
     show: isAuthenticated,
+    sessionExpired,
   }
 })
 
@@ -59,8 +66,11 @@ const handleImportExportClick = () => {
     <v-tooltip :text="syncBadge.tooltip" location="bottom">
       <template v-slot:activator="{ props }">
         <v-btn icon v-bind="props" @click="handleSyncIconClick" class="me-2">
+          <!-- Session expired: amber cloud alert -->
+          <v-icon v-if="syncBadge.sessionExpired" color="warning">mdi-cloud-alert</v-icon>
+
           <!-- Not authenticated: Google icon -->
-          <v-icon v-if="!syncBadge.show">mdi-google-drive</v-icon>
+          <v-icon v-else-if="!syncBadge.show">mdi-google-drive</v-icon>
 
           <!-- Authenticated: Cloud with status indicator -->
           <v-badge v-else :color="syncBadge.color" dot offset-x="6" offset-y="6">

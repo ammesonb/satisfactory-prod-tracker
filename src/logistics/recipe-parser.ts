@@ -2,24 +2,21 @@ import { InvalidBuildingError, InvalidRecipeError, RecipeFormatError } from '@/e
 import { useDataStore } from '@/stores/data'
 import type { Recipe } from '@/types/factory'
 
-export const parseRecipeString = (recipeString: string): Recipe => {
-  const dataStore = useDataStore()
+const RECIPE_KEY = /^(Recipe_\w+)@[\d.]+#(\w+)$/
+const AMOUNT = /^[\d.]+$/
 
-  if (!recipeString.match(/^"?\w+@[\d.]+#\w+"?: "[\d.]+"\s*,?\s*$/)) {
-    throw new RecipeFormatError(recipeString)
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const toRecipe = (key: string, amount: unknown): Recipe => {
+  const dataStore = useDataStore()
+  const match = key.match(RECIPE_KEY)
+
+  if (!match || !AMOUNT.test(String(amount))) {
+    throw new RecipeFormatError(`"${key}": "${String(amount)}"`)
   }
 
-  let rest = recipeString.replace(/"/g, '')
-  let index = rest.indexOf('@')
-  const recipeName = rest.slice(0, index).trim()
-  // strip efficiency
-  index = rest.indexOf('#')
-  rest = rest.slice(index + 1)
-  index = rest.indexOf(':')
-  const buildingName = rest.slice(0, index).trim()
-  rest = rest.slice(index + 1)
-  index = rest.indexOf(',')
-  const amount = Number(rest.slice(0, index === -1 ? rest.length : index).trim())
+  const [, recipeName, buildingName] = match
 
   if (!dataStore.buildings[buildingName]) {
     throw new InvalidBuildingError(buildingName)
@@ -32,6 +29,34 @@ export const parseRecipeString = (recipeString: string): Recipe => {
   return {
     name: recipeName,
     building: buildingName,
-    count: amount,
+    count: Number(amount),
   }
+}
+
+/**
+ * Parse a Satisfactory Tools solver response into recipes.
+ *
+ * Accepts the whole response body (`{ "code": 200, "result": { ... } }`) or
+ * just the inner `result` object. The payload lists resource, byproduct, and
+ * product totals alongside the production steps, so only `Recipe_` keys are
+ * treated as recipes and everything else is ignored.
+ */
+export const parseRecipeInput = (recipesString: string): Recipe[] => {
+  let parsed: unknown
+
+  try {
+    parsed = JSON.parse(recipesString)
+  } catch {
+    throw new RecipeFormatError(recipesString)
+  }
+
+  const result = isObject(parsed) && isObject(parsed.result) ? parsed.result : parsed
+
+  if (!isObject(result)) {
+    throw new RecipeFormatError(recipesString)
+  }
+
+  return Object.entries(result)
+    .filter(([key]) => key.startsWith('Recipe_'))
+    .map(([key, amount]) => toRecipe(key, amount))
 }

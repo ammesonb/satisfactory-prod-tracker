@@ -2,7 +2,12 @@ import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { computed, ref } from 'vue'
 
-import { mockSetLinkBuilt } from '@/__tests__/fixtures/composables/useRecipeStatus'
+import { mockUseLinkData } from '@/__tests__/fixtures/composables'
+import {
+  mockIsLinkBuilt,
+  mockSetLinkBuilt,
+  mockUseRecipeStatus,
+} from '@/__tests__/fixtures/composables/useRecipeStatus'
 import { makeMaterial, makeRecipeNode } from '@/__tests__/fixtures/data'
 import { component } from '@/__tests__/vue-test-helpers'
 import type { RecipeNode } from '@/logistics/graph-node'
@@ -15,21 +20,9 @@ import RecipeLinkTarget from '@/components/factory/RecipeLinkTarget.vue'
 import TransportCapacityTooltip from '@/components/factory/TransportCapacityTooltip.vue'
 import { VCard, VCheckbox } from 'vuetify/components'
 
-// Use centralized mock fixtures
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return { getStores: mockGetStores }
-})
-
-vi.mock('@/composables/useRecipeStatus', async () => {
-  const { mockUseRecipeStatus } = await import('@/__tests__/fixtures/composables')
-  return { useRecipeStatus: mockUseRecipeStatus }
-})
-
-vi.mock('@/composables/useLinkData', async () => {
-  const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
-  return { useLinkData: mockUseLinkData }
-})
+vi.mock('@/composables/useStores')
+vi.mock('@/composables/useRecipeStatus')
+vi.mock('@/composables/useLinkData')
 
 describe('RecipeLink Integration', () => {
   // Test constants from fixtures
@@ -44,18 +37,14 @@ describe('RecipeLink Integration', () => {
 
   let mockMaterialItemValue: ReturnType<typeof ref>
 
-  beforeEach(async () => {
-    // Reset all mocks before each test
+  beforeEach(() => {
     vi.clearAllMocks()
 
-    // Setup reactive test data for material item
     mockMaterialItemValue = ref<Item | null>({
       name: 'Iron Ore',
       icon: TEST_ITEMS.IRON_ORE,
     } as Item)
 
-    // Update the useLinkData mock to use the reactive material item
-    const { mockUseLinkData } = await import('@/__tests__/fixtures/composables')
     mockUseLinkData.mockReturnValue({
       linkId: computed(() => 'test-link-id'),
       materialItem: computed(() => mockMaterialItemValue.value as Item),
@@ -120,22 +109,17 @@ describe('RecipeLink Integration', () => {
     })
   })
 
-  it('calls composables with correct parameters', async () => {
+  it('calls composables with correct parameters', () => {
     const recipe = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
     const link = makeMaterial(TEST_ITEMS.IRON_ORE, 'Mining', 'Smelting', 30)
 
     createWrapper(link, recipe, 'input')
 
-    const { useRecipeStatus } = await import('@/composables/useRecipeStatus')
-    const { useLinkData } = await import('@/composables/useLinkData')
-
-    expect(vi.mocked(useRecipeStatus)).toHaveBeenCalled()
-    expect(vi.mocked(useLinkData)).toHaveBeenCalled()
+    expect(mockUseRecipeStatus).toHaveBeenCalled()
+    expect(mockUseLinkData).toHaveBeenCalled()
   })
 
-  it('handles built state correctly when link is built', async () => {
-    // Access the centralized mock functions
-    const { mockIsLinkBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
+  it('handles built state correctly when link is built', () => {
     mockIsLinkBuilt.mockReturnValueOnce(true)
 
     const recipe = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })
@@ -156,9 +140,7 @@ describe('RecipeLink Integration', () => {
     })
   })
 
-  it('handles unbuilt state correctly when link is not built', async () => {
-    // Access the centralized mock functions (default is false)
-    const { mockIsLinkBuilt } = await import('@/__tests__/fixtures/composables/useRecipeStatus')
+  it('handles unbuilt state correctly when link is not built', () => {
     mockIsLinkBuilt.mockReturnValueOnce(false)
 
     const recipe = makeRecipeNode(TEST_RECIPES.IRON_INGOT, 0, { fromDatabase: true })

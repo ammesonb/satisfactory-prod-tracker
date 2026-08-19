@@ -15,7 +15,11 @@ export class RecipeFormatError extends Error implements UserFriendlyError {
       .body(() =>
         h('div', [
           h('p', { class: 'mb-3' }, `Recipe "${this.recipeString}" is not in the correct format.`),
-          h('p', { class: 'mb-2' }, 'Expected format:'),
+          h(
+            'p',
+            { class: 'mb-2' },
+            'Paste the complete Satisfactory Tools solver response. Expected format:',
+          ),
           h(
             'v-card',
             {
@@ -23,7 +27,13 @@ export class RecipeFormatError extends Error implements UserFriendlyError {
               color: 'surface',
               variant: 'tonal',
             },
-            [h('code', { class: 'text-body-2' }, `"recipe_name@efficiency#building": "count"`)],
+            [
+              h(
+                'code',
+                { class: 'text-body-2' },
+                `{ "result": { "recipe_name@efficiency#building": "count" } }`,
+              ),
+            ],
           ),
         ]),
       )

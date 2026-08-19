@@ -25,7 +25,6 @@ export interface FactoryStatus {
  */
 export interface AutoSyncConfig {
   enabled: boolean
-  namespace: string
   selectedFactories: string[]
 }
 
@@ -85,6 +84,9 @@ export interface CloudSyncState {
   // Instance identification
   instanceId: string
   displayId?: string
+
+  // Cloud storage namespace (Google Drive folder organization)
+  namespace: string
 
   // Auto-sync configuration
   autoSync: AutoSyncConfig

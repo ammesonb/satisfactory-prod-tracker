@@ -9,10 +9,7 @@ import ImportExportModal from '@/components/modals/ImportExportModal.vue'
 import ExportTab from '@/components/modals/import-export/ExportTab.vue'
 import { VAlert, VBtn, VCard, VCardTitle, VTab, VWindow } from 'vuetify/components'
 
-vi.mock('@/composables/useStores', async () => {
-  const { mockUseStores } = await import('@/__tests__/fixtures/composables')
-  return mockUseStores
-})
+vi.mock('@/composables/useStores')
 
 vi.mock('@/components/modals/import-export/ExportTab.vue', () => ({
   default: {

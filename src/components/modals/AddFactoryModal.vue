@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
+import { useFactoryActions } from '@/composables/useFactoryActions'
+import { getStores } from '@/composables/useStores'
 import type { ItemOption, RecipeProduct } from '@/types/data'
 import { type RecipeEntry } from '@/types/factory'
 
@@ -9,7 +11,24 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits(['update:modelValue', 'add-factory'])
+const emit = defineEmits(['update:modelValue'])
+
+const { factoryStore, cloudSyncStore } = getStores()
+const { addFactory: createFactory } = useFactoryActions()
+
+// Check if the current factory name already exists
+const hasNameConflict = computed(() => {
+  const name = form.value.name.trim()
+  return name !== '' && !!factoryStore.factories[name]
+})
+
+// Check if form is valid and can be submitted
+const canSubmit = computed(() => {
+  const hasName = !!form.value.name.trim()
+  const hasIcon = !!form.value.item?.icon
+  const hasRecipes = !!form.value.recipes || form.value.recipeList.length > 0
+  return hasName && hasIcon && hasRecipes && !hasNameConflict.value
+})
 
 // Input mode toggle - default is recipe mode
 const inputMode = ref<'recipe' | 'import'>('recipe')
@@ -20,6 +39,7 @@ const form = ref({
   recipes: '',
   recipeList: [] as RecipeEntry[],
   externalInputs: [] as RecipeProduct[],
+  addToAutoSync: false,
 })
 
 const showDialog = computed({
@@ -28,42 +48,47 @@ const showDialog = computed({
 })
 
 const clear = () => {
-  form.value = { name: '', item: undefined, recipes: '', recipeList: [], externalInputs: [] }
+  form.value = {
+    name: '',
+    item: undefined,
+    recipes: '',
+    recipeList: [],
+    externalInputs: [],
+    addToAutoSync: false,
+  }
   inputMode.value = 'recipe'
   showDialog.value = false
 }
 
-const addFactory = () => {
-  if (
-    !form.value.name ||
-    !form.value.item?.icon ||
-    (!form.value.recipes && !form.value.recipeList.length)
-  )
-    return
+const handleAddFactory = () => {
+  if (!canSubmit.value) return
 
-  const factory = {
-    name: form.value.name,
-    icon: form.value.item.icon,
-    recipes: form.value.recipes,
-    externalInputs: form.value.externalInputs,
-  }
+  let recipes = form.value.recipes
 
   if (inputMode.value === 'recipe') {
     if (form.value.name && form.value.recipeList.length > 0 && form.value.item?.icon) {
-      // Convert recipe list to the expected format
-      const recipeStrings = form.value.recipeList.map((entry) => {
-        return `"${entry.recipe}@1.0#${entry.building}": "${entry.count}"`
-      })
-
-      factory.recipes = recipeStrings.join('\n')
+      recipes = JSON.stringify(
+        Object.fromEntries(
+          form.value.recipeList.map((entry) => [
+            `${entry.recipe}@1.0#${entry.building}`,
+            String(entry.count),
+          ]),
+        ),
+      )
     }
   }
 
-  emit('add-factory', factory)
+  createFactory(
+    form.value.name,
+    form.value.item!.icon,
+    recipes,
+    form.value.externalInputs,
+    form.value.addToAutoSync,
+  )
+
   clear()
 }
 
-// TODO: update this with new instructions
 const instructions = `Import from Satisfactory Tools:
 
 1. 🏭 Create your factory on Satisfactory Tools
@@ -71,8 +96,8 @@ const instructions = `Import from Satisfactory Tools:
 3. 🌐 Go to Network tab → Reload page → Find "solver" requests
 4. 🔍 Use the requests pane to find the desired factory
 5. 📋 In the solver request, go to "Response" tab
-6. 📄 Copy all lines starting with "Recipe_" (include quotes)
-7. 📥 Paste into the Recipes field below (one per line)`
+6. 📄 Copy the entire response (right-click → Copy value / Copy all)
+7. 📥 Paste it into the Recipes field below`
 
 const openHelpWiki = () => {
   window.open(
@@ -94,6 +119,10 @@ const openHelpWiki = () => {
             required
             variant="outlined"
             class="mb-4"
+            :error="hasNameConflict"
+            :error-messages="
+              hasNameConflict ? 'A factory with this name already exists' : undefined
+            "
           />
           <ItemSelector
             v-model="form.item"
@@ -137,7 +166,7 @@ const openHelpWiki = () => {
             v-if="inputMode === 'import'"
             v-model="form.recipes"
             label="Recipes"
-            placeholder="Paste recipe lines from Satisfactory Tools here..."
+            placeholder="Paste the Satisfactory Tools solver response here..."
             rows="8"
             variant="outlined"
             required
@@ -148,6 +177,14 @@ const openHelpWiki = () => {
           />
 
           <ExternalInputSelector v-model="form.externalInputs" />
+
+          <v-checkbox
+            v-if="cloudSyncStore.autoSync.enabled"
+            v-model="form.addToAutoSync"
+            label="Auto-sync factory"
+            :hide-details="true"
+            class="mt-4"
+          />
         </v-form>
       </v-card-text>
       <v-card-actions class="flex-shrink-0 pa-4">
@@ -156,8 +193,8 @@ const openHelpWiki = () => {
         <v-btn
           color="secondary"
           variant="elevated"
-          @click="addFactory"
-          :disabled="!form.name || (!form.recipes && !form.recipeList.length) || !form.item?.icon"
+          @click="handleAddFactory"
+          :disabled="!canSubmit"
         >
           Add Factory
         </v-btn>

@@ -21,4 +21,5 @@ export {
   mockUseStores,
 } from './stores'
 export { mockUseCloudBackup } from './useCloudBackup'
+export { mockUseFactoryActions } from './useFactoryActions'
 export { mockUseRecipeStatus } from './useRecipeStatus'

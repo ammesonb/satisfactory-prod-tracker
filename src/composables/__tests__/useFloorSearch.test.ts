@@ -12,19 +12,8 @@ import { useFloorSearch } from '@/composables/useFloorSearch'
 import type { Floor } from '@/types/factory'
 import type { FloorWithIndex } from '@/composables/useFloorManagement'
 
-vi.mock('@/composables/useStores', async () => {
-  const { mockGetStores } = await import('@/__tests__/fixtures/composables')
-  return {
-    getStores: mockGetStores,
-  }
-})
-
-vi.mock('@/composables/useFloorManagement', async () => {
-  const { mockUseFloorManagement } = await import('@/__tests__/fixtures/composables')
-  return {
-    useFloorManagement: mockUseFloorManagement,
-  }
-})
+vi.mock('@/composables/useStores')
+vi.mock('@/composables/useFloorManagement')
 
 describe('useFloorSearch', () => {
   let testFloors: Ref<Floor[] | undefined>

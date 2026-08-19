@@ -53,11 +53,13 @@ export function useFloorManagement() {
   const updateFloorName = (floorIndex: number, name: string | undefined) => {
     if (!factoryStore.currentFactory?.floors[floorIndex]) return
     factoryStore.currentFactory.floors[floorIndex].name = name
+    factoryStore.markDirty(factoryStore.currentFactory.name)
   }
 
   const updateFloorIcon = (floorIndex: number, iconItem: string | undefined) => {
     if (!factoryStore.currentFactory?.floors[floorIndex]) return
     factoryStore.currentFactory.floors[floorIndex].iconItem = iconItem
+    factoryStore.markDirty(factoryStore.currentFactory.name)
   }
 
   // batch update floors, indexed by array position, to the name or icon provided
@@ -73,6 +75,9 @@ export function useFloorManagement() {
         if ('name' in update) floor.name = update.name
         if ('iconItem' in update) floor.iconItem = update.iconItem
       }
+    }
+    if (updates.length > 0) {
+      factoryStore.markDirty(factoryStore.currentFactory.name)
     }
   }
 
@@ -91,6 +96,7 @@ export function useFloorManagement() {
     const recipe = fromFloor.recipes.splice(recipeIndex, 1)[0]
 
     toFloor.recipes.push(recipe)
+    factoryStore.markDirty(factoryStore.currentFactory.name)
   }
 
   // Floor editor modal functions
@@ -189,6 +195,7 @@ export function useFloorManagement() {
 
     // Update floor names that reference numeric positions >= atIndex
     updateFloorNamesAfterInsertion(atIndex)
+    factoryStore.markDirty(factoryStore.currentFactory.name)
   }
 
   const getUnnamedFloorsAfterIndex = (
@@ -235,6 +242,7 @@ export function useFloorManagement() {
 
     // Update floor names that reference numeric positions > floorIndex
     updateFloorNamesAfterRemoval(floorIndex)
+    factoryStore.markDirty(factoryStore.currentFactory.name)
   }
 
   /**
